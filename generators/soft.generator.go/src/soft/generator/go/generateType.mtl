@@ -181,3 +181,9 @@
     endif
 /]
 
+[query private getDefaultBooleanValue(anEClassifier : EClassifier) : String = 'false'/]
+[query private getDefaultCharValue(anEClassifier : EClassifier) : String = '\'\''/]
+[query private getDefaultNumberValue(anEClassifier : EClassifier) : String = '0'/]
+[query private getDefaultPointerValue(anEClassifier : EClassifier) : String = 'nil'/]
+[query private getDefaultAnyValue(anEClassifier : EClassifier) : String = 'nil'/]
+[query private getDefaultStringValue(anEClassifier : EClassifier) : String = '""'/]
