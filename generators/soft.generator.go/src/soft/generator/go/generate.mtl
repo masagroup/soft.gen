@@ -4,6 +4,7 @@
 [import soft::generator::go::lib::generateEnum/]
 [import soft::generator::go::lib::generateInterface/]
 [import soft::generator::go::lib::generateImplementation/]
+[import soft::generator::go::lib::generateTest/]
 [import soft::generator::go::lib::pack::generatePackage/]
 [import soft::generator::go::lib::factory::generateFactory/]
 
@@ -13,6 +14,7 @@
     [aClass.generateInterface()/]
 	[if not aClass.interface]	
     	[aClass.generateImplementation()/]
+    	[aClass.generateTest()/]
 	[/if]
 [/for]
 [for (anEEnum : EEnum | aPackage.eAllContents(EEnum))]
