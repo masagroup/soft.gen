@@ -1,0 +1,90 @@
+[comment encoding = UTF-8 /]
+[module generateTest('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::generateCommon/]
+[import soft::generator::common::generateCommon/]
+[import soft::generator::go::lib::test::generateType/]
+
+[template public generateTest(aClass : EClass) { implementationName : String = aClass.getImplementationName(); aPackage : EPackage = aClass.ePackage } ]
+[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationTestFileName( aClass.name ), false, 'UTF-8')]
+[fileComment()/]
+
+package [aPackage.name/]
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func [implementationName/]Test(t *testing.T) {
+	_ = assert.Equal
+	[aClass.eStructuralFeatures->select(isField()).generateTestImplementation()/]
+	[aClass.eOperations.generateTestOperation()/]
+}
+[/file]
+[/template]
+
+[template private generateTestOperation(anEOperation : EOperation)]
+{
+	obj := [anEOperation.eContainingClass.getConstructorName()/]()
+	assert.Panics(t, func() { obj.[anEOperation.getFunctionName()/]([anEOperation.generateParameterListNames()/]) })
+}
+
+[/template]
+
+[template private generateTestImplementation(aStructuralFeature : EStructuralFeature)]
+[if isGet()]
+[aStructuralFeature.generateGetTestImplementation()/]
+[/if]
+[if isBasicGet()]
+[/if]
+[if isSet()]
+[aStructuralFeature.generateSetTestImplementation()/]
+[/if]
+[if isBasicSet()]
+[/if]
+[if isUnSet()]
+[aStructuralFeature.generateUnsetTestImplementation()/]
+[/if]
+[if isBasicUnSet()]
+[/if]
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature)]
+[let varName : String = aStructuralFeature.getVariableName() ]
+[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getTestValue() endif ]
+{
+	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
+	obj.[varName/] = [varAssigned/]
+	assert.Equal(t, [varAssigned/], obj.[aStructuralFeature.getGetterName()/]())
+}
+[/let]
+[/let]
+[/template]
+
+[template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature)]
+[let varName : String = aStructuralFeature.getVariableName() ]
+[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getTestValue() endif ]
+{
+	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
+	obj.[aStructuralFeature.getSetterName()/]([varAssigned/])
+	assert.Equal(t, [varAssigned/], obj.[varName/])
+}
+[/let]
+[/let]
+[/template]
+
+[template private generateUnsetTestImplementation(aStructuralFeature : EStructuralFeature)]
+[let varName : String = aStructuralFeature.getVariableName() ]
+[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getTestValue() endif ]
+{
+	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
+	obj.[varName/] = [varAssigned/]
+	obj.[aStructuralFeature.getUnSetterName()/]()
+	assert.Equal(t, [aStructuralFeature.eType.getDefaultValue()/], obj.[varName/])
+}
+[/let]
+[/let]
+[/template]
