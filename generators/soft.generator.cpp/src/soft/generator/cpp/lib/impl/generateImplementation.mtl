@@ -1,0 +1,16 @@
+[comment encoding = UTF-8 /]
+[module generateImplementation('http://www.eclipse.org/emf/2002/Ecore')]
+
+
+[import soft::generator::cpp::lib::impl::generateImplementationHeader /]
+[import soft::generator::cpp::lib::impl::generateImplementationSource /]
+
+[**
+ * The documentation of the template generateElement.
+ * @param anEClass
+ */]
+[template public generateImplementation(aClass : EClass)]
+[aClass.generateImplementationHeader()/]
+[aClass.generateImplementationSource()/]
+[/template]
+

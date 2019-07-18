@@ -1,0 +1,10 @@
+[comment encoding = UTF-8 /]
+[module generatePackage('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::go::lib::pack::generatePackageImplementation/]
+[import soft::generator::go::lib::pack::generatePackageInterface/]
+
+[template public generatePackage(anEPackage : EPackage)]
+[anEPackage.generatePackageImplementation()/]
+[anEPackage.generatePackageInterface()/]
+[/template]

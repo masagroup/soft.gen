@@ -1,0 +1,102 @@
+[comment encoding = UTF-8 /]
+[module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::go::generateCommon/]
+
+[query public getOutputDirectory( anPackage : EPackage ) : String = 
+    let property : OclAny = getProperty('library.output.dir') in 
+    if property.oclIsUndefined() or property = '' then 
+        anPackage.name 
+    else 
+        property 
+    endif
+/]
+
+[query public getReceiverName(aClass : EClass) : String = aClass.name.toLowerFirst()/]
+
+[template public generateFunctionReceiver(aClass : EClass)]
+func ([aClass.getReceiverName()/] *[aClass.getImplementationName()/])
+[/template]
+
+
+[**
+ * Classes Onthology
+*/]
+
+
+[query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
+    if ( aClass.eSuperTypes->isEmpty() ) then
+        if ( aClass.name = 'EObject' ) then
+            Sequence{'ecore.ENotifier'}
+        else
+            Sequence{'ecore.EObject'}
+        endif
+    else
+        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceName()))
+    endif
+/]
+
+[query public getClassExtends(aClass : EClass ) : String =
+    let aPackage : EPackage = aClass.ePackage in 
+    let extendsClass : EClass = aClass.getClassExtendsClass() in
+    if ( extendsClass.oclIsUndefined() ) then
+        if ( aClass.name = 'EObject' ) then
+            'ecore.BasicEObject'
+        else
+            'ecore.EObjectImpl'
+        endif  
+    else
+        if ( extendsClass.hasExtension() ) then
+            extendsClass.getQualifiedExtensionName()
+        else
+            extendsClass.getQualifiedImplementationName()
+        endif
+    endif
+/]
+[query public getRawClassExtends(aClass : EClass ) : String =
+    let aPackage : EPackage = aClass.ePackage in 
+    let extendsClass : EClass = aClass.getClassExtendsClass() in
+    if ( extendsClass.oclIsUndefined() ) then
+        if ( aClass.name = 'EObject' ) then
+            'BasicEObject'
+        else
+            'EObjectImpl'
+        endif
+    else
+        if ( extendsClass.hasExtension() ) then
+            extendsClass.getExtensionName()
+        else
+            extendsClass.getImplementationName()
+        endif
+    endif
+/]
+[query private isUpperFirst( aString : String ) : Boolean = aString.toUpperFirst() = aString /]
+
+[query public getConstructorName( aClass : EClass ) : String = getConstructorName(aClass.getImplementationName())/]
+[query public getConstructorName( aQualifiedName : String ) : String =
+    let index : Integer = aQualifiedName.index('.') in
+    let className : String = if index = -1 then aQualifiedName else aQualifiedName.substring( index + 1 ) endif in
+    let new : String = if isUpperFirst( className ) then 'New' else 'new' endif in
+    if index = -1 then new + className.toUpperFirst() else aQualifiedName.substring(1, index - 1) + '.' + new + className.toUpperFirst() endif
+/]
+[query public getConstructorExtensionName( aClass : EClass ) : String = getConstructorName(aClass.getExtensionName())/]
+
+
+[query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedInterfaceName() }/]
+
+[query private getClassExtendsClass( aClass : EClass ) : EClass = getClassExtendsClass( aClass , aClass.getBaseClass() )/]
+[query private getClassExtendsClass( aClass : EClass , aBaseClass : EClass ) : EClass =
+    if ( aClass = aBaseClass ) then
+        null
+    else
+        if ( aBaseClass.oclIsUndefined() or (not aBaseClass.interface) ) then
+            aBaseClass
+        else
+            getClassExtendsClass(aClass , aBaseClass.getBaseClass())
+        endif
+    endif
+/]
+
+[query public getVariableName( aFeature : EStructuralFeature ) : String = 
+if aFeature.eType.name = 'EBoolean' then 'is' + aFeature.name.toUpperFirst() else aFeature.name endif/]

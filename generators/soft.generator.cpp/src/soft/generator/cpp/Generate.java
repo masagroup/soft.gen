@@ -1,0 +1,35 @@
+package soft.generator.cpp;
+
+import soft.generator.common.Generator;
+
+/**
+ * Entry point of the 'Generate' generation module.
+ * 
+ * @generated NOT
+ */
+public class Generate extends Generator {
+    /**
+     * The name of the module.
+     */
+    public static final String MODULE_FILE_NAME = "/soft/generator/cpp/generate";
+
+    /**
+     * The name of the templates that are to be generated.
+     */
+    public static final String[] TEMPLATE_NAMES = { "generateModel",
+                                                    "generateLibraryCMakeSources",
+                                                    "generateLibraryCMakeProject",
+                                                    "generateTests",
+                                                    "generateTestsCMakeSources",
+                                                    "generateTestsCMakeProject" };
+
+    /**
+     * This can be used to launch the generation from a standalone application.
+     * 
+     * @param args Arguments of the generation.
+     */
+    public static void main(String[] args) {
+        generate(args, MODULE_FILE_NAME, TEMPLATE_NAMES);
+    }
+
+}

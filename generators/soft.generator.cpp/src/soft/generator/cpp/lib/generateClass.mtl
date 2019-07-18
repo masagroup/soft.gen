@@ -1,0 +1,43 @@
+[comment encoding = UTF-8 /]
+[module generateClass('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::cpp::generateType/]
+[import soft::generator::cpp::generateCommon/]
+
+[template public generateClassCreate(aEClass : EClass,impl : Boolean) ? (aEClass.abstract=false)]
+virtual std::shared_ptr<[aEClass.getInterfaceName()/]> create[aEClass.name/]() const [abstractSufix(impl)/];
+[let ref:OrderedSet(EReference) = aEClass.getAllContainers()]
+[for(aReference:EReference | ref->sortedBy(name))]
+virtual std::shared_ptr<[aEClass.getInterfaceName()/]> create[aEClass.name/]([aReference.generateParameterType()/] eContainer) const [abstractSufix(impl)/];
+[if(aEClass.getElementIDAccessorName().size() > 0)]virtual std::shared_ptr<[aEClass.getInterfaceName()/]> create[aEClass.name/]([aReference.generateParameterType()/] eContainer, const unsigned int classID) const [abstractSufix(impl)/];[/if]
+[/for]
+
+[/let]
+[/template]
+
+[template public generateStaticClassID(aEClass : EClass)]
+/**
+ * The meta object id for the class [aEClass.name/].
+ */
+static const unsigned int [aEClass.getClassifierIDName()/] = [aEClass.getClassifierIDValue()/];
+
+[/template]
+
+[template public generateClassCreation(aEClass : EClass)]
+[aEClass.getElementInstanceName()/] = factory->createEClass(package, [aEClass.getClassifierIDName()/]);
+
+[/template]
+
+[template public generateInitialization(aEClass : EClass)]
+[aEClass.getElementInstanceName()/]->setName("[aEClass.name/]");
+[aEClass.getElementInstanceName()/]->setAbstract([aEClass.abstract.toString()/]);
+[aEClass.getElementInstanceName()/]->setInterface([aEClass.interface.toString()/]);
+[aEClass.getElementInstanceName()/]->setInstanceClass( &typeid(std::shared_ptr<[aEClass.name/]>) );
+[/template]
+
+[template public initSuperTypes(aEClass : EClass)]
+[for (superClass : EClass | aEClass.eSuperTypes->asOrderedSet()->sortedBy(name))]
+[aEClass.getElementInstanceName()/]->getESuperTypes()->add([aEClass.packageGetter(superClass)/]);
+[/for]
+[/template]

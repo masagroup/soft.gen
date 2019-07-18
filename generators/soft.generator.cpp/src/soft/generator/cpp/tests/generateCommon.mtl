@@ -1,0 +1,11 @@
+[comment encoding = UTF-8 /]
+[module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[query public getOutputDirectory( aPackage : EPackage ) : String = 
+    let property : OclAny = getProperty('tests.output.dir') in 
+    if property.oclIsUndefined() or property = '' then 
+        'tests/'.concat( aPackage.name ).concat('.tests')
+    else 
+        property 
+    endif
+/]

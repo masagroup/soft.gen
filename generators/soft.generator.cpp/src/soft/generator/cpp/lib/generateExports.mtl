@@ -1,0 +1,28 @@
+[comment encoding = UTF-8 /]
+[module generateExports('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::cpp::generateCommon /]
+[import soft::generator::cpp::lib::generateCommon/]
+
+[template public generateExports(anEPackage : EPackage)]
+[file (anEPackage.getOutputDirectory() + '/src-gen/' + anEPackage.getInterfaceFolder() + '/Exports.hpp', false, 'UTF-8')]
+[fileComment()/]
+[startGuard(anEPackage,'_Exports')/]
+
+[let name : String = anEPackage.name.toUpper() ]
+#if defined _WIN32 || defined __CYGWIN__
+#ifdef [name/]_STATIC_LIB
+#define [name/]_API
+#elif [name/]_EXPORTS
+#define [name/]_API __declspec( dllexport )
+#else
+#define [name/]_API __declspec( dllimport )
+#endif
+#else
+#define [name/]_API __attribute__( ( visibility( "default" ) ) )
+#endif
+[/let]
+
+[endGuard(anEPackage,'_Exports')/]
+[/file]
+[/template]

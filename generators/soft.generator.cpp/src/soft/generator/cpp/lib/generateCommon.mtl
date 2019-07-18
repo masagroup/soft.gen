@@ -1,0 +1,11 @@
+[comment encoding = UTF-8 /]
+[module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[query public getOutputDirectory( anPackage : EPackage ) : String = 
+    let property : OclAny = getProperty('library.output.dir') in 
+    if property.oclIsUndefined() or property = '' then 
+        'libraries/'.concat(anPackage.name) 
+    else 
+        property 
+    endif
+/]

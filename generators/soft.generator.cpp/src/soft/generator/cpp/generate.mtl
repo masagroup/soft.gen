@@ -1,0 +1,51 @@
+[comment encoding = UTF-8 /]
+[module generate('http://www.eclipse.org/emf/2002/Ecore')/]
+
+
+[import soft::generator::cpp::lib::generateCMake/]
+[import soft::generator::cpp::lib::generateExports/]
+[import soft::generator::cpp::lib::generateInterface/]
+[import soft::generator::cpp::lib::factory::generateFactory/]
+[import soft::generator::cpp::lib::impl::generateImplementation/]
+[import soft::generator::cpp::lib::pack::generatePackage/]
+[import soft::generator::cpp::tests::generateMock/]
+[import soft::generator::cpp::tests::generateCMake/]
+
+[template public generateModel(aPackage : EPackage)]
+[comment @main/]
+[aPackage.generateExports()/]
+[for (aClass : EClass | aPackage.eAllContents(EClass))]
+    [aClass.generateInterface()/]
+    [aClass.generateImplementation()/]
+[/for]
+[aPackage.generateFactory()/]
+[aPackage.generatePackage()/]
+[/template]
+
+[template public generateLibraryCMakeSources(aPackage : EPackage)]
+[comment @main/]
+[aPackage.generateLibraryCMakeFiles()/]
+[/template]
+
+[template public generateLibraryCMakeProject(aPackage : EPackage)]
+[comment @main/]
+[aPackage.generateLibraryCMakeLists()/]
+[/template]
+
+[template public generateTests(aPackage: EPackage)]
+[comment @main/]
+[for (aClass : EClass | aPackage.eAllContents(EClass))]
+    [aClass.generateMock()/]
+[/for]
+[/template]
+
+[template public generateTestsCMakeSources(aPackage : EPackage)]
+[comment @main/]
+[aPackage.generateTestsCMakeFiles()/]
+[/template]
+
+[template public generateTestsCMakeProject(aPackage : EPackage)]
+[comment @main/]
+[aPackage.generateTestsCMakeLists()/]
+[/template]
+

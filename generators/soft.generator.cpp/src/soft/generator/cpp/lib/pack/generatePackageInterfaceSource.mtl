@@ -1,0 +1,31 @@
+[comment encoding = UTF-8 /]
+[module generatePackageInterfaceSource('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::cpp::generateCommon /]
+[import soft::generator::cpp::generateSingleton /]
+[import soft::generator::cpp::lib::generateCommon /]
+
+[template public generatePackageInterfaceSource(anEPackage : EPackage) {className : String = anEPackage.getInterfaceName() ; }]
+[file (anEPackage.getOutputDirectory() + '/src-gen/' + anEPackage.getInterfaceFolder() + '/' + className +'.cpp', false, 'UTF-8')]
+[fileComment()/]
+[let includes : OrderedSet(String) = OrderedSet{ anEPackage.getQualifiedInterfaceName() , anEPackage.getQualifiedImplementationName() }]
+[for (include:String | includes )]
+#include "[namespaceToFolder(include)/].hpp"
+[/for]
+[/let]
+
+[let namespaces : OrderedSet(String) = OrderedSet{ anEPackage.getInterfaceNamespaceName() , anEPackage.getImplementationNamespaceName()}]
+[for (namespace : String | namespaces )]
+using namespace [namespace/];
+[/for]
+[/let]
+
+//static initialisation
+const std::string [className/]::eNAME ="[anEPackage.name/]";
+const std::string [className/]::eNS_URI ="[anEPackage.nsURI/]";
+const std::string [className/]::eNS_PREFIX ="[anEPackage.nsPrefix/]";
+
+//Singleton 
+[generateSingletonImplementation(anEPackage.getInterfaceName(), anEPackage.getImplementationName(), true)/]
+[/file]
+[/template]

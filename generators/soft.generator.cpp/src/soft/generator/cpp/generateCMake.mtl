@@ -1,0 +1,44 @@
+[comment encoding = UTF-8 /]
+[module generateCMake('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::cpp::generateCommon/]
+
+[query public getVarName( aNamespace : String ) : String = aNamespace.substituteAll('::','_').toUpper()/]
+
+[query public getVarName( aPrefix : String , aVarName : String , aSuffix : String ) : String = '${'+ aPrefix + if aVarName = '' then '_' else '_' + aVarName + '_' endif + aSuffix + '}'/]
+
+[query public getSourceFolderName( aNamespace : String ) : String = aNamespace.substituteAll('::','\\\\')/]
+
+[query public getAllNamespaces( aQualifiedNamespace : String ) : Sequence(String) =
+    let names : Sequence(String) = aQualifiedNamespace.tokenize('::') in
+    Sequence{1..names->size()}->iterate( index ; res : Sequence(String) = Sequence{''} |
+        res->append(  names->subSequence(1, index)->join('::') )
+    )
+/]
+
+[query public getAllVariables( namespaces : OrderedSet(String) ) : OrderedSet(String) =
+    namespaces->iterate( namespace ; res : Sequence(Sequence(String)) = Sequence{} |
+                                                    let namespaceVar : String = getVarName(namespace) in
+                                                    res->append( Sequence{ getVarName('HEADER',namespaceVar,'FILES')
+                                                                         , getVarName('SOURCE',namespaceVar,'FILES')
+                                                                         , getVarName('GENERATED_HEADER',namespaceVar,'FILES')
+                                                                         , getVarName('GENERATED_SOURCE',namespaceVar,'FILES')
+                                                                         })
+                       )->flatten()->asOrderedSet()->sortedBy(s | s)
+/]
+
+[template public generateSourceGroup( namespaces : OrderedSet(String) )]
+# Visual studio specific project layout
+source_group(cmake FILES ${CMAKE_FILES})
+[for ( namespace : String | namespaces )]
+[let namespaceVar : String = getVarName(namespace)]
+source_group(src[if namespace<>'']\\[getSourceFolderName( namespace )/][/if] FILES [getVarName('HEADER',namespaceVar,'FILES')/] [getVarName('SOURCE',namespaceVar,'FILES')/])
+[/let]
+[/for]
+[for ( namespace : String | namespaces )]
+[let namespaceVar : String = getVarName(namespace)]
+source_group(src-gen[if namespace<>'']\\[getSourceFolderName( namespace )/][/if] FILES [getVarName('GENERATED_HEADER',namespaceVar,'FILES')/] [getVarName('GENERATED_SOURCE',namespaceVar,'FILES')/])
+[/let]
+[/for]
+[/template]

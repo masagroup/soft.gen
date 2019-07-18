@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>soft.generators</groupId>
+  <artifactId>soft.generators</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+  <name>Soft Generators</name>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
+  <repositories>
+        <repository>
+            <id>Eclipse Acceleo</id>
+            <url>https://repo.eclipse.org/content/groups/acceleo</url>
+        </repository>
+  </repositories>
+
+  <pluginRepositories>
+        <pluginRepository>
+            <id>Eclipse Acceleo</id>
+            <url>https://repo.eclipse.org/content/groups/acceleo</url>
+        </pluginRepository>
+  </pluginRepositories>
+  
+  <profiles>
+    <profile>
+        <id>ant</id>
+        <properties>
+            <project.target>../../../out/maven/${project.artifactId}</project.target>
+        </properties>
+    </profile>
+    <profile>
+        <id>default</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+            <project.target>.target</project.target>
+        </properties>
+    </profile>
+  </profiles>
+  
+  
+  <build>
+        <directory>${project.target}</directory>
+        <sourceDirectory>src</sourceDirectory>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+  </build>
+  
+  <modules>
+    <module>soft.generator.common</module>
+    <module>soft.generator.cpp</module>
+    <module>soft.generator.go</module>
+  </modules>
+  
+</project>

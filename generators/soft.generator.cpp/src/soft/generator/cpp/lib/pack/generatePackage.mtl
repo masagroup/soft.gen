@@ -1,0 +1,14 @@
+[comment encoding = UTF-8 /]
+[module generatePackage('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::cpp::lib::pack::generatePackageImplementationHeader /]
+[import soft::generator::cpp::lib::pack::generatePackageImplementationSource /]
+[import soft::generator::cpp::lib::pack::generatePackageInterfaceHeader /]
+[import soft::generator::cpp::lib::pack::generatePackageInterfaceSource /]
+
+[template public generatePackage(anEPackage : EPackage)]
+[anEPackage.generatePackageInterfaceHeader()/]
+[anEPackage.generatePackageInterfaceSource()/]
+[anEPackage.generatePackageImplHeader()/]
+[anEPackage.generatePackageImplSource()/]
+[/template]

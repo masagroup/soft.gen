@@ -1,0 +1,11 @@
+[comment encoding = UTF-8 /]
+[module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::go::generateCommon/]
+
+[template public generateFactoryImplementationMember(anEPackage : EPackage)]
+func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementationName()/])
+[/template]
+
+[query public getFactoryReceiverName(anEPackage : EPackage) : String = anEPackage.getFactoryImplementationName().toLowerFirst() /]
+[query public getTypeFromReference(aRef : EReference) : String = aRef.eClass().name /]

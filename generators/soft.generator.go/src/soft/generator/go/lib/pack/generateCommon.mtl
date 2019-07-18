@@ -1,0 +1,60 @@
+[comment encoding = UTF-8 /]
+[module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon /]
+[import soft::generator::go::generateCommon /]
+
+[template public generateStaticClassID(aEClass : EClass)]
+// [aEClass.getClassifierIDName()/] is the meta object id for the class [aEClass.name/].
+[aEClass.getClassifierIDName()/] = [aEClass.getClassifierIDValue()/]
+
+[/template]
+
+[template public generateStaticFeatureID(anStructFeature : EStructuralFeature,anEClass : EClass )]
+// [anEClass.getFeatureIDName(anStructFeature)/] is the feature id for the [anEClass.name/] '[anStructFeature.name.toUpperFirst()/]' [anStructFeature.getFeatureKind()/].
+[anEClass.getFeatureIDName(anStructFeature)/] = [anEClass.getFeatureValue(anStructFeature)/]
+
+
+[/template]
+
+[template public generateStaticFeatureCountID(anEClass : EClass )]
+// [anEClass.getFeatureCountID()/] is the number of structural features of the class [anEClass.name/].
+[anEClass.getFeatureCountID()/] = [anEClass.getFeatureCountValue()/]
+
+[/template]
+
+[template public generateStaticOperationID(aOperation : EOperation , aClass : EClass )]
+// [aClass.getOperationIDName(aOperation)/] is the operation id for the '[aOperation.name/]' operation.
+[aClass.getOperationIDName(aOperation)/] = [aClass.getOperationValue(aOperation)/];
+
+[/template]
+
+[template public generateStaticOperationCountID(anEClass : EClass )]
+// [anEClass.getOperationCountID()/] is the number of [anEClass.getOperationCountID()/]
+[anEClass.getOperationCountID()/] = [anEClass.getOperationCountValue()/];
+
+[/template]
+
+[template public generateStaticDataTypeID(aEDatatype : EDataType )]
+// [aEDatatype.getClassifierIDName()/] The meta object id for the [if aEDatatype.oclIsKindOf(EEnum)]enum[else]data type[/if] [aEDatatype.name/].
+[aEDatatype.getClassifierIDName()/] = [aEDatatype.getClassifierIDValue()/];
+
+[/template]
+
+[query public getClassifierIDValue(anEClassifier : EClassifier) : EInt = if (anEClassifier.getClassifierID() = 0) then anEClassifier.ePackage.eClassifiers->selectByKind(EClassifier)->size() else anEClassifier.getClassifierID() endif/]
+
+[query private getElementTypeName(anENamedElement : ENamedElement) : String =
+if anENamedElement.oclIsTypeOf(EClass) then 'Class'
+else if anENamedElement.oclIsTypeOf(EAttribute) then 'Attribute'
+else if ( anENamedElement.oclIsTypeOf(EOperation) ) then 'Operation'
+else if ( anENamedElement.oclIsTypeOf(EReference) ) then 'Reference'
+else ''
+endif endif endif endif
+/]
+
+[query public getReflectiveGetterName(anENamedElement : ENamedElement) : String = 
+let getterName : String = 'get' + anENamedElement.getElementAccessorName() in
+let ecorePackageClass : EClass = anENamedElement.eClass().ePackage.eClass() in
+let methodName : String = if ecorePackageClass.eAllOperations->exists( name = getterName ) then getterName + anENamedElement.getElementTypeName() else getterName endif in
+methodName.toUpperFirst()
+/]

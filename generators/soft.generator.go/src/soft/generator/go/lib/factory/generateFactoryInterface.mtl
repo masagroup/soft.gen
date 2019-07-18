@@ -1,0 +1,46 @@
+[comment encoding = UTF-8 /]
+[module generateFactoryInterface('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::generateType/]
+[import soft::generator::go::generateCommon/]
+
+[template public generateFactoryInterface(anEPackage : EPackage) { className : String = anEPackage.getFactoryName() ; }]
+[file (anEPackage.getOutputDirectory() + '/' + anEPackage.getInterfaceFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
+[fileComment()/]
+
+package [anEPackage.name/]
+
+type [className/] interface {
+[for (aEClass : EClass | anEPackage.eAllContents(EClass)->sortedBy(name))]
+[if (aEClass.abstract = false)]
+	Create[aEClass.name/]() [aEClass.getInterfaceName()/]
+[let ref:OrderedSet(EReference) = aEClass.getAllContainers()]
+[for(aReference:EReference | ref->sortedBy(name))]
+	Create[aEClass.name/]FromContainer(eContainer [aReference.eGenericType.generateType()/]) [aEClass.getInterfaceName()/]
+[if(aEClass.getElementIDAccessorName().size() > 0)]
+	Create[aEClass.name/]FromContainerAndClassID(eContainer [aReference.eGenericType.generateType()/], classID int) [aEClass.getInterfaceName()/]
+[/if]
+[/for]
+[/let]
+[/if]
+[/for]
+}
+
+var factoryInstance [className/]
+
+// GetFactory returns the factory for the model [anEPackage.name/]
+func GetFactory() [className/] {
+    if factoryInstance == nil {
+[let extension : Boolean = anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension']
+[let factoryName : String = if extension then anEPackage.getFactoryExtensionName() else anEPackage.getFactoryImplementationName() endif] 
+		factoryInstance = new[factoryName.toUpperFirst()/]()
+[/let]
+[/let]
+    }
+    return factoryInstance
+}
+
+[/file]
+[/template]

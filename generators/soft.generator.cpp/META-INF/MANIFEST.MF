@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Soft Generator Cpp
+Bundle-SymbolicName: soft.generator.cpp
+Bundle-Version: 1.0.0.qualifier
+Export-Package: soft.generator.cpp,
+ soft.generator.cpp.lib,
+ soft.generator.cpp.lib.factory,
+ soft.generator.cpp.lib.impl,
+ soft.generator.cpp.lib.pack,
+ soft.generator.cpp.tests 
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: soft.generator.cpp

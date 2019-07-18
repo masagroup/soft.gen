@@ -1,0 +1,45 @@
+[comment encoding = UTF-8 /]
+[module generateDataType('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon /]
+[import soft::generator::cpp::generateCommon /]
+
+
+[template public generateEDatatypeCreation(anEDatatype : EDataType)]
+[anEDatatype.getElementInstanceName()/] = factory->create[if (anEDatatype.oclIsKindOf(EEnum))]EEnum[else]EDataType[/if](package, [anEDatatype.getClassifierIDName()/]);
+
+[/template]
+
+[template public generateEDatatypeInitialization(aDataType : EDataType)]
+[aDataType.getElementInstanceName()/]->setName("[aDataType.name/]");
+[if not aDataType.instanceTypeName.oclIsUndefined() and not (aDataType.instanceTypeName = '')] 
+[aDataType.getElementInstanceName()/]->setInstanceClass( &typeid([aDataType.instanceTypeName/]));
+[/if]
+[if (not aDataType.oclIsKindOf(EEnum))]
+[aDataType.getElementInstanceName()/]->setSerializable([aDataType.serializable.toString()/]);
+[/if]
+[/template]
+
+[template public generateStaticDataTypeID(aEDatatype : EDataType )]
+/**
+ * The meta object id for the [if aEDatatype.oclIsKindOf(EEnum)]enum[else]data type[/if] [aEDatatype.name/].
+ */
+static const int [aEDatatype.getClassifierIDName()/] = [aEDatatype.getClassifierIDValue()/];
+
+[/template]
+
+[template public generateCreateFromStringDeclaration(aEDatatype : EDataType )]
+virtual ecore::Any create[aEDatatype.name/]FromString( const std::shared_ptr<ecore::EDataType>& dataType , const std::string& literalValue ) const;
+
+[/template]
+
+[template public generateCreateFromStringDefinition(aEDatatype : EDataType )]
+[/template]
+
+[template public generateConvertToStringDeclaration(aEDatatype : EDataType )]
+virtual std::string convert[aEDatatype.name/]ToString( const std::shared_ptr<ecore::EDataType>& dataType , const ecore::Any& literalValue ) const;
+
+[/template]
+
+[template public generateConvertToStringDefinition(aEDatatype : EDataType )]
+[/template]

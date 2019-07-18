@@ -1,0 +1,11 @@
+[comment encoding = UTF-8 /]
+[module generateUtils('http://www.eclipse.org/emf/2002/Ecore')]
+
+[query public lowerCamelToUpperUnderscore( eEObject : EObject , s : String ) : String = invoke('soft.generator.common.GenerateUtils','lowerCamelToUpperUnderscore(java.lang.String)',Sequence{s}) /]
+
+[query public upperCamelToUpperUnderscore( eEObject : EObject , s : String ) : String = invoke('soft.generator.common.GenerateUtils','upperCamelToUpperUnderscore(java.lang.String)',Sequence{s}) /]
+
+[query public splitAndCombineWords( eEObject : EObject , s : String, sep: String) : String = invoke('soft.generator.common.GenerateUtils','splitAndCombineWords(java.lang.String,java.lang.String)',Sequence{s,sep}) /]
+
+[query public getOrderedClasses( anEPackage : EPackage ) : Sequence(EClass) = invoke('soft.generator.common.GenerateUtils','getOrderedClasses(org.eclipse.emf.ecore.EPackage)',Sequence{anEPackage}) /]
+

@@ -1,0 +1,44 @@
+[comment encoding = UTF-8 /]
+[module generateInterface('http://www.eclipse.org/emf/2002/Ecore')/]
+
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::go::generateCommon/]
+[import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::lib::generateOperation/]
+[import soft::generator::go::lib::generateStructuralFeature/]
+
+[template public generateInterface(aClass : EClass) { interfaceName : String = aClass.getInterfaceName(); aPackage : EPackage = aClass.ePackage } ]
+[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
+[fileComment()/]
+
+package [aPackage.name/]
+
+// [interfaceName/] is the representation of the model object '[aClass.name/]'
+type [interfaceName/] interface {
+[for ( qualifiedExtend : String | aClass.getInterfaceExtends() )]
+    [getShortQualifiedName(qualifiedExtend, aPackage.name)/]
+[/for]
+
+[let operations : OrderedSet(EOperation) = aClass.eOperations]
+[if operations->notEmpty()]
+    [operations.generateDeclaration()/]
+[/if]
+[/let]
+[let attributes : OrderedSet(EAttribute) = aClass.eAttributes->select( isGet() or isSet() )]
+[if attributes->notEmpty()]
+    [attributes.generateDeclaration()/]
+[/if]
+[/let]
+[let references : OrderedSet(EAttribute) = aClass.eReferences->select( isGet() or isSet() )]
+[if references->notEmpty()]
+    [references.generateDeclaration()/]
+[/if]
+[/let]
+    // [protected (interfaceName)]
+    // [/protected]
+}
+
+[/file]
+[/template]
+

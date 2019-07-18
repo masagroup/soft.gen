@@ -1,0 +1,382 @@
+[comment encoding = UTF-8 /]
+[module generateReflectives('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateReflectives/]
+[import soft::generator::cpp::generateCommon /]
+[import soft::generator::cpp::generateType /]
+
+[template public generateReflectivesDeclaration(aClass : EClass)]
+[if aClass.getEGetFeatures()->notEmpty() or
+    aClass.getESetFeatures()->notEmpty() or
+    aClass.getEUnSetFeatures()->notEmpty() or
+    aClass.getEIsSetFeatures()->notEmpty() or
+    aClass.eOperations->notEmpty() or
+    aClass.getEInverseAddFeatures()->notEmpty() or
+    aClass.getEInverseRemoveFeatures()->notEmpty()]
+//*********************************
+// Reflectives
+//*********************************
+[if aClass.getEGetFeatures()->notEmpty()]
+[aClass.generateEGetDeclaration()/]
+[/if]
+[if aClass.getESetFeatures()->notEmpty()]
+[aClass.generateESetDeclaration()/]
+[/if]
+[if aClass.getEUnSetFeatures()->notEmpty()]
+[aClass.generateEUnSetDeclaration()/]
+[/if]
+[if aClass.getEIsSetFeatures()->notEmpty()]
+[aClass.generateEIsSetDeclaration()/]
+[/if]
+[if aClass.eOperations->notEmpty()]
+[aClass.generateEInvokeDeclaration()/]
+[/if]
+[if aClass.getEInverseAddFeatures()->notEmpty()]
+[aClass.generateEInverseAddDeclaration()/]
+[/if]
+[if aClass.getEInverseRemoveFeatures()->notEmpty()]
+[aClass.generateEInverseRemoveDeclaration()/]
+[/if]
+[/if]
+[/template]
+
+[template private generateEGetDeclaration(aClass : EClass)]
+virtual ecore::Any eGet(int featureID, bool resolve, bool coreType) const;
+[/template]
+
+[template private generateEIsSetDeclaration(aClass : EClass)]
+virtual bool eIsSet(int featureID) const;
+[/template]
+
+[template private generateESetDeclaration(aClass : EClass)]
+virtual void eSet(int featureID, const ecore::Any& newValue);
+[/template]
+
+[template private generateEUnSetDeclaration(aClass : EClass)]
+virtual void eUnset(int featureID);
+[/template]
+
+[template private generateEInvokeDeclaration(aClass : EClass)]
+virtual ecore::Any eInvoke( int operationID, const std::shared_ptr<EList<ecore::Any>>& arguments );
+[/template]
+
+[template private generateEInverseAddDeclaration(aClass : EClass)]
+virtual std::shared_ptr<ENotificationChain> eBasicInverseAdd( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications );
+[/template]
+
+[template private generateEInverseRemoveDeclaration(aClass : EClass)]
+virtual std::shared_ptr<ENotificationChain> eBasicInverseRemove( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications );
+[/template]
+
+[template public generateReflectivesDefinition(aClass : EClass)]
+[if aClass.getEGetFeatures()->notEmpty() or
+    aClass.getESetFeatures()->notEmpty() or
+    aClass.getEUnSetFeatures()->notEmpty() or
+    aClass.getEIsSetFeatures()->notEmpty() or
+    aClass.eOperations->notEmpty() or
+    aClass.getEInverseAddFeatures()->notEmpty() or
+    aClass.getEInverseRemoveFeatures()->notEmpty()]
+
+//*********************************
+// Reflectives
+//*********************************
+[if aClass.getEGetFeatures()->notEmpty()]
+[aClass.generateEGetDefinition()/]
+
+[/if]
+[if aClass.getESetFeatures()->notEmpty()]
+[aClass.generateESetDefinition()/]
+
+[/if]
+[if aClass.getEUnSetFeatures()->notEmpty()]
+[aClass.generateEUnSetDefinition()/]
+
+[/if]
+[if aClass.getEIsSetFeatures()->notEmpty()]
+[aClass.generateEIsSetDefinition()/]
+
+[/if]
+[if aClass.eOperations->notEmpty()]
+[aClass.generateEInvokeDefinition()/]
+
+[/if]
+[if aClass.getEInverseAddFeatures()->notEmpty()]
+[aClass.generateEInverseAddDefinition()/]
+
+[/if]
+[if aClass.getEInverseRemoveFeatures()->notEmpty()]
+[aClass.generateEInverseRemoveDefinition()/]
+
+[/if]
+[/if]
+[/template]
+
+[template private generateEGetDefinition(aClass : EClass)]
+[let className : String = aClass.getImplementationName()]
+ecore::Any [className/]::eGet(int featureID, bool resolve, bool coreType) const
+{
+    switch(featureID)
+    {
+    [for (anStructFeature : EStructuralFeature | aClass.eStructuralFeatures->asOrderedSet()->sortedBy(name))]
+        case [anStructFeature.getQualifiedFeatureIDName()/]:
+        [if anStructFeature.isListType()]
+        {
+            auto list = [anStructFeature.getGetterName()/]();
+            _ASSERTE( list );
+            return list->asEListOf<std::shared_ptr<EObject>>();
+        }
+        [else]
+            return [anStructFeature.getGetterName()/]();
+        [/if]
+    [/for]
+    }
+    return [removeNamespace(aClass.getClassExtends())/]::eGet(featureID, resolve, coreType);
+}
+[/let]
+[/template]
+
+[template private generateEIsSetDefinition(aClass : EClass)]
+[if aClass.getEIsSetFeatures()->select( eFeature : EStructuralFeature | eFeature.oclIsKindOf(EReference) and eFeature.oclAsType(EReference).isBackReference() )->notEmpty()]
+template <typename T>
+bool is_uninitialized(std::weak_ptr<T> const& weak) {
+    using wt = std::weak_ptr<T>;
+    return !weak.owner_before(wt{}) && !wt{}.owner_before(weak);
+}
+
+[/if]
+bool [aClass.getImplementationName()/]::eIsSet(int featureID) const
+{
+    switch(featureID)
+    {
+[for (anStructFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
+        case [anStructFeature.getQualifiedFeatureIDName()/]:
+            return [anStructFeature.generateComparison()/];
+[/for]
+    }
+    return [removeNamespace(aClass.getClassExtends())/]::eIsSet(featureID);
+}
+[/template]
+
+
+[template private generateESetDefinition(aClass : EClass)]
+void [aClass.getImplementationName()/]::eSet(int featureID, const ecore::Any& newValue)
+{
+    switch(featureID)
+    {
+[for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
+        case [anStructFeature.getQualifiedFeatureIDName()/]:
+        {
+    [let varName : String = anStructFeature.name.first(1)]
+    [if anStructFeature.eGenericType.eClassifier.isAny()]
+            auto [varName/] = newValue;
+    [elseif anStructFeature.eGenericType.eClassifier.oclIsKindOf(EClass)]
+            [anStructFeature.generateEffectiveType()/] [varName/] = objectCast<[anStructFeature.generateEffectiveType()/]>(newValue);
+    [else]
+            [anStructFeature.generateEffectiveType()/] [varName/] = anyCast<[anStructFeature.generateEffectiveType()/]>(newValue);
+    [/if]
+    [if anStructFeature.isListType()]
+            [anStructFeature.getGetterName()/]()->clear();
+            [anStructFeature.getGetterName()/]()->addAll(*[varName/]);
+    [else]
+            [anStructFeature.getSetterName()/]([varName/]);
+    [/if]
+            return;
+    [/let]
+        }
+[/for]
+    }
+    return [removeNamespace(aClass.getClassExtends())/]::eSet(featureID, newValue);
+}
+[/template]
+
+[template private generateEUnSetDefinition(aClass : EClass)]
+[let className : String = aClass.getImplementationName()]
+void [className/]::eUnset(int featureID)
+{
+    switch(featureID)
+    {
+[for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
+        case [aStructFeature.getQualifiedFeatureIDName()/]:
+        {
+    [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
+            [aStructFeature.getGetterName()/]()->clear();
+    [elseif aStructFeature.hasUnSetter('public', true) ]
+            [aStructFeature.getUnSetterName()/]();
+    [elseif aStructFeature.oclIsKindOf(EReference)]
+            [aStructFeature.getSetterName()/]( nullptr );
+    [else]
+            [aStructFeature.getSetterName()/]( [aStructFeature.oclAsType(EAttribute).getDefaultValue()/] ); 
+    [/if]
+            return;
+        }
+[/for]
+    }
+    return [removeNamespace(aClass.getClassExtends())/]::eUnset(featureID);
+}
+[/let]
+[/template]
+
+[template private generateEInvokeDefinition(aClass : EClass)]
+[let className : String = aClass.getImplementationName()]
+ecore::Any [className/]::eInvoke(int operationID, const std::shared_ptr<EList<ecore::Any>>& arguments)
+{
+    // [protected ( className + '::eInvoke')]
+    switch( operationID )
+    {
+    [for ( eOperation : EOperation | aClass.eOperations->sortedBy(name) )]
+        case [eOperation.getQualifiedOperationIDName()/]:
+        {
+            [if eOperation.isVoid() ]
+            [eOperation.generateOperationInvoke()/]
+            return ecore::Any();
+            [else]
+            return [eOperation.generateOperationInvoke()/] 
+            [/if]
+        }
+    [/for]
+    }
+    return ecore::Any();
+    // [/protected]
+}
+[/let]
+[/template]
+
+[template private generateOperationInvoke(eOperation : EOperation )]
+[if eOperation.getVisibilityType(true) = 'no' and eOperation.eContainingClass.name = 'EObject']BasicEObject::[/if][eOperation.name/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())][if needCast]ecore::anyCast<[eParameter.generateEffectiveType()/]>([/if]arguments->get([i-1/])[if needCast])[/if][/let][/for]);
+[/template]
+
+
+[template private generateDefaultValue(anEAttribute : EAttribute) post (trim())]
+[if (anEAttribute.eType.oclIsTypeOf(EEnum))]
+    [if (anEAttribute.defaultValueLiteral->notEmpty())]
+        [anEAttribute.eType.name/]::[anEAttribute.defaultValueLiteral.toUpperCase()/]
+    [else]
+        [anEAttribute.eType.name/]::[anEAttribute.eType.oclAsType(EEnum).eLiterals->first().name.toUpperCase()/] 
+    [/if]
+[else]
+    [anEAttribute.getDefaultValue()/]
+[/if]
+[/template]
+
+[template public generateComparison(anStructFeature : EStructuralFeature) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
+[if isListType()]
+    [if isField()]
+        [anStructFeature.name/]_ && ![anStructFeature.name/]_->empty()
+    [else]
+        ![anStructFeature.getGetterName()/]()->empty()
+    [/if]
+[else]
+    [let accessor : String = if isField() then anStructFeature.name + '_' else anStructFeature.getGetterName()+'()' endif]
+    [if eType.oclIsKindOf(EEnum)]
+        [accessor/] != [anStructFeature.oclAsType(EAttribute).generateDefaultValue()/]
+    [else]
+        [accessor/] != [anStructFeature.oclAsType(EAttribute).getDefaultValue()/]
+    [/if]
+    [/let]
+[/if]
+[/template]
+
+[template public generateComparison(anStructFeature : EStructuralFeature) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
+[if isListType()]
+    [if isField()]
+        [anStructFeature.name/]_ && ![anStructFeature.name/]_->empty()
+    [else]
+        ![anStructFeature.getGetterName()/]()->empty()
+    [/if]
+[elseif anStructFeature.oclAsType(EReference).isBackReference() ]
+    [if isField()]
+    !is_uninitialized([anStructFeature.name/]_)
+    [else]
+    static_cast<bool>( [anStructFeature.getGetterName()/]() )
+    [/if]
+[else]
+    [let accessor : String = if isField() then anStructFeature.name + '_' else anStructFeature.getGetterName()+'()' endif]
+        [accessor/] != [anStructFeature.eType.getDefaultValue()/]
+    [/let]
+[/if]
+[/template]
+
+[template public generateComparison(anStructFeature : EStructuralFeature) ? (eType.isAny()) post (trim())]
+![anStructFeature.getGetterName()/]().empty()
+[/template]
+
+[template public generateEInverseAddDefinition(aClass : EClass) ]
+[let className : String = aClass.getImplementationName()]
+std::shared_ptr<ENotificationChain> [className/]::eBasicInverseAdd( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications )
+{
+    // [protected (className + '::eBasicInverseAdd')]
+    switch( featureID )
+    {
+[for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
+        case [aFeature.getQualifiedFeatureIDName()/]:
+        {
+    [if aFeature.isListType()]
+            auto list = std::dynamic_pointer_cast<ENotifyingList<std::shared_ptr<EObject>>>( [aFeature.getGetterName()/]() );
+            _ASSERTE(list);
+            return list->add( otherEnd , notifications );
+    [elseif aFeature.isContainer()]
+            auto msgs = notifications;
+            if (eContainer())
+                msgs = eBasicRemoveFromContainer(msgs);
+        [if aFeature.isBasicSet()]
+            return basic[aFeature.getSetterName().toUpperFirst()/]( std::dynamic_pointer_cast<[aFeature.generateElementType()/]>(otherEnd), msgs );
+        [else]
+            return eBasicSetContainer( otherEnd , [aFeature.getQualifiedFeatureIDName()/], msgs );
+        [/if]
+    [else]
+        [if aFeature.isVolatile() or aFeature.isBackReference()]
+            auto [aFeature.name/] = [if aFeature.isProxy()]basic[aFeature.getGetterName().toUpperFirst()/][else][aFeature.getGetterName()/][/if]();
+        [/if]
+        [let varName : String = aFeature.name + (if aFeature.isVolatile() or aFeature.isBackReference() then '' else '_' endif)]
+            auto msgs = notifications;
+            if ( [varName/] )
+            [if aFeature.isContains()]
+                msgs = [varName/]->eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/] , msgs );
+            [else]
+                [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
+                msgs = [varName/]->eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , msgs );
+                [/let]
+            [/if] 
+            return basic[aFeature.getSetterName().toUpperFirst()/](std::dynamic_pointer_cast<[aFeature.generateElementType()/]>(otherEnd),msgs);
+        [/let]
+    [/if]
+        }
+[/for]
+    }
+    return [removeNamespace(aClass.getClassExtends())/]::eBasicInverseAdd(otherEnd, featureID, notifications);
+    // [/protected]
+}
+[/let]
+[/template]
+
+[template public generateEInverseRemoveDefinition(aClass : EClass) ? (aClass.getEInverseRemoveFeatures()->notEmpty()) ]
+[let className : String = aClass.getImplementationName()]
+std::shared_ptr<ENotificationChain> [className/]::eBasicInverseRemove( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications )
+{
+    // [protected (className + '::eBasicInverseRemove')]
+    switch( featureID )
+    {
+[for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
+        case [aFeature.getQualifiedFeatureIDName()/]:
+        {
+    [if aFeature.isListType()]
+            auto list = std::dynamic_pointer_cast<ENotifyingList<std::shared_ptr<EObject>>>( [aFeature.getGetterName()/]() );
+            _ASSERTE(list);
+            return list->remove( otherEnd , notifications );
+    [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
+            return eBasicSetContainer( nullptr , [aFeature.getQualifiedFeatureIDName()/], notifications );
+    [elseif aFeature.isUnSet()]
+            return basic[aFeature.getUnSetterName().toUpperFirst()/]( notifications );
+    [else]
+            return basic[aFeature.getSetterName().toUpperFirst()/]( nullptr, notifications );
+    [/if]
+        }
+[/for]
+    }
+    return [removeNamespace(aClass.getClassExtends())/]::eBasicInverseRemove(otherEnd, featureID, notifications);
+    // [/protected]
+}
+[/let]
+[/template]
+

@@ -1,0 +1,623 @@
+[comment encoding = UTF-8 /]
+[module generateStructuralFeature('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon/]
+
+[import soft::generator::cpp::generateCommon /]
+[import soft::generator::cpp::generateType /]
+
+
+[**
+ * lazy property can be defined as follow lazy = no|lambda|function|action
+ **]
+[query private getLazy( aStructuralFeature : EStructuralFeature ) : String =
+if aStructuralFeature.hasKey('lazy') then 
+    aStructuralFeature.valueKey('lazy')
+else
+    let aPackage : EPackage = aStructuralFeature.eContainingClass.ePackage in
+    if aStructuralFeature.isListType() then
+        aPackage.getLazy('list')
+    else if aStructuralFeature.isProxy() then
+        aPackage.getLazy('proxy')
+    else 
+        aPackage.getLazy('')
+    endif
+    endif
+endif/]
+
+[**
+ * lazy property can be defined as follow lazy = ((*|list|proxy):(no|lambda|function|action))+
+ **]
+[query private getLazy( aPackage : EPackage , type : String ) : String =
+if aPackage.hasKey('lazy') then
+    let lazy : String = aPackage.valueKey('lazy') in
+    let value : String = lazy.tokenize()->iterate( s ; res: String = '' | (
+        if res = '' then 
+            let index : Integer = s.index( ':' ) in 
+            if index = -1 then
+                s
+            else
+                let t : String = s.substring(1 , index - 1 ) in
+                if t = type then
+                    s.substring( index + 1 )
+                else
+                    ''
+                endif
+            endif
+        else
+            res
+        endif
+    )) in
+    if value = '' then
+        'no'
+    else
+        value
+    endif
+else 
+    'no'
+endif
+/]
+
+[query private isGoogleMock( aFeature : EStructuralFeature ) : Boolean = aFeature.eContainingClass.ePackage.isGoogleMock()/]
+[query private isTurtleMock( aFeature : EStructuralFeature ) : Boolean = aFeature.eContainingClass.ePackage.isTurtleMock()/]
+
+
+[query public isLazy( aStructuralFeature : EStructuralFeature ) : Boolean = aStructuralFeature.getLazy() <> 'no'/] 
+
+[query public isDataInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
+
+[query public hasDataInitializationMethod( aStructuralFeature : EStructuralFeature ) : Boolean = 
+isLazy() and ( let lazyType : String = aStructuralFeature.getLazy() in lazyType = 'action' or lazyType = 'function')/]
+
+[query public getDataInitializationFeatures( aClass : EClass ) : OrderedSet(EStructuralFeature) = 
+         aClass.eStructuralFeatures->select( not isVolatile() and hasDataInitializationMethod() and getLazy() = 'function')
+->addAll(aClass.eStructuralFeatures->select( not isVolatile() and hasDataInitializationMethod() and getLazy() = 'action' ))/]
+
+[query private getMethodInitializationName(feature : EStructuralFeature) : String = 
+if hasKey('MethodInitializationName') then 
+    valueKey('MethodInitializationName') 
+else 
+    'init'.concat(name.toUpperFirst()) 
+endif/]
+
+
+[template public generateDeclaration(aStructuralFeature : EStructuralFeature, impl : Boolean )]
+[if hasGetter('public',impl)]
+[aStructuralFeature.generateGetDeclaration(impl)/]
+
+[/if]
+[if hasSetter('public',impl)]
+[aStructuralFeature.generateSetDeclaration(impl)/]
+
+[/if]
+[if hasUnSetter('public',impl)]
+[aStructuralFeature.generateUnSetDeclaration(impl)/]
+
+[/if]
+[/template]
+
+[template public generateBasicDeclaration(aStructuralFeature : EStructuralFeature)]
+[if isBasicGet()]
+[aStructuralFeature.generateBasicGetDeclaration()/]
+
+[/if]
+[if isBasicSet()]
+[aStructuralFeature.generateBasicSetDeclaration()/]
+
+[/if]
+[if isBasicUnSet()]
+[aStructuralFeature.generateBasicUnSetDeclaration()/]
+
+[/if]
+[/template]
+
+
+[template public generateDefinition(aStructuralFeature : EStructuralFeature)]
+[if hasGetter('public',true)]
+[aStructuralFeature.generateGetDefinition()/]
+
+[/if]
+[if hasSetter('public',true)]
+[aStructuralFeature.generateSetDefinition()/]
+
+[/if]
+[if hasUnSetter('public',true)]
+[aStructuralFeature.generateUnSetDefinition()/]
+
+[/if]
+[/template]
+
+
+[template public generateBasicDefinition(aStructuralFeature : EStructuralFeature)]
+[if isBasicGet()]
+[aStructuralFeature.generateBasicGetDefinition()/]
+
+[/if]
+[if isBasicSet()]
+[aStructuralFeature.generateBasicSetDefinition()/]
+
+[/if]
+[if isBasicUnSet()]
+[aStructuralFeature.generateBasicUnSetDefinition()/]
+
+[/if]
+[/template]
+
+[template public generateMock(aStructuralFeature : EStructuralFeature)]
+[if hasGetter('public',false)]
+[aStructuralFeature.generateGetMock()/]
+[/if]
+[if hasSetter('public',false)]
+[aStructuralFeature.generateSetMock()/]
+[/if]
+[if hasUnSetter('public',false)]
+[aStructuralFeature.generateUnSetMock()/]
+[/if]
+[/template]
+
+[template public generateDataDeclaration(aStructuralFeature : EStructuralFeature) ]
+[if aStructuralFeature.isLazy()]
+[let shortQualifiedLazyClass : String = getShortQualifiedName('ecore::impl::Lazy', aStructuralFeature.eContainingClass.ePackage.getQualifiedImplementationName())]
+[shortQualifiedLazyClass/]<[aStructuralFeature.generateDataType()/][if aStructuralFeature.getLazy() = 'action'],void[/if]> [aStructuralFeature.name/]_;
+[/let]
+[else]
+[aStructuralFeature.generateDataType()/] [aStructuralFeature.name/]_;
+[/if]
+[/template]
+
+[template public generateDataInitialization(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'no' and not aStructuralFeature.isDataInitializationDefered() )]
+[aStructuralFeature.name/]_([generateDataInitializationValue()/])
+[/template]
+
+[template public generateDataInitialization(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'no' and aStructuralFeature.isDataInitializationDefered() )]
+[aStructuralFeature.name/]_()
+[/template]
+
+[template public generateDataInitialization(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'lambda') ]
+[aStructuralFeature.name/]_(['['/]&[']'/](){ return [generateDataInitializationValue()/];})
+[/template]
+
+[template public generateDataInitialization(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'function') ]
+[aStructuralFeature.name/]_(['['/]&[']'/](){ return [aStructuralFeature.getMethodInitializationName()/]();})
+[/template]
+
+[template public generateDataInitialization(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'action') ]
+[aStructuralFeature.name/]_(['['/]&[']'/](){ [aStructuralFeature.getMethodInitializationName()/]();})
+[/template]
+
+[template private generateDataInitializationValue(aStructuralFeature : EStructuralFeature) post(trim())]
+[if isListType()]
+[aStructuralFeature.getListConstructor()/]
+[elseif isProxy()]
+[generateDataType()/]( [aStructuralFeature.eContainingClass.getThisPtrName()/]_ , [aStructuralFeature.getQualifiedFeatureIDName()/] )
+[elseif aStructuralFeature.oclIsKindOf(EAttribute)]
+[aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]
+[else]
+[/if]
+[/template]
+
+[template public generateDataInitializationDefered( aStructuralFeature : EStructuralFeature) ? (not( aStructuralFeature.getLazy() = 'no' and aStructuralFeature.isDataInitializationDefered() ))]
+[/template]
+
+[template public generateDataInitializationDefered( aStructuralFeature : EStructuralFeature) ? (aStructuralFeature.getLazy() = 'no' and aStructuralFeature.isDataInitializationDefered())]
+[aStructuralFeature.name/]_ = [generateDataInitializationValue()/];
+
+[/template]
+
+[template private generateDataInitializationMethodReturnType(aStructuralFeature : EStructuralFeature) post(trim())]
+[if aStructuralFeature.getLazy() = 'action']void[elseif aStructuralFeature.isProxy()][aStructuralFeature.generateDataType()/][else][aStructuralFeature.generateReturnType()/][/if]
+[/template]
+
+[template public generateDataInitializationMethodDeclaration(aStructuralFeature : EStructuralFeature) ]
+[let methodName : String = aStructuralFeature.getMethodInitializationName()]
+virtual [generateDataInitializationMethodReturnType()/] [methodName/]();
+[/let]
+[/template]
+
+[template public generateDataInitializationMethodDefinition(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'function' )]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[let methodName : String = aStructuralFeature.getMethodInitializationName()]
+[generateDataInitializationMethodReturnType()/] [className/]::[methodName/]()
+{
+    // [protected (className + '::' + methodName)]
+[if isListType()]
+    return [getListConstructor()/];
+[elseif isProxy()]
+    [let thisPtrName : String = aStructuralFeature.eContainingClass.getThisPtrName() + '_']
+    return [generateDataType()/]( [thisPtrName/] , [aStructuralFeature.getQualifiedFeatureIDName()/] );
+    [/let]
+[elseif aStructuralFeature.oclIsKindOf(EAttribute)]
+    return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
+[else]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";    
+[/if]
+    // [/protected]
+}
+[/let]
+[/let]
+
+[/template]
+
+[template public generateDataInitializationMethodDefinition(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'action' )]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[let methodName : String = aStructuralFeature.getMethodInitializationName()]
+void [className/]::[methodName/]()
+{
+    // [protected (className + '::' + methodName)]
+[if isListType()]
+    [aStructuralFeature.name/]_ = [getListConstructor()/];
+[elseif isProxy()]
+[elseif aStructuralFeature.oclIsKindOf(EAttribute)]
+    [aStructuralFeature.name/]_ = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
+[else]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";    
+[/if]
+    // [/protected]
+}
+[/let]
+[/let]
+
+[/template]
+
+[template public generateBasicGetDeclaration(aStructuralFeature : EStructuralFeature)]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[let methodName : String = aStructuralFeature.getGetterName().toUpperFirst()]
+virtual [aStructuralFeature.generateReturnType()/] basic[methodName/]() const; 
+[/let]
+[/let]
+[/template]
+
+[template public generateBasicGetDefinition(aStructuralFeature : EStructuralFeature)]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[let methodName : String = 'basic' + aStructuralFeature.getGetterName().toUpperFirst()]
+[aStructuralFeature.generateReturnType()/] [className/]::[methodName/]() const 
+{
+    // [protected (className + '::' + methodName)]
+[if isContainer()]
+    if ( eContainerFeatureID() != [aStructuralFeature.getQualifiedFeatureIDName()/] )
+        return [aStructuralFeature.generateEffectiveType()/]();
+    else
+        return std::dynamic_pointer_cast<[aStructuralFeature.generateElementType()/]>(eContainer());
+[elseif not isVolatile()]
+    return [aStructuralFeature.name/]_[if aStructuralFeature.isLazy()].get()[elseif aStructuralFeature.isBackReference()].lock()[/if];
+[elseif (hasKey('getterBody'))]
+    [valueKey('getterBody')/]
+[else]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";    
+[/if]
+    // [/protected]
+}
+[/let]
+[/let]
+[/template]
+
+[template public generateGetDeclaration(aStructuralFeature : EStructuralFeature, impl : EBoolean)]
+virtual [aStructuralFeature.generateReturnType()/] [aStructuralFeature.getGetterName()/]() const [abstractSufix(impl)/];
+[/template]
+
+[template public generateGetDefinition(aStructuralFeature : EStructuralFeature)]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[aStructuralFeature.generateReturnType()/] [className/]::[aStructuralFeature.getGetterName()/]() const 
+{
+    // [protected (className + '::' + aStructuralFeature.getGetterName()) ]
+[if isContainer()]
+    if ( eContainerFeatureID() != [aStructuralFeature.getQualifiedFeatureIDName()/] )
+        return [aStructuralFeature.generateEffectiveType()/]();
+    else
+        return std::dynamic_pointer_cast<[aStructuralFeature.generateElementType()/]>(eContainer());
+[elseif not isVolatile()]
+    return [aStructuralFeature.name/]_[if aStructuralFeature.isLazy()].get()[elseif aStructuralFeature.isBackReference()].lock()[/if];
+[elseif hasKey('getterBody')]
+    [valueKey('getterBody')/]
+[else]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";
+[/if]
+    // [/protected]
+}
+[/let]
+[/template]
+
+[template public generateGetMock(aStructuralFeature : EStructuralFeature) ? (isTurtleMock())]
+MOCK_METHOD([aStructuralFeature.getGetterName()/],0);
+[/template]
+
+[template public generateGetMock(aStructuralFeature : EStructuralFeature) ? (isGoogleMock())]
+MOCK_CONST_METHOD0([aStructuralFeature.getGetterName()/], [aStructuralFeature.generateReturnType()/]());
+[/template]
+
+
+
+[template public generateBasicSetDeclaration(aStructuralFeature : EStructuralFeature)]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[let methodName : String = 'basic' +aStructuralFeature.getSetterName().toUpperFirst()]
+[let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
+std::shared_ptr<ecore::ENotificationChain> [className/]::[methodName/]( [aStructuralFeature.generateParameterType()/] [newVarName/] , const std::shared_ptr<ecore::ENotificationChain>& msgs ); 
+[/let]
+[/let]
+[/let]
+[/template]
+
+
+[template public generateBasicSetDefinition(aStructuralFeature : EStructuralFeature)]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[let methodName : String = 'basic' +aStructuralFeature.getSetterName().toUpperFirst()]
+[let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
+std::shared_ptr<ecore::ENotificationChain> [className/]::[methodName/]( [aStructuralFeature.generateParameterType()/] [newVarName/] , const std::shared_ptr<ecore::ENotificationChain>& msgs) 
+{
+    // [protected (className + '::' + methodName)]
+[if isContainer()]
+    return eBasicSetContainer([newVarName/],[aStructuralFeature.getQualifiedFeatureIDName()/],msgs); 
+[elseif not isVolatile()]
+    [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
+    [aStructuralFeature.generateEffectiveType()/] [oldVarName/] = [aStructuralFeature.name/]_[if isLazy()].get()[elseif isBackReference()].lock()[/if];
+    [aStructuralFeature.name/]_ = [newVarName/];
+    auto notifications = msgs;
+    if ( eNotificationRequired() )
+    {
+        auto notification = std::make_shared<Notification>(getThisPtr(), Notification::SET, [aStructuralFeature.getQualifiedFeatureIDName()/], [oldVarName/], [newVarName/] );
+        if (notifications)
+            notifications->add( notification );
+        else
+            notifications = notification;
+    }
+    return notifications;
+    [/let]
+[elseif (hasKey('setterBody'))]
+    [valueKey('setterBody')/]
+[else]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";    
+[/if]
+    // [/protected]
+}
+[/let]
+[/let]
+[/let]
+[/template]
+
+[template public generateSetDeclaration(aStructuralFeature : EStructuralFeature, impl : EBoolean)]
+virtual void [aStructuralFeature.getSetterName()/]([aStructuralFeature.generateParameterType()/] ['new' + aStructuralFeature.name.toUpperFirst()/]) [abstractSufix(impl)/];
+[/template]
+
+[template public generateSetDefinition(aStructuralFeature : EStructuralFeature)]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[let methodName : String = aStructuralFeature.getSetterName()]
+[let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
+void [className/]::[methodName/]([aStructuralFeature.generateParameterType()/] [newVarName/])
+{
+    // [protected (className + '::' + methodName)]
+[if not isVolatile()]
+    [if isContainer()]
+    if ( [newVarName/] != eContainer() || ([newVarName/] && eContainerFeatureID() !=  [aStructuralFeature.getQualifiedFeatureIDName()/])) 
+    {
+        std::shared_ptr<ENotificationChain> notifications;
+        if ( eContainer() )
+            notifications = eBasicRemoveFromContainer(notifications);
+        if ( [newVarName/] )
+            notifications = [newVarName/]->eInverseAdd( getThisPtr() , [aStructuralFeature.getQualifiedFeatureIDName()/], notifications );
+        notifications = basic[methodName.toUpperFirst()/]( [newVarName/], notifications );
+        if ( notifications )
+            notifications->dispatch();
+    }
+    else if ( eNotificationRequired() )
+        eNotify( std::make_shared<Notification>(getThisPtr() , Notification::SET, [aStructuralFeature.getQualifiedFeatureIDName()/], [newVarName/], [newVarName/]));
+    [elseif isBidirectional() or isContains()]
+        [if aStructuralFeature.isBackReference()]
+    auto [aStructuralFeature.name/] = [aStructuralFeature.name/]_.lock();
+        [/if]
+        [let currentVarName : String = aStructuralFeature.name + ( if aStructuralFeature.isBackReference() then '' else '_' endif)]    
+    if ( [newVarName/] != [currentVarName/] )
+    {
+        std::shared_ptr<ENotificationChain> notifications;
+        if ( [currentVarName/] )
+        [if not isBidirectional()]
+            notifications = [currentVarName/]->eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
+        if ( [newVarName/] )
+            notifications = [newVarName/]->eInverseAdd( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
+        [else]
+            [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+            notifications = [currentVarName/]->eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
+        if ( [newVarName/] )
+            notifications = [newVarName/]->eInverseAdd( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
+            [/let]
+        [/if]
+        notifications = basic[methodName.toUpperFirst()/]([newVarName/],notifications);
+        if (notifications)
+            notifications->dispatch();
+    }
+        [if isUnSettable()]
+        [/if]
+        [/let]
+    [else]
+        [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
+    [aStructuralFeature.generateEffectiveType()/] [oldVarName/] = [aStructuralFeature.name/]_[if isLazy()].get()[elseif isBackReference()].lock()[/if];
+    [aStructuralFeature.name/]_ = [newVarName/];
+    if ( eNotificationRequired() )
+        eNotify( std::make_shared<Notification>(getThisPtr(), Notification::SET, [aStructuralFeature.getQualifiedFeatureIDName()/], [oldVarName/], [newVarName/]));
+        [/let]
+    [/if]
+[elseif hasKey('setterBody')]
+    [valueKey('setterBody')/] 
+[else]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";    
+[/if]
+    // [/protected]
+}
+[/let]
+[/let]
+[/let]
+[/template]
+
+
+[template private getListConstructor( anEAttribute : EStructuralFeature ) post(trim())]
+[/template]
+
+[template private getListConstructor( anEAttribute : EAttribute ) post(trim())]
+ArrayEList<[anEAttribute.eGenericType.generateCppType()/],[anEAttribute.unique/]>()
+[/template]
+
+[template private getListConstructor( anEReference : EReference ) post(trim())]
+[let typeArgument : String = anEReference.eGenericType.generateCppType()]
+[let packageName : String = anEReference.getPackageName(anEReference.eContainingClass)]
+[let featureID : String = anEReference.eContainingClass.getFeatureIDName( anEReference )]
+[let thisPtrName : String = anEReference.eContainingClass.getThisPtrName() + '_']
+[if (anEReference.containment)]
+    [if anEReference.eOpposite.oclIsUndefined() ]
+        std::make_shared<EObjectEList<[typeArgument/],true,true,false,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [anEReference.getQualifiedFeatureIDName()/] )
+    [else]
+        [let reverseFeature :EReference = anEReference.eOpposite ]
+        std::make_shared<EObjectEList<[typeArgument/],true,true,true,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [anEReference.getQualifiedFeatureIDName()/] , [reverseFeature.getQualifiedFeatureIDName()/])
+        [/let]
+    [/if]
+[else]
+    [if anEReference.eOpposite.oclIsUndefined() ]
+        std::make_shared<EObjectEList<[typeArgument/],false,false,false,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [packageName/]::[featureID/])
+    [else]
+        [let reverseFeature :EReference = anEReference.eOpposite ]
+        std::make_shared<EObjectEList<[typeArgument/],false,true,true,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [anEReference.getQualifiedFeatureIDName()/] , [reverseFeature.getQualifiedFeatureIDName()/])
+        [/let]
+    [/if]
+[/if]
+[/let]
+[/let]
+[/let]
+[/let]
+[/template]
+
+[template public generateSetMock(aStructuralFeature : EStructuralFeature) ? (isTurtleMock()) ]
+MOCK_METHOD([aStructuralFeature.getSetterName()/],1);
+[/template]
+
+[template public generateSetMock(aStructuralFeature : EStructuralFeature) ? (isGoogleMock()) ]
+MOCK_METHOD1([aStructuralFeature.getSetterName()/], void( [aStructuralFeature.generateParameterType()/] ) );
+[/template]
+
+
+[template public generateBasicUnSetDeclaration(aStructuralFeature : EStructuralFeature)]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[let methodName : String = 'basic' + aStructuralFeature.getUnSetterName().toUpperFirst()]
+[let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
+std::shared_ptr<ecore::ENotificationChain> [className/]::[methodName/]( const std::shared_ptr<ecore::ENotificationChain>& msgs ); 
+[/let]
+[/let]
+[/let]
+[/template]
+
+
+[template public generateBasicUnSetDefinition(aStructuralFeature : EStructuralFeature)]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[let methodName : String = 'basic' + aStructuralFeature.getUnSetterName().toUpperFirst()]
+[let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
+[let varName : String = aStructuralFeature.name + '_']    
+std::shared_ptr<ecore::ENotificationChain> [className/]::[methodName/]( const std::shared_ptr<ecore::ENotificationChain>& msgs) 
+{
+    // [protected (className + '::' + methodName)]
+[if not isVolatile()]
+    auto [oldVarName/] = [varName/]
+    [varName/].reset()
+    auto notifications = msgs;
+    if ( eNotificationRequired())
+    {
+        auto notification = std::make_shared<Notification>(getThisPtr() , Notification::UNSET, [aStructuralFeature.getQualifiedFeatureIDName()/], [oldVarName/], ecore::Any());
+        if ( notifications )
+            notifications->add( notification );
+        else
+            notifications = notification;
+    }
+    return notifications;
+[else]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";
+[/if] 
+    // [/protected]
+}
+[/let]
+[/let]
+[/let]
+[/let]
+[/template]
+
+[template public generateUnSetDeclaration(aStructuralFeature : EStructuralFeature, impl : EBoolean) ]
+virtual void [aStructuralFeature.getUnSetterName()/]() [abstractSufix(impl)/];
+[/template]
+
+[template public generateUnSetDefinition(aStructuralFeature : EStructuralFeature)]
+[let className : String = aStructuralFeature.eContainingClass.getImplementationName()]
+[let methodName : String = aStructuralFeature.getUnSetterName()]
+void [className/]::[methodName/]()
+{
+    // [protected (className + '::' + methodName)]
+[if not isVolatile()]
+    [if isListType()]
+    if ([aStructuralFeature.name/]_)
+    {
+        auto unsettable = std::static_pointer_cast<ecore::EUnsettableList<[aStructuralFeature.eGenericType.generateCppType()/]>>([aStructuralFeature.name/]_[if isLazy()].get()[/if]);
+        unsettable->unset();
+    }
+    [elseif isBidirectional() or isContains()]
+    if ([aStructuralFeature.name/]_)
+    {
+        std::shared_ptr<ENotificationChain> notifications;
+        [if not isBidirectional()]
+        notifications = [aStructuralFeature.name/]_->eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
+        [else]
+            [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+        notifications = [aStructuralFeature.name/]_->eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
+            [/let]
+        [/if]
+        notifications = basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](notifications);
+        if ( notifications )
+            notifications->dispatch();
+    }
+    else if ( eNotificationRequired() )
+        eNotify( std::make_shared<Notification>(getThisPtr() , Notification::UNSET, [aStructuralFeature.getQualifiedFeatureIDName()/], ecore::Any(), ecore::Any()));
+    [else]
+        if ( eNotificationRequired() )
+        eNotify( std::make_shared<Notification>(getThisPtr() , Notification::UNSET, [aStructuralFeature.getQualifiedFeatureIDName()/], ecore::Any(), ecore::Any()));
+    [/if]
+[elseif hasKey('unsetterBody')]
+    [valueKey('unsetterBody')/] 
+[else]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";    
+[/if]
+    // [/protected]
+}
+[/let]
+[/let]
+[/template]
+
+[template public generateUnSetMock(aStructuralFeature : EStructuralFeature) ? (isTurtleMock())]
+MOCK_METHOD([aStructuralFeature.getUnSetterName()/],0);
+[/template]
+
+[template public generateUnSetMock(aStructuralFeature : EStructuralFeature) ? (isGoogleMock())]
+MOCK_METHOD0([aStructuralFeature.getUnSetterName()/], void() );
+[/template]
+
+
+
+
+
+

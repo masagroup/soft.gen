@@ -1,0 +1,106 @@
+[comment encoding = UTF-8 /]
+[module generateInterface('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::cpp::generateOperation/]
+[import soft::generator::cpp::generateType/]
+[import soft::generator::cpp::generateCommon/]
+[import soft::generator::cpp::generateStructuralFeature/]
+[import soft::generator::cpp::lib::generateCommon/]
+
+[template public generateInterface(aClass : EClass) { className : String = aClass.getInterfaceName(); classNamespace : String = aClass.ePackage.getInterfaceNamespaceName(); } ]
+[file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getInterfaceFolder() + '/' + className +'.hpp', false, 'UTF-8')]
+[fileComment()/]
+[startGuard(aClass)/]
+
+#include "[aClass.ePackage.getInterfaceFolder()/]/Exports.hpp"
+[for ( baseInclude : String | aClass.getInterfaceExtends()->asOrderedSet()->sortedBy( str | str ) ) separator ('\r\n')]
+#include "[namespaceToFolder(baseInclude)/].hpp"
+[/for]
+[for (enumInclude : EEnum| aClass.getClassIncludes()->selectByKind(EEnum)->asOrderedSet()->sortedBy(name) ) separator ('\r\n')]
+#include "[enumInclude.ePackage.name/]/[enumInclude.name.toUpperFirst()/].hpp"
+[/for]
+
+[if (aClass.eOperations.eParameters.eType->select(name = 'EMap')->size() > 0 or aClass.eAttributes.eType->select(name = 'EMap')->size() > 0)]
+#include <map>
+[/if]
+#include <list>
+#include <memory>
+#include <string>
+[if (aClass.eAttributes.eType->select(isAny())->size() = 0 and aClass.eOperations.eParameters.eType->select(isAny())->size() > 0)]
+#include "ecore/Any.hpp"
+[/if]
+[if (aClass.eAttributes.eType->select(isDate())->size() = 0 and aClass.eOperations.eParameters.eType->select(isDate())->size() > 0)]
+#include <ctime>
+[/if]
+
+
+//forward declarations
+[if (aClass.eReferences->exists(upperBound <> 1) or aClass.eOperations.eParameters->exists((eType.requiresList()  or upperBound <> 1)))]
+namespace ecore 
+{
+    template<typename T> class EList;
+}
+[/if]
+[if aClass.eOperations->exists( eGenericType.requiresCollectionView() )]
+namespace ecore 
+{
+    template<typename T> class ECollectionView;
+}
+[/if]
+[if aClass.eOperations->exists( eGenericType.requiresResource() )]
+namespace ecore 
+{
+    class EResource;
+}
+[/if]
+
+[for (aCls : EClass| aClass.getClassIncludes()->selectByKind(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
+namespace [aCls.ePackage.getInterfaceNamespaceName()/] 
+{
+    class [aCls.getInterfaceName()/];
+}
+[/for]
+
+// [protected ('forward declarations for ' + className)]
+// [/protected]
+
+namespace [classNamespace/] 
+{
+    class [aClass.ePackage.name.toUpper()/]_API [className/] [for ( extend : String | aClass.getInterfaceExtends()->collect( s | getShortQualifiedName(s, classNamespace))->sortedBy( s | s )) before (' : ') separator (', ')]virtual public [extend/][/for]
+    {
+    public:
+        virtual ~[className/]() = default;
+
+[let operations : OrderedSet(EOperation) = aClass.eOperations->select( isPublic(false) )]
+[if operations->notEmpty()]
+        //*********************************
+        // Operations
+        //*********************************
+        [operations.generateDeclaration(false)/]
+[/if]
+[/let]
+[let attributes : OrderedSet(EAttribute) = aClass.eStructuralFeatures->selectByKind(EAttribute)->select( hasSetter('public',false) or hasGetter('public',false) )]
+[if attributes->notEmpty()]
+        //*********************************
+        // Attributes
+        //*********************************
+        [attributes.generateDeclaration(false)/]
+[/if]
+[/let]
+[let references : OrderedSet(EAttribute) = aClass.eStructuralFeatures->selectByKind(EReference)->select( hasSetter('public',false) or hasGetter('public',false)  )]
+[if references->notEmpty()]
+        //*********************************
+        // References
+        //*********************************
+        [references.generateDeclaration(false)/]
+[/if]
+[/let]
+        // [protected (className)]
+        // [/protected]
+    };
+}
+[endGuard(aClass)/]
+[/file]
+[/template]
+

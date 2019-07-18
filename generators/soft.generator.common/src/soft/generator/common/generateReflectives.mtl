@@ -1,0 +1,14 @@
+[comment encoding = UTF-8 /]
+[module generateReflectives('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+
+[**
+ * Reflectives eGet/eSet//eUnSet/eIsSet/eInverseAdd/eInverseRemove
+*/]
+[query public getEGetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.eStructuralFeatures/]
+[query public getESetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.eStructuralFeatures->select( eFeature | eFeature.isChangeable())/]
+[query public getEIsSetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.getEGetFeatures()/]
+[query public getEUnSetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.getESetFeatures()/]
+[query public getEInverseAddFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.eStructuralFeatures->select( eFeature | eFeature.isBidirectional() and not eFeature.isVolatile())/]
+[query public getEInverseRemoveFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.eStructuralFeatures->select( eFeature | eFeature.isContains() or (eFeature.isBidirectional() and not eFeature.isVolatile()))/]

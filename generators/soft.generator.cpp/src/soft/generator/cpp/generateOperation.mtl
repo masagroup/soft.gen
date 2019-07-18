@@ -1,0 +1,54 @@
+[comment encoding = UTF-8 /]
+[module generateOperation('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::cpp::generateType/]
+[import soft::generator::cpp::generateCommon/]
+
+
+[query private isGoogleMock( anEOperation : EOperation ) : Boolean = anEOperation.eContainingClass.ePackage.isGoogleMock()/]
+[query private isTurtleMock( anEOperation : EOperation ) : Boolean = anEOperation.eContainingClass.ePackage.isTurtleMock()/]
+
+[template public generateDeclaration(anEOperation : EOperation, impl: Boolean)]
+virtual [anEOperation.generateReturnType()/] [anEOperation.name/]([anEOperation.generateParameterList()/])[if (hasKey('const'))] const[/if] [abstractSufix(impl)/];
+
+
+[/template]
+
+
+[template public generateDefinition(anEOperation : EOperation) ? ( isPublic(true))]
+[let className : String = anEOperation.eContainingClass.getImplementationName()]
+[let methodID : String = if anEOperation.eContainingClass.eOperations->select( eC | eC.name = anEOperation.name )->size() > 1 then anEOperation.getElementIdentifier() else anEOperation.name endif]
+[anEOperation.generateReturnType()/] [className/]::[anEOperation.name/]([anEOperation.generateParameterList()/])[if (hasKey('const'))] const[/if]
+{
+[if (hasKey('body'))]
+    [valueKey('body')/]
+[else]
+    // [protected ( className+ '::' + methodID)]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";
+    // [/protected]
+[/if]
+}
+
+[/let]
+[/let]
+[/template]
+
+[template public generateMock(anEOperation : EOperation )  ? ( isPublic(false) and isTurtleMock() ) ]
+[let needExt : Boolean = anEOperation.eContainingClass.eOperations->select( eC | eC.name = anEOperation.name )->size() > 1]
+MOCK_METHOD[if needExt]_EXT[/if]([anEOperation.name/] ,[anEOperation.eParameters->size()/][if needExt], [anEOperation.generateReturnType()/]([anEOperation.generateParameterList(false)/]), [anEOperation.getElementIdentifier()/][/if]); 
+[/let]
+[/template]
+
+[template public generateMock(anEOperation : EOperation )  ? ( isPublic(false) and isGoogleMock() ) ]
+[let isConst : Boolean = hasKey('const')]
+MOCK_[if isConst]CONST_[/if]METHOD[anEOperation.eParameters->size()/]([anEOperation.name/], [anEOperation.generateReturnType()/]([anEOperation.generateParameterList(false)/]) );
+[/let]
+[/template]
+
+
+
+

@@ -1,0 +1,276 @@
+[comment encoding = UTF-8 /]
+[module generateType('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::cpp::generateCommon/]
+
+[query public isDate(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EDate' endif/]
+[query public isBackReference(aStructuralFeature:EStructuralFeature) : Boolean = aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).isBackReference()/]
+[query private isShared(aReference : EReference) : Boolean = if (aReference.hasKey('aggregation')) then aReference.valueKey('aggregation')='shared' else false endif/]
+[query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
+[query public needReference(anEDataType : EGenericType) : Boolean = ( not anEDataType.oclIsUndefined() ) and needReference(anEDataType.eClassifier)/]
+[query public needReference(anEClassifier : EClassifier) : Boolean = not oclIsUndefined() and( 
+                                                                (not oclIsKindOf(EDataType)) or 
+                                                                name = 'EString' or 
+                                                                name = 'EEnumerator' or 
+                                                                name = 'EDiagnosticChain' or 
+                                                                name = 'EEList' or  
+                                                                name = 'EMap' or 
+                                                                name = 'EJavaObject' )/]
+
+[template public generateCppType(anEDataType : EGenericType) post (trim())]
+[generateCppType(true,false)/]
+[/template]
+
+[template private generateCppType(anEDataType : EGenericType , decorate : Boolean, const : Boolean ) post (trim())]
+[if (anEDataType.oclIsUndefined())]
+void
+[else]
+    [if (anEDataType.eTypeArguments->notEmpty())]
+        [anEDataType.generateGenericType(const)/]
+    [elseif (decorate and not anEDataType.eClassifier.oclIsKindOf(EDataType))]
+        std::shared_ptr<[if const]const [/if][anEDataType.eClassifier.generateType()/]>
+    [else]
+        [anEDataType.eClassifier.generateType()/]
+    [/if]
+[/if]
+[/template]
+
+[template public generateGenericArgumentType(anEDataType : EGenericType) post (trim())]
+[if (anEDataType.oclIsUndefined())]
+void[elseif (anEDataType.eClassifier.oclIsUndefined())]
+ecore::Any[elseif (not anEDataType.eClassifier.oclIsKindOf(EDataType))]
+std::shared_ptr<[anEDataType.eClassifier.generateType()/]>[else]
+[anEDataType.eClassifier.generateType()/][/if]
+[/template]
+
+[template public generateGenericType(anEDataType : EGenericType, const : Boolean) post (trim())]
+[if (anEDataType.eClassifier.name = 'EJavaClass')]
+[if const]const [/if][anEDataType.eClassifier.generateType()/]
+[else]
+std::shared_ptr<[if const]const [/if][anEDataType.eClassifier.generateType()/]<[for (g : EGenericType | anEDataType.eTypeArguments) separator (',')][g.generateGenericArgumentType()/][/for]>>[/if]
+[/template]
+
+[template public generateEffectiveType(eElement : ETypedElement ) post(trim())]
+[eElement.generateEffectiveType(hasKey('const') and valueKey('const') = 'return')/]
+[/template]
+
+[template public generateEffectiveType(eElement : ETypedElement, const : Boolean ) post(trim())]
+[if (isListType())]
+std::shared_ptr<[if const]const [/if]EList<[eElement.eGenericType.generateCppType()/]>>
+[else]
+[eElement.eGenericType.generateCppType(true,const)/]
+[/if]
+[/template]
+
+[template public generateParameterList(aOperation:EOperation ) post(trim())]
+[generateParameterList(aOperation,true)/]
+[/template]
+
+[template public generateParameterList(aOperation:EOperation, varName : Boolean) post(trim())]
+[for (sParameter : EParameter | aOperation.eParameters) separator (',')]
+[sParameter.generateParameterType()/][if varName] [sParameter.name/][/if][/for]
+[/template]
+
+[template public generateParameterType(eElement : ETypedElement) post (trim())]
+[if needReference(eElement.eGenericType)]
+const [eElement.generateEffectiveType()/]&
+[else]
+[eElement.generateEffectiveType()/]
+[/if]
+[/template]
+
+[template public generateReturnType(eElement : ETypedElement) post(trim())]
+[eElement.generateEffectiveType()/]
+[/template]
+
+[template public generateReturnType(aAttribute : EAttribute) post(trim())]
+[if needReference(aAttribute.eGenericType)]
+const [aAttribute.generateEffectiveType()/]&
+[else]
+[aAttribute.generateEffectiveType()/]
+[/if]
+[/template]
+
+[template public generateElementType(aStructuralFeature : EStructuralFeature) post (trim())]
+[aStructuralFeature.eGenericType.generateCppType(false,false)/]
+[/template]
+
+[template public generateDataType(aStructuralFeature : EStructuralFeature) post (trim())]
+[aStructuralFeature.generateEffectiveType()/]
+[/template]
+
+[template public generateDataType(eReference : EReference) post (trim())]
+[if isListType()]
+[let shortQualifiedListClass : String = getShortQualifiedName('ecore::EList', eReference.eContainingClass.ePackage.getQualifiedImplementationName())]
+std::shared_ptr<[shortQualifiedListClass/]<[eReference.eGenericType.generateCppType()/]>>
+[/let]
+[elseif isProxy()]
+[let shortQualifiedProxyClass : String = getShortQualifiedName('ecore::impl::Proxy', eReference.eContainingClass.ePackage.getQualifiedImplementationName())]
+[shortQualifiedProxyClass/]<[eReference.eGenericType.generateCppType()/]>
+[/let]
+[else]
+[eReference.pointerType()/]<[eReference.eGenericType.eClassifier.generateType()/]>
+[/if]
+[/template]
+
+[template private pointerType(aReference : EReference) post(trim())]
+[if isBackReference() or isProxy() ]
+std::weak_ptr
+[else]
+std::shared_ptr
+[/if]
+[/template]
+
+[**
+ * Transformation Java Types to C++
+*/]
+[template public generateType(anEClassifier : EClassifier) ? (oclIsUndefined())]
+ecore::Any
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'EBoolean') or (name = 'EBooleanObject') or (name = 'Boolean'))]
+bool
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'UnlimitedNatural' ))]
+int
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? (name = 'EResource')]
+std::shared_ptr<ecore::EResource>
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'EInt') or (name = 'EIntegerObject') or (name = 'EBigInteger') or (name = 'Integer'))]
+int
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'EDouble') or (name = 'EDoubleObject')or (name = 'EBigDecimal') or (name = 'Real'))]
+double
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'ELong') or (name = 'ELongObject') )]
+long
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'EByte') or (name = 'EByteObject') )]
+char
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'EByteArray'))]
+char
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'EChar') or (name = 'ECharacterObject') )]
+char
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'EFloat') or (name = 'EFloatObject') )]
+float
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? (name = 'EEList')]
+EList
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? (name = 'EDate')]
+std::time_t
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? (name = 'EMap')]
+std::map
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? (name = 'EJavaObject')]
+ecore::Any
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? (name = 'ETreeIterator')]
+ECollectionView
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? (name = 'EJavaClass')]
+const std::type_info*
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'EEnumerator') or (name = 'EDiagnosticChain'))]
+ecore::Any
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? ((name = 'EString') or (name = 'String'))]
+std::string
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? (oclIsKindOf(EClass))]
+[anEClassifier.oclAsType(EClass).getQualifiedInterfaceName()/]
+[/template]
+
+[template public generateType(anEClassifier : EClassifier) ? (oclIsKindOf(EEnum))]
+[anEClassifier.name/]
+[/template]
+
+[query public getDefaultValue(anEAttribute : EAttribute) : String = if (defaultValueLiteral->notEmpty()) then defaultValueLiteral else eType.getDefaultValue() endif/]
+
+
+[query public getDefaultValue(anEClassifier : EClassifier) : String = 
+        if ((name = 'EBoolean' ) or 
+            (name = 'EBooleanObject' ) or 
+            (name = 'Boolean' )) 
+        then getDefaultBooleanValue()
+        else getDefaultValueCheckString()
+        endif
+/]
+[query private getDefaultValueCheckString(anEClassifier : EClassifier) : String = 
+        if ((name = 'EString') or 
+            (name = 'String')) 
+        then getDefaultStringValue() 
+        else getDefaultValueCheckInteger()
+        endif
+/]
+[query private getDefaultValueCheckInteger(anEClassifier : EClassifier) : String = 
+        if ((name = 'UnlimitedNatural') or 
+            (name = 'EResource') or 
+            (name = 'EInt') or 
+            (name = 'EIntegerObject') or 
+            (name = 'EBigInteger') or 
+            (name = 'Integer') or 
+            (name = 'EDouble') or 
+            (name = 'EDoubleObject') or 
+            (name = 'EBigDecimal') or 
+            (name = 'Real') or 
+            (name = 'ELong') or 
+            (name = 'ELongObject') or 
+            (name = 'EFloat') or 
+            (name = 'EFloatObject') or 
+            (name = 'EDate')) 
+        then getDefaultNumberValue() 
+        else getDefaultValueCheckChar() 
+        endif
+/]
+[query private getDefaultValueCheckChar(anEClassifier : EClassifier) : String = 
+        if ((name = 'EByte') or 
+            (name = 'EByteObject') or 
+            (name = 'EByteArray') or 
+            (name = 'EChar') or 
+            (name = 'ECharacterObject')) 
+        then getDefaultCharValue() 
+        else getDefaultValueCheckAny()
+        endif
+/]
+
+[query private getDefaultValueCheckAny(anEClassifier : EClassifier) : String = 
+        if ((name = 'EJavaObject') or
+            (name = 'EEnumerator') or
+            (name = 'EDiagnosticChain') ) 
+        then getDefaultAnyValue() 
+        else getDefaultPointerValue()
+        endif
+/]
+
+[query private getDefaultBooleanValue(anEClassifier : EClassifier) : String = 'false'/]
+[query private getDefaultCharValue(anEClassifier : EClassifier) : String = '\'\''/]
+[query private getDefaultNumberValue(anEClassifier : EClassifier) : String = '0'/]
+[query private getDefaultPointerValue(anEClassifier : EClassifier) : String = 'nullptr'/]
+[query private getDefaultAnyValue(anEClassifier : EClassifier) : String = 'NO_VALUE'/]
+[query private getDefaultStringValue(anEClassifier : EClassifier) : String = '""'/]
+

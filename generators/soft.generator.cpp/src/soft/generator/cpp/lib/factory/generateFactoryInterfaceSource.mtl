@@ -1,0 +1,39 @@
+[comment encoding = UTF-8 /]
+[module generateFactoryInterfaceSource('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon /]
+[import soft::generator::cpp::generateCommon /]
+[import soft::generator::cpp::generateSingleton /]
+[import soft::generator::cpp::lib::generateCommon /]
+
+[template public generateFactoryInterfaceSource(anEPackage : EPackage)]
+[file (anEPackage.getOutputDirectory() + '/src-gen/' + anEPackage.getInterfaceFolder() + '/' + anEPackage.getFactoryInterfaceName() +'.cpp', false, 'UTF-8')]
+[fileComment()/]
+[let extension : Boolean = anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension']
+[let qualifiedFactoryName : String =  if extension then anEPackage.getFactoryQualifiedExtensionName() else anEPackage.getFactoryQualifiedImplementationName() endif]
+[let namespaceFactoryName : String =  if extension then anEPackage.getExtensionNamespaceName() else anEPackage.getImplementationNamespaceName() endif]
+[let shortFactoryName : String =  if extension then anEPackage.getFactoryExtensionName() else anEPackage.getFactoryImplementationName() endif]
+[let includes : OrderedSet(String) = OrderedSet{ anEPackage.getFactoryQualifiedInterfaceName() 
+                                               , qualifiedFactoryName }]
+[for (include:String | includes )]
+#include "[namespaceToFolder(include)/].hpp"
+[/for]
+[/let]
+
+[let namespaces : OrderedSet(String) = OrderedSet{ 'ecore' 
+                                                 , anEPackage.getInterfaceNamespaceName() 
+                                                 , namespaceFactoryName
+                                                   }]
+[for (namespace : String | namespaces )]
+using namespace [namespace/];
+[/for]
+[/let]
+
+//static initialisation
+[generateSingletonImplementation( anEPackage.getFactoryInterfaceName() , shortFactoryName , false)/]
+[/let]
+[/let]
+[/let]
+[/let]
+[/file]
+[/template]

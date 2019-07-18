@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Soft Generator Go
+Bundle-SymbolicName: soft.generator.go
+Bundle-Version: 1.0.0.qualifier
+Export-Package: soft.generator.go
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: soft.generator.go

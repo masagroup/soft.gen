@@ -1,0 +1,267 @@
+[comment encoding = UTF-8 /]
+[module generateReflectives('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateReflectives/]
+[import soft::generator::common::generateCommon/]
+[import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateType/]
+
+[template public generateReflectivesDefinition(aClass : EClass)]
+[if aClass.getEGetFeatures()->notEmpty() or
+    aClass.getESetFeatures()->notEmpty() or
+    aClass.getEUnSetFeatures()->notEmpty() or
+    aClass.getEIsSetFeatures()->notEmpty() or
+    aClass.eOperations->notEmpty() or
+    aClass.getEInverseAddFeatures()->notEmpty() or
+    aClass.getEInverseRemoveFeatures()->notEmpty()]
+
+[if aClass.getEGetFeatures()->notEmpty()]
+[aClass.generateEGetDefinition()/]
+
+[/if]
+[if aClass.getESetFeatures()->notEmpty()]
+[aClass.generateESetDefinition()/]
+
+[/if]
+[if aClass.getEUnSetFeatures()->notEmpty()]
+[aClass.generateEUnSetDefinition()/]
+
+[/if]
+[if aClass.getEIsSetFeatures()->notEmpty()]
+[aClass.generateEIsSetDefinition()/]
+
+[/if]
+[if aClass.eOperations->notEmpty()]
+[aClass.generateEInvokeDefinition()/]
+
+[/if]
+[if aClass.getEInverseAddFeatures()->notEmpty()]
+[aClass.generateEInverseAddDefinition()/]
+
+[/if]
+[if aClass.getEInverseRemoveFeatures()->notEmpty()]
+[aClass.generateEInverseRemoveDefinition()/]
+[/if]
+[/if]
+[/template]
+
+[template private generateEGetDefinition(aClass : EClass)]
+[let className : String = aClass.getImplementationName()]
+[aClass.generateFunctionReceiver()/] EGetFromID(featureID int, resolve, coreType bool) interface{} {
+    switch featureID {
+    [for (anStructFeature : EStructuralFeature | aClass.eStructuralFeatures->asOrderedSet()->sortedBy(name))]
+    case [anStructFeature.getQualifiedFeatureIDName()/]:
+        return [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
+    [/for]
+    default:
+        return [aClass.getReceiverName()/].[aClass.getRawClassExtends()/].EGetFromID(featureID, resolve, coreType)
+    }
+}
+[/let]
+[/template]
+
+
+[template private generateEIsSetDefinition(aClass : EClass)]
+[aClass.generateFunctionReceiver()/] EIsSetFromID(featureID int) bool {
+    switch featureID {
+[for (anStructFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
+    case [anStructFeature.getQualifiedFeatureIDName()/]:
+        return [anStructFeature.generateComparison(aClass)/]
+[/for]
+    default:
+        return [aClass.getReceiverName()/].[aClass.getRawClassExtends()/].EIsSetFromID(featureID)
+    }
+}
+[/template]
+
+[template private generateESetDefinition(aClass : EClass)]
+[aClass.generateFunctionReceiver()/] ESetFromID(featureID int, newValue interface{}) {
+    switch featureID {
+[for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
+    case [anStructFeature.getQualifiedFeatureIDName()/]:
+    [let varName : String = anStructFeature.name.first(1)]
+        var [varName/] [anStructFeature.eGenericType.generateType()/] = newValue.([anStructFeature.eGenericType.generateType()/])
+    [if anStructFeature.isListType()]
+        [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Clear()
+        [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Add([varName/])
+    [else]
+        [aClass.getReceiverName()/].[anStructFeature.getSetterName()/]([varName/])
+    [/if]
+    [/let]
+[/for]
+    default:
+        [aClass.getReceiverName()/].[aClass.getRawClassExtends()/].ESetFromID(featureID, newValue)
+    }
+}
+[/template]
+
+
+
+[template private generateEUnSetDefinition(aClass : EClass)]
+[let className : String = aClass.getImplementationName()]
+[aClass.generateFunctionReceiver()/] EUnsetFromID(featureID int) {
+    switch featureID {
+[for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
+    case [aStructFeature.getQualifiedFeatureIDName()/]:
+    [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
+        [aClass.getReceiverName()/].[aStructFeature.getGetterName()/]().Clear()
+    [elseif aStructFeature.isUnSet() ]
+        [aClass.getReceiverName()/].[aStructFeature.getUnSetterName()/]()
+    [elseif aStructFeature.oclIsKindOf(EReference)]
+        [aClass.getReceiverName()/].[aStructFeature.getSetterName()/](nil)
+    [else]
+        [aClass.getReceiverName()/].[aStructFeature.getSetterName()/]([aStructFeature.oclAsType(EAttribute).getDefaultValue()/])
+    [/if]
+[/for]
+    default:
+        [aClass.getReceiverName()/].[aClass.getRawClassExtends()/].EUnsetFromID(featureID)
+    }
+}
+[/let]
+[/template]
+
+[template private generateEInvokeDefinition(aClass : EClass)]
+[let className : String = aClass.getImplementationName()]
+[aClass.generateFunctionReceiver()/] EInvokeFromID(operationID int, arguments EList) interface{} {
+    switch operationID {
+    [for ( eOperation : EOperation | aClass.eOperations->sortedBy(name) )]
+    case [eOperation.eContainingClass.getOperationIDName(eOperation)/]:
+        [if eOperation.isVoid() ]
+        [aClass.getReceiverName()/].[eOperation.generateOperationInvoke()/]
+        return nil
+        [else]
+        return [aClass.getReceiverName()/].[eOperation.generateOperationInvoke()/] 
+        [/if]
+    [/for]
+    default:
+        return [aClass.getReceiverName()/].[aClass.getRawClassExtends()/].EInvokeFromID(operationID,arguments)
+    }
+}
+[/let]
+[/template]
+
+[template private generateOperationInvoke(eOperation : EOperation )]
+[eOperation.getFunctionName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]arguments.Get([i-1/])[if needCast].([eParameter.generateEffectiveType()/])[/if][/let][/for])
+[/template]
+
+[template private generateDefaultValue(anEAttribute : EAttribute) post (trim())]
+[if (anEAttribute.eType.oclIsTypeOf(EEnum))]
+    [if (anEAttribute.defaultValueLiteral->notEmpty())]
+        [anEAttribute.defaultValueLiteral.toUpperCase()/]
+    [else]
+        [anEAttribute.eType.oclAsType(EEnum).eLiterals->first().name.toUpperCase()/] 
+    [/if]
+[else]
+    [anEAttribute.getDefaultValue()/]
+[/if]
+[/template]
+
+[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
+[if isListType()]
+    [if isField()]
+        [aClass.getReceiverName()/].[anStructFeature.name/] != nil && [aClass.getReceiverName()/].[anStructFeature.name/].Size() != 0
+    [else]
+        [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Size() != 0
+    [/if]
+[else]
+    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getGetterName()+'()' endif]
+    [if eType.oclIsKindOf(EEnum)]
+        [aClass.getReceiverName()/].[accessor/] != [anStructFeature.oclAsType(EAttribute).generateDefaultValue()/]
+    [else]
+        [aClass.getReceiverName()/].[accessor/] != [anStructFeature.oclAsType(EAttribute).getDefaultValue()/]
+    [/if]
+    [/let]
+[/if]
+[/template]
+
+[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
+[if isListType()]
+    [if isField()]
+        [aClass.getReceiverName()/].[anStructFeature.name/] != nil && [aClass.getReceiverName()/].[anStructFeature.name/].Size() != 0
+    [else]
+        [anStructFeature.getGetterName()/]().Size() != 0
+    [/if]
+[elseif anStructFeature.oclAsType(EReference).isBackReference() ]
+    [if anStructFeature.eType.name <> 'EBoolean']
+    [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]() != nil
+    [else]
+    [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
+    [/if]
+[else]
+    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getGetterName()+'()' endif]
+        [aClass.getReceiverName()/].[accessor/] != [anStructFeature.eType.getDefaultValue()/]
+    [/let]
+[/if]
+[/template]
+
+[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (eType.isAny()) post (trim())]
+[aClass.getReceiverName()/].[anStructFeature.getGetterName()/]() != ""
+[/template]
+
+[template public generateEInverseAddDefinition(aClass : EClass) ]
+[let className : String = aClass.getImplementationName()]
+[aClass.generateFunctionReceiver()/] EBasicInverseAdd(otherEnd EObject, featureID int, notifications ENotificationChain) ENotificationChain {
+    switch featureID {
+[for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
+    case [aFeature.getQualifiedFeatureIDName()/]:
+    [if aFeature.isListType()]
+        list := [aClass.getReceiverName()/].[aFeature.getGetterName()/]().(ENotifyingList)
+        return list.AddWithNotification(otherEnd, notifications)
+    [elseif aFeature.isContainer()]
+        msgs := notifications
+        if [aClass.getReceiverName()/].EContainer() != nil {
+            msgs = [aClass.getReceiverName()/].EBasicRemoveFromContainer(msgs)
+        }
+        [if aFeature.isBasicSet()]
+        return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.eGenericType.generateType()/]), msgs)
+        [else]
+        return [aClass.getReceiverName()/].EBasicSetContainer(otherEnd, [aFeature.getQualifiedFeatureIDName()/], msgs)
+        [/if]
+    [else]
+        [if aFeature.isVolatile() or aFeature.isBackReference()]
+        [aFeature.name/] := [if aFeature.isProxy()][aClass.getReceiverName()/].Basic[aFeature.getGetterName().toUpperFirst()/][else][aFeature.getGetterName()/][/if]()
+        [/if]
+        msgs := notifications
+        if [aClass.getReceiverName()/].[aFeature.name/] != nil {
+            [if aFeature.isContains()]
+            msgs = [aClass.getReceiverName()/].[aFeature.name/].(EObjectInternal).EInverseRemove([aClass.getReceiverName()/], EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/], msgs)
+            [else]
+                [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
+            msgs = [aClass.getReceiverName()/].[aFeature.name/].(EObjectInternal).EInverseRemove([aClass.getReceiverName()/], [reverseFeature.getQualifiedFeatureIDName()/], msgs)
+                [/let]
+            [/if]
+        }
+        return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.eGenericType.generateType()/]) ,msgs)
+    [/if]
+[/for]
+    default:
+        return [aClass.getReceiverName()/].[aClass.getRawClassExtends()/].EBasicInverseAdd(otherEnd, featureID, notifications)
+    }
+}
+[/let]
+[/template]
+
+[template public generateEInverseRemoveDefinition(aClass : EClass) ? (aClass.getEInverseRemoveFeatures()->notEmpty()) ]
+[let className : String = aClass.getImplementationName()]
+[aClass.generateFunctionReceiver()/] EBasicInverseRemove(otherEnd EObject, featureID int, notifications ENotificationChain) ENotificationChain {
+    switch featureID {
+[for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
+    case [aFeature.getQualifiedFeatureIDName()/]:
+    [if aFeature.isListType()]
+        list := [aClass.getReceiverName()/].[aFeature.getGetterName()/]().(ENotifyingList)
+        return list.RemoveWithNotification(otherEnd, notifications)
+    [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
+        return [aClass.getReceiverName()/].EBasicSetContainer(nil, [aFeature.getQualifiedFeatureIDName()/], notifications)
+    [elseif aFeature.isUnSet()]
+        return [aClass.getReceiverName()/].basic[aFeature.getUnSetterName().toUpperFirst()/](notifications)
+    [else]
+        return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](nil, notifications)
+    [/if]
+[/for]
+    default:
+        return [aClass.getReceiverName()/].[aClass.getRawClassExtends()/].EBasicInverseRemove(otherEnd, featureID, notifications)
+    }
+}
+[/let]
+[/template]
