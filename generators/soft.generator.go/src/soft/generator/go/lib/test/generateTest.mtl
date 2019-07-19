@@ -88,9 +88,12 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 [let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getTestValue() endif ]
 {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
-	obj.[varName/] = [varAssigned/]
 	obj.[aStructuralFeature.getUnSetterName()/]()
+[if aStructuralFeature.isListType()]
+	assert.Equal(t, 0, obj.[varName/].Size())
+[else]
 	assert.Equal(t, [aStructuralFeature.eType.getDefaultValue()/], obj.[varName/])
+[/if]
 }
 [/let]
 [/let]
