@@ -81,7 +81,7 @@
 [for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
     case [anStructFeature.getQualifiedFeatureIDName()/]:
     [let varName : String = anStructFeature.name.first(1)]
-        var [varName/] [anStructFeature.eGenericType.generateType()/] = newValue.([anStructFeature.eGenericType.generateType()/])
+        [varName/] := newValue.([anStructFeature.generateType()/])
     [if anStructFeature.isListType()]
         [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Clear()
         [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Add([varName/])

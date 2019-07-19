@@ -25,6 +25,7 @@ EList
 [eElement.eGenericType.generateType()/]
 [/if]
 [/template]
+
 [template public generateType(anEDataType : EGenericType) post (trim())]
 [if (anEDataType.oclIsUndefined() or anEDataType.eClassifier.oclIsUndefined())]
 [else]
