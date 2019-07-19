@@ -5,6 +5,7 @@
 [import soft::generator::go::generateCommon/]
 [import soft::generator::common::generateCommon/]
 [import soft::generator::go::lib::test::generateType/]
+[import soft::generator::go::lib::generateOperation/]
 
 [template public generateTest(aClass : EClass) { implementationName : String = aClass.getImplementationName(); aPackage : EPackage = aClass.ePackage } ]
 [file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationTestFileName( aClass.name ), false, 'UTF-8')]
@@ -19,11 +20,11 @@ import (
 	mock "github.com/stretchr/testify/mock"
 )
 
-func [implementationName/]Test(t *testing.T) {
+func Test[implementationName.toUpperFirst()/](t *testing.T) {
 	_ = assert.Equal
 	_ = mock.Anything
 	[aClass.eStructuralFeatures->select(isField()).generateTestImplementation()/]
-	[aClass.eOperations.generateTestOperation()/]
+	[aClass.eOperations->select(isDefault()).generateTestOperation()/]
 }
 [/file]
 [/template]
@@ -37,13 +38,14 @@ func [implementationName/]Test(t *testing.T) {
 [/template]
 
 [template private generateTestImplementation(aStructuralFeature : EStructuralFeature)]
-[if isGet()]
-[aStructuralFeature.generateGetTestImplementation()/]
+[if isGet() and isSet()]
+[aStructuralFeature.generateGetSetTestImplementation()/]
+[aStructuralFeature.generateSetTestImplementation()/]
+[elseif isSet()]
+[aStructuralFeature.generateSetTestImplementation()/]
+[elseif isGet()]
 [/if]
 [if isBasicGet()]
-[/if]
-[if isSet()]
-[aStructuralFeature.generateSetTestImplementation()/]
 [/if]
 [if isBasicSet()]
 [/if]
@@ -54,12 +56,12 @@ func [implementationName/]Test(t *testing.T) {
 [/if]
 [/template]
 
-[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature)]
+[template private generateGetSetTestImplementation(aStructuralFeature : EStructuralFeature)]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getTestValue() endif ]
 {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
-	obj.[varName/] = [varAssigned/]
+	obj.[aStructuralFeature.getSetterName()/]([varAssigned/])
 	assert.Equal(t, [varAssigned/], obj.[aStructuralFeature.getGetterName()/]())
 }
 [/let]
@@ -69,11 +71,6 @@ func [implementationName/]Test(t *testing.T) {
 [template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature)]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getTestValue() endif ]
-{
-	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
-	obj.[aStructuralFeature.getSetterName()/]([varAssigned/])
-	assert.Equal(t, [varAssigned/], obj.[varName/])
-}
 {
 	mockAdapter := &MockEAdapter{}
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()

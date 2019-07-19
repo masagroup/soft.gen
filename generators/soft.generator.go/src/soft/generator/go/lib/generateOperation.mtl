@@ -10,7 +10,7 @@
 
 [/template]
 
-[query private isDefault(anEOperation : EOperation ) : Boolean = not anEOperation.hasKey('default') or ( anEOperation.hasKey('default') and anEOperation.valueKey('default') = 'true' )/]
+[query public isDefault(anEOperation : EOperation ) : Boolean = not anEOperation.hasKey('default') or ( anEOperation.hasKey('default') and anEOperation.valueKey('default') = 'true' )/]
 
 [template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? (not anEOperation.isDefault() )]
 [/template]
