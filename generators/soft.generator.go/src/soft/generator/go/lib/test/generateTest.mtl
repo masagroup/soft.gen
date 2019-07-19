@@ -16,10 +16,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	mock "github.com/stretchr/testify/mock"
 )
 
 func [implementationName/]Test(t *testing.T) {
 	_ = assert.Equal
+	_ = mock.Anything
 	[aClass.eStructuralFeatures->select(isField()).generateTestImplementation()/]
 	[aClass.eOperations.generateTestOperation()/]
 }
@@ -71,6 +73,14 @@ func [implementationName/]Test(t *testing.T) {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	obj.[aStructuralFeature.getSetterName()/]([varAssigned/])
 	assert.Equal(t, [varAssigned/], obj.[varName/])
+}
+{
+	mockAdapter := &MockEAdapter{}
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
+	obj.EAdapters().Add(mockAdapter)
+	obj.[aStructuralFeature.getSetterName()/]([varAssigned/])
+	mockAdapter.AssertExpectations(t)
 }
 [/let]
 [/let]
