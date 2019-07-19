@@ -289,8 +289,6 @@
     endif
 /]
 
-[query public getClassIncludes(aClass : EClass) : Set(EClassifier) = OrderedSet{aClass.eSuperTypes,aClass.eAllStructuralFeatures.eType,aClass.eOperations.eType,aClass.eOperations.eParameters.eType}->flatten() /]
-
 [query public getMockExtends(aClass : EClass ) : String =
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then

@@ -14,25 +14,18 @@
 [startGuard(aClass)/]
 
 #include "[aClass.ePackage.getInterfaceFolder()/]/Exports.hpp"
-[for ( baseInclude : String | aClass.getInterfaceExtends()->asOrderedSet()->sortedBy( str | str ) ) separator ('\r\n')]
+[for ( baseInclude : String | aClass.getInterfaceExtends()->asOrderedSet()->sortedBy( str | str ) )]
 #include "[namespaceToFolder(baseInclude)/].hpp"
 [/for]
-[for (enumInclude : EEnum| aClass.getClassIncludes()->selectByKind(EEnum)->asOrderedSet()->sortedBy(name) ) separator ('\r\n')]
-#include "[enumInclude.ePackage.name/]/[enumInclude.name.toUpperFirst()/].hpp"
+[for (include : String | aClass.getReferencedTypes()->selectByKind(EDataType)
+                                                    ->select(name <> 'EEList' and name <> 'EResource' and name <> 'ETreeIterator' )
+                                                    ->collect( t | t.getInclude() )
+                                                    ->select( s | s <> '' )
+                                                    ->asOrderedSet()->sortedBy(name) )]
+#include [include/]
 [/for]
 
-[if (aClass.eOperations.eParameters.eType->select(name = 'EMap')->size() > 0 or aClass.eAttributes.eType->select(name = 'EMap')->size() > 0)]
-#include <map>
-[/if]
 #include <memory>
-#include <string>
-[if (aClass.eAttributes.eType->select(isAny())->size() = 0 and aClass.eOperations.eParameters.eType->select(isAny())->size() > 0)]
-#include "ecore/Any.hpp"
-[/if]
-[if (aClass.eAttributes.eType->select(isDate())->size() = 0 and aClass.eOperations.eParameters.eType->select(isDate())->size() > 0)]
-#include <ctime>
-[/if]
-
 
 //forward declarations
 [if (aClass.eReferences->exists(upperBound <> 1) or aClass.eOperations.eParameters->exists((eType.requiresList()  or upperBound <> 1)))]
@@ -53,8 +46,7 @@ namespace ecore
     class EResource;
 }
 [/if]
-
-[for (aCls : EClass| aClass.getClassIncludes()->selectByKind(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
+[for (aCls : EClass| aClass.getReferencedTypes()->selectByKind(EClass)->asOrderedSet()->sortedBy(name))]
 namespace [aCls.ePackage.getInterfaceNamespaceName()/] 
 {
     class [aCls.getInterfaceName()/];

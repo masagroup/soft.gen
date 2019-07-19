@@ -15,7 +15,7 @@
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className + '.cpp', false, 'UTF-8')]
 [fileComment()/]
 #include "[namespaceToFolder(aClass.getQualifiedImplementationName())/].hpp"
-[let includes : OrderedSet(String) = Set{ aClass.getClassIncludes()->selectByKind(EClass)->collect( c | c.getQualifiedInterfaceName())->asSet()
+[let includes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->selectByKind(EClass)->collect( c | c.getInclude())->asSet()
                                         , Set {
                                                     aClass.ePackage.getQualifiedInterfaceName(),
                                                     aClass.ePackage.getFactoryQualifiedInterfaceName(),
@@ -26,10 +26,10 @@
                                                     'ecore::EAttribute',
                                                     'ecore::EStructuralFeature',
                                                     'ecore::impl::EObjectEList'
-                                              }
+                                              }-> collect( c | '"' + namespaceToFolder(c) + '.hpp"' ) 
                                         }->flatten()->asOrderedSet()->sortedBy( s | s)]
 [for ( include : String | includes )]
-#include "[namespaceToFolder(include)/].hpp"
+#include [include/]
 [/for]
 [/let]
 [if (aClass.eReferences->exists(upperBound <> 1) or aClass.eOperations.eParameters->exists((eType.requiresList()  or upperBound <> 1)))]
@@ -39,10 +39,6 @@
 #include <cassert>
 #include <iostream>
 #include <sstream>
-[if (aClass.eAttributes.eType->select(isAny())->size() = 0 and aClass.eOperations.eParameters.eType->select(isAny())->size() > 0)]
-#include "ecore/Any.hpp"
-#include "ecore/Stream.hpp"
-[/if]
 
 //[protected (className + ' [definition-includes]')]
 //[/protected]

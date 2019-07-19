@@ -37,6 +37,18 @@ EList
 [for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.generateType()/][/for]
 [/template]
 
+[query public getType( aClassifier : EClassifier ) : String = 
+    if aClassifier.oclIsUndefined() then 'ecore::Any'
+    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getType()
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getType()
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getType()
+    else '' endif endif endif endif
+/]
+[query private getType( aClass : EClass ) : String = /]
+[query private getType( aEnum : EEnum ) : String = /]
+[query private getType( aDataType : EDataType ) : String = /]
+
+
 [**
  * Transformation Java Types to Go
 */]

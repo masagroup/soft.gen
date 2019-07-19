@@ -20,6 +20,8 @@
 [**
  * Properties on Class/Features
 */]
+[query public getReferencedTypes(aClass : EClass) : Set(EClassifier) = OrderedSet{aClass.eSuperTypes,aClass.eAllStructuralFeatures.eType,aClass.eOperations.eType,aClass.eOperations.eParameters.eType}->flatten() /]
+
 [query private hasContainerAttribute(aClass : EClass) : Boolean =  getContainerAttribute()->notEmpty() /]
 [query private getContainerAttribute(aClass : EClass) : OrderedSet(EReference) =  aClass.eReferences->select(isContainerAttribute())->sortedBy(name) /]
 [query private isContainerAttribute(aRef : EReference) : Boolean =  aRef.container/]
