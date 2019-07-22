@@ -385,7 +385,21 @@ NewArrayEList([anEAttribute.unique/])
 [aClass.generateFunctionReceiver()/] [aStructuralFeature.getUnSetterName()/]() {
 [if not isVolatile()]
     [if isListType()]
+		[let lazy : String = aStructuralFeature.getLazy()]
+	    [if lazy = 'function']
+	        [if aStructuralFeature.oclIsKindOf(EAttribute)]
+	    if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/] {
+	        [else]
+	    if [receiverName/].[varName/] == nil {
+	        [/if]
+	        [receiverName/].[varName/] = [receiverName/].interfaces.([aClass.getVariableInitializersInterface()/]).[aStructuralFeature.getMethodInitializationName()/]()
+	    } else {
+			[receiverName/].[varName/].Clear()
+		}
+	    [else]
         [receiverName/].[varName/].Clear()
+		[/if]
+	    [/let]
     [elseif isBidirectional() or isContains()]
     if ( [receiverName/].[varName/] != nil ) {
         notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain
