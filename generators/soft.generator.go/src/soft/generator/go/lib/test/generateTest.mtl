@@ -38,7 +38,7 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 [/template]
 
 [template private generateTestImplementation(aStructuralFeature : EStructuralFeature)]
-[if isGet() and isSet()]
+[if isGet() and isSet() and not isBidirectional() and not isContains()]
 [aStructuralFeature.generateGetSetTestImplementation()/]
 [aStructuralFeature.generateSetTestImplementation()/]
 [elseif isSet()]
@@ -50,7 +50,6 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 [if isBasicSet()]
 [/if]
 [if isUnSet()]
-[aStructuralFeature.generateUnsetTestImplementation()/]
 [/if]
 [if isBasicUnSet()]
 [/if]

@@ -401,7 +401,7 @@ NewArrayEList([anEAttribute.unique/])
 		[/if]
 	    [/let]
     [elseif isBidirectional() or isContains()]
-    if ( [receiverName/].[varName/] != nil ) {
+    if [receiverName/].[varName/] != nil {
         notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain
         [if not isBidirectional()]
         notifications = [receiverName/].[varName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove( [receiverName/].GetEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications )
@@ -411,7 +411,7 @@ NewArrayEList([anEAttribute.unique/])
             [/let]
         [/if]
         notifications = basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](notifications)
-        if ( notifications != nil ) {
+        if notifications != nil {
             notifications.Dispatch()
         }
     } else if [receiverName/].ENotificationRequired() {
