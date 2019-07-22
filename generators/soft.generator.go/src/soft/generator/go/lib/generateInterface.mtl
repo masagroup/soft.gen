@@ -4,6 +4,7 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::generateOperation/]
 [import soft::generator::go::lib::generateStructuralFeature/]
@@ -13,6 +14,15 @@
 [fileComment()/]
 
 package [aPackage.name/]
+
+[let imports : OrderedSet(String) = Set { aClass.getInterfaceExtends()->collect( extend | aPackage.getImport( extend ) )->asSet()
+                                 , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
+                                 }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
+[for ( i : String | imports )]
+import "[i/]"
+[/for]
+[/let]
+
 
 // [interfaceName/] is the representation of the model object '[aClass.name/]'
 type [interfaceName/] interface {

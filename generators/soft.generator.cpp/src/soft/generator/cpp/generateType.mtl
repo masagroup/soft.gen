@@ -122,10 +122,6 @@ std::shared_ptr
 [/if]
 [/template]
 
-
-    
-
-
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
     Sequence {
         Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'false' ,''},

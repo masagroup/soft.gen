@@ -20,7 +20,24 @@
 [**
  * Properties on Class/Features
 */]
-[query public getReferencedTypes(aClass : EClass) : Set(EClassifier) = OrderedSet{aClass.eSuperTypes,aClass.eAllStructuralFeatures.eType,aClass.eOperations.eType,aClass.eOperations.eParameters.eType}->flatten() /]
+[query public getReferencedTypes(aOperation : EOperation) : Set(EClassifier) =
+    if aOperation.eGenericType.oclIsUndefined() then
+        OrderedSet {
+            OrderedSet { aOperation.eType },
+            aOperation.eParameters.eType
+        }->flatten()
+    else
+        OrderedSet {
+            OrderedSet { aOperation.eType , aOperation.eGenericType.eClassifier },
+            aOperation.eParameters.eType
+        }->flatten()
+    endif  
+/]
+
+[query public getReferencedTypes(aClass : EClass) : Set(EClassifier) = 
+    OrderedSet{aClass.eSuperTypes
+              ,aClass.eStructuralFeatures.eType
+              ,aClass.eOperations.getReferencedTypes()}->flatten()->select( cls | not cls.oclIsUndefined() ) /]
 
 [query private hasContainerAttribute(aClass : EClass) : Boolean =  getContainerAttribute()->notEmpty() /]
 [query private getContainerAttribute(aClass : EClass) : OrderedSet(EReference) =  aClass.eReferences->select(isContainerAttribute())->sortedBy(name) /]
