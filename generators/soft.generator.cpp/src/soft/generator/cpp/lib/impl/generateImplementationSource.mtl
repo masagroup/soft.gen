@@ -17,10 +17,7 @@
 #include "[namespaceToFolder(aClass.getQualifiedImplementationName())/].hpp"
 [let includes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->selectByKind(EClass)->collect( c | c.getInclude())->asSet()
                                         , Set { 
-                                                '"ecore/EAnnotation.hpp"',
                                                 '"ecore/EClass.hpp"' ,
-                                                '"ecore/EAttribute.hpp"' ,
-                                                '"ecore/EStructuralFeature.hpp"' ,
                                                 '"ecore/impl/EObjectEList.hpp"' 
                                               }
                                         , Set {
