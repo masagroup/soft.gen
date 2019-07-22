@@ -16,25 +16,24 @@
 [fileComment()/]
 #include "[namespaceToFolder(aClass.getQualifiedImplementationName())/].hpp"
 [let includes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->selectByKind(EClass)->collect( c | c.getInclude())->asSet()
+                                        , Set { 
+                                                '"ecore/EAnnotation.hpp"',
+                                                '"ecore/EClass.hpp"' ,
+                                                '"ecore/EAttribute.hpp"' ,
+                                                '"ecore/EStructuralFeature.hpp"' ,
+                                                '"ecore/impl/EObjectEList.hpp"' 
+                                              }
                                         , Set {
-                                                    aClass.ePackage.getQualifiedInterfaceName(),
-                                                    aClass.ePackage.getFactoryQualifiedInterfaceName(),
-                                                    aClass.eClass().ePackage.getQualifiedInterfaceName(),
-                                                    aClass.eClass().ePackage.getFactoryQualifiedInterfaceName(),
-                                                    'ecore::EAnnotation',
-                                                    'ecore::EClass',
-                                                    'ecore::EAttribute',
-                                                    'ecore::EStructuralFeature',
-                                                    'ecore::impl::EObjectEList'
+                                                aClass.ePackage.getQualifiedInterfaceName(),
+                                                aClass.ePackage.getFactoryQualifiedInterfaceName(),
+                                                aClass.eClass().ePackage.getQualifiedInterfaceName(),
+                                                aClass.eClass().ePackage.getFactoryQualifiedInterfaceName()
                                               }-> collect( c | '"' + namespaceToFolder(c) + '.hpp"' ) 
                                         }->flatten()->asOrderedSet()->sortedBy( s | s)]
 [for ( include : String | includes )]
 #include [include/]
 [/for]
 [/let]
-[if (aClass.eReferences->exists(upperBound <> 1) or aClass.eOperations.eParameters->exists((eType.requiresList()  or upperBound <> 1)))]
-#include "ecore/EList.hpp"
-[/if]
 
 #include <cassert>
 #include <iostream>
