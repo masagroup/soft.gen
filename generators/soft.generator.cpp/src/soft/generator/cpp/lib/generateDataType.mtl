@@ -12,8 +12,8 @@
 
 [template public generateEDatatypeInitialization(aDataType : EDataType)]
 [aDataType.getElementInstanceName()/]->setName("[aDataType.name/]");
-[if not aDataType.instanceTypeName.oclIsUndefined() and not (aDataType.instanceTypeName = '')] 
-[aDataType.getElementInstanceName()/]->setInstanceClass( &typeid([aDataType.instanceTypeName/]));
+[if aDataType.hasKey('instanceTypeName')]
+[aDataType.getElementInstanceName()/]->setInstanceClass( &typeid([aDataType.valueKey('instanceTypeName') /]));
 [/if]
 [if (not aDataType.oclIsKindOf(EEnum))]
 [aDataType.getElementInstanceName()/]->setSerializable([aDataType.serializable.toString()/]);
