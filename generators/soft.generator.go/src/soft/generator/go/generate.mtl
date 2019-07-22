@@ -20,6 +20,7 @@
 [for (anEEnum : EEnum | aPackage.eAllContents(EEnum))]
     [anEEnum.generateEnum()/]
 [/for]
+[aPackage.generateTest()/]
 [aPackage.generatePackage()/]
 [generateFactory()/]
 [/template]

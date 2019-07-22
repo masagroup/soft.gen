@@ -1,0 +1,11 @@
+[comment encoding = UTF-8 /]
+[module generateFactoryTest('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::go::generateCommon/]
+[import soft::generator::go::lib::generateCommon/]
+
+[template public generateFactoryTest(aClass : EClass)]
+[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getFactoryTestFileName(), false, 'UTF-8')]
+[fileComment()/]
+[/file]
+[/template]

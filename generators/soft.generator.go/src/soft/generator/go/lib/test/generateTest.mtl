@@ -1,99 +1,11 @@
 [comment encoding = UTF-8 /]
 [module generateTest('http://www.eclipse.org/emf/2002/Ecore')/]
 
-[import soft::generator::go::lib::generateCommon/]
-[import soft::generator::go::generateCommon/]
-[import soft::generator::common::generateCommon/]
-[import soft::generator::go::lib::test::generateType/]
-[import soft::generator::go::lib::generateOperation/]
+[import soft::generator::go::lib::test::generateImplementationTest/]
+[import soft::generator::go::lib::test::generateFactoryTest/]
 
-[template public generateTest(aClass : EClass) { implementationName : String = aClass.getImplementationName(); aPackage : EPackage = aClass.ePackage } ]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationTestFileName( aClass.name ), false, 'UTF-8')]
-[fileComment()/]
-
-package [aPackage.name/]
-
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	mock "github.com/stretchr/testify/mock"
-)
-
-func Test[implementationName.toUpperFirst()/](t *testing.T) {
-	_ = assert.Equal
-	_ = mock.Anything
-	[aClass.eStructuralFeatures->select(isField()).generateTestImplementation()/]
-	[aClass.eOperations->select(isDefault()).generateTestOperation()/]
-}
-[/file]
-[/template]
-
-[template private generateTestOperation(anEOperation : EOperation)]
-{
-	obj := [anEOperation.eContainingClass.getConstructorName()/]()
-	assert.Panics(t, func() { obj.[anEOperation.getFunctionName()/]([anEOperation.generateParameterListNames()/]) })
-}
-
-[/template]
-
-[template private generateTestImplementation(aStructuralFeature : EStructuralFeature)]
-[if isGet() and isSet() and not isBidirectional() and not isContains()]
-[aStructuralFeature.generateGetSetTestImplementation()/]
-[aStructuralFeature.generateSetTestImplementation()/]
-[elseif isSet()]
-[aStructuralFeature.generateSetTestImplementation()/]
-[elseif isGet()]
-[/if]
-[if isBasicGet()]
-[/if]
-[if isBasicSet()]
-[/if]
-[if isUnSet()]
-[/if]
-[if isBasicUnSet()]
-[/if]
-[/template]
-
-[template private generateGetSetTestImplementation(aStructuralFeature : EStructuralFeature)]
-[let varName : String = aStructuralFeature.getVariableName() ]
-[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getTestValue() endif ]
-{
-	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
-	obj.[aStructuralFeature.getSetterName()/]([varAssigned/])
-	assert.Equal(t, [varAssigned/], obj.[aStructuralFeature.getGetterName()/]())
-}
-[/let]
-[/let]
-[/template]
-
-[template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature)]
-[let varName : String = aStructuralFeature.getVariableName() ]
-[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getTestValue() endif ]
-{
-	mockAdapter := &MockEAdapter{}
-	mockAdapter.On("NotifyChanged", mock.Anything).Once()
-	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
-	obj.EAdapters().Add(mockAdapter)
-	obj.[aStructuralFeature.getSetterName()/]([varAssigned/])
-	mockAdapter.AssertExpectations(t)
-}
-[/let]
-[/let]
-[/template]
-
-[template private generateUnsetTestImplementation(aStructuralFeature : EStructuralFeature)]
-[let varName : String = aStructuralFeature.getVariableName() ]
-[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getTestValue() endif ]
-{
-	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
-	obj.[aStructuralFeature.getUnSetterName()/]()
-[if aStructuralFeature.isListType()]
-	assert.Equal(t, 0, obj.[varName/].Size())
-[else]
-	assert.Equal(t, [aStructuralFeature.eType.getDefaultValue()/], obj.[varName/])
-[/if]
-}
-[/let]
-[/let]
+[template public generateTest(aPackage : EPackage)]
+[for (aClass : EClass | aPackage.eAllContents(EClass))]
+[aClass.generateImplementationTest()/]
+[/for]
 [/template]
