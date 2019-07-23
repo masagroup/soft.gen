@@ -28,7 +28,7 @@
 #include <memory>
 
 //forward declarations
-[if (aClass.eReferences->exists(upperBound <> 1) or aClass.eOperations.eParameters->exists((eType.requiresList()  or upperBound <> 1)))]
+[if aClass.requiresList() ]
 namespace ecore 
 {
     template<typename T> class EList;

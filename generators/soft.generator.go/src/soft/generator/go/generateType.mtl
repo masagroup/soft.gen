@@ -119,10 +119,19 @@
  ) 
 /]
 
-[query public getAllImports(aPackage : EPackage) : Sequence( String ) = 
+[query public getAllImports(any : OclAny) : Sequence( String ) = 
     Sequence {
         'ecore' , 'github.com/masagroup/soft/go/ecore'
     }
+/]
+
+[query public getImport(aPackageName : String ) : String = 
+    let index : Integer = getAllImports()->indexOf( aPackageName ) in
+    if index.oclIsUndefined() or index = -1 then
+        ''
+    else
+        getAllImports()->at( index + 1)
+    endif
 /]
 
 
@@ -134,11 +143,11 @@
         if aPackage.name = q then 
             ''
         else
-            let index : Integer = getAllImports()->indexOf( q ) in
-            if index.oclIsUndefined() or index = -1 then
+            let import : String = getImport( q ) in
+            if import = '' then
                 q
             else
-                getAllImports()->at( index + 1)
+                import
             endif
         endif 
     endif

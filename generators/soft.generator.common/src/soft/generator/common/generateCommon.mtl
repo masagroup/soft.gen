@@ -67,6 +67,7 @@
 [query public isField(aStructuralFeature : EStructuralFeature) : Boolean = not isContainer() and not isVolatile()/]
 [query public isMap(  aEFeature : EStructuralFeature , n : String  ) : Boolean = let entries : Sequence(String) = Sequence{'java.util.Map.Entry','java.util.Map$Entry'} in entries->includes(n)/]
 [query public requiresList(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EEList' endif/]
+[query public requiresList(aClass : EClass) : Boolean = aClass.eReferences->exists(upperBound <> 1) or aClass.eOperations.eParameters->exists((eType.requiresList()  or upperBound <> 1)) /]
 [query public requiresCollectionView(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'ETreeIterator' endif/]
 [query public requiresCollectionView(anGenericType : EGenericType) : Boolean = if (oclIsUndefined()) then false else anGenericType.eClassifier.requiresCollectionView() endif/]
 [query public requiresResource(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EResource' endif/]
