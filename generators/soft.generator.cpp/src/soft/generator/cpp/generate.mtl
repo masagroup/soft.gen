@@ -3,6 +3,7 @@
 
 
 [import soft::generator::cpp::lib::generateCMake/]
+[import soft::generator::cpp::lib::generateEnum/]
 [import soft::generator::cpp::lib::generateExports/]
 [import soft::generator::cpp::lib::generateInterface/]
 [import soft::generator::cpp::lib::factory::generateFactory/]
@@ -17,6 +18,9 @@
 [for (aClass : EClass | aPackage.eAllContents(EClass))]
     [aClass.generateInterface()/]
     [aClass.generateImplementation()/]
+[/for]
+[for (anEEnum : EEnum | aPackage.eAllContents(EEnum))]
+    [anEEnum.generateEnum()/]
 [/for]
 [aPackage.generateFactory()/]
 [aPackage.generatePackage()/]

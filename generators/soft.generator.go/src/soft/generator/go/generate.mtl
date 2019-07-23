@@ -1,6 +1,7 @@
 [comment encoding = UTF-8 /]
 [module generate('http://www.eclipse.org/emf/2002/Ecore')/]
 
+[import soft::generator::go::lib::generateEnum/]
 [import soft::generator::go::lib::generateInterface/]
 [import soft::generator::go::lib::generateImplementation/]
 [import soft::generator::go::lib::pack::generatePackage/]
@@ -11,6 +12,9 @@
 [for (aClass : EClass | aPackage.eAllContents(EClass))]
     [aClass.generateInterface()/]
     [aClass.generateImplementation()/]
+[/for]
+[for (anEEnum : EEnum | aPackage.eAllContents(EEnum))]
+    [anEEnum.generateEnum()/]
 [/for]
 [aPackage.generatePackage()/]
 [generateFactory()/]
