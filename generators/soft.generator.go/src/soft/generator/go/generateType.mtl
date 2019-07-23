@@ -59,13 +59,15 @@
         Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'false' },
         Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'int' , '0' },
         Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'float64' , '0.0' },
-        Sequence{ 'ELong' , 'ELongObject' , 'int64' , '0' ,''},
+        Sequence{ 'ELong' , 'ELongObject' , 'int64' , '0' },
         Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'byte' , '\'\''},
-        Sequence{ 'EByteArray' , '[]byte' , '' },
+        Sequence{ 'EByteArray' , '[]byte' , 'nil' },
         Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '0.0'},
-        Sequence{ 'EEList' , 'ecore.EList', ''},
-        Sequence{ 'EDate' , 'time.Date', '' },
-        Sequence{ 'EMap' , 'map[interface{}]interface{}', '' },
+        Sequence{ 'EEList' , 'ecore.EList', 'nil'},
+        Sequence{ 'EDate' , 'time.Time', 'nil' },
+        Sequence{ 'EMap' , 'map[interface{}]interface{}', 'nil' },
+        Sequence{ 'EFeatureMap', 'interface{}', 'nil'},
+        Sequence{ 'EFeatureMapEntry' , 'interface{}' , 'nil'},
         Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'interface{}', 'nil'},
         Sequence{ 'EJavaClass' , 'reflect.Type', 'nil'},
         Sequence{ 'EString' , 'String', 'string', '""' },
@@ -101,9 +103,12 @@
 
 
 [query public getDefaultValue(aClassifier : EClassifier) : String =
-    if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue()
-    else 'nil' endif
+    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue()
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue()
+    else 'nil' endif endif
 /]
+
+[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.eLiterals->at(1).name.toUpperCase() else 0 endif/]
 
 [query public getDefaultValue(aDataType : EDataType) : String =
     getAllDataTypes()->iterate( s ; res : String = '' |
