@@ -388,15 +388,13 @@ NewArrayEList([anEAttribute.unique/])
 		[let lazy : String = aStructuralFeature.getLazy()]
 	    [if lazy = 'function']
 	        [if aStructuralFeature.oclIsKindOf(EAttribute)]
-	    if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/] {
-	        [else]
-	    if [receiverName/].[varName/] == nil {
-	        [/if]
-	        [receiverName/].[varName/] = [receiverName/].interfaces.([aClass.getVariableInitializersInterface()/]).[aStructuralFeature.getMethodInitializationName()/]()
-	    } else {
-			[receiverName/].[varName/].Clear()
-		}
-	    [else]
+	if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/] {
+		[else]
+	if [receiverName/].[varName/] != nil {
+		[/if]
+		[receiverName/].[varName/].Clear()
+	}
+		[else]
         [receiverName/].[varName/].Clear()
 		[/if]
 	    [/let]
