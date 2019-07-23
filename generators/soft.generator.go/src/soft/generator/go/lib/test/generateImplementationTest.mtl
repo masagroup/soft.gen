@@ -108,7 +108,11 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	[for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.eStructuralFeatures->asOrderedSet()->sortedBy(name))]
     {
+		[if not anStructFeature.isContainer() and anStructFeature.isVolatile() and not anStructFeature.hasKey('getterBody')]
+		assert.Panics(t, func() { obj.EGetFromID([anStructFeature.getQualifiedFeatureIDName()/], false, false) })
+		[else]
 		assert.Equal(t, obj.[anStructFeature.getGetterName()/](), obj.EGetFromID([anStructFeature.getQualifiedFeatureIDName()/], false, false))
+		[/if]
 	}
     [/for]
 }
