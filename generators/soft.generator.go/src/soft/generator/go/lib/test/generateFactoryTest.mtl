@@ -27,5 +27,23 @@ func TestFactoryCreate(t *testing.T) {
 	}
     [/for]
 }
+
+func TestFactoryPanics(t *testing.T) {
+	factory := newEcoreFactoryImpl()
+	[for (aDataType : EDataType | ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name))]
+    {
+		mockEDataType := &MockEDataType{}
+		mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
+		assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
+    }
+	[/for]
+	[for (aDataType : EDataType | ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name))]
+    {
+		mockEDataType := &MockEDataType{}
+		mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
+		assert.Panics(t, func() { factory.ConvertToString(mockEDataType, "") })
+    }
+	[/for]
+}
 [/file]
 [/template]
