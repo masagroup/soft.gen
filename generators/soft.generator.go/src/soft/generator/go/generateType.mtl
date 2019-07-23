@@ -125,7 +125,7 @@
     }
 /]
 
-[query public getImport(aPackageName : String ) : String = 
+[query public getImportForPackage(aPackageName : String ) : String = 
     let index : Integer = getAllImports()->indexOf( aPackageName ) in
     if index.oclIsUndefined() or index = -1 then
         ''
@@ -143,7 +143,7 @@
         if aPackage.name = q then 
             ''
         else
-            let import : String = getImport( q ) in
+            let import : String = getImportForPackage( q ) in
             if import = '' then
                 q
             else

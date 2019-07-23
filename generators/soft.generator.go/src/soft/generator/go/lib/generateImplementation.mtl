@@ -17,7 +17,7 @@ package [aPackage.name/]
 
 [let imports : OrderedSet(String) = Set { aClass.getInterfaceExtends()->collect( extend | aPackage.getImport( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
-                                        , if aPackage.name <> 'ecore' and aClass.requiresList() then Set { getImport('ecore') } else Set{} endif 
+                                        , if aPackage.name <> 'ecore' and aClass.requiresList() then Set { getImportForPackage('ecore') } else Set{} endif 
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
 import "[i/]"
