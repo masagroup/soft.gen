@@ -46,6 +46,7 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 [elseif isGet() and isListType()]
 [aStructuralFeature.generateGetListTestImplementation()/]
 [/if]
+[aStructuralFeature.generateEGetTestImplementation()/]
 [/template]
 
 [template private generateGetSetTestImplementation(aStructuralFeature : EStructuralFeature)]
@@ -100,4 +101,16 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 }
 [/let]
 [/let]
+[/template]
+
+[template private generateEGetTestImplementation(aStructuralFeature : EStructuralFeature)]
+{
+	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
+	[for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.eStructuralFeatures->asOrderedSet()->sortedBy(name))]
+    {
+		assert.Equal(t, obj.[anStructFeature.getGetterName()/](), obj.EGetFromID([anStructFeature.getQualifiedFeatureIDName()/], false, false))
+	}
+    [/for]
+}
+
 [/template]
