@@ -8,4 +8,5 @@
 [for (aClass : EClass | aPackage.eAllContents(EClass))]
 [aClass.generateImplementationTest()/]
 [/for]
+[aPackage.generateFactoryTest()/]
 [/template]

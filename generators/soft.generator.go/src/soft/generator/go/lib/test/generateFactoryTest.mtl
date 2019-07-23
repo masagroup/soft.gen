@@ -4,8 +4,10 @@
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::lib::generateCommon/]
 
-[template public generateFactoryTest(aClass : EClass)]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getFactoryTestFileName(), false, 'UTF-8')]
+[template public generateFactoryTest(ePackage : EPackage)]
+[file (ePackage.getOutputDirectory() + '/' + ePackage.getFactoryTestFileName(), false, 'UTF-8')]
 [fileComment()/]
+
+package ecore
 [/file]
 [/template]
