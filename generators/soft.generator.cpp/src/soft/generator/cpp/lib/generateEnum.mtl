@@ -1,0 +1,26 @@
+[comment encoding = UTF-8 /]
+[module generateEnum('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::cpp::generateCommon/]
+[import soft::generator::cpp::lib::generateCommon/]
+
+
+[template public generateEnum(aEEnum : EEnum) { enumName : String = aEEnum.name; enumNamespace : String = aEEnum.ePackage.getInterfaceNamespaceName(); }]
+[file (aEEnum.ePackage.getOutputDirectory() + '/src-gen/' + aEEnum.ePackage.getInterfaceFolder() + '/' + enumName +'.hpp', false, 'UTF-8')]
+[fileComment()/]
+[startGuard(aEEnum)/]
+
+namespace [enumNamespace/] 
+{
+    enum [enumName/] {
+[for (lit : EEnumLiteral | aEEnum.eLiterals->asOrderedSet()->sortedBy(name)) separator (',\n')]
+        [lit.name.toUpperCase()/] = [lit.value.toString()/]
+[/for]
+    };
+}
+
+[endGuard(aEEnum)/]
+[/file]
+[/template]
+
