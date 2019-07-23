@@ -9,29 +9,44 @@
 [query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
 [query private isShared(aReference : EReference) : Boolean = if (aReference.hasKey('aggregation')) then aReference.valueKey('aggregation')='shared' else false endif/]
 
-[template public generateEffectiveType(eElement : ETypedElement) post(trim())]
-[if (isListType())]
-EList
+[query private getEPackage( eElement : ETypedElement ) : EPackage =
+    let containingClass : EClass = 
+    if eElement.oclIsKindOf(EStructuralFeature) then  eElement.oclAsType(EStructuralFeature).eContainingClass
+    else if eElement.oclIsKindOf(EOperation) then  eElement.oclAsType(EOperation).eContainingClass
+    else if eElement.oclIsKindOf(EParameter) then  eElement.oclAsType(EParameter).eOperation.eContainingClass
+    else null endif endif endif in
+    if containingClass.oclIsUndefined() then null
+    else containingClass.ePackage
+    endif
+/] 
+
+[template public generateEffectiveType(aElement : ETypedElement) post(trim())]
+[let aPackage : EPackage = aElement.getEPackage()]
+[if (aElement.isListType())]
+[getShortQualifiedName('ecore.EList', aPackage.name )/]
 [else]
-[eElement.eGenericType.generateType()/]
+[aElement.eGenericType.generateType(aPackage)/]
+[/if]
+[/let]
+[/template]
+
+[template public generateType(aElement : ETypedElement) post (trim())]
+[if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
+[else]
+    [let aPackage : EPackage = aElement.getEPackage()]
+    [if aElement.isListType()]
+        [getShortQualifiedName('ecore.EList', aPackage.name )/]
+    [else]
+        [aElement.eGenericType.generateType(aPackage)/]
+    [/if]
+    [/let]
 [/if]
 [/template]
 
-[template public generateType(eElement : ETypedElement) post (trim())]
-[if eElement.oclIsUndefined() or eElement.eGenericType.oclIsUndefined()]
-[elseif eElement.isListType()]
-EList
-[else]
-[eElement.eGenericType.generateType()/]
-[/if]
-[/template]
-
-[template public generateType(anEDataType : EGenericType) post (trim())]
+[template public generateType(anEDataType : EGenericType, aPackage : EPackage ) post (trim())]
 [if (anEDataType.oclIsUndefined() or anEDataType.eClassifier.oclIsUndefined())]
 [else]
-[let qualifiedType : String = anEDataType.eClassifier.getType()]
-[getShortQualifiedName(qualifiedType, anEDataType.eClassifier.ePackage.name )/]
-[/let]
+[getShortQualifiedName(anEDataType.eClassifier.getType(), aPackage.name )/]
 [/if]
 [/template]
 

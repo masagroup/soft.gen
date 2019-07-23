@@ -214,7 +214,7 @@
             msgs = [aClass.getReceiverName()/].EBasicRemoveFromContainer(msgs)
         }
         [if aFeature.isBasicSet()]
-        return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.eGenericType.generateType()/]), msgs)
+        return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType()/]), msgs)
         [else]
         return [aClass.getReceiverName()/].EBasicSetContainer(otherEnd, [aFeature.getQualifiedFeatureIDName()/], msgs)
         [/if]
@@ -232,7 +232,7 @@
                 [/let]
             [/if]
         }
-        return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.eGenericType.generateType()/]) ,msgs)
+        return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType()/]) ,msgs)
     [/if]
 [/for]
     default:
