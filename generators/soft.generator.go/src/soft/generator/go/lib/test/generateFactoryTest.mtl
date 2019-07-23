@@ -3,11 +3,29 @@
 
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::lib::generateCommon/]
+[import soft::generator::common::generateCommon/]
 
 [template public generateFactoryTest(ePackage : EPackage)]
 [file (ePackage.getOutputDirectory() + '/' + ePackage.getFactoryTestFileName(), false, 'UTF-8')]
 [fileComment()/]
 
 package ecore
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestFactoryCreate(t *testing.T) {
+	factory := newEcoreFactoryImpl()
+    [for (aClass : EClass | ePackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
+	{
+		mockEClass := &MockEClass{}
+		mockEClass.On("GetClassifierID").Return([aClass.getClassifierIDName()/])
+		assert.NotNil(t, factory.Create(mockEClass))
+	}
+    [/for]
+}
 [/file]
 [/template]
