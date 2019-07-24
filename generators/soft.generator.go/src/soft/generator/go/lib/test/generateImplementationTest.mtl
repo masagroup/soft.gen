@@ -6,6 +6,7 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::go::lib::test::generateType/]
 [import soft::generator::go::lib::generateOperation/]
+[import soft::generator::go::lib::generateStructuralFeature/]
 
 [template public generateImplementationTest(aClass : EClass) { implementationName : String = aClass.getImplementationName(); aPackage : EPackage = aClass.ePackage } ]
 [file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationTestFileName( aClass.name ), false, 'UTF-8')]
@@ -108,11 +109,15 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	[for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.eStructuralFeatures->asOrderedSet()->sortedBy(name))]
     {
+    [let lazy : String = anStructFeature.getLazy()]
 		[if not anStructFeature.isContainer() and anStructFeature.isVolatile() and not anStructFeature.hasKey('getterBody')]
 		assert.Panics(t, func() { obj.EGetFromID([anStructFeature.getQualifiedFeatureIDName()/], false, false) })
+		[elseif not anStructFeature.isContainer() and not anStructFeature.isVolatile() and lazy <> 'no' and lazy = 'action']
+		//
 		[else]
 		assert.Equal(t, obj.[anStructFeature.getGetterName()/](), obj.EGetFromID([anStructFeature.getQualifiedFeatureIDName()/], false, false))
 		[/if]
+	[/let]
 	}
     [/for]
 }

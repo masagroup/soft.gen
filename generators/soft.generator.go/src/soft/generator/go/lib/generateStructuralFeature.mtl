@@ -9,7 +9,7 @@
 [**
  * lazy property can be defined as follow lazy = no|function|action
  **]
-[query private getLazy( aStructuralFeature : EStructuralFeature ) : String =
+[query public getLazy( aStructuralFeature : EStructuralFeature ) : String =
 if aStructuralFeature.hasKey('lazy') then 
     aStructuralFeature.valueKey('lazy')
 else
