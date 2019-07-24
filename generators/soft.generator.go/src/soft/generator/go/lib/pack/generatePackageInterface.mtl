@@ -1,15 +1,17 @@
 [comment encoding = UTF-8 /]
 [module generatePackageInterface('http://www.eclipse.org/emf/2002/Ecore')]
 
+[import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::pack::generateCommon/]
 
-[template private generateGetter(anENamedElement : ENamedElement )]
+[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage )]
 
 // Returns the meta object for the [anENamedElement.name.toUpperFirst()/]
-[anENamedElement.getReflectiveGetterName()/]() [getMetaType(anENamedElement)/]
+[anENamedElement.getReflectiveGetterName()/]() [aPackage.getMetaType(anENamedElement)/]
 [/template]
 
 [template public generatePackageInterface(anEPackage : EPackage) { className : String = anEPackage.getInterfaceName(); packageName : String = anEPackage.name; } ]
@@ -17,6 +19,10 @@
 [fileComment()/]
 
 package [packageName/]
+
+[if not anEPackage.isEcorePackage()]
+import "[anEPackage.getImportForPackage('ecore')/]"
+[/if]
 
 const (
     // NAME is the package name. 
@@ -44,12 +50,12 @@ const (
 type [className/] interface {
     [getShortQualifiedName('ecore.EPackage', packageName )/]
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-    [aClass.generateGetter()/]
-    [aClass.eAttributes->sortedBy(name).generateGetter()/]
-    [aClass.eReferences->sortedBy(name).generateGetter()/]
-    [aClass.eOperations->sortedBy(name).generateGetter()/]
+    [aClass.generateGetter(anEPackage)/]
+    [aClass.eAttributes->sortedBy(name).generateGetter(anEPackage)/]
+    [aClass.eReferences->sortedBy(name).generateGetter(anEPackage)/]
+    [aClass.eOperations->sortedBy(name).generateGetter(anEPackage)/]
 [/for]
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetter()/]
+    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(anEPackage)/]
 }
 
 var packageInstance [className/] 

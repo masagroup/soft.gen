@@ -148,7 +148,7 @@ endif endif endif
 
 [query public getFunctionName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' ).toUpperFirst()/]
 
-[query public getMetaType(anENamedElement : ENamedElement) : String = if anENamedElement.eClass().ePackage.name ='ecore' then anENamedElement.eClass().getInterfaceName() else anENamedElement.eClass().getQualifiedInterfaceName() endif /]
+[query public getMetaType(aPackage : EPackage , anENamedElement : ENamedElement) : String = getShortQualifiedName( anENamedElement.eClass().getQualifiedInterfaceName(), aPackage.name ) /]
 
 [query public getShortQualifiedName( aQualifiedName : String , aNamespaceName : String ) : String =
     let aQualifiedNames : Sequence(String) = aQualifiedName.tokenize('.') in

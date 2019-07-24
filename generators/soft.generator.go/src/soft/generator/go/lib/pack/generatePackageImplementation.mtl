@@ -19,13 +19,13 @@
 [query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'nil' else getPackageInstance(anEClassifier, anOperation.eContainingClass) + anEClassifier.getReflectiveGetterName() + '()' endif/]
 
 [template private generateDataMember(anENamedElement : ENamedElement, anEPackage : EPackage)] 
-[anENamedElement.getElementInstanceName()/] [getMetaType(anENamedElement)/] 
+[anENamedElement.getElementInstanceName()/] [anEPackage.getMetaType(anENamedElement)/] 
 
 [/template]
 
 [template private generateGetter(anENamedElement : ENamedElement, anEPackage : EPackage)]
 // [anENamedElement.getReflectiveGetterName()/] returns the meta object corresponding to 
-func (p *[anEPackage.getImplementationName()/]) [anENamedElement.getReflectiveGetterName()/]() [getMetaType(anENamedElement)/] {
+func (p *[anEPackage.getImplementationName()/]) [anENamedElement.getReflectiveGetterName()/]() [anEPackage.getMetaType(anENamedElement)/] {
     return p.[anENamedElement.getElementInstanceName()/]
 }
 
@@ -155,9 +155,13 @@ p.[aDataType.getElementInstanceName()/].SetSerializable([aDataType.serializable.
 
 package [anEPackage.name/]
 
+[if not anEPackage.isEcorePackage()]
+import "[anEPackage.getImportForPackage('ecore')/]"
+[/if]
+
 // [className/] is the [anEPackage.getInterfaceName()/] implementation
 type [className/] struct {
-    *EPackageExt
+    *[if not anEPackage.isEcorePackage()]ecore.[/if]EPackageExt
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
     [let dataMembers : Sequence(ENamedElement) = Sequence{ Sequence{ aClass } , aClass.eStructuralFeatures, aClass.eOperations}->flatten()]
     [dataMembers.generateDataMember(anEPackage)/]
@@ -183,9 +187,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 [anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(anEPackage)/]
 
 func (p *[className/])createPackageContents() {
-[let factoryName : String = if anEPackage.name = 'ecore' then '' else 'ecore.' endif + 'GetFactory']
-    factory := [factoryName/]()
-[/let]
+    factory := [if not anEPackage.isEcorePackage()]ecore.[/if]GetFactory()
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
     p.create[aClass.name.toUpperFirst()/]Content(factory)
 [/for]
@@ -193,16 +195,14 @@ func (p *[className/])createPackageContents() {
 }
 
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
-[let factoryName : String = if anEPackage.name = 'ecore' then '' else 'ecore.' endif + 'EcoreFactory']
-func (p *[className/])create[aClass.name.toUpperFirst()/]Content(factory [factoryName/]) {
+func (p *[className/])create[aClass.name.toUpperFirst()/]Content(factory [if not anEPackage.isEcorePackage()]ecore.[/if]EcoreFactory) {
     [aClass.generateCreation()/]
     [aClass.eStructuralFeatures.generateCreation()/]
     [aClass.eOperations.generateCreation()/]
 }
-[/let]
 [/for]
 
-func (p *[className/])createPackageEDataTypes(factory EcoreFactory) {
+func (p *[className/])createPackageEDataTypes(factory [if not anEPackage.isEcorePackage()]ecore.[/if]EcoreFactory) {
     [anEPackage.eAllContents(EDataType)->sortedBy(name).generateCreation()/]
 }
 
