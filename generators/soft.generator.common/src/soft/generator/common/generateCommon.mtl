@@ -201,3 +201,5 @@
         baseCount.concat(' + ').concat( (aEClass.getFeatureCount() - baseClass.getFeatureCount()).toString() )
     endif
 /]
+
+[query public isEcorePackage( aPackage : EPackage ) : Boolean = aPackage.name = 'ecore' /]

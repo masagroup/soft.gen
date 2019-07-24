@@ -122,8 +122,9 @@
 [/template]
 
 [template private generateEInvokeDefinition(aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
 [let className : String = aClass.getImplementationName()]
-[aClass.generateFunctionReceiver()/] EInvokeFromID(operationID int, arguments EList) interface{} {
+[aClass.generateFunctionReceiver()/] EInvokeFromID(operationID int, arguments [if not aPackage.isEcorePackage()]ecore.[/if]EList) interface{} {
     switch operationID {
     [for ( eOperation : EOperation | aClass.eOperations->sortedBy(name) )]
     case [eOperation.eContainingClass.getOperationIDName(eOperation)/]:
@@ -138,6 +139,7 @@
         return [aClass.getReceiverName()/].[aClass.getRawClassExtends()/].EInvokeFromID(operationID,arguments)
     }
 }
+[/let]
 [/let]
 [/template]
 
@@ -200,13 +202,14 @@
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass) ]
+[let aPackage : EPackage = aClass.ePackage]
 [let className : String = aClass.getImplementationName()]
-[aClass.generateFunctionReceiver()/] EBasicInverseAdd(otherEnd EObject, featureID int, notifications ENotificationChain) ENotificationChain {
+[aClass.generateFunctionReceiver()/] EBasicInverseAdd(otherEnd [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
     case [aFeature.getQualifiedFeatureIDName()/]:
     [if aFeature.isListType()]
-        list := [aClass.getReceiverName()/].[aFeature.getGetterName()/]().(ENotifyingList)
+        list := [aClass.getReceiverName()/].[aFeature.getGetterName()/]().([if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList)
         return list.AddWithNotification(otherEnd, notifications)
     [elseif aFeature.isContainer()]
         msgs := notifications
@@ -225,10 +228,10 @@
         msgs := notifications
         if [aClass.getReceiverName()/].[aFeature.name/] != nil {
             [if aFeature.isContains()]
-            msgs = [aClass.getReceiverName()/].[aFeature.name/].(EObjectInternal).EInverseRemove([aClass.getReceiverName()/], EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/], msgs)
+            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/], EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/], msgs)
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-            msgs = [aClass.getReceiverName()/].[aFeature.name/].(EObjectInternal).EInverseRemove([aClass.getReceiverName()/], [reverseFeature.getQualifiedFeatureIDName()/], msgs)
+            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/], [reverseFeature.getQualifiedFeatureIDName()/], msgs)
                 [/let]
             [/if]
         }
@@ -240,11 +243,13 @@
     }
 }
 [/let]
+[/let]
 [/template]
 
 [template public generateEInverseRemoveDefinition(aClass : EClass) ? (aClass.getEInverseRemoveFeatures()->notEmpty()) ]
+[let aPackage : EPackage = aClass.ePackage]
 [let className : String = aClass.getImplementationName()]
-[aClass.generateFunctionReceiver()/] EBasicInverseRemove(otherEnd EObject, featureID int, notifications ENotificationChain) ENotificationChain {
+[aClass.generateFunctionReceiver()/] EBasicInverseRemove(otherEnd  [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
     case [aFeature.getQualifiedFeatureIDName()/]:
@@ -263,5 +268,6 @@
         return [aClass.getReceiverName()/].[aClass.getRawClassExtends()/].EBasicInverseRemove(otherEnd, featureID, notifications)
     }
 }
+[/let]
 [/let]
 [/template]

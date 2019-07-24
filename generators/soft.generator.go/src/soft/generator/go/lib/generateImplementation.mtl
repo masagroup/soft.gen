@@ -10,14 +10,14 @@
 [import soft::generator::go::lib::generateReflectives/]
 
 [template public generateImplementation(aClass : EClass) { implementationName : String = aClass.getImplementationName(); aPackage : EPackage = aClass.ePackage } ]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]
 
 [let imports : OrderedSet(String) = Set { aClass.getInterfaceExtends()->collect( extend | aPackage.getImport( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
-                                        , if aPackage.name <> 'ecore' and aClass.requiresList() then Set { getImportForPackage('ecore') } else Set{} endif 
+                                        , if not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() ) then Set { getImportForPackage('ecore') } else Set{} endif 
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
 import "[i/]"
