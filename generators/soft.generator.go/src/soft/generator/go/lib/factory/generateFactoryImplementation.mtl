@@ -3,6 +3,7 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::factory::generateCommon/]
 
@@ -13,20 +14,22 @@
 package [anEPackage.name/]
 
 import "strconv"
-
+[if not anEPackage.isEcorePackage()]
+import "[anEPackage.getImportForPackage('ecore')/]"
+[/if]
 type [anEPackage.getFactoryInternalName()/] interface {
 [let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
 [for (aDataType : EDataType | dataTypes)]
-    create[aDataType.name/]FromString(eDataType EDataType, literalValue string) interface{}
+    create[aDataType.name/]FromString(eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{}
 [/for]
 [for (aDataType : EDataType | dataTypes)]
-    convert[aDataType.name/]ToString(eDataType EDataType, literalValue interface{}) string
+    convert[aDataType.name/]ToString(eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue interface{}) string
 [/for]
 [/let]
 }
 
 type [className/] struct {
-    *EFactoryExt
+    *[if not anEPackage.isEcorePackage()]ecore.[/if]EFactoryExt
 }
 
 func new[className.toUpperFirst()/]() *[className/] {
@@ -36,7 +39,7 @@ func new[className.toUpperFirst()/]() *[className/] {
     return factory 
 }
 
-[anEPackage.generateFactoryImplementationMember()/] Create(eClass EClass) EObject {
+[anEPackage.generateFactoryImplementationMember()/] Create(eClass [if not anEPackage.isEcorePackage()]ecore.[/if]EClass) [if not anEPackage.isEcorePackage()]ecore.[/if]EObject {
 	classID := eClass.GetClassifierID()
 	switch classID {
     [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
@@ -66,7 +69,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 [/let]
 [/for]
 [let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
-[anEPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType EDataType, literalValue string) interface{} {
+[anEPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
 	classID  := eDataType.GetClassifierID()
     internal := [anEPackage.getFactoryReceiverName()/].interfaces.([anEPackage.getFactoryInternalName()/]) 
 	switch classID {
@@ -79,7 +82,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 	}
 }
 
-[anEPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType EDataType, instanceValue interface{}) string {
+[anEPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue interface{}) string {
     classID := eDataType.GetClassifierID()
     internal := [anEPackage.getFactoryReceiverName()/].interfaces.([anEPackage.getFactoryInternalName()/])
     switch classID {
@@ -93,12 +96,12 @@ func new[className.toUpperFirst()/]() *[className/] {
 }
 [for (aDataType : EDataType | dataTypes)]
 [let createMethodName : String = 'create' + aDataType.name + 'FromString']
-[anEPackage.generateFactoryImplementationMember()/] [createMethodName/](eDataType EDataType, literalValue string) interface{} {
+[anEPackage.generateFactoryImplementationMember()/] [createMethodName/](eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
 	panic("NotImplementedException")
 }
 [/let]
 [let convertMethodName : String = 'convert' + aDataType.name + 'ToString']
-[anEPackage.generateFactoryImplementationMember()/] [convertMethodName/](eDataType EDataType, literalValue interface{}) string {
+[anEPackage.generateFactoryImplementationMember()/] [convertMethodName/](eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue interface{}) string {
 	panic("NotImplementedException")
 }
 [/let]
