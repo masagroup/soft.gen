@@ -2,8 +2,7 @@
 [module generateReflectives('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
-[import soft::generator::common::generateOperation/]
-[import soft::generator::common::generateStructuralFeature/]
+[import soft::generator::common::generateElement/]
 
 [**
  * Reflectives eGet/eSet//eUnSet/eIsSet/eInverseAdd/eInverseRemove

@@ -191,45 +191,44 @@ NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ec
 [/template]
 
 
-[template public generateImplementation(aStructuralFeature : EStructuralFeature )]
+[template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
 [if isGet()]
-[aStructuralFeature.generateGetImplementation()/]
+[aStructuralFeature.generateGetImplementation(aClass)/]
 [/if]
 [if isBasicGet()]
-[aStructuralFeature.generateBasicGetImplementation()/]
+[aStructuralFeature.generateBasicGetImplementation(aClass)/]
 [/if]
 [if isSet()]
-[aStructuralFeature.generateSetImplementation()/]
+[aStructuralFeature.generateSetImplementation(aClass)/]
 [/if]
 [if isBasicSet()]
-[aStructuralFeature.generateBasicSetImplementation()/]
+[aStructuralFeature.generateBasicSetImplementation(aClass)/]
 [/if]
 [if isUnSet()]
-[aStructuralFeature.generateUnSetImplementation()/]
+[aStructuralFeature.generateUnSetImplementation(aClass)/]
 [/if]
 [if isBasicUnSet()]
-[aStructuralFeature.generateBasicUnSetImplementation()/]
+[aStructuralFeature.generateBasicUnSetImplementation(aClass)/]
 [/if]
 [/template]
 
 
-[template public generateGetImplementation(aStructuralFeature : EStructuralFeature)]
+[template public generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 // [aStructuralFeature.getGetterName()/] get the value of [aStructuralFeature.getVariableName()/]
-[aStructuralFeature.eContainingClass.generateFunctionReceiver()/] [aStructuralFeature.getGetterName()/]() [aStructuralFeature.generateType()/] {
-[aStructuralFeature.generateCommonGetImplementation()/]
+[aClass.generateFunctionReceiver()/] [aStructuralFeature.getGetterName()/]() [aStructuralFeature.generateType()/] {
+[aStructuralFeature.generateCommonGetImplementation(aClass)/]
 }
 
 [/template]
 
-[template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature)]
-[aStructuralFeature.eContainingClass.generateFunctionReceiver()/] basic[aStructuralFeature.getGetterName().toUpperFirst()/]() [aStructuralFeature.generateType()/] {
-[aStructuralFeature.generateCommonGetImplementation()/]
+[template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[aClass.generateFunctionReceiver()/] basic[aStructuralFeature.getGetterName().toUpperFirst()/]() [aStructuralFeature.generateType()/] {
+[aStructuralFeature.generateCommonGetImplementation(aClass)/]
 }
 
 [/template]
 
-[template public generateCommonGetImplementation(aStructuralFeature : EStructuralFeature)]
-[let aClass : EClass = aStructuralFeature.eContainingClass]
+[template public generateCommonGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let receiverName : String = aStructuralFeature.eContainingClass.getReceiverName()]
 [if isContainer()]
@@ -261,13 +260,11 @@ NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ec
 [/if]
 [/let]
 [/let]
-[/let]
 [/template]
 
 
 
-[template public generateSetImplementation(aStructuralFeature : EStructuralFeature )]
-[let aClass : EClass = aStructuralFeature.eContainingClass]
+[template public generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let methodName : String = aStructuralFeature.getSetterName()]
 [let receiverName : String = aClass.getReceiverName() ]
@@ -340,12 +337,10 @@ NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ec
 [/let]
 [/let]
 [/let]
-[/let]
 
 [/template]
 
-[template public generateBasicSetImplementation(aStructuralFeature : EStructuralFeature)]
-[let aClass : EClass = aStructuralFeature.eContainingClass]
+[template public generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let receiverName : String = aClass.getReceiverName() ]
 [let varName : String = aStructuralFeature.getVariableName() ]
@@ -378,11 +373,9 @@ NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ec
 [/let]
 [/let]
 [/let]
-[/let]
 [/template]
 
-[template public generateUnSetImplementation(aStructuralFeature : EStructuralFeature )]
-[let aClass : EClass = aStructuralFeature.eContainingClass]
+[template public generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let receiverName : String = aClass.getReceiverName()]
 [let varName : String = aStructuralFeature.getVariableName() ]
@@ -424,12 +417,10 @@ NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ec
 [/let]
 [/let]
 [/let]
-[/let]
 
 [/template]
 
-[template public generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature)]
-[let aClass : EClass = aStructuralFeature.eContainingClass]
+[template public generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let receiverName : String = aClass.getReceiverName()]
 [let varName : String = aStructuralFeature.getVariableName()]    
@@ -452,7 +443,6 @@ NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ec
     panic("basic[aStructuralFeature.getUnSetterName().toUpperFirst()/] not implemented")
 [/if] 
 }
-[/let]
 [/let]
 [/let]
 [/let]

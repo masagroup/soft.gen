@@ -16,29 +16,9 @@
     aString.replaceAll(aRegExp, '') <> aString
 /]
 
-
 [**
  * Properties on Class/Features
 */]
-[query public getReferencedTypes(aOperation : EOperation) : Set(EClassifier) =
-    if aOperation.eGenericType.oclIsUndefined() then
-        OrderedSet {
-            OrderedSet { aOperation.eType },
-            aOperation.eParameters.eType
-        }->flatten()
-    else
-        OrderedSet {
-            OrderedSet { aOperation.eType , aOperation.eGenericType.eClassifier },
-            aOperation.eParameters.eType
-        }->flatten()
-    endif  
-/]
-
-[query public getReferencedTypes(aClass : EClass) : Set(EClassifier) = 
-    OrderedSet{aClass.eSuperTypes
-              ,aClass.eStructuralFeatures.eType
-              ,aClass.eOperations.getReferencedTypes()}->flatten()->select( cls | not cls.oclIsUndefined() ) /]
-
 [query private hasContainerAttribute(aClass : EClass) : Boolean =  getContainerAttribute()->notEmpty() /]
 [query private getContainerAttribute(aClass : EClass) : OrderedSet(EReference) =  aClass.eReferences->select(isContainerAttribute())->sortedBy(name) /]
 [query private isContainerAttribute(aRef : EReference) : Boolean =  aRef.container/]
@@ -66,13 +46,6 @@
 [query public isProxy(aStructuralFeature : EStructuralFeature) : Boolean = (not isContainer() and not isContains()) and aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).resolveProxies/]  
 [query public isField(aStructuralFeature : EStructuralFeature) : Boolean = not isContainer() and not isVolatile()/]
 [query public isMap(  aEFeature : EStructuralFeature , n : String  ) : Boolean = let entries : Sequence(String) = Sequence{'java.util.Map.Entry','java.util.Map$Entry'} in entries->includes(n)/]
-[query public requiresList(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EEList' endif/]
-[query public requiresList(aClass : EClass) : Boolean = aClass.eReferences->exists(upperBound <> 1) or aClass.eOperations.eParameters->exists((eType.requiresList()  or upperBound <> 1)) /]
-[query public requiresCollectionView(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'ETreeIterator' endif/]
-[query public requiresCollectionView(anGenericType : EGenericType) : Boolean = if (oclIsUndefined()) then false else anGenericType.eClassifier.requiresCollectionView() endif/]
-[query public requiresResource(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EResource' endif/]
-[query public requiresResource(anGenericType : EGenericType) : Boolean = if (oclIsUndefined()) then false else anGenericType.eClassifier.requiresResource() endif/]
-
 
 [query public isGet(aStructuralFeature : EStructuralFeature) : Boolean = true/]
 [query public isSet(aStructuralFeature : EStructuralFeature) : Boolean = isChangeable() and aStructuralFeature.upperBound = 1/]

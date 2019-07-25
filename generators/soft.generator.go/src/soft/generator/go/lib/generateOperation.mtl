@@ -12,12 +12,12 @@
 
 [query private isDefault(anEOperation : EOperation ) : Boolean = not anEOperation.hasKey('default') or ( anEOperation.hasKey('default') and anEOperation.valueKey('default') = 'true' )/]
 
-[template public generateImplementation(anEOperation : EOperation ) ? (not anEOperation.isDefault() )]
+[template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? (not anEOperation.isDefault() )]
 [/template]
 
-[template public generateImplementation(anEOperation : EOperation ) ? ( anEOperation.isDefault() )]
+[template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? ( anEOperation.isDefault() )]
 // [anEOperation.getFunctionName()/] default implementation
-[anEOperation.eContainingClass.generateFunctionReceiver()/] [anEOperation.getFunctionName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/] {
+[aClass.generateFunctionReceiver()/] [anEOperation.getFunctionName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/] {
     panic("[anEOperation.getFunctionName()/] not implemented")
 }
 

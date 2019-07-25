@@ -2,6 +2,7 @@
 [module generateImplementationSource('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
 [import soft::generator::cpp::generateCommon /]
 [import soft::generator::cpp::generateOperation/]
 [import soft::generator::cpp::generateType/]

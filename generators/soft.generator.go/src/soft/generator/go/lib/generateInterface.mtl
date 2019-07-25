@@ -3,6 +3,7 @@
 
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
@@ -13,20 +14,24 @@
 	interfaceName : String = aClass.getInterfaceName(); 
 	aPackage : EPackage = aClass.ePackage; 
 	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
-	isDiamond : Boolean = interfaceExtends->size() > 1; 
+	isDiamond : Boolean = interfaceExtends->size() > 1;
 }]
 [file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]
 
-[let imports : OrderedSet(String) = Set { interfaceExtends->collect( extend | aPackage.getImport( extend ) )->asSet()
-                                        , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
-                                        , if aPackage.name <> 'ecore' and aClass.requiresList() then Set { getImportForPackage('ecore') } else Set{} endif 
-                                        }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
+[let refTypes : Set(EClassifier) = if isDiamond then aClass.eSuperTypes.getReferencedTypes()->asSet() else aClass.getReferencedTypes()->asSet() endif]
+[let ecorePackage : Set(String) = if not aPackage.isEcorePackage() and ( aClass.requiresList() or isDiamond ) then Set{ getImportForPackage('ecore') } else Set{} endif]
+[let imports : OrderedSet(String) = Set { interfaceExtends->collect( extend | aPackage.getImport(extend))->asSet()
+                                        , refTypes->collect(cls | aPackage.getImport(cls))->asSet()
+										, ecorePackage
+                                        }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
 [for ( i : String | imports )]
 import "[i/]"
 [/for]
+[/let]
+[/let]
 [/let]
 
 
