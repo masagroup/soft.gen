@@ -43,24 +43,28 @@ type [implementationName/] struct {
     [ aClass.getImplementedFeatures().generateVariableDeclaration()/]
 }
 
+// [aClass.getConstructorName()/] is the constructor of a [aClass.getImplementationName()/]
+func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
+    [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
+    [aClass.getReceiverName()/].[getUnQualifiedName(classExtend)/] = [getShortQualifiedName(getConstructorName(classExtend), aPackage.name)/]()
+    [aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/]) 
+	[fieldFeatures.generateVariableInitialization(aClass)/]
+    return [aClass.getReceiverName()/]
+}
+
 [if initializerFeatures->notEmpty()]
 type [aClass.getInitializersInterface()/] interface {
     [initializerFeatures.generateVariableInitializationMethodDeclaration()/]
 }
-[/if]
 
-// [aClass.getConstructorName()/] is the constructor of a [aClass.getImplementationName()/]
-func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
-    [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
-    [aClass.getReceiverName()/].[getShortQualifiedName(classExtend,aPackage.name)/] = [getShortQualifiedName(getConstructorName(classExtend), aPackage.name)/]()
-    [aClass.getReceiverName()/].interfaces = [aClass.getReceiverName()/] 
-	[fieldFeatures.generateVariableInitialization()/]
-    return [aClass.getReceiverName()/]
+[aClass.generateFunctionReceiver()/] getInitializers() [aClass.getInitializersInterface()/] {
+    return [aClass.getReceiverName()/].GetEObject().([aClass.getInitializersInterface()/])
 }
+[/if]
 
 [operations.generateImplementation(aClass)/]
 [features.generateImplementation(aClass)/]
-[initializerFeatures.generateVariableInitializationMethodDefinition()/]
+[initializerFeatures.generateVariableInitializationMethodDefinition(aClass)/]
 [aClass.generateReflectivesDefinition()/]
 [/file]
 [/template]

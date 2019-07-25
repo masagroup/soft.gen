@@ -34,8 +34,8 @@ type [className/] struct {
 
 func new[className.toUpperFirst()/]() *[className/] {
     factory := new([className/])
-    factory.EFactoryExt = NewEFactoryExt()
-    factory.interfaces = factory
+    factory.EFactoryExt = [if not anEPackage.isEcorePackage()]ecore.[/if]NewEFactoryExt()
+    factory.SetInterfaces(factory)
     return factory 
 }
 

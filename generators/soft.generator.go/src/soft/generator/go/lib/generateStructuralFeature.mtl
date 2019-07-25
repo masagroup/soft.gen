@@ -66,7 +66,6 @@ not isVolatile() and isLazy() and ( let lazyType : String = aStructuralFeature.g
 
 [query public getInitializersInterface( aClass : EClass ) : String = aClass.getImplementationName() + 'Initializers'/]
 
-
 [query private getMethodInitializationName(feature : EStructuralFeature) : String = 
 if hasKey('initializationName') then 
     valueKey('initializationName') 
@@ -99,41 +98,39 @@ endif/]
 [aStructuralFeature.getUnSetterName()/]()
 [/template]
 
-[template private getListConstructor( anEAttribute : EStructuralFeature ) post(trim())]
+[template private getListConstructor( anEAttribute : EStructuralFeature , aClass : EClass) post(trim())]
 [/template]
 
-[template private getListConstructor( anEAttribute : EAttribute ) post(trim())]
+[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) post(trim())]
 NewArrayEList([anEAttribute.unique/])
 [/template]
 
-[template private getListConstructor( anEReference : EReference ) post(trim())]
-[let aClass : EClass = anEReference.eContainingClass]
+[template private getListConstructor( anEReference : EReference , aClass : EClass ) post(trim())]
 [let aPackage : EPackage = aClass.ePackage]
-[let receiverName : String = anEReference.eContainingClass.getReceiverName()]
+[let receiverName : String = aClass.getReceiverName()]
 [if (anEReference.containment)]
     [if anEReference.eOpposite.oclIsUndefined() ]
-[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal) , [aClass.getFeatureIDName(anEReference)/] , -1, true , true , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].GetEObjectInternal() , [aClass.getFeatureIDName(anEReference)/] , -1, true , true , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal) , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].GetEObjectInternal() , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
         [/let]
         [/let]
     [/if]
 [else]
     [if anEReference.eOpposite.oclIsUndefined() ]
         [let featureID : String = anEReference.eContainingClass.getFeatureIDName( anEReference )]
-[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal) , [featureID/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].GetEObjectInternal() , [featureID/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
         [/let]
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal) , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]  )
+[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].GetEObjectInternal() , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]  )
         [/let]
         [/let]
     [/if]
 [/if]
-[/let]
 [/let]
 [/let]
 [/template]
@@ -143,11 +140,11 @@ NewArrayEList([anEAttribute.unique/])
 
 [/template]
 
-[template public generateVariableInitialization(aStructuralFeature : EStructuralFeature)]
+[template public generateVariableInitialization(aStructuralFeature : EStructuralFeature, aClass : EClass )]
 [if aStructuralFeature.oclIsKindOf(EAttribute) ]
-[aStructuralFeature.eContainingClass.getReceiverName()/].[aStructuralFeature.getVariableName()/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]
+[aClass.getReceiverName()/].[aStructuralFeature.getVariableName()/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]
 [elseif aStructuralFeature.isListType() and not aStructuralFeature.isLazy()]
-[aStructuralFeature.eContainingClass.getReceiverName()/].[aStructuralFeature.getVariableName()/] = [aStructuralFeature.getListConstructor()/]
+[aClass.getReceiverName()/].[aStructuralFeature.getVariableName()/] = [aStructuralFeature.getListConstructor(aClass)/]
 [else]
 [/if]
 [/template]
@@ -157,10 +154,10 @@ NewArrayEList([anEAttribute.unique/])
 
 [/template]
 
-[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'function' )]
-[aStructuralFeature.eContainingClass.generateFunctionReceiver()/] [aStructuralFeature.getMethodInitializationName()/]() [aStructuralFeature.generateType()/] {
+[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'function' )]
+[aClass.generateFunctionReceiver()/] [aStructuralFeature.getMethodInitializationName()/]() [aStructuralFeature.generateType()/] {
 [if isListType()]
-    return [getListConstructor()/];
+    return [getListConstructor(aClass)/];
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
     return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
 [else]
@@ -171,12 +168,12 @@ NewArrayEList([anEAttribute.unique/])
 
 [/template]
 
-[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'action' )]
-[aStructuralFeature.eContainingClass.generateFunctionReceiver()/] [aStructuralFeature.getMethodInitializationName()/]() {
+[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'action' )]
+[aClass.generateFunctionReceiver()/] [aStructuralFeature.getMethodInitializationName()/]() {
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let receiverName : String = aStructuralFeature.eContainingClass.getReceiverName()]
 [if isListType()]
-    [receiverName/].[varName/] = [getListConstructor()/];
+    [receiverName/].[varName/] = [getListConstructor(aClass)/];
 [elseif isProxy()]
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
     [receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
@@ -230,7 +227,7 @@ NewArrayEList([anEAttribute.unique/])
 
 [template public generateCommonGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[let receiverName : String = aStructuralFeature.eContainingClass.getReceiverName()]
+[let receiverName : String = aClass.getReceiverName()]
 [if isContainer()]
     if [receiverName/].eContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] {
         return [receiverName/].EContainer().([aStructuralFeature.generateType()/]);
@@ -245,10 +242,10 @@ NewArrayEList([anEAttribute.unique/])
             [else]
     if [receiverName/].[varName/] == nil {
             [/if]
-        [receiverName/].[varName/] = [receiverName/].interfaces.([aClass.getInitializersInterface()/]).[aStructuralFeature.getMethodInitializationName()/]()
+        [receiverName/].[varName/] = [receiverName/].getInitializers().[aStructuralFeature.getMethodInitializationName()/]()
     }
         [elseif lazy = 'action']
-    [receiverName/].interfaces.([aClass.getInitializersInterface()/]).[aStructuralFeature.getMethodInitializationName()/]()
+    [receiverName/].getInitializers().[aStructuralFeature.getMethodInitializationName()/]()
         [/if]
     [/if]
     [/let]
@@ -288,7 +285,7 @@ NewArrayEList([anEAttribute.unique/])
             notifications.Dispatch()
         }
     } else if ( [receiverName/].ENotificationRequired() ) {
-        [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/], SET, [aClass.getFeatureIDName(aStructuralFeature)/], [newVarName/], [newVarName/], [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX) )
+        [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/], [if not aPackage.isEcorePackage()]ecore.[/if]SET, [aClass.getFeatureIDName(aStructuralFeature)/], [newVarName/], [newVarName/], [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX) )
     }
     [elseif isBidirectional() or isContains()]
     if ( [newVarName/] != [receiverName/].[varName/] ) {
@@ -322,7 +319,7 @@ NewArrayEList([anEAttribute.unique/])
     [oldVarName/] := [aClass.getReceiverName()/].[varName/]
     [aClass.getReceiverName()/].[varName/] = [newVarName/]
     if [aClass.getReceiverName()/].ENotificationRequired() {
-        [aClass.getReceiverName()/].ENotify([if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ecore.[/if]EObject), [if not aPackage.isEcorePackage()]ecore.[/if]SET, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
+        [aClass.getReceiverName()/].ENotify([if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].GetEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]SET, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
     }
     [/if]
 [elseif hasKey('setterBody')]
@@ -354,7 +351,7 @@ NewArrayEList([anEAttribute.unique/])
     [receiverName/].[varName/] = [newVarName/]
     notifications := msgs
     if ( [receiverName/].ENotificationRequired() ) {
-        notification := [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ecore.[/if]EObject), [if not aPackage.isEcorePackage()]ecore.[/if]SET, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX)
+        notification := [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].GetEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]SET, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX)
         if (notifications != nil ) {
             notifications.Add( notification );
         } else {
@@ -389,10 +386,10 @@ NewArrayEList([anEAttribute.unique/])
     if ( [receiverName/].[varName/] != nil ) {
         notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain
         [if not isBidirectional()]
-        notifications = [receiverName/].[varName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove( [receiverName/], [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications )
+        notifications = [receiverName/].[varName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove( [receiverName/].GetEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications )
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
-        notifications = [receiverName/].[varName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove( [receiverName/], [reverseFeature.eContainingClass.getFeatureIDName(reverseFeature)/] , notifications )
+        notifications = [receiverName/].[varName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove( [receiverName/].GetEObject(), [reverseFeature.eContainingClass.getFeatureIDName(reverseFeature)/] , notifications )
             [/let]
         [/if]
         notifications = basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](notifications)
@@ -400,11 +397,11 @@ NewArrayEList([anEAttribute.unique/])
             notifications.Dispatch()
         }
     } else if [receiverName/].ENotificationRequired() {
-        [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/], [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],nil,nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
+        [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].GetEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],nil,nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
     }
     [else]
         if [receiverName/].ENotificationRequired() {
-            [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/], [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],nil,nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
+            [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].GetEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],nil,nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
         }
     [/if]
 [elseif hasKey('unsetterBody')]
@@ -431,7 +428,7 @@ NewArrayEList([anEAttribute.unique/])
     [receiverName/].[varName/] = nil
     notifications := msgs;
     if [receiverName/].ENotificationRequired() {
-        notification := [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ecore.[/if]EObject), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX)
+        notification := [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].GetEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX)
         if ( notifications != nil ) {
             notifications.Add( notification )
         } else {

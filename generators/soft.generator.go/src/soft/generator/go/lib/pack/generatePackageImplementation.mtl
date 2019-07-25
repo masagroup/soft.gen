@@ -173,6 +173,7 @@ type [className/] struct {
 func new[className.toUpperFirst()/]() *[className/] {
     p := new([className/])
     p.EPackageExt = NewEPackageExt()
+	p.SetInterfaces(p)
     p.createPackageContents()
     p.initializePackageContents()
     return p

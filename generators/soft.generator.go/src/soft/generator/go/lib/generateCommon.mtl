@@ -54,23 +54,7 @@ func ([aClass.getReceiverName()/] *[aClass.getImplementationName()/])
         endif
     endif
 /]
-[query public getRawClassExtends(aClass : EClass ) : String =
-    let aPackage : EPackage = aClass.ePackage in 
-    let extendsClass : EClass = aClass.getClassExtendsClass() in
-    if ( extendsClass.oclIsUndefined() ) then
-        if ( aClass.name = 'EObject' ) then
-            'BasicEObject'
-        else
-            'EObjectImpl'
-        endif
-    else
-        if ( extendsClass.hasExtension() ) then
-            extendsClass.getExtensionName()
-        else
-            extendsClass.getImplementationName()
-        endif
-    endif
-/]
+
 [query private isUpperFirst( aString : String ) : Boolean = aString.toUpperFirst() = aString /]
 
 [query public getConstructorName( aClass : EClass ) : String = getConstructorName(aClass.getImplementationName())/]

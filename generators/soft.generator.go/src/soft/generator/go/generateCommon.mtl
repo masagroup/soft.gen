@@ -164,6 +164,16 @@ endif endif endif
     shortQualifiedNames->join('.')
 /]
 
+[query public getUnQualifiedName( aQualifiedName : String ) : String =
+    let index : Integer = aQualifiedName.lastIndex('.') in
+    if index = -1 then
+        aQualifiedName
+    else
+        aQualifiedName.substring(index+1)
+    endif
+/]
+
+
 [query public getQualification( any : OclAny , aQualifiedName : String ) : String = 
     let index : Integer = aQualifiedName.lastIndex('.') in
     if index = -1 then
