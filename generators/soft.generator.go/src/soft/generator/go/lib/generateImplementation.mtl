@@ -9,7 +9,7 @@
 [import soft::generator::go::lib::generateStructuralFeature/]
 [import soft::generator::go::lib::generateReflectives/]
 
-[template public generateImplementation(aClass : EClass) { implementationName : String = aClass.getImplementationName(); aPackage : EPackage = aClass.ePackage } ]
+[template public generateImplementation(aClass : EClass) { implementationName : String = aClass.getImplementationName(); aPackage : EPackage = aClass.ePackage; classExtend : String = aClass.getClassExtends(); } ]
 [file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
@@ -26,9 +26,7 @@ import "[i/]"
 
 // [implementationName/] is the implementation of the model object '[aClass.name/]'
 type [implementationName/] struct {
-[for ( qualifiedExtend : String | aClass.getClassExtends() )]
-    *[getShortQualifiedName(qualifiedExtend,aPackage.name)/]
-[/for]
+    *[getShortQualifiedName( classExtend ,aPackage.name)/]
 [let features : OrderedSet(EStructuralFeature) = aClass.eStructuralFeatures->select( isField() )]
     [features.generateVariableDeclaration()/]
 [/let]
@@ -45,9 +43,7 @@ type [aClass.getVariableInitializersInterface()/] interface {
 // [aClass.getConstructorName()/] is the constructor of a [aClass.getImplementationName()/]
 func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
     [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
-[for ( qualifiedExtend : String | aClass.getClassExtends() )]
-    [aClass.getReceiverName()/].[getShortQualifiedName(qualifiedExtend,aClass.ePackage.name)/] = [getShortQualifiedName(getConstructorName(qualifiedExtend), aClass.ePackage.name)/]()
-[/for]
+    [aClass.getReceiverName()/].[getShortQualifiedName(classExtend,aPackage.name)/] = [getShortQualifiedName(getConstructorName(classExtend), aPackage.name)/]()
     [aClass.getReceiverName()/].interfaces = [aClass.getReceiverName()/] 
 [let features : OrderedSet(EAttribute) = aClass.eStructuralFeatures->select( isField() )]
 [if features->notEmpty()]
