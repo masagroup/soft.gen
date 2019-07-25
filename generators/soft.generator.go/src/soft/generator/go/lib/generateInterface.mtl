@@ -9,13 +9,17 @@
 [import soft::generator::go::lib::generateOperation/]
 [import soft::generator::go::lib::generateStructuralFeature/]
 
-[template public generateInterface(aClass : EClass) { interfaceName : String = aClass.getInterfaceName(); aPackage : EPackage = aClass.ePackage } ]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
+[template public generateInterface(aClass : EClass) { 
+	interfaceName : String = aClass.getInterfaceName(); 
+	aPackage : EPackage = aClass.ePackage; 
+	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
+	isDiamond : Boolean = interfaceExtends->size() > 1; } ]
+[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( interfaceName ), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]
 
-[let imports : OrderedSet(String) = Set { aClass.getInterfaceExtends()->collect( extend | aPackage.getImport( extend ) )->asSet()
+[let imports : OrderedSet(String) = Set { interfaceExtends->collect( extend | aPackage.getImport( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
                                         , if aPackage.name <> 'ecore' and aClass.requiresList() then Set { getImportForPackage('ecore') } else Set{} endif 
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
@@ -27,21 +31,25 @@ import "[i/]"
 
 // [interfaceName/] is the representation of the model object '[aClass.name/]'
 type [interfaceName/] interface {
-[for ( qualifiedExtend : String | aClass.getInterfaceExtends() )]
+[if isDiamond]
+	[getShortQualifiedName('ecore.EObject', aPackage.name)/]
+[else]
+[for ( qualifiedExtend : String | interfaceExtends )]
     [getShortQualifiedName(qualifiedExtend, aPackage.name)/]
 [/for]
+[/if]
 
-[let operations : OrderedSet(EOperation) = aClass.eOperations]
+[let operations : OrderedSet(EOperation) = if isDiamond then aClass.eAllOperations else aClass.eOperations endif]
 [if operations->notEmpty()]
     [operations.generateDeclaration()/]
 [/if]
 [/let]
-[let attributes : OrderedSet(EAttribute) = aClass.eAttributes->select( isGet() or isSet() )]
+[let attributes : OrderedSet(EAttribute) = (if isDiamond then aClass.eAllAttributes else aClass.eAttributes endif)->select( isGet() or isSet() )]
 [if attributes->notEmpty()]
     [attributes.generateDeclaration()/]
 [/if]
 [/let]
-[let references : OrderedSet(EAttribute) = aClass.eReferences->select( isGet() or isSet() )]
+[let references : OrderedSet(EAttribute) = (if isDiamond then aClass.eAllReferences else aClass.eReferences endif)->select( isGet() or isSet() )]
 [if references->notEmpty()]
     [references.generateDeclaration()/]
 [/if]
