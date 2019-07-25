@@ -55,6 +55,9 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 [if aStructuralFeature.eContainingClass.eOperations->notEmpty()]
 [aStructuralFeature.generateEInvokeTestImplementation()/]
 [/if]
+[if aStructuralFeature.eContainingClass.getEIsSetFeatures()->notEmpty()]
+[aStructuralFeature.generateEIsSetTestImplementation()/]
+[/if]
 [/template]
 
 [template private generateGetSetTestImplementation(aStructuralFeature : EStructuralFeature)]
@@ -139,6 +142,25 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 		assert.Panics(t, func() { obj.EInvokeFromID([eOperation.eContainingClass.getOperationIDName(eOperation)/], nil) })
 	}
     [/for]
+}
+
+[/template]
+
+[template private generateEIsSetTestImplementation(aStructuralFeature : EStructuralFeature)]
+{
+	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
+	_ = obj
+	[for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getEIsSetFeatures()->sortedBy(name))]
+	{
+		[if anStructFeature.isListType()]
+		    [if anStructFeature.isField()]
+				assert.Equal(t, obj.[anStructFeature.name/] != nil && obj.[anStructFeature.name/].Size() != 0, obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
+		    [else]
+				assert.Equal(t, obj.[anStructFeature.getGetterName()/]().Size() != 0, obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
+		    [/if]
+		[/if]
+	}
+	[/for]
 }
 
 [/template]
