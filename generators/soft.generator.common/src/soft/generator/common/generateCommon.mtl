@@ -86,8 +86,6 @@
 [query private getSuperTypeContainers(aClass:EClass) : OrderedSet(EReference) = if not(aClass.eSuperTypes->isEmpty()) then aClass.eSuperTypes.getAllContainers()->flatten()->asOrderedSet() else OrderedSet{} endif /]
 [query public getAllContainers(aClass : EClass) : OrderedSet(EReference) =  if getContainerAttribute()->notEmpty() then if getSuperTypeContainers()->isEmpty() then getContainerAttribute() else OrderedSet{getContainerAttribute()}->append(getSuperTypeContainers()->flatten()->reject(oclIsUndefined())->asOrderedSet())->flatten()->asOrderedSet() endif else getSuperTypeContainers()->asOrderedSet() endif /]
 
-[query public getBaseClass( aEClass : EClass ) : EClass = if (aEClass.eSuperTypes->isEmpty() ) then null else aEClass.eSuperTypes->first() endif/]
-
 [query public splitAndCombineWords( eEObject : EObject , s : String, sep: String) : String = invoke('soft.generator.common.GenerateUtils','splitAndCombineWords(java.lang.String,java.lang.String)',Sequence{s,sep}) /]
 
 [query public getMemberName(anENamedElement : ENamedElement) : String = 
@@ -203,3 +201,20 @@
 /]
 
 [query public isEcorePackage( aPackage : EPackage ) : Boolean = aPackage.name = 'ecore' /]
+
+[query public getClassExtendsClass( aClass : EClass ) : EClass = getClassExtendsClass( aClass , aClass.getBaseClass() )/]
+
+[query private getClassExtendsClass( aClass : EClass , aBaseClass : EClass ) : EClass =
+    if ( aClass = aBaseClass ) then
+        null
+    else
+        if ( aBaseClass.oclIsUndefined() or (not aBaseClass.interface) ) then
+            aBaseClass
+        else
+            getClassExtendsClass(aClass , aBaseClass.getBaseClass())
+        endif
+    endif
+/]
+
+[query private getBaseClass( aEClass : EClass ) : EClass = if (aEClass.eSuperTypes->isEmpty() ) then null else aEClass.eSuperTypes->first() endif/]
+

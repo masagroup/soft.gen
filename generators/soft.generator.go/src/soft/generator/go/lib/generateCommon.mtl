@@ -82,21 +82,5 @@ func ([aClass.getReceiverName()/] *[aClass.getImplementationName()/])
 /]
 [query public getConstructorExtensionName( aClass : EClass ) : String = getConstructorName(aClass.getExtensionName())/]
 
-
-[query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedInterfaceName() }/]
-
-[query private getClassExtendsClass( aClass : EClass ) : EClass = getClassExtendsClass( aClass , aClass.getBaseClass() )/]
-[query private getClassExtendsClass( aClass : EClass , aBaseClass : EClass ) : EClass =
-    if ( aClass = aBaseClass ) then
-        null
-    else
-        if ( aBaseClass.oclIsUndefined() or (not aBaseClass.interface) ) then
-            aBaseClass
-        else
-            getClassExtendsClass(aClass , aBaseClass.getBaseClass())
-        endif
-    endif
-/]
-
 [query public getVariableName( aFeature : EStructuralFeature ) : String = 
 if aFeature.eType.name = 'EBoolean' then 'is' + aFeature.name.toUpperFirst() else aFeature.name endif/]

@@ -1,8 +1,8 @@
 [comment encoding = UTF-8 /]
 [module generateReflectives('http://www.eclipse.org/emf/2002/Ecore')/]
 
-[import soft::generator::common::generateReflectives/]
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateReflectives/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
@@ -12,7 +12,7 @@
     aClass.getESetFeatures()->notEmpty() or
     aClass.getEUnSetFeatures()->notEmpty() or
     aClass.getEIsSetFeatures()->notEmpty() or
-    aClass.eOperations->notEmpty() or
+    aClass.getEInvokeOperations()->notEmpty() or
     aClass.getEInverseAddFeatures()->notEmpty() or
     aClass.getEInverseRemoveFeatures()->notEmpty()]
 
@@ -32,7 +32,7 @@
 [aClass.generateEIsSetDefinition()/]
 
 [/if]
-[if aClass.eOperations->notEmpty()]
+[if aClass.getEInvokeOperations()->notEmpty()]
 [aClass.generateEInvokeDefinition()/]
 
 [/if]
@@ -50,7 +50,7 @@
 [let className : String = aClass.getImplementationName()]
 [aClass.generateFunctionReceiver()/] EGetFromID(featureID int, resolve, coreType bool) interface{} {
     switch featureID {
-    [for (anStructFeature : EStructuralFeature | aClass.eStructuralFeatures->asOrderedSet()->sortedBy(name))]
+    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
     case [anStructFeature.getQualifiedFeatureIDName()/]:
         return [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
     [/for]
@@ -126,7 +126,7 @@
 [let className : String = aClass.getImplementationName()]
 [aClass.generateFunctionReceiver()/] EInvokeFromID(operationID int, arguments [if not aPackage.isEcorePackage()]ecore.[/if]EList) interface{} {
     switch operationID {
-    [for ( eOperation : EOperation | aClass.eOperations->sortedBy(name) )]
+    [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy(name) )]
     case [eOperation.eContainingClass.getOperationIDName(eOperation)/]:
         [if eOperation.isVoid() ]
         [aClass.getReceiverName()/].[eOperation.generateOperationInvoke()/]

@@ -2,13 +2,16 @@
 [module generateReflectives('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateOperation/]
+[import soft::generator::common::generateStructuralFeature/]
 
 [**
  * Reflectives eGet/eSet//eUnSet/eIsSet/eInverseAdd/eInverseRemove
 */]
-[query public getEGetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.eStructuralFeatures/]
-[query public getESetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.eStructuralFeatures->select( eFeature | eFeature.isChangeable())/]
-[query public getEIsSetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.getEGetFeatures()/]
-[query public getEUnSetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.getESetFeatures()/]
-[query public getEInverseAddFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.eStructuralFeatures->select( eFeature | eFeature.isBidirectional() and not eFeature.isVolatile())/]
-[query public getEInverseRemoveFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.eStructuralFeatures->select( eFeature | eFeature.isContains() or (eFeature.isBidirectional() and not eFeature.isVolatile()))/]
+[query public getEGetFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getImplementedFeatures()/]
+[query public getESetFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->select(isChangeable())/]
+[query public getEIsSetFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getEGetFeatures()/]
+[query public getEUnSetFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getESetFeatures()/]
+[query public getEInverseAddFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->select( isBidirectional() and not isVolatile())/]
+[query public getEInverseRemoveFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->select( isContains() or isBidirectional() and not isVolatile())/]
+[query public getEInvokeOperations(aClass : EClass) : Collection(EOperation) = aClass.getImplementedOperations()/]

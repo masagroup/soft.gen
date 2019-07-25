@@ -276,19 +276,6 @@
 
 [query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedInterfaceName() }/]
 
-[query private getClassExtendsClass( aClass : EClass ) : EClass = getClassExtendsClass( aClass , aClass.getBaseClass() )/]
-[query private getClassExtendsClass( aClass : EClass , aBaseClass : EClass ) : EClass =
-    if ( aClass = aBaseClass ) then
-        null
-    else
-        if ( aBaseClass.oclIsUndefined() or (not aBaseClass.interface) ) then
-            aBaseClass
-        else
-            getClassExtendsClass(aClass , aBaseClass.getBaseClass())
-        endif
-    endif
-/]
-
 [query public getMockExtends(aClass : EClass ) : String =
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then

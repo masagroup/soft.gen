@@ -1,0 +1,12 @@
+[module generateOperation('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon/]
+
+[query public getImplementedOperations( aClass : EClass ) : Collection(EOperation) = 
+	let classExtend : EClass = aClass.getClassExtendsClass() in
+	if classExtend.oclIsUndefined() then 
+		aClass.eOperations 
+	else 
+		aClass.eAllOperations - classExtend.eAllOperations 
+	endif
+/]

@@ -2,6 +2,8 @@
 [module generateImplementation('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateOperation/]
+[import soft::generator::common::generateStructuralFeature/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
@@ -9,13 +11,22 @@
 [import soft::generator::go::lib::generateStructuralFeature/]
 [import soft::generator::go::lib::generateReflectives/]
 
-[template public generateImplementation(aClass : EClass) { implementationName : String = aClass.getImplementationName(); aPackage : EPackage = aClass.ePackage; classExtend : String = aClass.getClassExtends(); } ]
+[template public generateImplementation(aClass : EClass) { 
+	implementationName : String = aClass.getImplementationName(); 
+	aPackage : EPackage = aClass.ePackage; 
+	classExtend : String = aClass.getClassExtends();
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures();
+	fieldFeatures : Collection(EStructuralFeature) = features->select(isField());
+	initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
+	operations : Collection(EOperation) = aClass.getImplementedOperations();
+}]
 [file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]
 
 [let imports : OrderedSet(String) = Set { aClass.getInterfaceExtends()->collect( extend | aPackage.getImport( extend ) )->asSet()
+										, Set { aPackage.getImport(classExtend) }
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
                                         , if not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() ) then Set { getImportForPackage('ecore') } else Set{} endif 
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
@@ -27,35 +38,27 @@ import "[i/]"
 // [implementationName/] is the implementation of the model object '[aClass.name/]'
 type [implementationName/] struct {
     *[getShortQualifiedName( classExtend ,aPackage.name)/]
-[let features : OrderedSet(EStructuralFeature) = aClass.eStructuralFeatures->select( isField() )]
-    [features.generateVariableDeclaration()/]
-[/let]
+    [ aClass.getImplementedFeatures().generateVariableDeclaration()/]
 }
 
-[let initializerFeatures : OrderedSet(EStructuralFeature) = aClass.getVariableInitializationFeatures()]
 [if initializerFeatures->notEmpty()]
-type [aClass.getVariableInitializersInterface()/] interface {
+type [aClass.getInitializersInterface()/] interface {
     [initializerFeatures.generateVariableInitializationMethodDeclaration()/]
 }
 [/if]
-[/let]
 
 // [aClass.getConstructorName()/] is the constructor of a [aClass.getImplementationName()/]
 func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
     [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
     [aClass.getReceiverName()/].[getShortQualifiedName(classExtend,aPackage.name)/] = [getShortQualifiedName(getConstructorName(classExtend), aPackage.name)/]()
     [aClass.getReceiverName()/].interfaces = [aClass.getReceiverName()/] 
-[let features : OrderedSet(EAttribute) = aClass.eStructuralFeatures->select( isField() )]
-[if features->notEmpty()]
-    [features.generateVariableInitialization()/]
-[/if]
-[/let]
+	[fieldFeatures.generateVariableInitialization()/]
     return [aClass.getReceiverName()/]
 }
 
-[aClass.eOperations.generateImplementation()/]
-[aClass.eStructuralFeatures.generateImplementation()/]
-[aClass.getVariableInitializationFeatures().generateVariableInitializationMethodDefinition()/]
+[operations.generateImplementation()/]
+[features.generateImplementation()/]
+[initializerFeatures.generateVariableInitializationMethodDefinition()/]
 [aClass.generateReflectivesDefinition()/]
 [/file]
 [/template]

@@ -59,16 +59,12 @@ endif
 
 [query public isLazy( aStructuralFeature : EStructuralFeature ) : Boolean = aStructuralFeature.getLazy() <> 'no'/] 
 
-[query public isVariableInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
+[query public isInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
 
-[query public hasVariableInitializationMethod( aStructuralFeature : EStructuralFeature ) : Boolean = 
-isLazy() and ( let lazyType : String = aStructuralFeature.getLazy() in lazyType = 'action' or lazyType = 'function')/]
+[query public hasInitializationMethod( aStructuralFeature : EStructuralFeature ) : Boolean = 
+not isVolatile() and isLazy() and ( let lazyType : String = aStructuralFeature.getLazy() in lazyType = 'action' or lazyType = 'function')/]
 
-[query public getVariableInitializationFeatures( aClass : EClass ) : OrderedSet(EStructuralFeature) = 
-         aClass.eStructuralFeatures->select( not isVolatile() and hasVariableInitializationMethod() and getLazy() = 'function')
-->addAll(aClass.eStructuralFeatures->select( not isVolatile() and hasVariableInitializationMethod() and getLazy() = 'action' ))/]
-
-[query public getVariableInitializersInterface( aClass : EClass ) : String = aClass.getImplementationName() + 'Initializers'/]
+[query public getInitializersInterface( aClass : EClass ) : String = aClass.getImplementationName() + 'Initializers'/]
 
 
 [query private getMethodInitializationName(feature : EStructuralFeature) : String = 
@@ -250,10 +246,10 @@ NewEObjectEList([receiverName/].interfaces.([if not aPackage.isEcorePackage()]ec
             [else]
     if [receiverName/].[varName/] == nil {
             [/if]
-        [receiverName/].[varName/] = [receiverName/].interfaces.([aClass.getVariableInitializersInterface()/]).[aStructuralFeature.getMethodInitializationName()/]()
+        [receiverName/].[varName/] = [receiverName/].interfaces.([aClass.getInitializersInterface()/]).[aStructuralFeature.getMethodInitializationName()/]()
     }
         [elseif lazy = 'action']
-    [receiverName/].interfaces.([aClass.getVariableInitializersInterface()/]).[aStructuralFeature.getMethodInitializationName()/]()
+    [receiverName/].interfaces.([aClass.getInitializersInterface()/]).[aStructuralFeature.getMethodInitializationName()/]()
         [/if]
     [/if]
     [/let]
