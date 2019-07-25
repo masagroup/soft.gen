@@ -58,6 +58,9 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 [if aStructuralFeature.eContainingClass.getEIsSetFeatures()->notEmpty()]
 [aStructuralFeature.generateEIsSetTestImplementation()/]
 [/if]
+[if aStructuralFeature.eContainingClass.getEUnSetFeatures()->notEmpty()]
+[aStructuralFeature.generateEUnSetTestImplementation()/]
+[/if]
 [/template]
 
 [template private generateGetSetTestImplementation(aStructuralFeature : EStructuralFeature)]
@@ -159,6 +162,24 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 				assert.Equal(t, obj.[anStructFeature.getGetterName()/]().Size() != 0, obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
 		    [/if]
 		[/if]
+	}
+	[/for]
+}
+
+[/template]
+
+[template private generateEUnSetTestImplementation(aStructuralFeature : EStructuralFeature)]
+{
+	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
+    [for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getEUnSetFeatures()->sortedBy(name))]
+	{
+    [if anStructFeature.isListType() and not anStructFeature.isUnSettable()]
+		obj.EUnsetFromID([anStructFeature.getQualifiedFeatureIDName()/])
+        obj.[anStructFeature.getGetterName()/]().Clear()
+		assert.Equal(t, 0, obj.[anStructFeature.getGetterName()/]().Size())
+	[else]
+		_ = obj
+    [/if]
 	}
 	[/for]
 }
