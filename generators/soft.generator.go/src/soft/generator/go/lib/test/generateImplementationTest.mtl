@@ -160,18 +160,18 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 	{
 		[if anStructFeature.isListType()]
 		    [if anStructFeature.isField()]
-				assert.Equal(t, obj.[anStructFeature.name/] != nil && obj.[anStructFeature.name/].Size() != 0, obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
+		assert.Equal(t, obj.[anStructFeature.name/] != nil && obj.[anStructFeature.name/].Size() != 0, obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
 		    [else]
-				assert.Equal(t, obj.[anStructFeature.getGetterName()/]().Size() != 0, obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
+		assert.Equal(t, obj.[anStructFeature.getGetterName()/]().Size() != 0, obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
 		    [/if]
 		[else]
-	    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getGetterName()+'()' endif]
-	    [if eType.oclIsKindOf(EEnum)]
-	        [anStructFeature.eContainingClass.getReceiverName()/].[accessor/] != [anStructFeature.oclAsType(EAttribute).generateDefaultValue()/]
-	    [else]
-			_ = obj
-	    [/if]
-	    [/let]
+		    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getGetterName()+'()' endif]
+		    [if eType.oclIsKindOf(EEnum)]
+		assert.Equal(t, [anStructFeature.eContainingClass.getReceiverName()/].[accessor/] != [anStructFeature.oclAsType(EAttribute).generateDefaultValue()/], obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
+		    [else]
+		_ = obj
+		    [/if]
+		    [/let]
 		[/if]
 	}
 	[/for]
