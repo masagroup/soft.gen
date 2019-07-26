@@ -5,7 +5,7 @@
 [query public getImplementedOperations( aClass : EClass ) : Collection(EOperation) = 
 	let classExtend : EClass = aClass.getClassExtendsClass() in
 	if classExtend.oclIsUndefined() then 
-		aClass.eOperations 
+		aClass.eAllOperations 
 	else 
 		aClass.eAllOperations - classExtend.eAllOperations 
 	endif
@@ -14,7 +14,7 @@
 [query public getImplementedFeatures( aClass : EClass ) : Collection(EStructuralFeature) =
 	let classExtend : EClass = aClass.getClassExtendsClass() in
 	if classExtend.oclIsUndefined() then 
-		aClass.eStructuralFeatures 
+		aClass.eAllStructuralFeatures 
 	else 
 		aClass.eAllStructuralFeatures - classExtend.eAllStructuralFeatures 
 	endif
