@@ -3,6 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Soft Generator Go
 Bundle-SymbolicName: soft.generator.go
 Bundle-Version: 1.0.0.qualifier
-Export-Package: soft.generator.go
+Export-Package: soft.generator.go,
+ soft.generator.go.lib,
+ soft.generator.go.lib.factory,
+ soft.generator.go.lib.pack
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: soft.generator.go
