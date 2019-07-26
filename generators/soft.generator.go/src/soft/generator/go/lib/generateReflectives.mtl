@@ -111,7 +111,15 @@
     [elseif aStructFeature.oclIsKindOf(EReference)]
         [aClass.getReceiverName()/].[aStructFeature.getSetterName()/](nil)
     [else]
-        [aClass.getReceiverName()/].[aStructFeature.getSetterName()/]([aStructFeature.oclAsType(EAttribute).getDefaultValue()/])
+		[let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
+		[let defaultValue : String = aAttribute.getDefaultValue()]
+		[if defaultValue <> '']
+        [aClass.getReceiverName()/].[aStructFeature.getSetterName()/]([defaultValue/])
+		[else]
+		[aClass.getReceiverName()/].[aStructFeature.getSetterName()/]([aAttribute.eType.getType()/]{})
+		[/if]
+		[/let]
+		[/let]
     [/if]
 [/for]
     default:
@@ -160,21 +168,31 @@
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
+[let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
 [if isListType()]
     [if isField()]
-        [aClass.getReceiverName()/].[anStructFeature.name/] != nil && [aClass.getReceiverName()/].[anStructFeature.name/].Size() != 0
+        [aClass.getReceiverName()/].[aAttribute.name/] != nil && [aClass.getReceiverName()/].[aAttribute.name/].Size() != 0
     [else]
-        [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Size() != 0
+        [aClass.getReceiverName()/].[aAttribute.getGetterName()/]().Size() != 0
     [/if]
 [else]
-    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getGetterName()+'()' endif]
+    [let accessor : String = if isField() then aAttribute.getVariableName() else aAttribute.getGetterName()+'()' endif]
     [if eType.oclIsKindOf(EEnum)]
-        [aClass.getReceiverName()/].[accessor/] != [anStructFeature.oclAsType(EAttribute).generateDefaultValue()/]
-    [else]
-        [aClass.getReceiverName()/].[accessor/] != [anStructFeature.oclAsType(EAttribute).getDefaultValue()/]
+        [aClass.getReceiverName()/].[accessor/] != [aAttribute.generateDefaultValue()/]
+    [elseif eType.oclIsKindOf(EDataType)]
+		[let comparisonFunction : String = eType.oclAsType(EDataType).getComparisonFunction()]
+		[if comparisonFunction <> '']
+        [aClass.getReceiverName()/].[accessor/].[comparisonFunction/]()
+		[else]
+		[aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue()/]
+		[/if]
+		[/let]
+	[else]
+		[aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue()/]
     [/if]
     [/let]
 [/if]
+[/let]
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]

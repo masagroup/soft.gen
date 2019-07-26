@@ -56,23 +56,23 @@
 
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
     Sequence {
-        Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'false' },
-        Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'int' , '0' },
-        Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'float64' , '0.0' },
-        Sequence{ 'ELong' , 'ELongObject' , 'int64' , '0' },
-        Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'byte' , '\'\''},
-        Sequence{ 'EByteArray' , '[]byte' , 'nil' },
-        Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '0.0'},
-        Sequence{ 'EEList' , 'ecore.EList', 'nil'},
-        Sequence{ 'EDate' , 'time.Time', 'nil' },
-        Sequence{ 'EMap' , 'map[interface{}]interface{}', 'nil' },
-        Sequence{ 'EFeatureMap', 'interface{}', 'nil'},
-        Sequence{ 'EFeatureMapEntry' , 'interface{}' , 'nil'},
-        Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'interface{}', 'nil'},
-        Sequence{ 'EJavaClass' , 'reflect.Type', 'nil'},
-        Sequence{ 'EString' , 'String', 'string', '""' },
-        Sequence{ 'ETreeIterator' , 'ecore.EIterator', 'nil' },
-        Sequence{ 'EResource' , 'ecore.EResource', 'nil' }
+        Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'false' , ''},
+        Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'int' , '0' , ''},
+        Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'float64' , '0.0' , ''},
+        Sequence{ 'ELong' , 'ELongObject' , 'int64' , '0' , ''},
+        Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'byte' , '\'\'', ''},
+        Sequence{ 'EByteArray' , '[]byte' , 'nil' , ''},
+        Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '0.0', ''},
+        Sequence{ 'EEList' , 'ecore.EList', 'nil', ''},
+        Sequence{ 'EDate' , 'time.Time', '' , 'IsZero'},
+        Sequence{ 'EMap' , 'map[interface{}]interface{}', 'nil' , ''},
+        Sequence{ 'EFeatureMap', 'interface{}', 'nil', ''},
+        Sequence{ 'EFeatureMapEntry' , 'interface{}' , 'nil', ''},
+        Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'interface{}', 'nil', ''},
+        Sequence{ 'EJavaClass' , 'reflect.Type', 'nil', ''},
+        Sequence{ 'EString' , 'String', 'string', '""' , ''},
+        Sequence{ 'ETreeIterator' , 'ecore.EIterator', 'nil' , ''},
+        Sequence{ 'EResource' , 'ecore.EResource', 'nil' , ''}
     }
 /]
 
@@ -89,7 +89,7 @@
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() - 1 )
+            s->at( s->size() - 2 )
         else
             res
         endif
@@ -114,7 +114,7 @@
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() )
+            s->at( s->size() -1 )
         else
             res
         endif
@@ -123,6 +123,20 @@
     endif
  ) 
 /]
+
+[query public getComparisonFunction( aDataType : EDataType) : String = 
+	getAllDataTypes()->iterate( s ; res : String = '' |
+    if res = '' then
+        if s->exists(n : String | n = aDataType.name) then
+            s->at( s->size() )
+        else
+            res
+        endif
+    else 
+        res 
+    endif
+	)
+/] 
 
 [query public getAllImports(any : OclAny) : Sequence( String ) = 
     Sequence {

@@ -142,7 +142,11 @@ NewArrayEList([anEAttribute.unique/])
 
 [template public generateVariableInitialization(aStructuralFeature : EStructuralFeature, aClass : EClass )]
 [if aStructuralFeature.oclIsKindOf(EAttribute) ]
-[aClass.getReceiverName()/].[aStructuralFeature.getVariableName()/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]
+[let defaultValue : String = aStructuralFeature.oclAsType(EAttribute).getDefaultValue()]
+[if defaultValue <> '']
+[aClass.getReceiverName()/].[aStructuralFeature.getVariableName()/] = [defaultValue/]
+[/if]
+[/let]
 [elseif aStructuralFeature.isListType() and not aStructuralFeature.isLazy()]
 [aClass.getReceiverName()/].[aStructuralFeature.getVariableName()/] = [aStructuralFeature.getListConstructor(aClass)/]
 [else]
