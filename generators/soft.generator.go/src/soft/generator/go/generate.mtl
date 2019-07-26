@@ -14,7 +14,6 @@
     [aClass.generateInterface()/]
 	[if not aClass.interface]	
     	[aClass.generateImplementation()/]
-    	[aClass.generateTest()/]
 	[/if]
 [/for]
 [for (anEEnum : EEnum | aPackage.eAllContents(EEnum))]
