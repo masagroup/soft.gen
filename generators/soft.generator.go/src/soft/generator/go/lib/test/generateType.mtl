@@ -69,10 +69,9 @@
 		else getDefaultValueCheckInterface()
         endif
 /]
-
 [query private getDefaultValueCheckInterface(anEClassifier : EClassifier) : String = 
         if ((name = 'EJavaClass')) 
-        then getDefaultNumberValue()
+        then getDefaultTypeValue()
 		else getDefaultPointerValue()
         endif
 /]
@@ -83,3 +82,4 @@
 [query private getDefaultPointerValue(anEClassifier : EClassifier) : String = if anEClassifier.name = 'EObject' then 'New' + anEClassifier.name + 'Impl()' else 'new' + anEClassifier.name + 'Impl()' endif/]
 [query private getDefaultAnyValue(anEClassifier : EClassifier) : String = '5'/]
 [query private getDefaultStringValue(anEClassifier : EClassifier) : String = '"Test String"'/]
+[query private getDefaultTypeValue(anEClassifier : EClassifier) : String = 'nil'/]

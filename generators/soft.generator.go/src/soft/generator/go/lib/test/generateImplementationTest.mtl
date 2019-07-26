@@ -202,14 +202,16 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
     [for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getESetFeatures()->sortedBy(name))]
 	{
+	[let varAssigned : String = if anStructFeature.isListType() then 'NewEmptyArrayEList()' else anStructFeature.eType.getTestValue() endif ]
     [if anStructFeature.isListType()]
-		elem := [anStructFeature.eType.getTestValue()/]
+		elem := [varAssigned/]
 		obj.ESetFromID([anStructFeature.getQualifiedFeatureIDName()/], elem)
 		assert.Equal(t, 1, obj.[anStructFeature.getGetterName()/]().Size())
 		assert.Equal(t, elem, obj.[anStructFeature.getGetterName()/]().Get(0))
 	[else]
 		_ = obj
     [/if]
+	[/let]
 	}
 	[/for]
 }
