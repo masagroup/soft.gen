@@ -233,7 +233,7 @@ NewArrayEList([anEAttribute.unique/])
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let receiverName : String = aClass.getReceiverName()]
 [if isContainer()]
-    if [receiverName/].eContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] {
+    if [receiverName/].EContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] {
         return [receiverName/].EContainer().([aStructuralFeature.generateType()/]);
     } 
     return nil
@@ -276,7 +276,7 @@ NewArrayEList([anEAttribute.unique/])
 [aClass.generateFunctionReceiver()/] [methodName/]( [newVarName/] [aStructuralFeature.generateType()/] ) {
 [if not isVolatile()]
     [if isContainer()]
-    if ( [newVarName/] != [receiverName/].EContainer() || ([newVarName/] != nil && [receiverName/].eContainerFeatureID() !=  [aClass.getFeatureIDName(aStructuralFeature)/])) {
+    if ( [newVarName/] != [receiverName/].EContainer() || ([newVarName/] != nil && [receiverName/].EContainerFeatureID() !=  [aClass.getFeatureIDName(aStructuralFeature)/])) {
         var notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain
         if ( [receiverName/].EContainer() != nil) {
             notifications = [receiverName/].EBasicRemoveFromContainer(notifications)
