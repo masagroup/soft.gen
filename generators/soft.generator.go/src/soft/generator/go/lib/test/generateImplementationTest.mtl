@@ -4,6 +4,7 @@
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::lib::test::generateType/]
+[import soft::generator::go::lib::generateReflectives/]
 [import soft::generator::go::lib::generateOperation/]
 [import soft::generator::go::lib::generateStructuralFeature/]
 [import soft::generator::common::generateCommon/]
@@ -155,7 +156,6 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 [template private generateEIsSetTestImplementation(aStructuralFeature : EStructuralFeature)]
 {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
-	_ = obj
 	[for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getEIsSetFeatures()->sortedBy(name))]
 	{
 		[if anStructFeature.isListType()]
@@ -164,6 +164,14 @@ func Test[implementationName.toUpperFirst()/](t *testing.T) {
 		    [else]
 				assert.Equal(t, obj.[anStructFeature.getGetterName()/]().Size() != 0, obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
 		    [/if]
+		[else]
+	    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getGetterName()+'()' endif]
+	    [if eType.oclIsKindOf(EEnum)]
+	        [anStructFeature.eContainingClass.getReceiverName()/].[accessor/] != [anStructFeature.oclAsType(EAttribute).generateDefaultValue()/]
+	    [else]
+			_ = obj
+	    [/if]
+	    [/let]
 		[/if]
 	}
 	[/for]

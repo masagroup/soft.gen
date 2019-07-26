@@ -155,7 +155,7 @@
 [eOperation.getFunctionName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]arguments.Get([i-1/])[if needCast].([eParameter.generateEffectiveType()/])[/if][/let][/for])
 [/template]
 
-[template private generateDefaultValue(anEAttribute : EAttribute) post (trim())]
+[template public generateDefaultValue(anEAttribute : EAttribute) post (trim())]
 [if (anEAttribute.eType.oclIsTypeOf(EEnum))]
     [if (anEAttribute.defaultValueLiteral->notEmpty())]
         [anEAttribute.defaultValueLiteral.toUpperCase()/]
