@@ -71,7 +71,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 [let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
 [anEPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
 	classID  := eDataType.GetClassifierID()
-    internal := [anEPackage.getFactoryReceiverName()/].interfaces.([anEPackage.getFactoryInternalName()/]) 
+    internal := [anEPackage.getFactoryReceiverName()/].GetInterfaces().([anEPackage.getFactoryInternalName()/]) 
 	switch classID {
     [for (aDataType : EDataType | dataTypes)]
     case [aDataType.getClassifierIDName()/]:
@@ -84,7 +84,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [anEPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue interface{}) string {
     classID := eDataType.GetClassifierID()
-    internal := [anEPackage.getFactoryReceiverName()/].interfaces.([anEPackage.getFactoryInternalName()/])
+    internal := [anEPackage.getFactoryReceiverName()/].GetInterfaces().([anEPackage.getFactoryInternalName()/])
     switch classID {
 [for (aDataType : EDataType | dataTypes)]
     case [aDataType.getClassifierIDName()/]:

@@ -200,7 +200,7 @@
     [if isField()]
         [aClass.getReceiverName()/].[anStructFeature.name/] != nil && [aClass.getReceiverName()/].[anStructFeature.name/].Size() != 0
     [else]
-        [anStructFeature.getGetterName()/]().Size() != 0
+        [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Size() != 0
     [/if]
 [elseif anStructFeature.oclAsType(EReference).isBackReference() ]
     [if anStructFeature.eType.name <> 'EBoolean']
