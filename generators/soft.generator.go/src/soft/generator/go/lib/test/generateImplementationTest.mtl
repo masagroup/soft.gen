@@ -228,13 +228,12 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 
 [template private generateEInverseAddTestImplementation(aStructuralFeature : EStructuralFeature)]
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]EInverseAdd(t *testing.T) {
-	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	[for ( aFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getEInverseAddFeatures()->sortedBy(name) )]
 	{
 		[if aFeature.isListType()]
+		obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 		obj.EBasicInverseAdd(&MockEObject{}, [aFeature.getQualifiedFeatureIDName()/], &MockENotificationChain{})
-		[else]
-		_ = obj;
+		assert.Equal(t, 1, obj.[aFeature.getGetterName()/]().Size())
 		[/if]
 	}
 	[/for]
