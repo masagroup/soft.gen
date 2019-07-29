@@ -243,13 +243,14 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 
 [template private generateEInverseRemoveTestImplementation(aStructuralFeature : EStructuralFeature)]
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]EInverseRemove(t *testing.T) {
-	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	[for ( aFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getEInverseRemoveFeatures()->sortedBy(name) )]
 	{
 		[if aFeature.isListType()]
-		obj.EBasicInverseRemove(&MockEObject{}, [aFeature.getQualifiedFeatureIDName()/], &MockENotificationChain{})
-		[else]
-		_ = obj;
+		obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
+		mock := &MockEObject{}
+		obj.[aFeature.getGetterName()/]().Add(mock)
+		obj.EBasicInverseRemove(mock, [aFeature.getQualifiedFeatureIDName()/], &MockENotificationChain{})
+		assert.Equal(t, 0, obj.[aFeature.getGetterName()/]().Size())
 		[/if]
 	}
 	[/for]
