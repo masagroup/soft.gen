@@ -62,6 +62,10 @@ type [aClass.getInitializersInterface()/] interface {
 }
 [/if]
 
+[aClass.generateFunctionReceiver()/] EStaticClass() [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
+	return GetPackage().[aClass.getReflectiveGetterName()/]()
+}
+
 [operations.generateImplementation(aClass)/]
 [features.generateImplementation(aClass)/]
 [initializerFeatures.generateVariableInitializationMethodDefinition(aClass)/]

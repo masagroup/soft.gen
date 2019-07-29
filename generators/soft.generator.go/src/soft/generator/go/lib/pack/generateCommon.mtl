@@ -42,19 +42,3 @@
 [/template]
 
 [query public getClassifierIDValue(anEClassifier : EClassifier) : EInt = if (anEClassifier.getClassifierID() = 0) then anEClassifier.ePackage.eClassifiers->selectByKind(EClassifier)->size() else anEClassifier.getClassifierID() endif/]
-
-[query private getElementTypeName(anENamedElement : ENamedElement) : String =
-if anENamedElement.oclIsTypeOf(EClass) then 'Class'
-else if anENamedElement.oclIsTypeOf(EAttribute) then 'Attribute'
-else if ( anENamedElement.oclIsTypeOf(EOperation) ) then 'Operation'
-else if ( anENamedElement.oclIsTypeOf(EReference) ) then 'Reference'
-else ''
-endif endif endif endif
-/]
-
-[query public getReflectiveGetterName(anENamedElement : ENamedElement) : String = 
-let getterName : String = 'get' + anENamedElement.getElementAccessorName() in
-let ecorePackageClass : EClass = anENamedElement.eClass().ePackage.eClass() in
-let methodName : String = if ecorePackageClass.eAllOperations->exists( name = getterName ) then getterName + anENamedElement.getElementTypeName() else getterName endif in
-methodName.toUpperFirst()
-/]
