@@ -7,73 +7,44 @@
 
 [query private getParameterType(sParameter : EParameter) : String =
 	if (sParameter.eGenericType.eRawType.name = 'EEList')
-	then 'NewEmptyArrayEList()'
-	else sParameter.eType.getTestValue()
+    then 'NewEmptyArrayEList()'
+    else sParameter.eType.getTestValue()
+    endif
+/]
+
+[query public getTestValue(aDataType : EClassifier) : String =
+	if getTestValueInternal(aDataType) = aDataType.name or getTestValueInternal(aDataType) = '' then
+		if aDataType.name = 'EObject' then 'New' + aDataType.name + 'Impl()' else 'new' + aDataType.name + 'Impl()' endif
+	else
+		getTestValueInternal(aDataType)
 	endif
 /]
 
-[query public getTestValue(anEClassifier : EClassifier) : String = anEClassifier.getDefaultValue()/]
-
-
-[query public getDefaultValue(anEClassifier : EClassifier) : String = 
-        if ((name = 'EBoolean' ) or 
-            (name = 'EBooleanObject' ) or 
-            (name = 'Boolean' )) 
-        then getDefaultBooleanValue()
-        else getDefaultValueCheckString()
+[query private getTestValueInternal(aDataType : EClassifier) : String =
+    getAllDataTypes()->iterate( s ; res : String = '' |
+    if res = '' then
+        if s->exists(n : String | n = aDataType.name) then
+            s->at( s->size() -1 )
+        else
+			res
         endif
-/]
-[query private getDefaultValueCheckString(anEClassifier : EClassifier) : String = 
-        if ((name = 'EString') or 
-            (name = 'String')) 
-        then getDefaultStringValue() 
-        else getDefaultValueCheckInteger()
-        endif
-/]
-[query private getDefaultValueCheckInteger(anEClassifier : EClassifier) : String = 
-        if ((name = 'UnlimitedNatural') or 
-            (name = 'EResource') or 
-            (name = 'EInt') or 
-            (name = 'EIntegerObject') or 
-            (name = 'EBigInteger') or 
-            (name = 'Integer') or 
-            (name = 'EDouble') or 
-            (name = 'EDoubleObject') or 
-            (name = 'EBigDecimal') or 
-            (name = 'Real') or 
-            (name = 'ELong') or 
-            (name = 'ELongObject') or 
-            (name = 'EFloat') or 
-            (name = 'EFloatObject') or 
-            (name = 'EDate')) 
-        then getDefaultNumberValue() 
-        else getDefaultValueCheckChar() 
-        endif
-/]
-[query private getDefaultValueCheckChar(anEClassifier : EClassifier) : String = 
-        if ((name = 'EByte') or 
-            (name = 'EByteObject') or 
-            (name = 'EByteArray') or 
-            (name = 'EChar') or 
-            (name = 'ECharacterObject')) 
-        then getDefaultCharValue() 
-        else getDefaultValueCheckAny()
-        endif
+    else 
+        res 
+    endif
+ ) 
 /]
 
-[query private getDefaultValueCheckAny(anEClassifier : EClassifier) : String = 
-        if ((name = 'EEnumerator') or
-            (name = 'EDiagnosticChain') or
-			(name = 'EJavaObject')) 
-        then getDefaultAnyValue()
-		else getDefaultValueCheckInterface()
-        endif
-/]
-[query private getDefaultValueCheckInterface(anEClassifier : EClassifier) : String = 
-        if ((name = 'EJavaClass')) 
-        then getDefaultTypeValue()
-		else getDefaultPointerValue()
-        endif
+[query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
+    Sequence {
+        Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'true' , ''},
+        Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'int' , '64' , ''},
+        Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'float64' , '32.0' , ''},
+        Sequence{ 'ELong' , 'ELongObject' , 'int64' , '128' , ''},
+        Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'byte' , '\'a\'', ''},
+        Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '32.0', ''},
+        Sequence{ 'EString' , 'String', 'string', '"Test String"' , ''},
+		Sequence{ 'EJavaClass', 'EDiagnosticChain', 'EJavaObject', 'EEnumerator', 'nil', '' }
+    }
 /]
 
 [query private getDefaultBooleanValue(anEClassifier : EClassifier) : String = 'true'/]

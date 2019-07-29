@@ -3,6 +3,7 @@
 
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateType/]
 [import soft::generator::go::lib::test::generateType/]
 [import soft::generator::go::lib::generateReflectives/]
 [import soft::generator::go::lib::generateOperation/]
@@ -120,7 +121,7 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 
 [template private generateGetListTestImplementation(aStructuralFeature : EStructuralFeature)]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getTestValue() endif ]
+[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getDefaultValue() endif ]
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]GetList(t *testing.T) {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	assert.NotNil(t, obj.[aStructuralFeature.getGetterName()/]())
