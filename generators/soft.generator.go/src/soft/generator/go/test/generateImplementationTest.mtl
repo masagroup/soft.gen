@@ -29,6 +29,7 @@ func discard[name.toUpperFirst()/]() {
 	_ = assert.Equal
 	_ = mock.Anything
 	_ = testing.Coverage
+	[if not aPackage.isEcorePackage()]_ = ecore.ADD[/if]
 }
 
 [aClass.eStructuralFeatures->select(isField()).generateTestImplementation()/]
