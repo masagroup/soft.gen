@@ -6,7 +6,9 @@
 
 [template public generateTest(aPackage : EPackage)]
 [for (aClass : EClass | aPackage.eAllContents(EClass))]
+[if not aClass.interface]
 [aClass.generateImplementationTest()/]
+[/if]
 [/for]
 [aPackage.generateFactoryTest()/]
 [/template]
