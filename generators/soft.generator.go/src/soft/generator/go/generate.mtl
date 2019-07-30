@@ -19,9 +19,11 @@
 [for (anEEnum : EEnum | aPackage.eAllContents(EEnum))]
     [anEEnum.generateEnum()/]
 [/for]
-[aPackage.generateTest()/]
 [aPackage.generatePackage()/]
 [generateFactory()/]
 [/template]
 
-
+[template public generateTests(aPackage : EPackage)]
+[comment @main/]
+[aPackage.generateTest()/]
+[/template]

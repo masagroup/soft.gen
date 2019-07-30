@@ -16,7 +16,7 @@ public class Generate extends Generator {
     /**
      * The name of the templates that are to be generated.
      */
-    public static final String[] TEMPLATE_NAMES = { "generateModel" };
+    public static final String[] TEMPLATE_NAMES = { "generateModel", "generateTests" };
 
     /**
      * This can be used to launch the generation from a standalone application.
