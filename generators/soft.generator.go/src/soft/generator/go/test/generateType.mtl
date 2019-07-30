@@ -1,6 +1,8 @@
 [comment encoding = UTF-8 /]
 [module generateType('http://www.eclipse.org/emf/2002/Ecore')/]
 
+[import soft::generator::go::generateType/]
+
 [template public generateParameterListNames(aOperation : EOperation) post(trim())]
 [for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterType() /][/for]
 [/template]
@@ -8,42 +10,6 @@
 [query private getParameterType(sParameter : EParameter) : String =
 	if (sParameter.eGenericType.eRawType.name = 'EEList')
     then 'NewEmptyArrayEList()'
-    else sParameter.eType.getTestValue()
+    else sParameter.eType.getUnitTestValue()
     endif
-/]
-
-[query public getTestValue(aDataType : EClassifier) : String =
-	let value : String = getTestValueInternal(aDataType) in
-	if value = aDataType.name or value = '' then
-		if aDataType.name = 'EObject' then 'New' + aDataType.name + 'Impl()' else 'new' + aDataType.name + 'Impl()' endif
-	else
-		value
-	endif
-/]
-
-[query private getTestValueInternal(aDataType : EClassifier) : String =
-    getAllDataTypes()->iterate( s ; res : String = '' |
-    if res = '' then
-        if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() -1 )
-        else
-			res
-        endif
-    else 
-        res 
-    endif
- ) 
-/]
-
-[query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
-    Sequence {
-        Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'true' , ''},
-        Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'int' , '64' , ''},
-        Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'float64' , '32.0' , ''},
-        Sequence{ 'ELong' , 'ELongObject' , 'int64' , '128' , ''},
-        Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'byte' , '\'a\'', ''},
-        Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '32.0', ''},
-        Sequence{ 'EString' , 'String', 'string', '"Test String"' , ''},
-		Sequence{ 'EJavaClass', 'EDiagnosticChain', 'EJavaObject', 'EEnumerator', 'nil', '' }
-    }
 /]

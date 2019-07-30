@@ -1,7 +1,6 @@
 [comment encoding = UTF-8 /]
 [module generateType('http://www.eclipse.org/emf/2002/Ecore')/]
 
-
 [import soft::generator::common::generateCommon/]
 [import soft::generator::go::generateCommon/]
 
@@ -56,24 +55,47 @@
 
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
     Sequence {
-        Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'false' , ''},
-        Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'int' , '0' , ''},
-        Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'float64' , '0.0' , ''},
-        Sequence{ 'ELong' , 'ELongObject' , 'int64' , '0' , ''},
-        Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'byte' , '\'\'', ''},
-        Sequence{ 'EByteArray' , '[]byte' , 'nil' , ''},
-        Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '0.0', ''},
-        Sequence{ 'EEList' , 'ecore.EList', 'nil', ''},
-        Sequence{ 'EDate' , 'time.Time', '' , 'IsZero'},
-        Sequence{ 'EMap' , 'map[interface{}]interface{}', 'nil' , ''},
-        Sequence{ 'EFeatureMap', 'interface{}', 'nil', ''},
-        Sequence{ 'EFeatureMapEntry' , 'interface{}' , 'nil', ''},
-        Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'interface{}', 'nil', ''},
-        Sequence{ 'EJavaClass' , 'reflect.Type', 'nil', ''},
-        Sequence{ 'EString' , 'String', 'string', '""' , ''},
-        Sequence{ 'ETreeIterator' , 'ecore.EIterator', 'nil' , ''},
-        Sequence{ 'EResource' , 'ecore.EResource', 'nil' , ''}
+        Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'false' , 'true', ''},
+        Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'int' , '0', '45' , ''},
+        Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'float64' , '0.0', '3.5' , ''},
+        Sequence{ 'ELong' , 'ELongObject' , 'int64' , '0', '45' , ''},
+        Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'byte' , '\'\'', '\'a\'', ''},
+        Sequence{ 'EByteArray' , '[]byte' , 'nil', 'nil' , ''},
+        Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '0.0', '1.2', ''},
+        Sequence{ 'EEList' , 'ecore.EList', 'nil', 'NewEmptyArrayEList()', ''},
+        Sequence{ 'EDate' , 'time.Time', '', 'time.Now()' , 'IsZero'},
+        Sequence{ 'EMap' , 'map[interface{}]interface{}', 'nil', 'nil' , ''},
+        Sequence{ 'EFeatureMap', 'interface{}', 'nil', 'nil', ''},
+        Sequence{ 'EFeatureMapEntry' , 'interface{}' , 'nil', 'nil', ''},
+        Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'interface{}', 'nil', 'nil', ''},
+        Sequence{ 'EJavaClass' , 'reflect.Type', 'nil', 'nil', ''},
+        Sequence{ 'EString' , 'String', 'string', '""' , '"Test String"', ''},
+        Sequence{ 'ETreeIterator' , 'ecore.EIterator', 'nil' , 'nil', ''},
+        Sequence{ 'EResource' , 'ecore.EResource', 'nil' , 'nil', ''}
     }
+/]
+
+[query public getUnitTestValue(aDataType : EClassifier) : String =
+	let value : String = getUnitTestValueInternal(aDataType) in
+	if value = aDataType.name or value = '' then
+		if aDataType.name = 'EObject' then 'New' + aDataType.name + 'Impl()' else 'new' + aDataType.name + 'Impl()' endif
+	else
+		value
+	endif
+/]
+
+[query private getUnitTestValueInternal(aDataType : EClassifier) : String =
+    getAllDataTypes()->iterate( s ; res : String = '' |
+    if res = '' then
+        if s->exists(n : String | n = aDataType.name) then
+            s->at( s->size() -1 )
+        else
+			res
+        endif
+    else 
+        res 
+    endif
+ ) 
 /]
 
 [query public getType( aClassifier : EClassifier ) : String = 
@@ -89,7 +111,7 @@
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() - 2 )
+            s->at( s->size() - 3 )
         else
             res
         endif
@@ -114,7 +136,7 @@
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() -1 )
+            s->at( s->size() - 2 )
         else
             res
         endif
