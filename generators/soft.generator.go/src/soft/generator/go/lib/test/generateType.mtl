@@ -13,10 +13,11 @@
 /]
 
 [query public getTestValue(aDataType : EClassifier) : String =
-	if getTestValueInternal(aDataType) = aDataType.name or getTestValueInternal(aDataType) = '' then
+	let value : String = getTestValueInternal(aDataType) in
+	if value = aDataType.name or value = '' then
 		if aDataType.name = 'EObject' then 'New' + aDataType.name + 'Impl()' else 'new' + aDataType.name + 'Impl()' endif
 	else
-		getTestValueInternal(aDataType)
+		value
 	endif
 /]
 
