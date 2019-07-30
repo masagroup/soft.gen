@@ -9,7 +9,7 @@
 [file (ePackage.getOutputDirectory() + '/' + ePackage.getFactoryTestFileName(), false, 'UTF-8')]
 [fileComment()/]
 
-package ecore
+package [ePackage.name/]
 
 import (
 	"testing"
