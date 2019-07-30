@@ -1,8 +1,8 @@
 [comment encoding = UTF-8 /]
 [module generateTest('http://www.eclipse.org/emf/2002/Ecore')/]
 
-[import soft::generator::go::lib::test::generateImplementationTest/]
-[import soft::generator::go::lib::test::generateFactoryTest/]
+[import soft::generator::go::test::generateImplementationTest/]
+[import soft::generator::go::test::generateFactoryTest/]
 
 [template public generateTest(aPackage : EPackage)]
 [for (aClass : EClass | aPackage.eAllContents(EClass))]

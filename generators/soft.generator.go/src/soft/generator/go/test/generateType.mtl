@@ -47,11 +47,3 @@
 		Sequence{ 'EJavaClass', 'EDiagnosticChain', 'EJavaObject', 'EEnumerator', 'nil', '' }
     }
 /]
-
-[query private getDefaultBooleanValue(anEClassifier : EClassifier) : String = 'true'/]
-[query private getDefaultCharValue(anEClassifier : EClassifier) : String = '\'a\''/]
-[query private getDefaultNumberValue(anEClassifier : EClassifier) : String = '64'/]
-[query private getDefaultPointerValue(anEClassifier : EClassifier) : String = if anEClassifier.name = 'EObject' then 'New' + anEClassifier.name + 'Impl()' else 'new' + anEClassifier.name + 'Impl()' endif/]
-[query private getDefaultAnyValue(anEClassifier : EClassifier) : String = '5'/]
-[query private getDefaultStringValue(anEClassifier : EClassifier) : String = '"Test String"'/]
-[query private getDefaultTypeValue(anEClassifier : EClassifier) : String = 'nil'/]

@@ -4,9 +4,9 @@
 [import soft::generator::go::lib::generateEnum/]
 [import soft::generator::go::lib::generateInterface/]
 [import soft::generator::go::lib::generateImplementation/]
-[import soft::generator::go::lib::test::generateTest/]
 [import soft::generator::go::lib::pack::generatePackage/]
 [import soft::generator::go::lib::factory::generateFactory/]
+[import soft::generator::go::test::generateTest/]
 
 [template public generateModel(aPackage : EPackage)]
 [comment @main/]
