@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	[if not aPackage.isEcorePackage()]"github.com/masagroup/soft/go/ecore"[/if]
 )
 
 func discard[name.toUpperFirst()/]() {
@@ -92,7 +93,7 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getUnitTestValue() endif ]
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]Set(t *testing.T) {
-	mockAdapter := &MockEAdapter{}
+	mockAdapter := &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockEAdapter{}
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	obj.EAdapters().Add(mockAdapter)
@@ -233,7 +234,7 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 	{
 		[if aFeature.isListType()]
 		obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
-		obj.EBasicInverseAdd(&MockEObject{}, [aFeature.getQualifiedFeatureIDName()/], &MockENotificationChain{})
+		obj.EBasicInverseAdd(&MockEObject{}, [aFeature.getQualifiedFeatureIDName()/], &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockENotificationChain{})
 		assert.Equal(t, 1, obj.[aFeature.getGetterName()/]().Size())
 		[/if]
 	}
@@ -248,9 +249,9 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 	{
 		[if aFeature.isListType()]
 		obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
-		mock := &MockEObject{}
+		mock := &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockEObject{}
 		obj.[aFeature.getGetterName()/]().Add(mock)
-		obj.EBasicInverseRemove(mock, [aFeature.getQualifiedFeatureIDName()/], &MockENotificationChain{})
+		obj.EBasicInverseRemove(mock, [aFeature.getQualifiedFeatureIDName()/], &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockENotificationChain{})
 		assert.Equal(t, 0, obj.[aFeature.getGetterName()/]().Size())
 		[/if]
 	}
