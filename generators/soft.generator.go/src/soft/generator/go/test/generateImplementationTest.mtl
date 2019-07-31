@@ -178,7 +178,7 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 		[else]
 		    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getGetterName()+'()' endif]
 		    [if eType.oclIsKindOf(EEnum)]
-		assert.Equal(t, [anStructFeature.eContainingClass.getReceiverName()/].[accessor/] != [anStructFeature.oclAsType(EAttribute).generateDefaultValue()/], obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
+		assert.Equal(t, obj.[accessor/] != [anStructFeature.oclAsType(EAttribute).generateDefaultValue()/], obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
 		    [else]
 		_ = obj
 		    [/if]
@@ -235,7 +235,7 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 	{
 		[if aFeature.isListType()]
 		obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
-		obj.EBasicInverseAdd(&MockEObject{}, [aFeature.getQualifiedFeatureIDName()/], &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockENotificationChain{})
+		obj.EBasicInverseAdd(&[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockEObject{}, [aFeature.getQualifiedFeatureIDName()/], &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockENotificationChain{})
 		assert.Equal(t, 1, obj.[aFeature.getGetterName()/]().Size())
 		[/if]
 	}
