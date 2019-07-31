@@ -80,7 +80,7 @@ func Test[anEOperation.eContainingClass.name.toUpperFirst()/][anEOperation.getFu
 
 [template private generateGetSetTestImplementation(aStructuralFeature : EStructuralFeature)]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getUnitTestValue() endif ]
+[let varAssigned : String = aStructuralFeature.getUnitTestType() ]
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]Get(t *testing.T) {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	obj.[aStructuralFeature.getSetterName()/]([varAssigned/])
@@ -92,7 +92,7 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 
 [template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature)]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getUnitTestValue() endif ]
+[let varAssigned : String = aStructuralFeature.getUnitTestType() ]
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]Set(t *testing.T) {
 	mockAdapter := &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockEAdapter{}
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()
@@ -107,7 +107,7 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 
 [template private generateUnsetTestImplementation(aStructuralFeature : EStructuralFeature)]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getUnitTestValue() endif ]
+[let varAssigned : String = aStructuralFeature.getUnitTestType() ]
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]Unset(t *testing.T) {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	obj.[aStructuralFeature.getUnSetterName()/]()
@@ -123,7 +123,7 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 
 [template private generateGetListTestImplementation(aStructuralFeature : EStructuralFeature)]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[let varAssigned : String = if aStructuralFeature.isListType() then 'NewEmptyArrayEList()' else aStructuralFeature.eType.getDefaultValue() endif ]
+[let varAssigned : String = aStructuralFeature.getUnitTestType() ]
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]GetList(t *testing.T) {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	assert.NotNil(t, obj.[aStructuralFeature.getGetterName()/]())
@@ -213,7 +213,7 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
     [for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getESetFeatures()->sortedBy(name))]
 	{
-	[let varAssigned : String = if anStructFeature.isListType() then 'NewEmptyArrayEList()' else anStructFeature.eType.getUnitTestValue() endif ]
+	[let varAssigned : String = anStructFeature.getUnitTestType() ]
     [if anStructFeature.isListType()]
 		elem := [varAssigned/]
 		obj.ESetFromID([anStructFeature.getQualifiedFeatureIDName()/], elem)

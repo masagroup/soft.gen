@@ -2,6 +2,7 @@
 [module generateType('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::go::generateType/]
+[import soft::generator::common::generateCommon/]
 
 [template public generateParameterListNames(aOperation : EOperation) post(trim())]
 [for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterType() /][/for]
@@ -12,4 +13,11 @@
     then 'NewEmptyArrayEList()'
     else sParameter.eType.getUnitTestValue()
     endif
+/]
+
+[query public getUnitTestType(aStructuralFeature : EStructuralFeature) : String =
+	if aStructuralFeature.isListType() then
+		if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage() then 'ecore.NewEmptyArrayEList()'
+		else 'NewEmptyArrayEList()' endif
+	 else aStructuralFeature.eType.getUnitTestValue() endif
 /]
