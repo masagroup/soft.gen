@@ -128,7 +128,11 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 [let varAssigned : String = aStructuralFeature.getUnitTestType() ]
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]GetList(t *testing.T) {
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
+	[if aStructuralFeature.eType.name = 'EFeatureMapEntry' or aStructuralFeature.volatile]
+	assert.Nil(t, obj.[aStructuralFeature.getGetterName()/]())
+	[else]
 	assert.NotNil(t, obj.[aStructuralFeature.getGetterName()/]())
+	[/if]
 }
 [/let]
 [/let]
@@ -140,10 +144,12 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 	[for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.eStructuralFeatures->asOrderedSet()->sortedBy(name))]
     {
     [let lazy : String = anStructFeature.getLazy()]
-		[if not anStructFeature.isContainer() and anStructFeature.isVolatile() and not anStructFeature.hasKey('getterBody')]
+		[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.volatile]
+		_ = obj
+		[elseif not anStructFeature.isContainer() and anStructFeature.isVolatile() and not anStructFeature.hasKey('getterBody')]
 		assert.Panics(t, func() { obj.EGetFromID([anStructFeature.getQualifiedFeatureIDName()/], false, false) })
 		[elseif not anStructFeature.isContainer() and not anStructFeature.isVolatile() and lazy <> 'no' and lazy = 'action']
-		//
+		_ = obj
 		[else]
 		assert.Equal(t, obj.[anStructFeature.getGetterName()/](), obj.EGetFromID([anStructFeature.getQualifiedFeatureIDName()/], false, false))
 		[/if]
@@ -171,7 +177,9 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 	[for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getEIsSetFeatures()->sortedBy(name))]
 	{
-		[if anStructFeature.isListType()]
+		[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.volatile]
+		_ = obj
+		[elseif anStructFeature.isListType()]
 		    [if anStructFeature.isField()]
 		assert.Equal(t, obj.[anStructFeature.name/] != nil && obj.[anStructFeature.name/].Size() != 0, obj.EIsSetFromID([anStructFeature.getQualifiedFeatureIDName()/]))
 		    [else]
@@ -197,7 +205,9 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
     [for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getEUnSetFeatures()->sortedBy(name))]
 	{
-    [if anStructFeature.isListType() and not anStructFeature.isUnSettable()]
+    [if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.volatile]
+		_ = obj
+	[elseif anStructFeature.isListType() and not anStructFeature.isUnSettable()]
 		obj.EUnsetFromID([anStructFeature.getQualifiedFeatureIDName()/])
         obj.[anStructFeature.getGetterName()/]().Clear()
 		assert.Equal(t, 0, obj.[anStructFeature.getGetterName()/]().Size())
@@ -216,7 +226,9 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
     [for (anStructFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getESetFeatures()->sortedBy(name))]
 	{
 	[let varAssigned : String = anStructFeature.getUnitTestType() ]
-    [if anStructFeature.isListType()]
+    [if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.volatile]
+		_ = obj
+	[elseif anStructFeature.isListType()]
 		elem := [varAssigned/]
 		obj.ESetFromID([anStructFeature.getQualifiedFeatureIDName()/], elem)
 		assert.Equal(t, 1, obj.[anStructFeature.getGetterName()/]().Size())
@@ -235,7 +247,9 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]EInverseAdd(t *testing.T) {
 	[for ( aFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getEInverseAddFeatures()->sortedBy(name) )]
 	{
-		[if aFeature.isListType()]
+		[if aFeature.eType.name = 'EFeatureMapEntry' or aFeature.volatile]
+		_ = obj
+		[elseif aFeature.isListType()]
 		obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 		obj.EBasicInverseAdd(&[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockEObject{}, [aFeature.getQualifiedFeatureIDName()/], &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockENotificationChain{})
 		assert.Equal(t, 1, obj.[aFeature.getGetterName()/]().Size())
@@ -250,7 +264,9 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]EInverseRemove(t *testing.T) {
 	[for ( aFeature : EStructuralFeature | aStructuralFeature.eContainingClass.getEInverseRemoveFeatures()->sortedBy(name) )]
 	{
-		[if aFeature.isListType()]
+		[if aFeature.eType.name = 'EFeatureMapEntry' or aFeature.volatile]
+		_ = obj
+		[elseif aFeature.isListType()]
 		obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
 		mock := &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockEObject{}
 		obj.[aFeature.getGetterName()/]().Add(mock)
