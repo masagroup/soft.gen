@@ -19,6 +19,7 @@ package [aPackage.name/]
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -30,6 +31,7 @@ func discard[name.toUpperFirst()/]() {
 	_ = mock.Anything
 	_ = testing.Coverage
 	[if not aPackage.isEcorePackage()]_ = ecore.ADD[/if]
+	_ = time.Now()
 }
 
 [aClass.eStructuralFeatures->select(isField()).generateTestImplementation()/]

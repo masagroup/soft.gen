@@ -6,7 +6,7 @@
 [import soft::generator::common::generateCommon/]
 
 [template public generateFactoryTest(ePackage : EPackage)]
-[file (ePackage.getOutputDirectory() + '/' + ePackage.getFactoryTestFileName(), false, 'UTF-8')]
+[file (ePackage.getOutputDirectory() + '/' + ePackage.getFactoryTestFileName(ePackage.name), false, 'UTF-8')]
 [fileComment()/]
 
 package [ePackage.name/]
@@ -15,13 +15,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	[if not ePackage.isEcorePackage()]"github.com/masagroup/soft/go/ecore"[/if]
 )
 
 func TestFactoryCreate(t *testing.T) {
-	factory := newEcoreFactoryImpl()
+	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
     [for (aClass : EClass | ePackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
 	{
-		mockEClass := &MockEClass{}
+		mockEClass := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEClass{}
 		mockEClass.On("GetClassifierID").Return([aClass.getClassifierIDName()/])
 		assert.NotNil(t, factory.Create(mockEClass))
 	}
@@ -29,17 +30,17 @@ func TestFactoryCreate(t *testing.T) {
 }
 
 func TestFactoryPanics(t *testing.T) {
-	factory := newEcoreFactoryImpl()
+	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
 	[for (aDataType : EDataType | ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name))]
     {
-		mockEDataType := &MockEDataType{}
+		mockEDataType := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEDataType{}
 		mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
 		assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
     }
 	[/for]
 	[for (aDataType : EDataType | ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name))]
     {
-		mockEDataType := &MockEDataType{}
+		mockEDataType := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEDataType{}
 		mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
 		assert.Panics(t, func() { factory.ConvertToString(mockEDataType, "") })
     }
