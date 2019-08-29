@@ -137,6 +137,7 @@
                     <packagesToRegister>
                         <packageToRegister>org.eclipse.emf.ecore.EcorePackage</packageToRegister>
                     </packagesToRegister>
+                    <uriHandler>${acceleo.uriHandler}</uriHandler>
                 </configuration>
             </plugin>
         </plugins>

@@ -51,12 +51,13 @@
                     <packagesToRegister>
                         <packageToRegister>org.eclipse.emf.ecore.EcorePackage</packageToRegister>
                     </packagesToRegister>
+                    <uriHandler>${acceleo.uriHandler}</uriHandler>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.1.1</version><!--$NO-MVN-MAN-VER$-->
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>

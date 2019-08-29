@@ -33,6 +33,7 @@
         <id>ant</id>
         <properties>
             <project.target>../../../out/maven/${project.artifactId}</project.target>
+            <acceleo.uriHandler>org.eclipse.acceleo.maven.AcceleoURIHandler</acceleo.uriHandler>
         </properties>
     </profile>
     <profile>
@@ -41,7 +42,8 @@
             <activeByDefault>true</activeByDefault>
         </activation>
         <properties>
-            <project.target>.target</project.target>
+        	<project.target>.target</project.target>
+            <acceleo.uriHandler>org.eclipse.acceleo.maven.AcceleoURIHandler</acceleo.uriHandler>
         </properties>
     </profile>
   </profiles>
