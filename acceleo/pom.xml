@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>soft.acceleo</groupId>
   <artifactId>soft.acceleo</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   
-   <repositories>
+  <repositories>
         <repository>
             <id>Eclipse Acceleo</id>
             <url>https://repo.eclipse.org/content/repositories/acceleo</url>
@@ -41,8 +41,26 @@
     </dependency>  
   </dependencies>
   
+  <profiles>
+    <profile>
+        <id>ant</id>
+        <properties>
+            <project.target>../../../out/maven/${project.artifactId}</project.target>
+        </properties>
+    </profile>
+    <profile>
+        <id>default</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+            <project.target>.target</project.target>
+        </properties>
+    </profile>
+  </profiles>
+  
   <build>
-    <sourceDirectory>src</sourceDirectory>
+  	<directory>${project.target}</directory>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
