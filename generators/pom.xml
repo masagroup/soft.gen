@@ -17,14 +17,14 @@
   <repositories>
         <repository>
             <id>Eclipse Acceleo</id>
-            <url>https://repo.eclipse.org/content/groups/acceleo</url>
+            <url>https://repo.eclipse.org/content/repositories/acceleo</url>
         </repository>
   </repositories>
 
   <pluginRepositories>
         <pluginRepository>
             <id>Eclipse Acceleo</id>
-            <url>https://repo.eclipse.org/content/groups/acceleo</url>
+            <url>https://repo.eclipse.org/content/repositories/acceleo</url>
         </pluginRepository>
   </pluginRepositories>
   
