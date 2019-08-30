@@ -4,6 +4,10 @@
   <artifactId>soft.acceleo</artifactId>
   <version>1.0.0</version>
   
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
   <repositories>
         <repository>
             <id>Eclipse Acceleo</id>
@@ -45,7 +49,7 @@
     <profile>
         <id>ant</id>
         <properties>
-            <project.target>../../../out/maven/${project.artifactId}</project.target>
+            <project.target>../../out/maven/${project.artifactId}</project.target>
         </properties>
     </profile>
     <profile>
@@ -61,6 +65,7 @@
   
   <build>
   	<directory>${project.target}</directory>
+  	<sourceDirectory>src</sourceDirectory>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

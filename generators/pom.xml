@@ -32,12 +32,21 @@
     <profile>
         <id>ant</id>
         <properties>
-            <project.target>../../../out/maven/${project.artifactId}</project.target>
-            <acceleo.uriHandler>org.eclipse.acceleo.maven.AcceleoURIHandler</acceleo.uriHandler>
+        	<project.target>../../../out/maven/${project.artifactId}</project.target>
+            <acceleo.uriHandler>soft.acceleo.AcceleoURIHandler</acceleo.uriHandler>
         </properties>
+        <dependencies>
+            <dependency>
+            	<groupId>soft</groupId>
+			    <artifactId>acceleo</artifactId>
+			    <version>1.0.0</version>
+			    <scope>system</scope>
+			    <systemPath>${project.basedir}/../../../out/maven/soft.acceleo/soft.acceleo-1.0.0.jar</systemPath>
+            </dependency>
+        </dependencies>
     </profile>
     <profile>
-        <id>default</id>
+        <id>eclipse</id>
         <activation>
             <activeByDefault>true</activeByDefault>
         </activation>
