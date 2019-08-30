@@ -37,12 +37,10 @@
         </properties>
         <dependencies>
             <dependency>
-            	<groupId>soft</groupId>
-			    <artifactId>acceleo</artifactId>
+            	<groupId>soft.acceleo</groupId>
+			    <artifactId>soft.acceleo</artifactId>
 			    <version>1.0.0</version>
-			    <scope>system</scope>
-			    <systemPath>${project.basedir}/../../../out/maven/soft.acceleo/soft.acceleo-1.0.0.jar</systemPath>
-            </dependency>
+			</dependency>
         </dependencies>
     </profile>
     <profile>
