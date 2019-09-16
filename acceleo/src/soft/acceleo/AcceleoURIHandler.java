@@ -31,30 +31,9 @@ public class AcceleoURIHandler implements IAcceleoParserURIHandler {
 	public URI transform(URI uri) {
 		URI newURI = uri;
 		String[] segments = uri.segments();
-		if ( Arrays.stream(segments).anyMatch(s -> SEGMENT_EMPTY.equals(s) || SEGMENT_SELF.equals(s) || SEGMENT_PARENT.equals(s) ))
+		if ( Arrays.stream(segments).anyMatch(s -> SEGMENT_EMPTY.equals(s) || SEGMENT_SELF.equals(s) || SEGMENT_PARENT.equals(s) )) {
 			newURI = URI.createHierarchicalURI( uri.scheme(), uri.authority(), uri.device(), resolve(segments), uri.query(), uri.fragment());
-		
-		String uriString = newURI.toString();
-		if (uriString.startsWith("jar:file:")) {
-			int indexOf = uriString.indexOf(".jar!/");
-			if (indexOf != -1) {
-				String name = uriString;
-				name = name.substring(0, indexOf);
-				name = name.substring("jar:file:".length() + 1);
-				if (name.endsWith("-SNAPSHOT")) {
-					name = name.substring(0, name.length() - "-SNAPSHOT".length());
-				}
-
-				name = name.substring(0, name.lastIndexOf("-"));
-				if (name.contains("/")) {
-					name = name.substring(name.lastIndexOf("/"));
-					name = name + "/";
-				}
-				name = "platform:/plugin" + name + uriString.substring(indexOf + ".jar!/".length());
-				return URI.createURI(name);
-			}
 		}
-		
 		return newURI;
 	}
 

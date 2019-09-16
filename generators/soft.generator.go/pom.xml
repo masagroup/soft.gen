@@ -66,7 +66,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
                             <useBaseVersion>false</useBaseVersion>
                         </configuration>
                     </execution>
@@ -80,7 +80,6 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>soft.generator.go.Generate</mainClass>
                         </manifest>
                     </archive>
@@ -102,7 +101,7 @@
                                     value="${project.build.directory}/${project.build.finalName}" />
                                 <property
                                     name="archive.includes"
-                                    value="${project.build.finalName}.${project.packaging} lib/*" />
+                                    value="${project.build.finalName}.${project.packaging} *.jar" />
                                 <zip
                                     basedir="${project.build.directory}"
                                     destfile="${final.name}.zip"
