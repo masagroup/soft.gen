@@ -115,11 +115,11 @@
 		[let defaultValue : String = aAttribute.getDefaultValue()]
 		[if defaultValue <> '']
         [aClass.getReceiverName()/].[aStructFeature.getSetterName()/]([defaultValue/])
-		[else]
-		[aClass.getReceiverName()/].[aStructFeature.getSetterName()/]([aAttribute.eType.getType()/]{})
-		[/if]
-		[/let]
-		[/let]
+        [else]
+        [aClass.getReceiverName()/].[aStructFeature.getSetterName()/]([aAttribute.eType.getType()/]{})
+        [/if]
+        [/let]
+        [/let]
     [/if]
 [/for]
     default:
@@ -183,10 +183,10 @@
 		[let comparisonFunction : String = eType.oclAsType(EDataType).getComparisonFunction()]
 		[if comparisonFunction <> '']
         [aClass.getReceiverName()/].[accessor/].[comparisonFunction/]()
-		[else]
-		[aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue()/]
-		[/if]
-		[/let]
+        [else]
+        [aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue()/]
+        [/if]
+        [/let]
 	[else]
 		[aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue()/]
     [/if]

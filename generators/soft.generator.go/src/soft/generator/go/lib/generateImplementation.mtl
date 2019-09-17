@@ -14,10 +14,10 @@
 	implementationName : String = aClass.getImplementationName(); 
 	aPackage : EPackage = aClass.ePackage; 
 	classExtend : String = aClass.getClassExtends();
-	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures();
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( f | f.name );
 	fieldFeatures : Collection(EStructuralFeature) = features->select(isField());
 	initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
-	operations : Collection(EOperation) = aClass.getImplementedOperations();
+	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( o | o.name );
 }]
 [file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
@@ -48,7 +48,7 @@ func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
     [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
     [aClass.getReceiverName()/].[getUnQualifiedName(classExtend)/] = [getShortQualifiedName(getConstructorName(classExtend), aPackage.name)/]()
     [aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/]) 
-	[fieldFeatures.generateVariableInitialization(aClass)/]
+    [fieldFeatures.generateVariableInitialization(aClass)/]
     return [aClass.getReceiverName()/]
 }
 
@@ -63,7 +63,7 @@ type [aClass.getInitializersInterface()/] interface {
 [/if]
 
 [aClass.generateFunctionReceiver()/] EStaticClass() [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
-	return GetPackage().[aClass.getReflectiveGetterName()/]()
+    return GetPackage().[aClass.getReflectiveGetterName()/]()
 }
 
 [operations.generateImplementation(aClass)/]
