@@ -14,10 +14,10 @@
 	implementationName : String = aClass.getImplementationName(); 
 	aPackage : EPackage = aClass.ePackage; 
 	classExtend : String = aClass.getClassExtends();
-	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( f | f.name );
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
 	fieldFeatures : Collection(EStructuralFeature) = features->select(isField());
 	initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
-	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( o | o.name );
+	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( name );
 }]
 [file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
@@ -40,7 +40,7 @@ import "[i/]"
 // [implementationName/] is the implementation of the model object '[aClass.name/]'
 type [implementationName/] struct {
     *[getShortQualifiedName( classExtend ,aPackage.name)/]
-    [ aClass.getImplementedFeatures().generateVariableDeclaration()/]
+    [ features.generateVariableDeclaration()/]
 }
 
 // [aClass.getConstructorName()/] is the constructor of a [aClass.getImplementationName()/]
