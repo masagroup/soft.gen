@@ -258,13 +258,16 @@
 /]
 
 [query public getClassExtends(aClass : EClass ) : String = 
+    let aPackage : EPackage = aClass.ePackage in
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
             'ecore::impl::BasicEObject'
+        else if ( aPackage.hasKey('dynamic' ) and aPackage.valueKey('dynamic') = 'true' ) then
+            'ecore::impl::DynamicEObjectImpl'
         else
             'ecore::impl::EObjectImpl'
-        endif
+        endif endif
     else
         if ( extendsClass.hasExtension() ) then
             extendsClass.getQualifiedExtensionName()
