@@ -282,7 +282,7 @@ NewArrayEList([anEAttribute.unique/])
             notifications = [receiverName/].EBasicRemoveFromContainer(notifications)
         }
         if ( [newVarName/] != nil ) {
-            notifications = [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseAdd( [receiverName/] , [aClass.getFeatureIDName(aStructuralFeature)/], notifications )
+            notifications = [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseAdd( [receiverName/].GetEObject() , [aClass.getFeatureIDName(aStructuralFeature)/], notifications )
         }
         notifications = [receiverName/].basic[methodName.toUpperFirst()/]( [newVarName/], notifications )
         if ( notifications != nil ) {
@@ -299,7 +299,7 @@ NewArrayEList([anEAttribute.unique/])
             notifications = [receiverName/].[varName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove( [receiverName/], [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications )
         }
         if ( [newVarName/] != nil ) {
-            notifications = [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseAdd( [receiverName/], [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications )
+            notifications = [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseAdd( [receiverName/].GetEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications )
         }
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
@@ -307,7 +307,7 @@ NewArrayEList([anEAttribute.unique/])
             notifications = [receiverName/].[varName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove( [receiverName/], [reverseClass.getFeatureIDName(reverseFeature)/] , notifications )
         }
         if ( [newVarName/] != nil ) {
-            notifications = [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseAdd( [receiverName/], [reverseClass.getFeatureIDName(reverseFeature)/] , notifications )
+            notifications = [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseAdd( [receiverName/].GetEObject(), [reverseClass.getFeatureIDName(reverseFeature)/] , notifications )
         }
             [/let]
             [/let]
