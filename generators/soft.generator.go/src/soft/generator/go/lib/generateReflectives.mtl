@@ -246,10 +246,10 @@
         msgs := notifications
         if [aClass.getReceiverName()/].[aFeature.name/] != nil {
             [if aFeature.isContains()]
-            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/], [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/], msgs)
+            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].GetEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/], msgs)
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/], [reverseFeature.getQualifiedFeatureIDName()/], msgs)
+            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].GetEObject(), [reverseFeature.getQualifiedFeatureIDName()/], msgs)
                 [/let]
             [/if]
         }
