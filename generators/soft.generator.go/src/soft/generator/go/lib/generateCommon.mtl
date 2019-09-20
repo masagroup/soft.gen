@@ -43,9 +43,11 @@ func ([aClass.getReceiverName()/] *[aClass.getImplementationName()/])
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
             'ecore.BasicEObject'
+        else if ( aPackage.hasKey('dynamic' ) and aPackage.valueKey('dynamic') = 'true' ) then
+            'ecore.DynamicEObjectImpl'
         else
             'ecore.EObjectImpl'
-        endif  
+        endif endif 
     else
         if ( extendsClass.hasExtension() ) then
             extendsClass.getQualifiedExtensionName()
