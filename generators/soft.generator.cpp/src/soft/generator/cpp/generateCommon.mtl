@@ -238,6 +238,7 @@
 [query public hasIsSet(aStructuralFeature : EStructuralFeature , aVisibility : String , aImplementation : Boolean) : Boolean = isIsSet() and aStructuralFeature.getVisibilityType('isset', aImplementation ) = aVisibility /]
 
 [query public isPublic( anEOperation : EOperation, aImplementation: Boolean ) : Boolean = anEOperation.getVisibilityType(aImplementation) = 'public'/]
+[query public isExported( aNamedElement : ENamedElement ) : Boolean = if ( hasKey('exported') ) then valueKey('exported') = 'true' else false endif/]
 
 [**
  * Classes Onthology

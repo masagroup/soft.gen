@@ -14,6 +14,9 @@
 [fileComment()/]
 [startGuard(guardName)/]
 
+[if aClass.isExported()]
+#include "[aClass.ePackage.getInterfaceFolder()/]/Exports.hpp"
+[/if]
 [for (implInclude : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s))]
 #include "[namespaceToFolder(implInclude)/].hpp"
 [/for]
@@ -30,7 +33,7 @@
 
 namespace [namespaceName/] 
 {
-    class [className/] : public virtual [getShortQualifiedName(aClass.getClassExtends(),namespaceName)/],[for ( implClass : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s)) separator (', ')] public virtual [getShortQualifiedName(implClass, namespaceName)/][/for] 
+    class [if aClass.isExported()][aClass.ePackage.name.toUpper()/]_API[/if] [className/] : public virtual [getShortQualifiedName(aClass.getClassExtends(),namespaceName)/],[for ( implClass : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s)) separator (', ')] public virtual [getShortQualifiedName(implClass, namespaceName)/][/for] 
     {
     private:
         [className/]& operator=([className/] const&) = delete;
