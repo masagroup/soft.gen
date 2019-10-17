@@ -96,9 +96,10 @@ func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpper
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let varAssigned : String = aStructuralFeature.getUnitTestType() ]
 func Test[aStructuralFeature.eContainingClass.name.toUpperFirst()/][name.toUpperFirst()/]Set(t *testing.T) {
-	mockAdapter := &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockEAdapter{}
-	mockAdapter.On("NotifyChanged", mock.Anything).Once()
 	obj := [aStructuralFeature.eContainingClass.getConstructorName()/]()
+	mockAdapter := &[if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]MockEAdapter{}
+	mockAdapter.On("SetTarget",obj).Once()		
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()
 	obj.EAdapters().Add(mockAdapter)
 	obj.[aStructuralFeature.getSetterName()/]([varAssigned/])
 	mockAdapter.AssertExpectations(t)
