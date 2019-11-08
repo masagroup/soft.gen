@@ -6,13 +6,18 @@
 [import soft::generator::go::generateType/]
 [import soft::generator::go::generateCommon/]
 
-[template public generateFactoryInterface(anEPackage : EPackage) { className : String = anEPackage.getFactoryName() ; }]
+[template public generateFactoryInterface(anEPackage : EPackage) { className : String = anEPackage.getFactoryName(); packageName : String = anEPackage.name; }]
 [file (anEPackage.getOutputDirectory() + '/' + anEPackage.getInterfaceFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
 package [anEPackage.name/]
 
+[if not anEPackage.isEcorePackage()]
+import "[anEPackage.getImportForPackage('ecore')/]"
+[/if]
+
 type [className/] interface {
+	[getShortQualifiedName('ecore.EFactory', packageName )/]
 [for (aEClass : EClass | anEPackage.eAllContents(EClass)->sortedBy(name))]
 [if (aEClass.abstract = false)]
 	Create[aEClass.name/]() [aEClass.getInterfaceName()/]
