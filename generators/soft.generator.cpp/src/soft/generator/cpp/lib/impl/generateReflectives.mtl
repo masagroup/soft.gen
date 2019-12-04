@@ -126,6 +126,12 @@ ecore::Any [className/]::eGet(int featureID, bool resolve, bool coreType) const
             _ASSERTE( list );
             return list->asEListOf<std::shared_ptr<EObject>>();
         }
+        [elseif anStructFeature.oclIsKindOf(EReference)]
+        {
+            auto value = [anStructFeature.getGetterName()/]();
+            auto object = std::dynamic_pointer_cast<EObject>(value);
+            return object;
+        }
         [else]
             return [anStructFeature.getGetterName()/]();
         [/if]
