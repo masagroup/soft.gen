@@ -123,8 +123,8 @@ ecore::Any [className/]::eGet(int featureID, bool resolve, bool coreType) const
         [if anStructFeature.isListType()]
         {
             auto list = [anStructFeature.getGetterName()/]();
-            _ASSERTE( list );
-            return list->asEListOf<std::shared_ptr<EObject>>();
+            auto objects = list->asEListOf<std::shared_ptr<EObject>>();
+            return objects->asEListOf<Any>();
         }
         [elseif anStructFeature.oclIsKindOf(EReference)]
         {
