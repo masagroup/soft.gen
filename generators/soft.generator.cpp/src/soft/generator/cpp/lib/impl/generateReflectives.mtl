@@ -177,7 +177,7 @@ void [aClass.getImplementationName()/]::eSet(int featureID, const ecore::Any& ne
     [if anStructFeature.eGenericType.eClassifier.isAny()]
             auto [varName/] = newValue;
     [elseif anStructFeature.eGenericType.eClassifier.oclIsKindOf(EClass)]
-            [anStructFeature.generateEffectiveType()/] [varName/] = objectCast<[anStructFeature.generateEffectiveType()/]>(newValue);
+            [anStructFeature.generateEffectiveType()/] [varName/] = anyObjectCast<[anStructFeature.generateEffectiveType()/]>(newValue);
     [else]
             [anStructFeature.generateEffectiveType()/] [varName/] = anyCast<[anStructFeature.generateEffectiveType()/]>(newValue);
     [/if]
