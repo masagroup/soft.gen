@@ -174,17 +174,19 @@ void [aClass.getImplementationName()/]::eSet(int featureID, const ecore::Any& ne
         case [anStructFeature.getQualifiedFeatureIDName()/]:
         {
     [let varName : String = anStructFeature.name.first(1)]
-    [if anStructFeature.eGenericType.eClassifier.isAny()]
-            auto [varName/] = newValue;
-    [elseif anStructFeature.eGenericType.eClassifier.oclIsKindOf(EClass)]
-            auto [varName/] = anyObjectCast<[anStructFeature.generateEffectiveType()/]>(newValue);
-    [else]
-            auto [varName/] = anyCast<[anStructFeature.generateEffectiveType()/]>(newValue);
-    [/if]
     [if anStructFeature.isListType()]
+            auto list = anyListCast<std::shared_ptr<EObject>>(newValue);
+            auto [varName/] = list->asEListOf<[anStructFeature.eGenericType.generateCppType()/]>();
             [anStructFeature.getGetterName()/]()->clear();
             [anStructFeature.getGetterName()/]()->addAll(*[varName/]);
     [else]
+        [if anStructFeature.eGenericType.eClassifier.isAny()]
+            auto [varName/] = newValue;
+        [elseif anStructFeature.eGenericType.eClassifier.oclIsKindOf(EClass)]
+            auto [varName/] = anyObjectCast<[anStructFeature.generateEffectiveType()/]>(newValue);
+        [else]
+            auto [varName/] = anyCast<[anStructFeature.generateEffectiveType()/]>(newValue);
+        [/if]
             [anStructFeature.getSetterName()/]([varName/]);
     [/if]
             return;
