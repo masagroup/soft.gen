@@ -65,6 +65,9 @@ std::shared_ptr<ecore::EResource> [className/]::eResource() const
 void [className/]::init(const std::shared_ptr<[className/]>& package)
 {
     setThisPtr(package);
+    setName(eNAME);
+    setNsPrefix(eNS_PREFIX);
+    setNsURI(eNS_URI);
     setEFactoryInstance( [anEPackage.getFactoryInterfaceName()/]::eInstance() );
     createPackageContents(package);
     initializePackageContents();   
@@ -138,11 +141,6 @@ void [className/]::initializePackageContents()
     if (isInitialized)
         return;
     isInitialized = true;
-
-    // Initialize package
-    setName(eNAME);
-    setNsPrefix(eNS_PREFIX);
-    setNsURI(eNS_URI);
     
     // Add supertypes to classes
     [anEPackage.eAllContents(EClass)->sortedBy(name).initSuperTypes()/]
