@@ -17,7 +17,7 @@
                                         , Set {
                                                     aPackage.getFactoryQualifiedInterfaceName(),
                                                     'ecore::EList',
-                                                    'ecore::impl::XMIResource'
+                                                    'ecore::impl::PackageResourceRegistry'
                                               }
                                         }->flatten()->asOrderedSet()->sortedBy( s | s)]
 [for ( include : String | includes )]
@@ -58,12 +58,7 @@ std::shared_ptr<ecore::EResource> [className/]::eResource() const
 {
     auto resource = [getShortQualifiedName('ecore::ext::EPackageExt' ,anEPackage.getImplementationNamespaceName())/]::eResource();
     if (!resource)
-    {
-        auto r = std::make_shared<XMIResource>(URI(eNS_URI));
-        r->setThisPtr(r);
-        r->getContents()->add(getThisPtr()); 
-        resource = r; 
-    }
+        resource = PackageResourceRegistry::getInstance()->getResource(getThisPtr());    
     return resource;
 }
 
