@@ -285,7 +285,7 @@ virtual [aStructuralFeature.generateReturnType()/] basic[methodName/]() const;
     else
         return std::dynamic_pointer_cast<[aStructuralFeature.generateElementType()/]>(eContainer());
 [elseif not isVolatile()]
-    return [aStructuralFeature.name/]_[if aStructuralFeature.isProxy() and not aStructuralFeature.isListType() ].getUnResolved()[elseif aStructuralFeature.isLazy()].get()[elseif aStructuralFeature.isBackReference()].lock()[/if];
+    return [aStructuralFeature.name/]_[if aStructuralFeature.isProxy() and not aStructuralFeature.isListType() ].value()[elseif aStructuralFeature.isLazy()].value()[elseif aStructuralFeature.isBackReference()].lock()[/if];
 [elseif (hasKey('getterBody'))]
     [valueKey('getterBody')/]
 [else]
@@ -315,7 +315,7 @@ virtual [aStructuralFeature.generateReturnType()/] [aStructuralFeature.getGetter
     else
         return std::dynamic_pointer_cast<[aStructuralFeature.generateElementType()/]>(eContainer());
 [elseif not isVolatile()]
-    return [aStructuralFeature.name/]_[if aStructuralFeature.isLazy()].get()[elseif aStructuralFeature.isBackReference()].lock()[/if];
+    return [aStructuralFeature.name/]_[if aStructuralFeature.isProxy()].get()[elseif aStructuralFeature.isLazy()].get()[elseif aStructuralFeature.isBackReference()].lock()[/if];
 [elseif hasKey('getterBody')]
     [valueKey('getterBody')/]
 [else]
@@ -361,7 +361,7 @@ std::shared_ptr<ecore::ENotificationChain> [className/]::[methodName/]( [aStruct
     return eBasicSetContainer([newVarName/],[aStructuralFeature.getQualifiedFeatureIDName()/],msgs); 
 [elseif not isVolatile()]
     [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
-    [aStructuralFeature.generateEffectiveType()/] [oldVarName/] = [aStructuralFeature.name/]_[if isLazy()].get()[elseif isBackReference()].lock()[/if];
+    auto [oldVarName/] = [aStructuralFeature.name/]_[if isProxy()].value()[elseif isLazy()].value()[elseif isBackReference()].lock()[/if];
     [aStructuralFeature.name/]_ = [newVarName/];
     auto notifications = msgs;
     if ( eNotificationRequired() )
@@ -444,7 +444,7 @@ void [className/]::[methodName/]([aStructuralFeature.generateParameterType()/] [
         [/let]
     [else]
         [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
-    [aStructuralFeature.generateEffectiveType()/] [oldVarName/] = [aStructuralFeature.name/]_[if isLazy()].get()[elseif isBackReference()].lock()[/if];
+    auto [oldVarName/] = [aStructuralFeature.name/]_[if isProxy()].value()[elseif isLazy()].value()[elseif isBackReference()].lock()[/if];
     [aStructuralFeature.name/]_ = [newVarName/];
     if ( eNotificationRequired() )
         eNotify( std::make_shared<Notification>(getThisPtr(), Notification::SET, [aStructuralFeature.getQualifiedFeatureIDName()/], [oldVarName/], [newVarName/]));
