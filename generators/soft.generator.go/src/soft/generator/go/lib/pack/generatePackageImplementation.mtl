@@ -236,10 +236,10 @@ func (p *[className/])initializePackageEDataTypes() {
     [anEPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization()/]
 }
 
-func (p *[className/])EResource() {
+func (p *[className/])EResource() EResource {
     resource := p.EPackageExt.EResource()
     if resource == nil {
-		resource = [if not anEPackage.isEcorePackage()]ecore.[/if]GetPackageResourceRegistry().GetResource(p.GetInterfaces().(EObject))
+		resource = [if not anEPackage.isEcorePackage()]ecore.[/if]GetPackageResourceRegistry().GetResource(p.GetInterfaces().(EPackage))
 	}
     return resource
 }

@@ -58,7 +58,7 @@ type [aClass.getInitializersInterface()/] interface {
 }
 
 [aClass.generateFunctionReceiver()/] getInitializers() [aClass.getInitializersInterface()/] {
-    return [aClass.getReceiverName()/].GetEObject().([aClass.getInitializersInterface()/])
+    return [aClass.getReceiverName()/].AsEObject().([aClass.getInitializersInterface()/])
 }
 [/if]
 
