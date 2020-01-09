@@ -63,8 +63,7 @@ namespace [namespaceName/]
     [/let]
 [/for]
         [anEPackage.eAllContents(EDataType)->sortedBy(name).generateDataMember(anEPackage)/]
-        std::shared_ptr<EResource> defaultResource_;
-       
+        
         static [className/]* create();
         bool isInitialized = false;
         bool isCreated = false;
@@ -72,7 +71,6 @@ namespace [namespaceName/]
         void init(const std::shared_ptr<[className/]>& package);
         void createPackageContents(const std::shared_ptr<[className/]>& package);
         void initializePackageContents();
-        void createResource(const std::string& nsURI);
         
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
         void create[aClass.name.toUpperFirst()/]Content(const std::shared_ptr<[getShortQualifiedName('ecore::EPackage' ,namespaceName)/]>& package, const std::shared_ptr<[getShortQualifiedName('ecore::EcoreFactory' ,namespaceName)/]>& factory);
