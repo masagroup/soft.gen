@@ -146,6 +146,9 @@
 [query public getImplementationName( aClass : EClass ) : String = getImplementationName(aClass.name, aClass.ePackage)/]
 [query public getImplementationName( aPackage : EPackage ) : String = getImplementationName( getPackageName(),aPackage)/]
 
+[query public getBaseImplementationName( aClass : EClass ) : String = getBaseName(aClass.name, aClass.ePackage)/]
+[query public getBaseEsxtensionName( aClass : EClass ) : String = getBaseName(aClass.name, aClass.ePackage)/]
+
 [query public getExtensionName( aClass : EClass ) : String = getExtensionName(aClass.name, aClass.ePackage)/]
 [query public getExtensionName( aPackage : EPackage ) : String = getExtensionName( getPackageName(),aPackage)/]
 [query private getExtensionName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getExtensionNamePattern() in if pattern ='' then aElementName + 'Ext' else pattern.format(Sequence{aElementName}) endif /]
@@ -169,8 +172,10 @@
 
 [query public getQualifiedImplementationName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getImplementationNamespaceName() , aClass.getImplementationName())/]
 [query public getQualifiedImplementationName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getImplementationNamespaceName() , aPackage.getImplementationName())/]
-
 [query public getQualifiedExtensionName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getExtensionNamespaceName() , aClass.getExtensionName())/]
+
+[query public getQualifiedBaseImplementationName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getImplementationNamespaceName() , aClass.getBaseName())/]
+[query public getQualifiedBaseExtensionName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getExtensionNamespaceName() , getExtensionName(aClass.getBaseName(),aClass.ePackage))/]
 
 [query public getQualifiedMockName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getTestsNamespaceName() , aClass.getMockName())/]
 
@@ -310,4 +315,8 @@
 [query public getInterfaceName( aClass : EClass ) : String = getInterfaceName(aClass.name,aClass.ePackage) /]
 [query public getInterfaceName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getInterfaceNamePattern() in if pattern ='' then aElementName else pattern.format(Sequence{aElementName}) endif /]
 [query public getInterfaceNamePattern( aPackage : EPackage ) : String = if hasKey('interfaceNamePattern') then valueKey('interfaceNamePattern') else '' endif/]
+
+[query public getBaseName( aClass : EClass ) : String = getBaseName(aClass.name,aClass.ePackage) /]
+[query public getBaseName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getBaseNamePattern() in if pattern ='' then aElementName + 'Base' else pattern.format(Sequence{aElementName}) endif /]
+[query public getBaseNamePattern( aPackage : EPackage ) : String = if hasKey('baseNamePattern') then valueKey('baseNamePattern') else '' endif/]
 
