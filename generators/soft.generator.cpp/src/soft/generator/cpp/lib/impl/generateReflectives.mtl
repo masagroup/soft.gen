@@ -113,8 +113,9 @@ virtual std::shared_ptr<ENotificationChain> eBasicInverseRemove( const std::shar
 [/template]
 
 [template private generateEGetDefinition(aClass : EClass)]
-[let className : String = aClass.getImplementationName()]
-ecore::Any [className/]::eGet(int featureID, bool resolve, bool coreType) const
+[let className : String = aClass.getBaseImplementationName()]
+template <typename... I>
+ecore::Any [className/]<I...>::eGet(int featureID, bool resolve, bool coreType) const
 {
     switch(featureID)
     {
@@ -151,7 +152,8 @@ bool is_uninitialized(std::weak_ptr<T> const& weak) {
 }
 
 [/if]
-bool [aClass.getImplementationName()/]::eIsSet(int featureID) const
+template <typename... I>
+bool [aClass.getBaseImplementationName()/]<I...>::eIsSet(int featureID) const
 {
     switch(featureID)
     {
@@ -166,7 +168,8 @@ bool [aClass.getImplementationName()/]::eIsSet(int featureID) const
 
 
 [template private generateESetDefinition(aClass : EClass)]
-void [aClass.getImplementationName()/]::eSet(int featureID, const ecore::Any& newValue)
+template <typename... I>
+void [aClass.getBaseImplementationName()/]<I...>::eSet(int featureID, const ecore::Any& newValue)
 {
     switch(featureID)
     {
@@ -199,8 +202,9 @@ void [aClass.getImplementationName()/]::eSet(int featureID, const ecore::Any& ne
 [/template]
 
 [template private generateEUnSetDefinition(aClass : EClass)]
-[let className : String = aClass.getImplementationName()]
-void [className/]::eUnset(int featureID)
+[let className : String = aClass.getBaseImplementationName()]
+template <typename... I>
+void [className/]<I...>::eUnset(int featureID)
 {
     switch(featureID)
     {
@@ -226,8 +230,9 @@ void [className/]::eUnset(int featureID)
 [/template]
 
 [template private generateEInvokeDefinition(aClass : EClass)]
-[let className : String = aClass.getImplementationName()]
-ecore::Any [className/]::eInvoke(int operationID, const std::shared_ptr<EList<ecore::Any>>& arguments)
+[let className : String = aClass.getBaseImplementationName()]
+template <typename... I>
+ecore::Any [className/]<I...>::eInvoke(int operationID, const std::shared_ptr<EList<ecore::Any>>& arguments)
 {
     // [protected ( className + '::eInvoke')]
     switch( operationID )
@@ -310,8 +315,9 @@ ecore::Any [className/]::eInvoke(int operationID, const std::shared_ptr<EList<ec
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass) ]
-[let className : String = aClass.getImplementationName()]
-std::shared_ptr<ENotificationChain> [className/]::eBasicInverseAdd( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications )
+[let className : String = aClass.getBaseImplementationName()]
+template <typename... I>
+std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseAdd( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications )
 {
     // [protected (className + '::eBasicInverseAdd')]
     switch( featureID )
@@ -359,8 +365,9 @@ std::shared_ptr<ENotificationChain> [className/]::eBasicInverseAdd( const std::s
 [/template]
 
 [template public generateEInverseRemoveDefinition(aClass : EClass) ? (aClass.getEInverseRemoveFeatures()->notEmpty()) ]
-[let className : String = aClass.getImplementationName()]
-std::shared_ptr<ENotificationChain> [className/]::eBasicInverseRemove( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications )
+[let className : String = aClass.getBaseImplementationName()]
+template <typename... I>
+std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseRemove( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications )
 {
     // [protected (className + '::eBasicInverseRemove')]
     switch( featureID )

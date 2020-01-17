@@ -17,9 +17,10 @@ virtual [anEOperation.generateReturnType()/] [anEOperation.name/]([anEOperation.
 
 
 [template public generateDefinition(anEOperation : EOperation) ? ( isPublic(true))]
-[let className : String = anEOperation.eContainingClass.getImplementationName()]
+[let className : String = anEOperation.eContainingClass.getBaseImplementationName()]
 [let methodID : String = if anEOperation.eContainingClass.eOperations->select( eC | eC.name = anEOperation.name )->size() > 1 then anEOperation.getElementIdentifier() else anEOperation.name endif]
-[anEOperation.generateReturnType()/] [className/]::[anEOperation.name/]([anEOperation.generateParameterList()/])[if (hasKey('const'))] const[/if]
+template <typename... I>
+[anEOperation.generateReturnType()/] [className/]<I...>::[anEOperation.name/]([anEOperation.generateParameterList()/])[if (hasKey('const'))] const[/if]
 {
 [if (hasKey('body'))]
     [valueKey('body')/]

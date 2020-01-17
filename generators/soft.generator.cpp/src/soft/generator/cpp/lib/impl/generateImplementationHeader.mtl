@@ -9,8 +9,8 @@
 [import soft::generator::cpp::lib::generateCommon /]
 [import soft::generator::cpp::lib::impl::generateReflectives /]
 
-[template public generateImplementationHeader(aClass : EClass){ className : String = aClass.getImplementationName(); namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); guardName : String = '_'.concat(className); }]
-[file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className +'.hpp', false, 'UTF-8')]
+[template public generateImplementationHeader(aClass : EClass){ classBaseName : String = aClass.getBaseImplementationName() ; classImplName : String = aClass.getImplementationName(); namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); guardName : String = '_'.concat(classImplName); }]
+[file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + classImplName +'.hpp', false, 'UTF-8')]
 [fileComment()/]
 [startGuard(guardName)/]
 
@@ -28,24 +28,25 @@
 #include "ecore/impl/Proxy.hpp"
 [/if]
 
-// [protected (className + ' [declaration-includes]')]
+// [protected (classImplName + ' [declaration-includes]')]
 // [/protected]
 
 namespace [namespaceName/] 
 {
-    class [if aClass.isExported()][aClass.ePackage.name.toUpper()/]_API[/if] [className/] : public virtual [getShortQualifiedName(aClass.getClassExtends(),namespaceName)/],[for ( implClass : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s)) separator (', ')] public virtual [getShortQualifiedName(implClass, namespaceName)/][/for] 
+    template <typename... I>
+    class [classBaseName/] : public [getShortQualifiedName(aClass.getClassExtends(),namespaceName)/],[for ( implClass : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s)) separator (', ')] public virtual [getShortQualifiedName(implClass, namespaceName)/][/for] 
     {
     private:
-        [className/]& operator=([className/] const&) = delete;
+        [classBaseName/]& operator=([classBaseName/] const&) = delete;
     
     protected:
         friend class [ aClass.ePackage.getFactoryImplementationName() /];
-        [className/]();
-        std::shared_ptr<[className/]> [getThisPtrGetterName()/]() const;
-        void [getThisPtrSetterName()/](const std::shared_ptr<[className/]>& [getThisPtrName()/]);
+        [classBaseName/]();
+        std::shared_ptr<[classBaseName/]> [getThisPtrGetterName()/]() const;
+        void [getThisPtrSetterName()/](const std::shared_ptr<[classBaseName/]>& [getThisPtrName()/]);
 
     public:
-        virtual ~[className/]();
+        virtual ~[classBaseName/]();
         
 [let operations : OrderedSet(EOperation) = aClass.eOperations->select( isPublic(true) )]
 [if operations->notEmpty()]
@@ -102,12 +103,16 @@ namespace [namespaceName/]
 [/if]
 [/let]
     private:
-        std::weak_ptr<[className/]> [getThisPtrName()/]_;
+        std::weak_ptr<[classBaseName/]> [getThisPtrName()/]_;
     
-        // [protected (className + ' [declaration-methods]')]
+        // [protected (classImplName + ' [declaration-methods]')]
         // [/protected]
     };
+
 }
+
+#include "[aClass.ePackage.getImplementationFolder() + '/' + classImplName +'.inl'/]"
+
 [endGuard(guardName)/]
 [/file]
 [/template]

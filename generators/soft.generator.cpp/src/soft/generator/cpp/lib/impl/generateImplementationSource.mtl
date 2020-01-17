@@ -12,10 +12,14 @@
 [import soft::generator::cpp::lib::impl::generateReflectives /]
 
 
-[template public generateImplementationSource(aClass : EClass) { className : String = aClass.getImplementationName(); namespaceName : String = aClass.ePackage.getImplementationNamespaceName();}]
-[file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className + '.cpp', false, 'UTF-8')]
+[template public generateImplementationSource(aClass : EClass) { classImplName : String = aClass.getImplementationName(); classBaseName : String = aClass.getBaseImplementationName(); namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); guardName : String = '_'.concat(classImplName);}]
+[file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + classImplName + '.inl', false, 'UTF-8')]
 [fileComment()/]
-#include "[namespaceToFolder(aClass.getQualifiedImplementationName())/].hpp"
+
+#ifndef [getGuardName(classImplName)/]
+#error This file may only be included from [classImplName/].hpp
+#endif
+
 [let includes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->selectByKind(EClass)->collect( c | c.getInclude())->asSet()
                                         , Set { 
                                                 '"ecore/Any.hpp"',
@@ -39,112 +43,112 @@
 #include <iostream>
 #include <sstream>
 
-//[protected (className + ' [definition-includes]')]
+//[protected (classImplName + ' [definition-includes]')]
 //[/protected]
 
-
-[comment namespace /]
-[let namespaces : OrderedSet(String) = OrderedSet{ 'ecore' , aClass.ePackage.getInterfaceNamespaceName() , aClass.ePackage.getImplementationNamespaceName()}]
-[for (namespace : String | namespaces )]
-using namespace [namespace/];
-[/for]
-[/let]
-
-//[protected (className + ' [definition-begin]')]
+//[protected (classImplName + ' [definition-begin]')]
 //[/protected]
 
-//*********************************
-// Constructor / Destructor
-//*********************************
-[className/]::[className/]()
-[let dataFeatures : OrderedSet(EStructuralFeature) = aClass.eStructuralFeatures->select(isField())]
-[for ( aFeature : EStructuralFeature | dataFeatures ) before(':') separator(',')]
-   [aFeature.generateDataInitialization()/]
-[/for]
-[/let]
-//[protected (className+ '::' + className)]
+namespace [namespaceName/] 
 {
-}
-//[/protected]
 
+    //*********************************
+    // Constructor / Destructor
+    //*********************************
+    template <typename... I>
+    [classBaseName/]<I...>::[classBaseName/]()
+    [let dataFeatures : OrderedSet(EStructuralFeature) = aClass.eStructuralFeatures->select(isField())]
+    [for ( aFeature : EStructuralFeature | dataFeatures ) before(':') separator(',')]
+       [aFeature.generateDataInitialization()/]
+    [/for]
+    [/let]
+    //[protected (classBaseName+ '::' + classBaseName)]
+    {
+    }
+    //[/protected]
 
-[className/]::~[className/]()
-{
-[if not aClass.ePackage.eClassifiers->exists( c | c.oclIsKindOf(EClass) and c <> aClass and aClass.isSuperTypeOf(c.oclAsType(EClass)))]
-#ifdef SHOW_DELETION
-    std::string name;
-    if ( auto named = dynamic_cast<ENamedElement*>( this ) )
-        name = named->getName();
-    std::cout << "delete [className/] ['['/]"<< this << "[']'/] " << name << std::endl;
-#endif
-[/if]
-//[protected (className+ '::~' + className)]
-//[/protected]
-}
+    template <typename... I>
+    [classBaseName/]<I...>::~[classBaseName/]()
+    {
+    [if not aClass.ePackage.eClassifiers->exists( c | c.oclIsKindOf(EClass) and c <> aClass and aClass.isSuperTypeOf(c.oclAsType(EClass)))]
+    #ifdef SHOW_DELETION
+        std::string name;
+        if ( auto named = dynamic_cast<ENamedElement*>( this ) )
+            name = named->getName();
+        std::cout << "delete [classBaseName/] ['['/]"<< this << "[']'/] " << name << std::endl;
+    #endif
+    [/if]
+    //[protected (classBaseName+ '::~' + classBaseName)]
+    //[/protected]
+    }
 
-std::shared_ptr<[className/]> [className/]::[getThisPtrGetterName()/]() const
-{
-    return [getThisPtrName()/]_.lock();
-}
+    template <typename... I>
+    std::shared_ptr<[classBaseName/]<I...>> [classBaseName/]<I...>::[getThisPtrGetterName()/]() const
+    {
+        return [getThisPtrName()/]_.lock();
+    }
+    
+    template <typename... I>
+    void [classBaseName/]<I...>::[getThisPtrSetterName()/](const std::shared_ptr<[classBaseName/]>& [getThisPtrName()/])
+    {
+        [removeNamespace(aClass.getClassExtends())/]::[getThisPtrSetterName()/]([getThisPtrName()/]);
+        [getThisPtrName()/]_ = [getThisPtrName()/];
+    [let dataFeatures : OrderedSet(EStructuralFeature) = aClass.eStructuralFeatures->select(isField()) ]
+        [dataFeatures.generateDataInitializationDefered()/]
+    [/let]
+    }
 
-void [className/]::[getThisPtrSetterName()/](const std::shared_ptr<[className/]>& [getThisPtrName()/])
-{
-    [removeNamespace(aClass.getClassExtends())/]::[getThisPtrSetterName()/]([getThisPtrName()/]);
-    [getThisPtrName()/]_ = [getThisPtrName()/];
-[let dataFeatures : OrderedSet(EStructuralFeature) = aClass.eStructuralFeatures->select(isField()) ]
-    [dataFeatures.generateDataInitializationDefered()/]
-[/let]
-}
-
-std::shared_ptr<EClass> [className/]::eStaticClass() const
-{
-    return [aClass.ePackage.getInterfaceName()/]::eInstance()->get[aClass.getElementAccessorName()/]();
-}
+    template <typename... I>
+    std::shared_ptr<EClass> [classBaseName/]<I...>::eStaticClass() const
+    {
+        return [aClass.ePackage.getInterfaceName()/]::eInstance()->get[aClass.getElementAccessorName()/]();
+    }
 
 [let operations : OrderedSet(EOperation) = aClass.eOperations->select( isPublic(true) )]
 [if operations->notEmpty()]
-//*********************************
-// Operations
-//*********************************
-[operations.generateDefinition()/]
+    //*********************************
+    // Operations
+    //*********************************
+    [operations.generateDefinition()/]
 [/if]
 [/let]
 [let attributes : OrderedSet(EAttribute) = aClass.eStructuralFeatures->selectByKind(EAttribute)->select( hasSetter('public',true) or hasGetter('public',true) )]
 [if attributes->notEmpty()]
-//*********************************
-// Attributes
-//*********************************
-[attributes.generateDefinition()/]
+    //*********************************
+    // Attributes
+    //*********************************
+    [attributes.generateDefinition()/]
 [/if]
 [/let]
 [let references : OrderedSet(EAttribute) = aClass.eStructuralFeatures->selectByKind(EReference)->select( hasSetter('public',true) or hasGetter('public',true)  )]
 [if references->notEmpty()]
-//*********************************
-// References
-//*********************************
-[references.generateDefinition()/]
+    //*********************************
+    // References
+    //*********************************
+    [references.generateDefinition()/]
 [/if]
 [/let]
 [let basicFeatures : OrderedSet(EAttribute) = aClass.eStructuralFeatures->select( isBasicGet() or isBasicSet() )]
 [if basicFeatures->notEmpty()]
-//*********************************
-// Basics
-//*********************************
-[basicFeatures.generateBasicDefinition()/]
+    //*********************************
+    // Basics
+    //*********************************
+    [basicFeatures.generateBasicDefinition()/]
 [/if]
 [/let]
 [aClass.generateReflectivesDefinition()/]
 [let dataFeatures : OrderedSet(EStructuralFeature) = aClass.getDataInitializationFeatures()]
 [if dataFeatures->notEmpty()]
-//*********************************
-// Initializations
-//*********************************
-[dataFeatures.generateDataInitializationMethodDefinition()/]
+    //*********************************
+    // Initializations
+    //*********************************
+    [dataFeatures.generateDataInitializationMethodDefinition()/]
 [/if]
 [/let]
 
+}
 
-// [protected (className + ' [definition-end]') ]
+// [protected (classImplName + ' [definition-end]') ]
 // [/protected]
 
 [/file]
