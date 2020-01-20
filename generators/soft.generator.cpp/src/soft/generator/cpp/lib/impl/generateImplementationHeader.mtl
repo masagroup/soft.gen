@@ -34,7 +34,7 @@
 namespace [namespaceName/] 
 {
     template <typename... I>
-    class [classBaseName/] : public [getShortQualifiedName(aClass.getClassExtends(),namespaceName)/],[for ( implClass : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s)) separator (', ')] public virtual [getShortQualifiedName(implClass, namespaceName)/][/for] 
+    class [classBaseName/] : public [getShortQualifiedName(aClass.getClassExtends(),namespaceName)/]<I...> 
     {
     private:
         [classBaseName/]& operator=([classBaseName/] const&) = delete;
@@ -108,6 +108,8 @@ namespace [namespaceName/]
         // [protected (classImplName + ' [declaration-methods]')]
         // [/protected]
     };
+
+	typedef [classBaseName/]<[for ( implClass : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s)) separator (',')][getShortQualifiedName(implClass, namespaceName)/][/for]> [classImplName/];
 
 }
 

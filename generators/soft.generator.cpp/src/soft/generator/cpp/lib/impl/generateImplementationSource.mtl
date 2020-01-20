@@ -16,7 +16,7 @@
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + classImplName + '.inl', false, 'UTF-8')]
 [fileComment()/]
 
-#ifndef [getGuardName(classImplName)/]
+#ifndef [getGuardName(guardName)/]
 #error This file may only be included from [classImplName/].hpp
 #endif
 
