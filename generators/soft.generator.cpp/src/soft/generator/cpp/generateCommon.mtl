@@ -24,7 +24,7 @@
 // This file is part of a MASA library or program.
 // Refer to the included end-user license agreement for restrictions.
 //
-// Copyright (c) 2018 MASA Group
+// Copyright (c) 2020 MASA Group
 //
 // *****************************************************************************
 
@@ -268,11 +268,11 @@
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
-            'ecore::impl::BasicEObject'
+            'ecore::impl::AbstractEObject'
         else if ( aPackage.hasKey('dynamic' ) and aPackage.valueKey('dynamic') = 'true' ) then
-            'ecore::impl::DynamicEObjectImpl'
+            'ecore::impl::DynamicEObjectBase'
         else
-            'ecore::impl::EObjectImpl'
+            'ecore::impl::EObjectBase'
         endif endif
     else
         if ( extendsClass.hasExtension() ) then
