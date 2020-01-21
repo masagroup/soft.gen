@@ -278,9 +278,9 @@
         endif endif
     else
         if ( extendsClass.hasExtension() ) then
-            extendsClass.getQualifiedExtensionName()
+            extendsClass.getQualifiedBaseExtensionName()
         else
-            extendsClass.getQualifiedImplementationName()
+            extendsClass.getQualifiedBaseName()
         endif
     endif
 /]

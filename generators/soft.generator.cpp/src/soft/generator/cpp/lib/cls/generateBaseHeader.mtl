@@ -34,7 +34,7 @@
 namespace [namespaceName/] 
 {
     template <typename... I>
-    class [className/] : public [getShortQualifiedName(aClass.getClassExtends(),namespaceName)/]<I...> 
+    class [className/] : public [aClass.getClassExtends()/]<I...> 
     {
     private:
         [className/]& operator=([className/] const&) = delete;
