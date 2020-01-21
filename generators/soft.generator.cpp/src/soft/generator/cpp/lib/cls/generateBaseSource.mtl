@@ -145,9 +145,7 @@ namespace [namespaceName/]
     [dataFeatures.generateDataInitializationMethodDefinition()/]
 [/if]
 [/let]
-
 }
-
 // [protected (className + ' [definition-end]') ]
 // [/protected]
 

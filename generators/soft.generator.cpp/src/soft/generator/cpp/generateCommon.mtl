@@ -179,6 +179,8 @@
 
 [query public getQualifiedMockName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getTestsNamespaceName() , aClass.getMockName())/]
 
+[query public getQualifiedBaseName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getImplementationNamespaceName() , aClass.getBaseName())/]
+
 [query public getFactoryQualifiedInterfaceName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getInterfaceNamespaceName() , aPackage.getFactoryInterfaceName() )/]
 [query public getFactoryQualifiedImplementationName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getImplementationNamespaceName() , aPackage.getFactoryImplementationName() )/]
 [query public getFactoryQualifiedExtensionName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getExtensionNamespaceName() , aPackage.getFactoryExtensionName() )/]

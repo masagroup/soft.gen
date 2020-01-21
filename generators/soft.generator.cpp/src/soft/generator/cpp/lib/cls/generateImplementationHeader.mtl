@@ -18,9 +18,11 @@
 [fileComment()/]
 [startGuard(guardName)/]
 
+#include "[namespaceToFolder(aClass.getQualifiedBaseImplementationName())/].hpp"
+
 namespace [namespaceName/] 
 {
-    typedef [className/]<[for ( implClass : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s)) separator (',')][getShortQualifiedName(implClass, namespaceName)/][/for]> [className/];
+    typedef [classBaseName/]<[for ( implClass : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s)) separator (',')][getShortQualifiedName(implClass, namespaceName)/][/for]> [className/];
 }
 
 [endGuard(guardName)/]

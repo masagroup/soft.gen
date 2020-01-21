@@ -28,8 +28,9 @@ set(GENERATED_HEADER_[namespaceVar/]_FILES
     src-gen/[namespaceToFolder(aPackage.getFactoryQualifiedImplementationName())/].hpp
     src-gen/[namespaceToFolder(aPackage.getQualifiedImplementationName())/].hpp
 [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
+    src-gen/[namespaceToFolder(aClass.getQualifiedBaseName())/].hpp
+    src-gen/[namespaceToFolder(aClass.getQualifiedBaseName())/].inl
     src-gen/[namespaceToFolder(aClass.getQualifiedImplementationName())/].hpp
-    src-gen/[namespaceToFolder(aClass.getQualifiedImplementationName())/].inl
 [/for]
 )
 set(GENERATED_SOURCE_[namespaceVar/]_FILES
