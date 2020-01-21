@@ -8,7 +8,6 @@
 [import soft::generator::cpp::generateType/]
 [import soft::generator::cpp::generateStructuralFeature /]
 [import soft::generator::cpp::lib::generateCommon /]
-[import soft::generator::cpp::lib::generateInterface /]
 [import soft::generator::cpp::lib::cls::generateReflectives /]
 
 
