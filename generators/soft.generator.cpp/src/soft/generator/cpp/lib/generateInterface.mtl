@@ -59,7 +59,7 @@ namespace [aCls.ePackage.getInterfaceNamespaceName()/]
 
 namespace [classNamespace/] 
 {
-    class [className/] [for ( extend : String | aClass.getInterfaceExtends()->collect( s | getShortQualifiedName(s, classNamespace))->sortedBy( s | s )) before (' : ') separator (', ')]public [extend/][/for]
+    class [aClass.ePackage.name.toUpper()/]_API [className/] [for ( extend : String | aClass.getInterfaceExtends()->collect( s | getShortQualifiedName(s, classNamespace))->sortedBy( s | s )) before (' : ') separator (', ')]public [extend/][/for]
     {
     public:
         virtual ~[className/]() = default;
