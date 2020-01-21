@@ -1,5 +1,5 @@
 [comment encoding = UTF-8 /]
-[module generateImplementationSource('http://www.eclipse.org/emf/2002/Ecore')]
+[module generateBaseSource('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
@@ -9,15 +9,15 @@
 [import soft::generator::cpp::generateStructuralFeature /]
 [import soft::generator::cpp::lib::generateCommon /]
 [import soft::generator::cpp::lib::generateInterface /]
-[import soft::generator::cpp::lib::impl::generateReflectives /]
+[import soft::generator::cpp::lib::cls::generateReflectives /]
 
 
-[template public generateImplementationSource(aClass : EClass) { classImplName : String = aClass.getImplementationName(); classBaseName : String = aClass.getBaseImplementationName(); namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); guardName : String = '_'.concat(classImplName);}]
-[file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + classImplName + '.inl', false, 'UTF-8')]
+[template public generateBaseSource(aClass : EClass) { className : String = aClass.getBaseImplementationName(); namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); guardName : String = '_'.concat(className);}]
+[file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className + '.inl', false, 'UTF-8')]
 [fileComment()/]
 
 #ifndef [getGuardName(guardName)/]
-#error This file may only be included from [classImplName/].hpp
+#error This file may only be included from [className/].hpp
 #endif
 
 [let includes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->selectByKind(EClass)->collect( c | c.getInclude())->asSet()
@@ -43,10 +43,10 @@
 #include <iostream>
 #include <sstream>
 
-//[protected (classImplName + ' [definition-includes]')]
+//[protected (className + ' [definition-includes]')]
 //[/protected]
 
-//[protected (classImplName + ' [definition-begin]')]
+//[protected (className + ' [definition-begin]')]
 //[/protected]
 
 namespace [namespaceName/] 
@@ -56,40 +56,40 @@ namespace [namespaceName/]
     // Constructor / Destructor
     //*********************************
     template <typename... I>
-    [classBaseName/]<I...>::[classBaseName/]()
+    [className/]<I...>::[className/]()
     [let dataFeatures : OrderedSet(EStructuralFeature) = aClass.eStructuralFeatures->select(isField())]
     [for ( aFeature : EStructuralFeature | dataFeatures ) before(':') separator(',')]
        [aFeature.generateDataInitialization()/]
     [/for]
     [/let]
-    //[protected (classBaseName+ '::' + classBaseName)]
+    //[protected (className+ '::' + className)]
     {
     }
     //[/protected]
 
     template <typename... I>
-    [classBaseName/]<I...>::~[classBaseName/]()
+    [className/]<I...>::~[className/]()
     {
     [if not aClass.ePackage.eClassifiers->exists( c | c.oclIsKindOf(EClass) and c <> aClass and aClass.isSuperTypeOf(c.oclAsType(EClass)))]
     #ifdef SHOW_DELETION
         std::string name;
         if ( auto named = dynamic_cast<ENamedElement*>( this ) )
             name = named->getName();
-        std::cout << "delete [classBaseName/] ['['/]"<< this << "[']'/] " << name << std::endl;
+        std::cout << "delete [className/] ['['/]"<< this << "[']'/] " << name << std::endl;
     #endif
     [/if]
-    //[protected (classBaseName+ '::~' + classBaseName)]
+    //[protected (className+ '::~' + className)]
     //[/protected]
     }
 
     template <typename... I>
-    std::shared_ptr<[classBaseName/]<I...>> [classBaseName/]<I...>::[getThisPtrGetterName()/]() const
+    std::shared_ptr<[className/]<I...>> [className/]<I...>::[getThisPtrGetterName()/]() const
     {
         return [getThisPtrName()/]_.lock();
     }
     
     template <typename... I>
-    void [classBaseName/]<I...>::[getThisPtrSetterName()/](const std::shared_ptr<[classBaseName/]>& [getThisPtrName()/])
+    void [className/]<I...>::[getThisPtrSetterName()/](const std::shared_ptr<[className/]>& [getThisPtrName()/])
     {
         [removeNamespace(aClass.getClassExtends())/]::[getThisPtrSetterName()/]([getThisPtrName()/]);
         [getThisPtrName()/]_ = [getThisPtrName()/];
@@ -99,7 +99,7 @@ namespace [namespaceName/]
     }
 
     template <typename... I>
-    std::shared_ptr<EClass> [classBaseName/]<I...>::eStaticClass() const
+    std::shared_ptr<EClass> [className/]<I...>::eStaticClass() const
     {
         return [aClass.ePackage.getInterfaceName()/]::eInstance()->get[aClass.getElementAccessorName()/]();
     }
@@ -148,7 +148,7 @@ namespace [namespaceName/]
 
 }
 
-// [protected (classImplName + ' [definition-end]') ]
+// [protected (className + ' [definition-end]') ]
 // [/protected]
 
 [/file]

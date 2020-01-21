@@ -1,5 +1,5 @@
 [comment encoding = UTF-8 /]
-[module generateImplementationHeader('http://www.eclipse.org/emf/2002/Ecore')]
+[module generateBaseHeader('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::cpp::generateOperation /]
@@ -7,10 +7,10 @@
 [import soft::generator::cpp::generateCommon /]
 [import soft::generator::cpp::generateStructuralFeature /]
 [import soft::generator::cpp::lib::generateCommon /]
-[import soft::generator::cpp::lib::impl::generateReflectives /]
+[import soft::generator::cpp::lib::cls::generateReflectives /]
 
-[template public generateImplementationHeader(aClass : EClass){ classBaseName : String = aClass.getBaseImplementationName() ; classImplName : String = aClass.getImplementationName(); namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); guardName : String = '_'.concat(classImplName); }]
-[file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + classImplName +'.hpp', false, 'UTF-8')]
+[template public generateBaseHeader(aClass : EClass){ className : String = aClass.getBaseImplementationName() ; namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); guardName : String = '_'.concat(className); }]
+[file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
 [startGuard(guardName)/]
 
@@ -28,25 +28,25 @@
 #include "ecore/impl/Proxy.hpp"
 [/if]
 
-// [protected (classImplName + ' [declaration-includes]')]
+// [protected (className + ' [declaration-includes]')]
 // [/protected]
 
 namespace [namespaceName/] 
 {
     template <typename... I>
-    class [classBaseName/] : public [getShortQualifiedName(aClass.getClassExtends(),namespaceName)/]<I...> 
+    class [className/] : public [getShortQualifiedName(aClass.getClassExtends(),namespaceName)/]<I...> 
     {
     private:
-        [classBaseName/]& operator=([classBaseName/] const&) = delete;
+        [className/]& operator=([className/] const&) = delete;
     
     protected:
         friend class [ aClass.ePackage.getFactoryImplementationName() /];
-        [classBaseName/]();
-        std::shared_ptr<[classBaseName/]> [getThisPtrGetterName()/]() const;
-        void [getThisPtrSetterName()/](const std::shared_ptr<[classBaseName/]>& [getThisPtrName()/]);
+        [className/]();
+        std::shared_ptr<[className/]> [getThisPtrGetterName()/]() const;
+        void [getThisPtrSetterName()/](const std::shared_ptr<[className/]>& [getThisPtrName()/]);
 
     public:
-        virtual ~[classBaseName/]();
+        virtual ~[className/]();
         
 [let operations : OrderedSet(EOperation) = aClass.eOperations->select( isPublic(true) )]
 [if operations->notEmpty()]
@@ -103,17 +103,17 @@ namespace [namespaceName/]
 [/if]
 [/let]
     private:
-        std::weak_ptr<[classBaseName/]> [getThisPtrName()/]_;
+        std::weak_ptr<[className/]> [getThisPtrName()/]_;
     
-        // [protected (classImplName + ' [declaration-methods]')]
+        // [protected (className + ' [declaration-methods]')]
         // [/protected]
     };
 
-	typedef [classBaseName/]<[for ( implClass : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s)) separator (',')][getShortQualifiedName(implClass, namespaceName)/][/for]> [classImplName/];
+	
 
 }
 
-#include "[aClass.ePackage.getImplementationFolder() + '/' + classImplName +'.inl'/]"
+#include "[aClass.ePackage.getImplementationFolder() + '/' + className +'.inl'/]"
 
 [endGuard(guardName)/]
 [/file]
