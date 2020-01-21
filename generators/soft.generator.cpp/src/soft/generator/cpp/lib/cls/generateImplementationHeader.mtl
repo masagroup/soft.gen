@@ -17,6 +17,7 @@
 [fileComment()/]
 [startGuard(guardName)/]
 
+#include "[namespaceToFolder(aClass.getQualifiedInterfaceName())/].hpp"
 #include "[namespaceToFolder(aClass.getQualifiedBaseImplementationName())/].hpp"
 
 namespace [namespaceName/] 

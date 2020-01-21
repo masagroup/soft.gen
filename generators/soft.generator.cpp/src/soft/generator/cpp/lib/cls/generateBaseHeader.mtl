@@ -17,9 +17,6 @@
 [if aClass.isExported()]
 #include "[aClass.ePackage.getInterfaceFolder()/]/Exports.hpp"
 [/if]
-[for (implInclude : String | aClass.getClassImplements()->asOrderedSet()->sortedBy(s | s))]
-#include "[namespaceToFolder(implInclude)/].hpp"
-[/for]
 #include "[namespaceToFolder(aClass.getClassExtends())/].hpp"
 [if aClass.eStructuralFeatures->exists( isLazy())]
 #include "ecore/impl/Lazy.hpp"
