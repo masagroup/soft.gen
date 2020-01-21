@@ -144,14 +144,8 @@ ecore::Any [className/]<I...>::eGet(int featureID, bool resolve, bool coreType) 
 [/template]
 
 [template private generateEIsSetDefinition(aClass : EClass)]
-[if aClass.getEIsSetFeatures()->select( eFeature : EStructuralFeature | eFeature.oclIsKindOf(EReference) and eFeature.oclAsType(EReference).isBackReference() )->notEmpty()]
-template <typename T>
-bool is_uninitialized(std::weak_ptr<T> const& weak) {
-    using wt = std::weak_ptr<T>;
-    return !weak.owner_before(wt{}) && !wt{}.owner_before(weak);
-}
 
-[/if]
+
 template <typename... I>
 bool [aClass.getBaseImplementationName()/]<I...>::eIsSet(int featureID) const
 {

@@ -24,7 +24,8 @@
                                                 '"ecore/Any.hpp"',
                                                 '"ecore/AnyCast.hpp"',
                                                 '"ecore/EClass.hpp"',
-                                                '"ecore/impl/EObjectEList.hpp"' 
+                                                '"ecore/impl/EObjectEList.hpp"',
+                                                '"ecore/impl/WeakPtr.hpp"' 
                                               }
                                         , Set {
                                                 aClass.ePackage.getQualifiedInterfaceName(),

@@ -28,6 +28,7 @@
 #include "ecore/impl/Proxy.hpp"
 [/if]
 
+
 // [protected (className + ' [declaration-includes]')]
 // [/protected]
 
