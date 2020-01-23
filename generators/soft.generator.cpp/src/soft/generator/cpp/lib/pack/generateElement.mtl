@@ -39,7 +39,8 @@ virtual std::shared_ptr<[getMetaType(anENamedElement, anEPackage)/]> get[anEName
 [/template]
 
 [template public generateGetterDefinition(anENamedElement : ENamedElement, anEPackage : EPackage)]
-std::shared_ptr<[getMetaType(anENamedElement, anEPackage)/]> [anEPackage.getImplementationName()/]::get[anENamedElement.getElementAccessorName()/]() const
+template <typename... I>
+std::shared_ptr<[getMetaType(anENamedElement, anEPackage)/]> [anEPackage.getBaseName()/]<I...>::get[anENamedElement.getElementAccessorName()/]() const
 {
     return [anENamedElement.getElementInstanceName()/];
 }

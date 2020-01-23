@@ -1,0 +1,30 @@
+[comment encoding = UTF-8 /]
+[module generatePackageImplementationHeader('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
+[import soft::generator::cpp::generateCommon /]
+[import soft::generator::cpp::lib::generateCommon /]
+
+
+
+[template public generatePackageImplementationHeader(aPackage : EPackage){ 
+    className : String = aPackage.getImplementationName(); 
+    classBaseName : String = aPackage.getBaseName(); 
+    namespaceName : String = aPackage.getImplementationNamespaceName(); 
+    guardName : String = '_'.concat(className); }]
+[file (aPackage.getOutputDirectory() + '/src-gen/' + aPackage.getImplementationFolder() + '/' + className +'.hpp', false, 'UTF-8')]
+[fileComment()/]
+[startGuard(guardName)/]
+
+#include "[namespaceToFolder(aPackage.getQualifiedInterfaceName())/].hpp"
+#include "[namespaceToFolder(aPackage.getQualifiedBaseName())/].hpp"
+
+namespace [namespaceName/] 
+{
+    typedef [classBaseName/]<[aPackage.getInterfaceName()/]> [className/];
+}
+
+[endGuard(guardName)/]
+[/file]
+[/template]

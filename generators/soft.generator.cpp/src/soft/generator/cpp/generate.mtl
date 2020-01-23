@@ -18,6 +18,7 @@
 [import soft::generator::cpp::lib::pack::generatePackageBaseSource/]
 [import soft::generator::cpp::lib::pack::generatePackageInterfaceHeader /]
 [import soft::generator::cpp::lib::pack::generatePackageInterfaceSource /]
+[import soft::generator::cpp::lib::pack::generatePackageImplementationHeader /]
 [import soft::generator::cpp::tests::generateMock/]
 [import soft::generator::cpp::tests::generateCMake/]
 
@@ -48,6 +49,7 @@
 [aPackage.generatePackageInterfaceSource()/]
 [aPackage.generatePackageBaseHeader()/]
 [aPackage.generatePackageBaseSource()/]
+[aPackage.generatePackageImplementationHeader()/]
 [/template]
 
 [template public generateLibraryCMakeSources(aPackage : EPackage)]

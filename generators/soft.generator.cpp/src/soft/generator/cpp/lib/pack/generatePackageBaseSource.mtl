@@ -10,12 +10,21 @@
 
 [query public metaModelIncludes(anEPackage : EPackage) : Set(EPackage) = OrderedSet{anEPackage.eAllContents(EClass).eAllSuperTypes.ePackage,anEPackage.eAllContents(EStructuralFeature).eType.ePackage,anEPackage.eAllContents(EParameter).eType.ePackage}->flatten() /]
 
-[template private generatePackageImplementationIncludes( aPackage : EPackage )]
-#include "[namespaceToFolder(aPackage.getQualifiedImplementationName())/].hpp"
+
+[template public generatePackageBaseSource(aPackage : EPackage) { 
+	className : String = aPackage.getBaseName();
+	namespaceName : String = aPackage.getImplementationNamespaceName();
+}]
+[file (aPackage.getOutputDirectory() + '/src-gen/' + aPackage.getImplementationFolder() + '/' + className + '.inl', false, 'UTF-8')]
+[fileComment()/]
+
+#ifndef [getGuardName('PackageBase')/]
+#error This file may only be included from [className/].hpp
+#endif
+
 [let includes : OrderedSet(String) = Set{ aPackage.getMetaMetaModelClasses()->selectByKind(EClass)->collect( c | c.getQualifiedInterfaceName())->asSet()
                                         , aPackage.metaModelIncludes()->collect( p | p.getQualifiedInterfaceName())->asSet()
                                         , Set {
-                                                    aPackage.getFactoryQualifiedInterfaceName(),
                                                     'ecore::EList',
                                                     'ecore::impl::PackageResourceRegistry'
                                               }
@@ -24,148 +33,131 @@
 #include "[namespaceToFolder(include)/].hpp"
 [/for]
 [/let]
-
-#include <cassert>
-[/template]
-
-[template private generatePackageImplementationUsingNamespaces( aPackage : EPackage )]
-[let namespaces : OrderedSet(String) = OrderedSet{ 'ecore' , aPackage.getInterfaceNamespaceName() , aPackage.getImplementationNamespaceName()}]
-[for (namespace : String | namespaces )]
-using namespace [namespace/];
-[/for]
-[/let]
-[/template]
-
-[template public generatePackageBaseSource(anEPackage : EPackage) { className : String = anEPackage.getImplementationName(); }]
-[file (anEPackage.getOutputDirectory() + '/src-gen/' + anEPackage.getImplementationFolder() + '/' + className + '.cpp', false, 'UTF-8')]
-[fileComment()/]
-[generatePackageImplementationIncludes()/]
-[generatePackageImplementationUsingNamespaces()/]
-[className/]::[className/]()
-{
-}
-
-[className/]::~[className/]()
-{
-}
-
-[className/]* [className/]::create()
-{
-    return new [className/]();
-}
-
-std::shared_ptr<ecore::EResource> [className/]::eResource() const
-{
-    auto resource = [getShortQualifiedName('ecore::ext::EPackageExt' ,anEPackage.getImplementationNamespaceName())/]::eResource();
-    if (!resource)
-        resource = PackageResourceRegistry::getInstance()->getResource(getThisPtr());    
-    return resource;
-}
-
-void [className/]::init(const std::shared_ptr<[className/]>& package)
-{
-    setThisPtr(package);
-    setName(eNAME);
-    setNsPrefix(eNS_PREFIX);
-    setNsURI(eNS_URI);
-    setEFactoryInstance( [anEPackage.getFactoryInterfaceName()/]::eInstance() );
-    createPackageContents(package);
-    initializePackageContents();   
-}
-
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
-// Begin Class [aClass.name.toUpperFirst()/]
-[aClass.generateGetterDefinition(anEPackage)/]
-[aClass.eAttributes->sortedBy(name).generateGetterDefinition(anEPackage)/]
-[aClass.eReferences->sortedBy(name).generateGetterDefinition(anEPackage)/]
-[aClass.eOperations->sortedBy(name).generateGetterDefinition(anEPackage)/]
-// End Class [aClass.name.toUpperFirst()/]
-[/for]
-[anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetterDefinition(anEPackage)/]
-[/file]
-
-[comment] create additional file for create function to reduce comiling time
-[/comment]
-[file (anEPackage.getOutputDirectory() + '/src-gen/' + anEPackage.getImplementationFolder() + '/' + className + '_Creation.cpp', false, 'UTF-8')]
-[fileComment()/]
-[generatePackageImplementationIncludes()/]
-[generatePackageImplementationUsingNamespaces()/]
-void [className/]::createPackageContents(const std::shared_ptr<[className/]>& package)
-{
-    if (isCreated) 
-        return;
-    isCreated = true;
-
-    std::shared_ptr<ecore::EcoreFactory> factory = ecore::EcoreFactory::eInstance();
-
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-    create[aClass.name.toUpperFirst()/]Content(package, factory);
-[/for]
-
-    createPackageEDataTypes(package, factory);
-}
-
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
-void [className/]::create[aClass.name.toUpperFirst()/]Content(const std::shared_ptr<EPackage>& package, const std::shared_ptr<EcoreFactory>& factory)
-{
-    [aClass.generateClassCreation()/]
-    [aClass.eStructuralFeatures.generateCreation()/]
-    [aClass.eOperations.generateCreation()/]
-}
-[/for]
-
-void [className/]::createPackageEDataTypes(const std::shared_ptr<EPackage>& package, const std::shared_ptr<EcoreFactory>& factory)
-{
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateEDatatypeCreation()/]
-}
-[/file]
-
-[comment] create additional file for initialize function to reduce comiling time
-[/comment]
-[file (getOutputDirectory().concat('/src-gen/').concat(anEPackage.name).concat('/impl/').concat(className).concat('_Initialization.cpp'), false, 'UTF-8')]
-[fileComment()/]
-[generatePackageImplementationIncludes()/]
-
-[let includes : OrderedSet(String) =  anEPackage.eAllContents(EDataType)->collect( d | if d.hasKey('include') then d.valueKey('include') else '' endif)->asOrderedSet()->sortedBy( s | s)]
+[let includes : OrderedSet(String) =  aPackage.eAllContents(EDataType)->collect( d | if d.hasKey('include') then d.valueKey('include') else '' endif)->asOrderedSet()->sortedBy( s | s)]
 [for ( include : String | includes )]
 [if include <> '']
 #include "[include/]"
 [/if]
 [/for]
 [/let]
+#include <cassert>
 
-[generatePackageImplementationUsingNamespaces()/]
-
-void [className/]::initializePackageContents()
+namespace [namespaceName/]
 {
-    if (isInitialized)
-        return;
-    isInitialized = true;
-    
-    // Add supertypes to classes
-    [anEPackage.eAllContents(EClass)->sortedBy(name).initSuperTypes()/]
+	template <typename... I>
+	[className/]<I...>::[className/]()
+	{
+	}
+	
+	template <typename... I>
+	[className/]<I...>::~[className/]()
+	{
+	}
+	
+	template <typename... I>
+	[className/]<I...>* [className/]<I...>::create()
+	{
+	    return new [className/]();
+	}
+	
+	template <typename... I>
+	std::shared_ptr<ecore::EResource> [className/]<I...>::eResource() const
+	{
+	    auto resource = [getShortQualifiedName('ecore::ext::EPackageExt' ,aPackage.getImplementationNamespaceName())/]::eResource();
+	    if (!resource)
+	        resource = PackageResourceRegistry::getInstance()->getResource(getThisPtr());    
+	    return resource;
+	}
+	
+	template <typename... I>
+	void [className/]<I...>::init(const std::shared_ptr<[className/]>& package)
+	{
+	    setThisPtr(package);
+	    setName(eNAME);
+	    setNsPrefix(eNS_PREFIX);
+	    setNsURI(eNS_URI);
+	    setEFactoryInstance( [aPackage.getFactoryInterfaceName()/]::eInstance() );
+	    createPackageContents(package);
+	    initializePackageContents();   
+	}
 
-    // Initialize classes and features; add operations and parameters
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-    initialize[aClass.name.toUpperFirst()/]Content();
-[/for]
+	[for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
+	// Begin Class [aClass.name.toUpperFirst()/]
+	[aClass.generateGetterDefinition(aPackage)/]
+	[aClass.eAttributes->sortedBy(name).generateGetterDefinition(aPackage)/]
+	[aClass.eReferences->sortedBy(name).generateGetterDefinition(aPackage)/]
+	[aClass.eOperations->sortedBy(name).generateGetterDefinition(aPackage)/]
+	// End Class [aClass.name.toUpperFirst()/]
+	[/for]
+	[aPackage.eAllContents(EDataType)->sortedBy(name).generateGetterDefinition(aPackage)/]
 
-    initializePackageEDataTypes();
-}
+	template <typename... I>
+	void [className/]<I...>::createPackageContents(const std::shared_ptr<[className/]>& package)
+	{
+	    if (isCreated) 
+	        return;
+	    isCreated = true;
+	
+	    std::shared_ptr<ecore::EcoreFactory> factory = ecore::EcoreFactory::eInstance();
 
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
-void [className/]::initialize[aClass.name.toUpperFirst()/]Content()
-{
-    [aClass.generateInitialization()/]
-    [aClass.eAttributes->sortedBy(name).generateInitialization()/]
-    [aClass.eReferences->sortedBy(name).generateInitialization()/]
-    [aClass.eOperations->sortedBy(name).generateInitialization()/]
-}
-[/for]
+	[for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
+	    create[aClass.name.toUpperFirst()/]Content(package, factory);
+	[/for]
 
-void [className/]::initializePackageEDataTypes()
-{
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateEDatatypeInitialization()/]
+    	createPackageEDataTypes(package, factory);
+	}
+
+	[for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
+	template <typename... I>
+	void [className/]<I...>::create[aClass.name.toUpperFirst()/]Content(const std::shared_ptr<EPackage>& package, const std::shared_ptr<EcoreFactory>& factory)
+	{
+	    [aClass.generateClassCreation()/]
+	    [aClass.eStructuralFeatures.generateCreation()/]
+	    [aClass.eOperations.generateCreation()/]
+	}
+	[/for]
+
+	template <typename... I>
+	void [className/]<I...>::createPackageEDataTypes(const std::shared_ptr<EPackage>& package, const std::shared_ptr<EcoreFactory>& factory)
+	{
+	    [aPackage.eAllContents(EDataType)->sortedBy(name).generateEDatatypeCreation()/]
+	}
+
+	template <typename... I>
+	void [className/]<I...>::initializePackageContents()
+	{
+	    if (isInitialized)
+	        return;
+	    isInitialized = true;
+	    
+	    // Add supertypes to classes
+	    [aPackage.eAllContents(EClass)->sortedBy(name).initSuperTypes()/]
+	
+	    // Initialize classes and features; add operations and parameters
+	[for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
+	    initialize[aClass.name.toUpperFirst()/]Content();
+	[/for]
+	
+	    initializePackageEDataTypes();
+	}
+
+	[for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
+	template <typename... I>
+	void [className/]<I...>::initialize[aClass.name.toUpperFirst()/]Content()
+	{
+	    [aClass.generateInitialization()/]
+	    [aClass.eAttributes->sortedBy(name).generateInitialization()/]
+	    [aClass.eReferences->sortedBy(name).generateInitialization()/]
+	    [aClass.eOperations->sortedBy(name).generateInitialization()/]
+	}
+	[/for]
+
+	template <typename... I>
+	void [className/]<I...>::initializePackageEDataTypes()
+	{
+	    [aPackage.eAllContents(EDataType)->sortedBy(name).generateEDatatypeInitialization()/]
+	}
 }
 [/file]
+
 [/template]
