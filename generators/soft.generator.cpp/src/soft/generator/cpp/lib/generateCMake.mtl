@@ -90,7 +90,7 @@ add_library(${PROJECT_NAME} STATIC  ${CMAKE_FILES}
 [/for]
 )
 target_include_directories(${PROJECT_NAME} PUBLIC src src-gen )
-target_compile_options(${PROJECT_NAME} PRIVATE /MP /wd4250 /wd4251 ) 
+target_compile_options(${PROJECT_NAME} PRIVATE /MP /wd4250 /wd4251 /bigobj) 
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 [generateSourceGroup(namespaces)/]

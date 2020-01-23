@@ -38,7 +38,7 @@ namespace [namespaceName/]
         [className/]& operator=([className/] const&) = delete;
     
     protected:
-        friend class [ aClass.ePackage.getFactoryImplementationName() /];
+        template<typename... I> friend class [aClass.ePackage.getFactoryBaseName()/];
         [className/]();
         std::shared_ptr<[className/]> [getThisPtrGetterName()/]() const;
         void [getThisPtrSetterName()/](const std::shared_ptr<[className/]>& [getThisPtrName()/]);

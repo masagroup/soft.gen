@@ -169,7 +169,9 @@ namespace [namespaceName/]
 
 [template public generateCreateFunctionContent(aClass : EClass, ref : OrderedSet(EReference), aReference : EReference, anEPackage : EPackage, addID : Boolean)]
 [if(addID)]
-auto element = std::dynamic_pointer_cast< [aClass.getImplementationName()/] >( create[aClass.name/]() );
+[let pointerName : String = if aClass.hasExtension() then aClass.getExtensionName() else aClass.getImplementationName() endif]
+auto element = std::static_pointer_cast< [pointerName/] >( create[aClass.name/]() );
+[/let]
 element->set[aClass.getElementIDAccessorName()/]ID(classID);
 [else]
 auto element = create[aClass.name/]();
