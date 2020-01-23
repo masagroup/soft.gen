@@ -12,13 +12,17 @@
 
 
 
-[template public generateImplementationHeader(aClass : EClass){ className : String = aClass.getImplementationName(); classBaseName : String = aClass.getBaseImplementationName(); namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); guardName : String = '_'.concat(className); }]
+[template public generateImplementationHeader(aClass : EClass){ 
+	className : String = aClass.getImplementationName(); 
+	classBaseName : String = aClass.getBaseName(); 
+	namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); 
+	guardName : String = '_'.concat(className); }]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
 [startGuard(guardName)/]
 
 #include "[namespaceToFolder(aClass.getQualifiedInterfaceName())/].hpp"
-#include "[namespaceToFolder(aClass.getQualifiedBaseImplementationName())/].hpp"
+#include "[namespaceToFolder(aClass.getQualifiedBaseName())/].hpp"
 
 namespace [namespaceName/] 
 {

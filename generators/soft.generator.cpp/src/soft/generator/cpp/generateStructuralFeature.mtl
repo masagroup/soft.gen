@@ -215,7 +215,7 @@ virtual [generateDataInitializationMethodReturnType()/] [methodName/]();
 [/template]
 
 [template public generateDataInitializationMethodDefinition(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'function' )]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 [let methodName : String = aStructuralFeature.getMethodInitializationName()]
 template <typename... I>
 [generateDataInitializationMethodReturnType()/] [className/]<I...>::[methodName/]()
@@ -243,7 +243,7 @@ template <typename... I>
 [/template]
 
 [template public generateDataInitializationMethodDefinition(aStructuralFeature : EStructuralFeature) ? ( aStructuralFeature.getLazy() = 'action' )]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 [let methodName : String = aStructuralFeature.getMethodInitializationName()]
 template <typename... I>
 void [className/]<I...>::[methodName/]()
@@ -268,7 +268,7 @@ void [className/]<I...>::[methodName/]()
 [/template]
 
 [template public generateBasicGetDeclaration(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 [let methodName : String = aStructuralFeature.getGetterName().toUpperFirst()]
 virtual [aStructuralFeature.generateReturnType()/] basic[methodName/]() const; 
 [/let]
@@ -276,7 +276,7 @@ virtual [aStructuralFeature.generateReturnType()/] basic[methodName/]() const;
 [/template]
 
 [template public generateBasicGetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 [let methodName : String = 'basic' + aStructuralFeature.getGetterName().toUpperFirst()]
 template <typename... I>
 [aStructuralFeature.generateReturnType()/] [className/]<I...>::[methodName/]() const 
@@ -308,7 +308,7 @@ virtual [aStructuralFeature.generateReturnType()/] [aStructuralFeature.getGetter
 [/template]
 
 [template public generateGetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 template <typename... I>
 [aStructuralFeature.generateReturnType()/] [className/]<I...>::[aStructuralFeature.getGetterName()/]() const 
 {
@@ -344,7 +344,7 @@ MOCK_CONST_METHOD0([aStructuralFeature.getGetterName()/], [aStructuralFeature.ge
 
 
 [template public generateBasicSetDeclaration(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 [let methodName : String = 'basic' +aStructuralFeature.getSetterName().toUpperFirst()]
 [let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
 std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( [aStructuralFeature.generateParameterType()/] [newVarName/] , const std::shared_ptr<ecore::ENotificationChain>& msgs ); 
@@ -355,7 +355,7 @@ std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( [a
 
 
 [template public generateBasicSetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 [let methodName : String = 'basic' +aStructuralFeature.getSetterName().toUpperFirst()]
 [let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
 template <typename... I>
@@ -399,7 +399,7 @@ virtual void [aStructuralFeature.getSetterName()/]([aStructuralFeature.generateP
 [/template]
 
 [template public generateSetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 [let methodName : String = aStructuralFeature.getSetterName()]
 [let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
 template <typename... I>
@@ -517,7 +517,7 @@ MOCK_METHOD1([aStructuralFeature.getSetterName()/], void( [aStructuralFeature.ge
 
 
 [template public generateBasicUnSetDeclaration(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 [let methodName : String = 'basic' + aStructuralFeature.getUnSetterName().toUpperFirst()]
 [let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
 std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( const std::shared_ptr<ecore::ENotificationChain>& msgs ); 
@@ -528,7 +528,7 @@ std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( co
 
 
 [template public generateBasicUnSetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 [let methodName : String = 'basic' + aStructuralFeature.getUnSetterName().toUpperFirst()]
 [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
 [let varName : String = aStructuralFeature.name + '_']    
@@ -568,7 +568,7 @@ virtual void [aStructuralFeature.getUnSetterName()/]() [abstractSufix(impl)/];
 [/template]
 
 [template public generateUnSetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseImplementationName()]
+[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
 [let methodName : String = aStructuralFeature.getUnSetterName()]
 template <typename... I>
 void [className/]<I...>::[methodName/]()

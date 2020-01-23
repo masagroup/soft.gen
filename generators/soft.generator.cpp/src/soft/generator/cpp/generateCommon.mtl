@@ -142,12 +142,19 @@
  * Classes names
 */]
 [query public getInterfaceName( aPackage : EPackage ) : String = getInterfaceName( getPackageName(),aPackage) /]
+[query public getInterfaceName( aClass : EClass ) : String = getInterfaceName(aClass.name,aClass.ePackage) /]
+[query public getInterfaceName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getInterfaceNamePattern() in if pattern ='' then aElementName else pattern.format(Sequence{aElementName}) endif /]
+[query public getInterfaceNamePattern( aPackage : EPackage ) : String = if hasKey('interfaceNamePattern') then valueKey('interfaceNamePattern') else '' endif/]
+
+[query public getBaseName( aClass : EClass ) : String = getBaseName(aClass.name, aClass.ePackage)/]
+[query public getBaseName( aPackage : EPackage ) : String = getBaseName(getPackageName(), aPackage)/]
+[query public getBaseName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getBaseNamePattern() in if pattern ='' then aElementName + 'Base' else pattern.format(Sequence{aElementName}) endif /]
+[query public getBaseNamePattern( aPackage : EPackage ) : String = if hasKey('baseNamePattern') then valueKey('baseNamePattern') else '' endif/]
 
 [query public getImplementationName( aClass : EClass ) : String = getImplementationName(aClass.name, aClass.ePackage)/]
 [query public getImplementationName( aPackage : EPackage ) : String = getImplementationName( getPackageName(),aPackage)/]
-
-[query public getBaseImplementationName( aClass : EClass ) : String = getBaseName(aClass.name, aClass.ePackage)/]
-[query public getBaseEsxtensionName( aClass : EClass ) : String = getBaseName(aClass.name, aClass.ePackage)/]
+[query public getImplementationName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getImplementationNamePattern() in if pattern ='' then aElementName + 'Impl' else pattern.format(Sequence{aElementName}) endif /]
+[query private getImplementationNamePattern( aPackage : EPackage ) : String = if hasKey('implementationNamePattern') then valueKey('implementationNamePattern') else '' endif/]
 
 [query public getExtensionName( aClass : EClass ) : String = getExtensionName(aClass.name, aClass.ePackage)/]
 [query public getExtensionName( aPackage : EPackage ) : String = getExtensionName( getPackageName(),aPackage)/]
@@ -163,6 +170,7 @@
 [query private getMockNamePattern( aPackage : EPackage ) : String = if hasKey('mockNamePattern') then valueKey('mockNamePattern') else '' endif/]
 
 [query public getFactoryInterfaceName( aPackage : EPackage ) : String = getInterfaceName( getFactoryName() , aPackage )/]
+[query public getFactoryBaseName( aPackage : EPackage ) : String = getBaseName( getFactoryName() , aPackage )/]
 [query public getFactoryExtensionName( aPackage : EPackage ) : String = getExtensionName( getFactoryName() , aPackage )/]
 
 [query private getPackageName( aPackage : EPackage ) : String = aPackage.name.toUpperFirst() + 'Package'/]
@@ -174,14 +182,17 @@
 [query public getQualifiedImplementationName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getImplementationNamespaceName() , aPackage.getImplementationName())/]
 [query public getQualifiedExtensionName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getExtensionNamespaceName() , aClass.getExtensionName())/]
 
-[query public getQualifiedBaseImplementationName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getImplementationNamespaceName() , aClass.getBaseName())/]
+[query public getQualifiedBaseName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getImplementationNamespaceName() , aClass.getBaseName())/]
+[query public getQualifiedBaseName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getImplementationNamespaceName() , aPackage.getBaseName())/]
 [query public getQualifiedBaseExtensionName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getExtensionNamespaceName() , getExtensionName(aClass.getBaseName(),aClass.ePackage))/]
 
 [query public getQualifiedMockName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getTestsNamespaceName() , aClass.getMockName())/]
 
-[query public getQualifiedBaseName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getImplementationNamespaceName() , aClass.getBaseName())/]
+[query public getFactoryImplementationName( aPackage : EPackage ) : String = getImplementationName( getFactoryName() , aPackage )/]
+[query public getFactoryName( aPackage : EPackage ) : String = aPackage.name.toUpperFirst() + 'Factory'/]
 
 [query public getFactoryQualifiedInterfaceName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getInterfaceNamespaceName() , aPackage.getFactoryInterfaceName() )/]
+[query public getFactoryQualifiedBaseName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getImplementationNamespaceName() , aPackage.getFactoryBaseName() )/]
 [query public getFactoryQualifiedImplementationName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getImplementationNamespaceName() , aPackage.getFactoryImplementationName() )/]
 [query public getFactoryQualifiedExtensionName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getExtensionNamespaceName() , aPackage.getFactoryExtensionName() )/]
 
@@ -302,23 +313,9 @@
 
 [query public getMockImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedInterfaceName() }/]
 
-[query public getFactoryImplementationName( aPackage : EPackage ) : String = getImplementationName( getFactoryName() , aPackage )/]
-[query public getFactoryName( aPackage : EPackage ) : String = aPackage.name.toUpperFirst() + 'Factory'/]
-[query public getFactoryInternalName( aPackage : EPackage ) : String = aPackage.name.toUpperFirst() + 'FactoryInternal'/]
-[query public getImplementationName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getImplementationNamePattern() in if pattern ='' then aElementName + 'Impl' else pattern.format(Sequence{aElementName}) endif /]
-[query private getImplementationNamePattern( aPackage : EPackage ) : String = if hasKey('implementationNamePattern') then valueKey('implementationNamePattern') else '' endif/]
-
 [query public hasKey(aModelElement : EModelElement, aKey:String) : Boolean = if aModelElement.hasGenModel() then aModelElement.getGenModelAnnotation().details->select(key = aKey)->notEmpty() else false endif /]
 [query public valueKey(aModelElement : EModelElement, aKey:String) : String = aModelElement.getGenModelAnnotation().details->select(key = aKey)->first().value /]
 
 [query public hasGenModel(aModelElement : EModelElement) : Boolean = eAnnotations->select( source = 'http://net.masagroup/soft/2018/GenCpp' )->notEmpty() /]
 [query public getGenModelAnnotation(aModelElement : EModelElement) : EAnnotation = eAnnotations->select( source = 'http://net.masagroup/soft/2018/GenCpp' )->first() /]
-
-[query public getInterfaceName( aClass : EClass ) : String = getInterfaceName(aClass.name,aClass.ePackage) /]
-[query public getInterfaceName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getInterfaceNamePattern() in if pattern ='' then aElementName else pattern.format(Sequence{aElementName}) endif /]
-[query public getInterfaceNamePattern( aPackage : EPackage ) : String = if hasKey('interfaceNamePattern') then valueKey('interfaceNamePattern') else '' endif/]
-
-[query public getBaseName( aClass : EClass ) : String = getBaseName(aClass.name,aClass.ePackage) /]
-[query public getBaseName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getBaseNamePattern() in if pattern ='' then aElementName + 'Base' else pattern.format(Sequence{aElementName}) endif /]
-[query public getBaseNamePattern( aPackage : EPackage ) : String = if hasKey('baseNamePattern') then valueKey('baseNamePattern') else '' endif/]
 

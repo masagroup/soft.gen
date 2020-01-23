@@ -11,7 +11,10 @@
 [import soft::generator::cpp::lib::cls::generateReflectives /]
 
 
-[template public generateBaseSource(aClass : EClass) { className : String = aClass.getBaseImplementationName(); namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); guardName : String = '_'.concat(className);}]
+[template public generateBaseSource(aClass : EClass) { 
+	className : String = aClass.getBaseName(); 
+	namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); 
+	guardName : String = '_'.concat(className);}]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className + '.inl', false, 'UTF-8')]
 [fileComment()/]
 

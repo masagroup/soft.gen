@@ -1,63 +1,34 @@
 [comment encoding = UTF-8 /]
 [module generateFactoryImplementationHeader('http://www.eclipse.org/emf/2002/Ecore')]
 
-[import soft::generator::common::generateCommon /]
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
 [import soft::generator::cpp::generateCommon /]
-[import soft::generator::cpp::lib::generateCommon/]
-[import soft::generator::cpp::lib::generateDataType/]
-[import soft::generator::cpp::lib::generateClass /]
+[import soft::generator::cpp::generateOperation/]
+[import soft::generator::cpp::generateType/]
+[import soft::generator::cpp::generateStructuralFeature /]
+[import soft::generator::cpp::lib::generateCommon /]
+[import soft::generator::cpp::lib::cls::generateReflectives /]
 
-[template public generateFactoryImplementationHeader(anEPackage : EPackage) { 
-    className : String = anEPackage.getFactoryImplementationName(); 
-    namespaceName : String = anEPackage.getImplementationNamespaceName(); 
-}]
-[file (anEPackage.getOutputDirectory() + '/src-gen/' + anEPackage.getImplementationFolder() + '/' + className + '.hpp', false, 'UTF-8')]
+
+
+[template public generateFactoryImplementationHeader(aPackage : EPackage){ 
+	className : String = aPackage.getFactoryImplementationName();
+	classBaseName : String = aPackage.getFactoryBaseName(); 
+	namespaceName : String = aPackage.getImplementationNamespaceName(); 
+	guardName : String = '_'.concat(className); }]
+[file (aPackage.getOutputDirectory() + '/src-gen/' + aPackage.getImplementationFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
-[startGuard(anEPackage,'FactoryImpl')/]
+[startGuard(guardName)/]
 
-#include "[namespaceToFolder(anEPackage.getFactoryQualifiedInterfaceName())/].hpp"
-#include "ecore/ext/EFactoryExt.hpp"
+#include "[namespaceToFolder(aPackage.getFactoryQualifiedInterfaceName())/].hpp"
+#include "[namespaceToFolder(aPackage.getFactoryQualifiedBaseName())/].hpp"
 
-namespace [anEPackage.getInterfaceNamespaceName()/] 
-{
-[for (elements : EClassifier| OrderedSet{anEPackage.eClassifiers}->flatten()->selectByKind(EClass)->sortedBy(name)) separator ('\r\n')]
-    class [elements.name/];[/for]
-
-}
-
-[comment namespace /]
 namespace [namespaceName/] 
 {
-    class [className/] : public virtual [getShortQualifiedName('ecore::ext::EFactoryExt' ,namespaceName)/] , public virtual [anEPackage.getFactoryInterfaceName()/] 
-    {
-        friend class [anEPackage.getFactoryInterfaceName()/];
-    public:
-        virtual ~[className/]();
-
-        // Operations
-        virtual std::shared_ptr<[getShortQualifiedName('ecore::EObject',namespaceName)/]> create(const std::shared_ptr<[getShortQualifiedName('ecore::EClass',namespaceName)/]>&  eClass) const;
-        virtual ecore::Any createFromString(const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const;
-        virtual std::string convertToString(const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const;
-
-        //Creator functions
-        [anEPackage.eAllContents(EClass)->sortedBy(name).generateClassCreate(true)/]
-
-        //Package
-        virtual std::shared_ptr<[anEPackage.getInterfaceName()/]> get[anEPackage.getInterfaceName()/]() const;
-
-    protected:
-        [className/]();
-        [className/]([className/] const&) = delete;
-        [className/]& operator=([className/] const&) = delete;
-
-        [let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
-        [dataTypes.generateCreateFromStringDeclaration()/]
-        [dataTypes.generateConvertToStringDeclaration()/]
-        [/let]
-    private:
-        static [className/]* create();
-    };
+    typedef [classBaseName/]<[aPackage.getInterfaceName()/]> [className/];
 }
-[endGuard(anEPackage,'FactoryImpl')/]
+
+[endGuard(guardName)/]
 [/file]
 [/template]

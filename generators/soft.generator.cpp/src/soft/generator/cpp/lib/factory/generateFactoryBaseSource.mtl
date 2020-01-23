@@ -1,5 +1,5 @@
 [comment encoding = UTF-8 /]
-[module generateFactoryImplementationSource('http://www.eclipse.org/emf/2002/Ecore')]
+[module generateFactoryBaseSource('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::cpp::generateType /]
@@ -7,14 +7,18 @@
 [import soft::generator::cpp::lib::generateCommon /]
 [import soft::generator::cpp::lib::generateClass /]
 
-[template public generateFactoryImplementationSource(anEPackage : EPackage) { className : String = anEPackage.getFactoryImplementationName() ; namespaceName : String = anEPackage.getImplementationNamespaceName(); }]
-[file (anEPackage.getOutputDirectory() + '/src-gen/' + anEPackage.getImplementationFolder() + '/' + className + '.cpp', false, 'UTF-8')]
+[template public generateFactoryBaseSource(anEPackage : EPackage) { 
+	className : String = anEPackage.getFactoryBaseName() ; 
+	namespaceName : String = anEPackage.getImplementationNamespaceName(); }]
+[file (anEPackage.getOutputDirectory() + '/src-gen/' + anEPackage.getImplementationFolder() + '/' + className + '.inl', false, 'UTF-8')]
 [fileComment()/]
-#include "[namespaceToFolder(anEPackage.getFactoryQualifiedImplementationName())/].hpp"
+
+#ifndef [getGuardName('FactoryBase')/]
+#error This file may only be included from [className/].hpp
+#endif
+
 [let includes : OrderedSet(String) = Set{ anEPackage.eAllContents(EClass)->collect( c | if c.hasExtension() then c.getQualifiedExtensionName() else c.getQualifiedImplementationName() endif)->asSet()
                                         , Set {
-                                                    anEPackage.getQualifiedInterfaceName(),
-                                                    anEPackage.getFactoryQualifiedInterfaceName(),
                                                     'ecore::EList',
                                                     'ecore::EClass'
                                               }
@@ -26,34 +30,30 @@
 
 #include <iostream>
 
-[comment namespace /]
-[let namespaces : OrderedSet(String) = OrderedSet{ 'ecore' , anEPackage.getInterfaceNamespaceName() , anEPackage.getImplementationNamespaceName(), anEPackage.getExtensionNamespaceName() }]
-[for (namespace : String | namespaces )]
-using namespace [namespace/];
-[/for]
-[/let]
-
 //*********************************
 // Constructor / Destructor
 //*********************************
-
-[className/]::[className/]()
+template <typename... I>
+[className/]<I...>::[className/]()
 {
 }
 
-[className/]::~[className/]()
+template <typename... I>
+[className/]<I...>::~[className/]()
 {
 }
 
-[className/]* [className/]::create()
+template <typename... I>
+[className/]<I...>* [className/]<I...>::create()
 {
-    return new [className/]();
+    return new [className/]<I...>();
 }
 
 //*********************************
 // creators
 //*********************************
-std::shared_ptr<[getShortQualifiedName('ecore::EObject',namespaceName)/]> [className/]::create(const std::shared_ptr<[getShortQualifiedName('ecore::EClass',namespaceName)/]>&  eClass) const
+template <typename... I>
+std::shared_ptr<[getShortQualifiedName('ecore::EObject',namespaceName)/]> [className/]<I...>::create(const std::shared_ptr<[getShortQualifiedName('ecore::EClass',namespaceName)/]>&  eClass) const
 {
     int classID = eClass->getClassifierID();
     switch(classID)
@@ -69,7 +69,8 @@ std::shared_ptr<[getShortQualifiedName('ecore::EObject',namespaceName)/]> [class
 }
 
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
-std::shared_ptr<[aClass.getInterfaceName()/]> [className/]::create[aClass.name/]() const
+template <typename... I>
+std::shared_ptr<[aClass.getInterfaceName()/]> [className/]<I...>::create[aClass.name/]() const
 {
 [let pointerName : String = if aClass.hasExtension() then aClass.getExtensionName() else aClass.getImplementationName() endif]
     std::shared_ptr<[pointerName/]> element( new [pointerName/]() );
@@ -80,12 +81,14 @@ std::shared_ptr<[aClass.getInterfaceName()/]> [className/]::create[aClass.name/]
 
 [let ref : OrderedSet(EReference) = aClass.getAllContainers()]
 [for(aReference:EReference | ref->sortedBy(name))]
-std::shared_ptr<[aClass.getInterfaceName()/]> [className/]::create[aClass.name/]([aReference.generateParameterType()/] eContainer) const
+template <typename... I>
+std::shared_ptr<[aClass.getInterfaceName()/]> [className/]<I...>::create[aClass.name/]([aReference.generateParameterType()/] eContainer) const
 {
     [generateCreateFunctionContent(aClass, ref, aReference, anEPackage, false)/]
 }
 [if(aClass.getElementIDAccessorName().size() > 0)]
-std::shared_ptr<[aClass.getInterfaceName()/]> [className/]::create[aClass.name/]([aReference.generateParameterType()/] eContainer, const unsigned int classID) const
+template <typename... I>
+std::shared_ptr<[aClass.getInterfaceName()/]> [className/]<I...>::create[aClass.name/]([aReference.generateParameterType()/] eContainer, const unsigned int classID) const
 {
     [generateCreateFunctionContent(aClass, ref, aReference, anEPackage, true)/]
 }
@@ -95,7 +98,8 @@ std::shared_ptr<[aClass.getInterfaceName()/]> [className/]::create[aClass.name/]
 [/for]
 
 [let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
-ecore::Any [className/]::createFromString(const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
+template <typename... I>
+ecore::Any [className/]<I...>::createFromString(const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
 {
     int classifierID = eDataType->getClassifierID();
     switch( classifierID )
@@ -109,7 +113,8 @@ ecore::Any [className/]::createFromString(const std::shared_ptr<[getShortQualifi
     }
 }
 
-std::string [className/]::convertToString(const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
+template <typename... I>
+std::string [className/]<I...>::convertToString(const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
 {
     int classifierID = eDataType->getClassifierID();
     switch( classifierID )
@@ -125,7 +130,8 @@ std::string [className/]::convertToString(const std::shared_ptr<[getShortQualifi
 
 [for (aDataType : EDataType | dataTypes)]
 [let createMethodName : String = 'create' + aDataType.name + 'FromString']
-ecore::Any [className/]::[createMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
+template <typename... I>
+ecore::Any [className/]<I...>::[createMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
 {
     // [protected (className +'::' + createMethodName)]
 #if defined(__FUNCSIG__)
@@ -136,7 +142,8 @@ ecore::Any [className/]::[createMethodName/](const std::shared_ptr<[getShortQual
 }
 [/let]
 [let convertMethodName : String = 'convert' + aDataType.name + 'ToString']
-std::string [className/]::[convertMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
+template <typename... I>
+std::string [className/]<I...>::[convertMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
 {
     // [protected (className +'::' + convertMethodName)]
 #if defined(__FUNCSIG__)
@@ -149,7 +156,7 @@ std::string [className/]::[convertMethodName/](const std::shared_ptr<[getShortQu
 [/for]
 [/let]
 
-
+template <typename... I>
 std::shared_ptr<[anEPackage.getInterfaceName()/]> [className/]::get[anEPackage.getInterfaceName()/]() const
 {
     return [anEPackage.getInterfaceName()/]::eInstance();
