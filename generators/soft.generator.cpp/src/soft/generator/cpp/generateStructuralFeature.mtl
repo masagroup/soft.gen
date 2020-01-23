@@ -414,7 +414,7 @@ void [className/]<I...>::[methodName/]([aStructuralFeature.generateParameterType
         if ( eContainer() )
             notifications = eBasicRemoveFromContainer(notifications);
         if ( [newVarName/] )
-            notifications = [newVarName/]->eInverseAdd( getThisPtr() , [aStructuralFeature.getQualifiedFeatureIDName()/], notifications );
+            notifications = [newVarName/]->getInternal().eInverseAdd( getThisPtr() , [aStructuralFeature.getQualifiedFeatureIDName()/], notifications );
         notifications = basic[methodName.toUpperFirst()/]( [newVarName/], notifications );
         if ( notifications )
             notifications->dispatch();
@@ -431,14 +431,14 @@ void [className/]<I...>::[methodName/]([aStructuralFeature.generateParameterType
         std::shared_ptr<ENotificationChain> notifications;
         if ( [currentVarName/] )
         [if not isBidirectional()]
-            notifications = [currentVarName/]->eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
+            notifications = [currentVarName/]->getInternal().eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
         if ( [newVarName/] )
-            notifications = [newVarName/]->eInverseAdd( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
+            notifications = [newVarName/]->getInternal().eInverseAdd( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
-            notifications = [currentVarName/]->eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
+            notifications = [currentVarName/]->getInternal().eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
         if ( [newVarName/] )
-            notifications = [newVarName/]->eInverseAdd( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
+            notifications = [newVarName/]->getInternal().eInverseAdd( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
             [/let]
         [/if]
         notifications = basic[methodName.toUpperFirst()/]([newVarName/],notifications);
@@ -586,10 +586,10 @@ void [className/]<I...>::[methodName/]()
     {
         std::shared_ptr<ENotificationChain> notifications;
         [if not isBidirectional()]
-        notifications = [aStructuralFeature.name/]_->eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
+        notifications = [aStructuralFeature.name/]_->getInternal().eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
-        notifications = [aStructuralFeature.name/]_->eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
+        notifications = [aStructuralFeature.name/]_->getInternal().eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
             [/let]
         [/if]
         notifications = basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](notifications);

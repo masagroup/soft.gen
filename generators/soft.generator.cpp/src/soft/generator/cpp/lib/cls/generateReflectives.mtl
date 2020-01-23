@@ -340,10 +340,10 @@ std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseAdd( const 
             auto msgs = notifications;
             if ( [varName/] )
             [if aFeature.isContains()]
-                msgs = [varName/]->eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/] , msgs );
+                msgs = [varName/]->getInternal().eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/] , msgs );
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-                msgs = [varName/]->eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , msgs );
+                msgs = [varName/]->getInternal().eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , msgs );
                 [/let]
             [/if] 
             return basic[aFeature.getSetterName().toUpperFirst()/](std::dynamic_pointer_cast<[aFeature.generateElementType()/]>(otherEnd),msgs);
