@@ -1,5 +1,5 @@
 [comment encoding = UTF-8 /]
-[module generatePackageImplementationSource('http://www.eclipse.org/emf/2002/Ecore')]
+[module generatePackageBaseSource('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon /]
 [import soft::generator::cpp::generateCommon /]
@@ -36,7 +36,7 @@ using namespace [namespace/];
 [/let]
 [/template]
 
-[template public generatePackageImplSource(anEPackage : EPackage) { className : String = anEPackage.getImplementationName(); }]
+[template public generatePackageBaseSource(anEPackage : EPackage) { className : String = anEPackage.getImplementationName(); }]
 [file (anEPackage.getOutputDirectory() + '/src-gen/' + anEPackage.getImplementationFolder() + '/' + className + '.cpp', false, 'UTF-8')]
 [fileComment()/]
 [generatePackageImplementationIncludes()/]
