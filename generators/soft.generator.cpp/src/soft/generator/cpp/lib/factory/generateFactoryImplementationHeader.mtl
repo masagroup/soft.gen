@@ -13,10 +13,10 @@
 
 
 [template public generateFactoryImplementationHeader(aPackage : EPackage){ 
-	className : String = aPackage.getFactoryImplementationName();
-	classBaseName : String = aPackage.getFactoryBaseName(); 
-	namespaceName : String = aPackage.getImplementationNamespaceName(); 
-	guardName : String = '_'.concat(className); }]
+    className : String = aPackage.getFactoryImplementationName();
+    classBaseName : String = aPackage.getFactoryBaseName(); 
+    namespaceName : String = aPackage.getImplementationNamespaceName(); 
+    guardName : String = '_'.concat(className); }]
 [file (aPackage.getOutputDirectory() + '/src-gen/' + aPackage.getImplementationFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
 [startGuard(guardName)/]

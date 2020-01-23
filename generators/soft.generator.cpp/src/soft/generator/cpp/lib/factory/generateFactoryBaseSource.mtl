@@ -8,8 +8,8 @@
 [import soft::generator::cpp::lib::generateClass /]
 
 [template public generateFactoryBaseSource(anEPackage : EPackage) { 
-	className : String = anEPackage.getFactoryBaseName() ; 
-	namespaceName : String = anEPackage.getImplementationNamespaceName(); }]
+    className : String = anEPackage.getFactoryBaseName() ; 
+    namespaceName : String = anEPackage.getImplementationNamespaceName(); }]
 [file (anEPackage.getOutputDirectory() + '/src-gen/' + anEPackage.getImplementationFolder() + '/' + className + '.inl', false, 'UTF-8')]
 [fileComment()/]
 
@@ -30,136 +30,139 @@
 
 #include <iostream>
 
-//*********************************
-// Constructor / Destructor
-//*********************************
-template <typename... I>
-[className/]<I...>::[className/]()
+namespace [namespaceName/]
 {
-}
-
-template <typename... I>
-[className/]<I...>::~[className/]()
-{
-}
-
-template <typename... I>
-[className/]<I...>* [className/]<I...>::create()
-{
-    return new [className/]<I...>();
-}
-
-//*********************************
-// creators
-//*********************************
-template <typename... I>
-std::shared_ptr<[getShortQualifiedName('ecore::EObject',namespaceName)/]> [className/]<I...>::create(const std::shared_ptr<[getShortQualifiedName('ecore::EClass',namespaceName)/]>&  eClass) const
-{
-    int classID = eClass->getClassifierID();
-    switch(classID)
+    //*********************************
+    // Constructor / Destructor
+    //*********************************
+    template <typename... I>
+    [className/]<I...>::[className/]()
     {
+    }
+    
+    template <typename... I>
+    [className/]<I...>::~[className/]()
+    {
+    }
+    
+    template <typename... I>
+    [className/]<I...>* [className/]<I...>::create()
+    {
+        return new [className/]<I...>();
+    }
+    
+    //*********************************
+    // creators
+    //*********************************
+    template <typename... I>
+    std::shared_ptr<[getShortQualifiedName('ecore::EObject',namespaceName)/]> [className/]<I...>::create(const std::shared_ptr<[getShortQualifiedName('ecore::EClass',namespaceName)/]>&  eClass) const
+    {
+        int classID = eClass->getClassifierID();
+        switch(classID)
+        {
+        [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
+            case [anEPackage.getInterfaceName()/]::[aClass.getClassifierIDName()/]:
+                return this->create[aClass.name/]();
+        [/for]
+        default:
+                throw "create: " + eClass->getName() + " not found";
+        }
+        return nullptr;
+    }
+    
     [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
-        case [anEPackage.getInterfaceName()/]::[aClass.getClassifierIDName()/]:
-            return this->create[aClass.name/]();
+    template <typename... I>
+    std::shared_ptr<[aClass.getInterfaceName()/]> [className/]<I...>::create[aClass.name/]() const
+    {
+    [let pointerName : String = if aClass.hasExtension() then aClass.getExtensionName() else aClass.getImplementationName() endif]
+        std::shared_ptr<[pointerName/]> element( new [pointerName/]() );
+    [/let]
+        element->[getThisPtrSetterName()/](element);
+        return element;
+    }
+    
+    [let ref : OrderedSet(EReference) = aClass.getAllContainers()]
+    [for(aReference:EReference | ref->sortedBy(name))]
+    template <typename... I>
+    std::shared_ptr<[aClass.getInterfaceName()/]> [className/]<I...>::create[aClass.name/]([aReference.generateParameterType()/] eContainer) const
+    {
+        [generateCreateFunctionContent(aClass, ref, aReference, anEPackage, false)/]
+    }
+    [if(aClass.getElementIDAccessorName().size() > 0)]
+    template <typename... I>
+    std::shared_ptr<[aClass.getInterfaceName()/]> [className/]<I...>::create[aClass.name/]([aReference.generateParameterType()/] eContainer, const unsigned int classID) const
+    {
+        [generateCreateFunctionContent(aClass, ref, aReference, anEPackage, true)/]
+    }
+    [/if]
     [/for]
-    default:
-            throw "create: " + eClass->getName() + " not found";
-    }
-    return nullptr;
-}
-
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
-template <typename... I>
-std::shared_ptr<[aClass.getInterfaceName()/]> [className/]<I...>::create[aClass.name/]() const
-{
-[let pointerName : String = if aClass.hasExtension() then aClass.getExtensionName() else aClass.getImplementationName() endif]
-    std::shared_ptr<[pointerName/]> element( new [pointerName/]() );
-[/let]
-    element->[getThisPtrSetterName()/](element);
-    return element;
-}
-
-[let ref : OrderedSet(EReference) = aClass.getAllContainers()]
-[for(aReference:EReference | ref->sortedBy(name))]
-template <typename... I>
-std::shared_ptr<[aClass.getInterfaceName()/]> [className/]<I...>::create[aClass.name/]([aReference.generateParameterType()/] eContainer) const
-{
-    [generateCreateFunctionContent(aClass, ref, aReference, anEPackage, false)/]
-}
-[if(aClass.getElementIDAccessorName().size() > 0)]
-template <typename... I>
-std::shared_ptr<[aClass.getInterfaceName()/]> [className/]<I...>::create[aClass.name/]([aReference.generateParameterType()/] eContainer, const unsigned int classID) const
-{
-    [generateCreateFunctionContent(aClass, ref, aReference, anEPackage, true)/]
-}
-[/if]
-[/for]
-[/let]
-[/for]
-
-[let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
-template <typename... I>
-ecore::Any [className/]<I...>::createFromString(const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
-{
-    int classifierID = eDataType->getClassifierID();
-    switch( classifierID )
+    [/let]
+    [/for]
+    
+    [let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
+    template <typename... I>
+    ecore::Any [className/]<I...>::createFromString(const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
     {
-[for (aDataType : EDataType | dataTypes)]
-        case [anEPackage.getInterfaceName()/]::[aDataType.getClassifierIDName()/]:
-            return create[aDataType.name/]FromString(eDataType,literalValue);
-[/for]
-        default:
-            throw "The datatype '" + eDataType->getName() + "' is not a valid classifier";
+        int classifierID = eDataType->getClassifierID();
+        switch( classifierID )
+        {
+    [for (aDataType : EDataType | dataTypes)]
+            case [anEPackage.getInterfaceName()/]::[aDataType.getClassifierIDName()/]:
+                return create[aDataType.name/]FromString(eDataType,literalValue);
+    [/for]
+            default:
+                throw "The datatype '" + eDataType->getName() + "' is not a valid classifier";
+        }
     }
-}
-
-template <typename... I>
-std::string [className/]<I...>::convertToString(const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
-{
-    int classifierID = eDataType->getClassifierID();
-    switch( classifierID )
+    
+    template <typename... I>
+    std::string [className/]<I...>::convertToString(const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
     {
-[for (aDataType : EDataType | dataTypes)]
-        case [anEPackage.getInterfaceName()/]::[aDataType.getClassifierIDName()/]:
-            return convert[aDataType.name/]ToString(eDataType,instanceValue);
-[/for]
-        default:
-            throw "The datatype '" + eDataType->getName() + "' is not a valid classifier";
+        int classifierID = eDataType->getClassifierID();
+        switch( classifierID )
+        {
+    [for (aDataType : EDataType | dataTypes)]
+            case [anEPackage.getInterfaceName()/]::[aDataType.getClassifierIDName()/]:
+                return convert[aDataType.name/]ToString(eDataType,instanceValue);
+    [/for]
+            default:
+                throw "The datatype '" + eDataType->getName() + "' is not a valid classifier";
+        }
     }
-}
-
-[for (aDataType : EDataType | dataTypes)]
-[let createMethodName : String = 'create' + aDataType.name + 'FromString']
-template <typename... I>
-ecore::Any [className/]<I...>::[createMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
-{
-    // [protected (className +'::' + createMethodName)]
-#if defined(__FUNCSIG__)
-    std::cout << __FUNCSIG__  << std::endl;
-#endif
-    throw "NotImplementedException";
-    // [/protected]
-}
-[/let]
-[let convertMethodName : String = 'convert' + aDataType.name + 'ToString']
-template <typename... I>
-std::string [className/]<I...>::[convertMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
-{
-    // [protected (className +'::' + convertMethodName)]
-#if defined(__FUNCSIG__)
-    std::cout << __FUNCSIG__  << std::endl;
-#endif
-    throw "NotImplementedException";
-    // [/protected]
-}
-[/let]
-[/for]
-[/let]
-
-template <typename... I>
-std::shared_ptr<[anEPackage.getInterfaceName()/]> [className/]::get[anEPackage.getInterfaceName()/]() const
-{
-    return [anEPackage.getInterfaceName()/]::eInstance();
+    
+    [for (aDataType : EDataType | dataTypes)]
+    [let createMethodName : String = 'create' + aDataType.name + 'FromString']
+    template <typename... I>
+    ecore::Any [className/]<I...>::[createMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
+    {
+        // [protected (className +'::' + createMethodName)]
+    #if defined(__FUNCSIG__)
+        std::cout << __FUNCSIG__  << std::endl;
+    #endif
+        throw "NotImplementedException";
+        // [/protected]
+    }
+    [/let]
+    [let convertMethodName : String = 'convert' + aDataType.name + 'ToString']
+    template <typename... I>
+    std::string [className/]<I...>::[convertMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
+    {
+        // [protected (className +'::' + convertMethodName)]
+    #if defined(__FUNCSIG__)
+        std::cout << __FUNCSIG__  << std::endl;
+    #endif
+        throw "NotImplementedException";
+        // [/protected]
+    }
+    [/let]
+    [/for]
+    [/let]
+    
+    template <typename... I>
+    std::shared_ptr<[anEPackage.getInterfaceName()/]> [className/]<I...>::get[anEPackage.getInterfaceName()/]() const
+    {
+        return [anEPackage.getInterfaceName()/]::eInstance();
+    }
 }
 [/file]
 [/template]
