@@ -63,7 +63,7 @@ namespace [namespaceName/]
 	template <typename... I>
 	std::shared_ptr<ecore::EResource> [className/]<I...>::eResource() const
 	{
-	    auto resource = [getShortQualifiedName('ecore::ext::EPackageExt' ,aPackage.getImplementationNamespaceName())/]::eResource();
+	    auto resource = [getShortQualifiedName('ecore::ext::EPackageBaseExt<I...>' ,aPackage.getImplementationNamespaceName())/]::eResource();
 	    if (!resource)
 	        resource = PackageResourceRegistry::getInstance()->getResource(getThisPtr());    
 	    return resource;
