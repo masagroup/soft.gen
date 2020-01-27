@@ -168,6 +168,7 @@
     if pattern ='' then 'Mock' + name else pattern.format(Sequence{name}) endif 
 /]
 [query private getMockNamePattern( aPackage : EPackage ) : String = if hasKey('mockNamePattern') then valueKey('mockNamePattern') else '' endif/]
+[query public getMockBaseName( aClass : EClass ) : String = getBaseName(getMockName(), aClass.ePackage)/]
 
 [query public getFactoryInterfaceName( aPackage : EPackage ) : String = getInterfaceName( getFactoryName() , aPackage )/]
 [query public getFactoryBaseName( aPackage : EPackage ) : String = getBaseName( getFactoryName() , aPackage )/]
@@ -187,6 +188,7 @@
 [query public getQualifiedBaseExtensionName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getExtensionNamespaceName() , getExtensionName(aClass.getBaseName(),aClass.ePackage))/]
 
 [query public getQualifiedMockName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getTestsNamespaceName() , aClass.getMockName())/]
+[query public getQualifiedMockBaseName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getTestsNamespaceName() , aClass.getMockBaseName())/]
 
 [query public getFactoryImplementationName( aPackage : EPackage ) : String = getImplementationName( getFactoryName() , aPackage )/]
 [query public getFactoryName( aPackage : EPackage ) : String = aPackage.name.toUpperFirst() + 'Factory'/]
