@@ -320,9 +320,9 @@ std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseAdd( const 
         case [aFeature.getQualifiedFeatureIDName()/]:
         {
     [if aFeature.isListType()]
-            auto list = std::static_pointer_cast<ENotifyingList<std::shared_ptr<EObject>>>( [aFeature.getGetterName()/]() );
-            _ASSERTE(list);
-            return list->add( otherEnd , notifications );
+            auto list = std::static_pointer_cast<ENotifyingList<[aFeature.eGenericType.generateCppType()/]>>( [aFeature.getGetterName()/]() );
+            auto other = std::static_pointer_cast<[aFeature.generateElementType()/]>(otherEnd);
+			return list->add( other , notifications );
     [elseif aFeature.isContainer()]
             auto msgs = notifications;
             if (eContainer())
@@ -370,9 +370,9 @@ std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseRemove( con
         case [aFeature.getQualifiedFeatureIDName()/]:
         {
     [if aFeature.isListType()]
-            auto list = std::static_pointer_cast<ENotifyingList<std::shared_ptr<EObject>>>( [aFeature.getGetterName()/]() );
-            _ASSERTE(list);
-            return list->remove( otherEnd , notifications );
+            auto list = std::static_pointer_cast<ENotifyingList<[aFeature.eGenericType.generateCppType()/]>>( [aFeature.getGetterName()/]() );
+            auto other = std::static_pointer_cast<[aFeature.generateElementType()/]>(otherEnd);
+			return list->add( other , notifications );
     [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
             return eBasicSetContainer( nullptr , [aFeature.getQualifiedFeatureIDName()/], notifications );
     [elseif aFeature.isUnSet()]
