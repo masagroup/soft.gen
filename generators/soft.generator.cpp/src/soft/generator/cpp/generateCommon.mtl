@@ -146,9 +146,9 @@
 [query public getInterfaceName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getInterfaceNamePattern() in if pattern ='' then aElementName else pattern.format(Sequence{aElementName}) endif /]
 [query public getInterfaceNamePattern( aPackage : EPackage ) : String = if hasKey('interfaceNamePattern') then valueKey('interfaceNamePattern') else '' endif/]
 
-[query public getBaseName( aClass : EClass ) : String = getBaseName(aClass.name, aClass.ePackage)/]
-[query public getBaseName( aPackage : EPackage ) : String = getBaseName(getPackageName(), aPackage)/]
-[query public getBaseName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getBaseNamePattern() in if pattern ='' then aElementName + 'Base' else pattern.format(Sequence{aElementName}) endif /]
+[query public getBaseName( aClass : EClass ) : String = aClass.ePackage.getBaseName(aClass.name)/]
+[query public getBaseName( aPackage : EPackage ) : String = aPackage.getBaseName(getPackageName() )/]
+[query public getBaseName( aPackage : EPackage , aElementName : String ) : String = let pattern : String = aPackage.getBaseNamePattern() in if pattern ='' then aElementName + 'Base' else pattern.format(Sequence{aElementName}) endif /]
 [query public getBaseNamePattern( aPackage : EPackage ) : String = if hasKey('baseNamePattern') then valueKey('baseNamePattern') else '' endif/]
 
 [query public getImplementationName( aClass : EClass ) : String = getImplementationName(aClass.name, aClass.ePackage)/]
@@ -168,10 +168,10 @@
     if pattern ='' then 'Mock' + name else pattern.format(Sequence{name}) endif 
 /]
 [query private getMockNamePattern( aPackage : EPackage ) : String = if hasKey('mockNamePattern') then valueKey('mockNamePattern') else '' endif/]
-[query public getMockBaseName( aClass : EClass ) : String = getBaseName(getMockName(), aClass.ePackage)/]
+[query public getMockBaseName( aClass : EClass ) : String = aClass.ePackage.getBaseName(getMockName())/]
 
 [query public getFactoryInterfaceName( aPackage : EPackage ) : String = getInterfaceName( getFactoryName() , aPackage )/]
-[query public getFactoryBaseName( aPackage : EPackage ) : String = getBaseName( getFactoryName() , aPackage )/]
+[query public getFactoryBaseName( aPackage : EPackage ) : String = aPackage.getBaseName( getFactoryName() )/]
 [query public getFactoryExtensionName( aPackage : EPackage ) : String = getExtensionName( getFactoryName() , aPackage )/]
 
 [query private getPackageName( aPackage : EPackage ) : String = aPackage.name.toUpperFirst() + 'Package'/]

@@ -24,7 +24,7 @@ namespace [namespaceName/]
 {
 
 	template <typename I>
-    class [classBaseName/] : public [getShortQualifiedName(getBaseName(aClass.getMockExtends(),aClass.ePackage ),namespaceName)/]<I> 
+    class [classBaseName/] : public [getShortQualifiedName(aClass.ePackage.getBaseName(aClass.getMockExtends()),namespaceName)/]<I> 
     {
     public:
         typedef [aClass.name.toUpperFirst()/] base_type;
