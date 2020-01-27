@@ -130,7 +130,7 @@ ecore::Any [className/]<I...>::eGet(int featureID, bool resolve, bool coreType) 
         [elseif anStructFeature.oclIsKindOf(EReference)]
         {
             auto value = [anStructFeature.getGetterName()/]();
-            auto object = std::dynamic_pointer_cast<EObject>(value);
+            auto object = std::static_pointer_cast<EObject>(value);
             return object;
         }
         [else]
@@ -320,7 +320,7 @@ std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseAdd( const 
         case [aFeature.getQualifiedFeatureIDName()/]:
         {
     [if aFeature.isListType()]
-            auto list = std::dynamic_pointer_cast<ENotifyingList<std::shared_ptr<EObject>>>( [aFeature.getGetterName()/]() );
+            auto list = std::static_pointer_cast<ENotifyingList<std::shared_ptr<EObject>>>( [aFeature.getGetterName()/]() );
             _ASSERTE(list);
             return list->add( otherEnd , notifications );
     [elseif aFeature.isContainer()]
@@ -328,7 +328,7 @@ std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseAdd( const 
             if (eContainer())
                 msgs = eBasicRemoveFromContainer(msgs);
         [if aFeature.isBasicSet()]
-            return basic[aFeature.getSetterName().toUpperFirst()/]( std::dynamic_pointer_cast<[aFeature.generateElementType()/]>(otherEnd), msgs );
+            return basic[aFeature.getSetterName().toUpperFirst()/]( std::static_pointer_cast<[aFeature.generateElementType()/]>(otherEnd), msgs );
         [else]
             return eBasicSetContainer( otherEnd , [aFeature.getQualifiedFeatureIDName()/], msgs );
         [/if]
@@ -346,7 +346,7 @@ std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseAdd( const 
                 msgs = [varName/]->getInternal().eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , msgs );
                 [/let]
             [/if] 
-            return basic[aFeature.getSetterName().toUpperFirst()/](std::dynamic_pointer_cast<[aFeature.generateElementType()/]>(otherEnd),msgs);
+            return basic[aFeature.getSetterName().toUpperFirst()/](std::static_pointer_cast<[aFeature.generateElementType()/]>(otherEnd),msgs);
         [/let]
     [/if]
         }
@@ -370,7 +370,7 @@ std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseRemove( con
         case [aFeature.getQualifiedFeatureIDName()/]:
         {
     [if aFeature.isListType()]
-            auto list = std::dynamic_pointer_cast<ENotifyingList<std::shared_ptr<EObject>>>( [aFeature.getGetterName()/]() );
+            auto list = std::static_pointer_cast<ENotifyingList<std::shared_ptr<EObject>>>( [aFeature.getGetterName()/]() );
             _ASSERTE(list);
             return list->remove( otherEnd , notifications );
     [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
