@@ -161,6 +161,11 @@
 [query private getExtensionName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getExtensionNamePattern() in if pattern ='' then aElementName + 'Ext' else pattern.format(Sequence{aElementName}) endif /]
 [query private getExtensionNamePattern( aPackage : EPackage ) : String = if hasKey('extensionNamePattern') then valueKey('extensionNamePattern') else '' endif/]
 
+[query public getInternalName( aClass : EClass ) : String = getInternalName(aClass.name, aClass.ePackage)/]
+[query private getInternalName( aElementName : String , aPackage : EPackage ) : String = let pattern : String = aPackage.getInternalNamePattern() in if pattern ='' then aElementName + 'Internal' else pattern.format(Sequence{aElementName}) endif /]
+[query private getInternalNamePattern( aPackage : EPackage ) : String = if hasKey('internalNamePattern') then valueKey('internalNamePattern') else '' endif/]
+
+
 [query public getMockName( aClass : EClass ) : String = getMockName(aClass.name, aClass.ePackage)/]
 [query private getMockName( aElementName : String , aPackage : EPackage ) : String = 
     let name : String = if aElementName.first(1) = 'I' or aElementName.first(1) = 'E' then aElementName.substring(2) else aElementName endif in
@@ -181,7 +186,10 @@
 
 [query public getQualifiedImplementationName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getImplementationNamespaceName() , aClass.getImplementationName())/]
 [query public getQualifiedImplementationName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getImplementationNamespaceName() , aPackage.getImplementationName())/]
+
 [query public getQualifiedExtensionName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getExtensionNamespaceName() , aClass.getExtensionName())/]
+
+[query public getQualifiedInternalName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getImplementationNamespaceName() , aClass.getInternalName())/]
 
 [query public getQualifiedBaseName( aClass : EClass ) : String = addNamespacePrefix( aClass.ePackage.getImplementationNamespaceName() , aClass.getBaseName())/]
 [query public getQualifiedBaseName( aPackage : EPackage ) : String = addNamespacePrefix( aPackage.getImplementationNamespaceName() , aPackage.getBaseName())/]
@@ -321,3 +329,9 @@
 [query public hasGenModel(aModelElement : EModelElement) : Boolean = eAnnotations->select( source = 'http://net.masagroup/soft/2018/GenCpp' )->notEmpty() /]
 [query public getGenModelAnnotation(aModelElement : EModelElement) : EAnnotation = eAnnotations->select( source = 'http://net.masagroup/soft/2018/GenCpp' )->first() /]
 
+[query public hasOnlyImplementationFeatures(aClass : EClass) : Boolean = aClass.eStructuralFeatures->exists(isOnlyImplementation())/]
+    
+[query public isOnlyImplementation(aFeature : EStructuralFeature) : Boolean = 
+    (hasGetter('public',true) and not hasGetter('public',false)) or 
+    (hasSetter('public',true) and not hasSetter('public',false)) or
+    (hasUnSetter('public',true) and not hasUnSetter('public',false))/]

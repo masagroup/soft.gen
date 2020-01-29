@@ -26,14 +26,17 @@ set(GENERATED_SOURCE_[namespaceVar/]_FILES
 [let namespaceVar : String = getVarName( aPackage.getImplementationNamespaceName() )] 
 set(GENERATED_HEADER_[namespaceVar/]_FILES
     src-gen/[namespaceToFolder(aPackage.getFactoryQualifiedBaseName())/].hpp
-	src-gen/[namespaceToFolder(aPackage.getFactoryQualifiedBaseName())/].inl
+    src-gen/[namespaceToFolder(aPackage.getFactoryQualifiedBaseName())/].inl
     src-gen/[namespaceToFolder(aPackage.getFactoryQualifiedImplementationName())/].hpp
-	src-gen/[namespaceToFolder(aPackage.getQualifiedBaseName())/].hpp
-	src-gen/[namespaceToFolder(aPackage.getQualifiedBaseName())/].inl
-	src-gen/[namespaceToFolder(aPackage.getQualifiedImplementationName())/].hpp
+    src-gen/[namespaceToFolder(aPackage.getQualifiedBaseName())/].hpp
+    src-gen/[namespaceToFolder(aPackage.getQualifiedBaseName())/].inl
+    src-gen/[namespaceToFolder(aPackage.getQualifiedImplementationName())/].hpp
 [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
     src-gen/[namespaceToFolder(aClass.getQualifiedBaseName())/].hpp
     src-gen/[namespaceToFolder(aClass.getQualifiedBaseName())/].inl
+    [if aClass.hasOnlyImplementationFeatures()]
+    src-gen/[namespaceToFolder(aClass.getQualifiedInternalName())/].hpp
+    [/if]
     src-gen/[namespaceToFolder(aClass.getQualifiedImplementationName())/].hpp
 [/for]
 )

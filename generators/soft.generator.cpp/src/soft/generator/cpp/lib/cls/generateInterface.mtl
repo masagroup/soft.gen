@@ -9,7 +9,10 @@
 [import soft::generator::cpp::generateStructuralFeature/]
 [import soft::generator::cpp::lib::generateCommon/]
 
-[template public generateInterface(aClass : EClass) { className : String = aClass.getInterfaceName(); classNamespace : String = aClass.ePackage.getInterfaceNamespaceName(); } ]
+[template public generateInterface(aClass : EClass) { 
+    className : String = aClass.getInterfaceName(); 
+    classNamespace : String = aClass.ePackage.getInterfaceNamespaceName(); } 
+]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getInterfaceFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
 [startGuard(aClass)/]
