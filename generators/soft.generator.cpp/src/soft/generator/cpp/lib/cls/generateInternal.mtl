@@ -15,15 +15,18 @@
 [template public generateInternalHeader(aClass : EClass) ? ( hasOnlyImplementationFeatures() ) { 
     className : String = aClass.getInternalName(); 
     classNamespace : String = aClass.ePackage.getImplementationNamespaceName();
+    classExtends : String = aClass.getInternalExtends();
     guardName : String = '_' + className; } 
 ]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
 [startGuard(guardName)/]
 
+#include "[namespaceToFolder(classExtends)/].hpp"
+
 namespace [classNamespace/] 
 {
-    class [className/]  {
+    class [className/] : public [getShortQualifiedName(classExtends, classNamespace)/] {
     public:
     [for ( aFeature : EStructuralFeature | aClass.eStructuralFeatures->select(isOnlyImplementation()) )]
         [if aFeature.hasGetter('public',true) and not aFeature.hasGetter('public',false)]

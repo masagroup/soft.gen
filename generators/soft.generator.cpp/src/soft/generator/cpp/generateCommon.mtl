@@ -321,6 +321,27 @@
     endif 
 /]
 
+[query public getInternalExtends(aClass : EClass ) : String =
+    let extendsClass : EClass = aClass.eAllSuperTypes->iterate( c ; res : EClass = null | ( 
+        if (res.oclIsUndefined() ) then
+            if ( c.hasOnlyImplementationFeatures() ) then
+                c
+            else
+                res
+            endif
+        else
+            res
+        endif
+    ) ) in
+    if (extendsClass.oclIsUndefined() ) then
+        'ecore::impl::EObjectInternal'
+    else
+        extendsClass.getQualifiedInternalName()
+    endif    
+ 
+/]
+
+
 [query public getMockImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedInterfaceName() }/]
 
 [query public hasKey(aModelElement : EModelElement, aKey:String) : Boolean = if aModelElement.hasGenModel() then aModelElement.getGenModelAnnotation().details->select(key = aKey)->notEmpty() else false endif /]
