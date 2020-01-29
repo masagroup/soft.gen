@@ -48,3 +48,71 @@ namespace [classNamespace/]
 [endGuard(guardName)/]
 [/file]
 [/template]
+
+[template public generateInternalAdapterDeclaration(aClass : EClass)]
+protected:
+    template <typename U>
+    class EObjectInternalAdapter;
+
+    virtual std::unique_ptr<impl::EObjectInternal> createInternal();
+[/template]
+
+[template public generateInternalAdapterDefinition(aClass : EClass){
+    internalName : String = aClass.getInternalName();
+    className : String = aClass.getBaseName(); 
+    classNamespace : String = aClass.ePackage.getImplementationNamespaceName();
+    classExtends : String = aClass.getClassExtends();
+}]
+template <typename... I>
+template <typename U>
+class [className/]<I...>::EObjectInternalAdapter : public [classExtends/]<I...>::EObjectInternalAdapter<typename U>
+{
+public:
+    EObjectInternalAdapter( [className/]<I...>& obj )
+        : [classExtends/]<I...>::EObjectInternalAdapter<typename U>( obj )
+    {
+    }
+
+    [for ( aFeature : EStructuralFeature | aClass.eStructuralFeatures->select(isOnlyImplementation()) )]
+        [if aFeature.hasGetter('public',true) and not aFeature.hasGetter('public',false)]
+        [let methodName : String = aFeature.getGetterName()]
+    virtual [aFeature.generateReturnType()/] [methodName/]() const {
+        return getObject().[methodName/]();
+    }
+        [/let]
+        [/if]
+        [if aFeature.hasSetter('public',true) and not aFeature.hasSetter('public',false)]
+        [let methodName : String = aFeature.getSetterName()]
+        [let varName : String = 'new' + aFeature.name.toUpperFirst()]
+    virtual void [methodName/]([aFeature.generateParameterType()/] [varName/]) {
+        getObject().[methodName/]([varName/]);
+    }
+        [/let]
+        [/let]
+        [/if]
+        [if aFeature.hasUnSetter('public',true) and not aFeature.hasUnSetter('public',false)]
+        [let methodName : String = aFeature.getUnSetterName()]
+    virtual void [methodName/]() {
+        getObject().[methodName/]();
+    }
+        [/let]
+        [/if]
+    [/for]
+
+    inline [className/]<I...>& getObject()
+    {
+        return static_cast<[className/]<I...>&>( [classExtends/]<I...>::EObjectInternalAdapter<typename U>::getObject() );
+    }
+
+    inline const [className/]<I...>& getObject() const
+    {
+        return static_cast<const [className/]<I...>&>( [classExtends/]<I...>::EObjectInternalAdapter<typename U>::getObject() );
+    }
+};
+
+template <typename... I>
+std::unique_ptr<[getShortQualifiedName('ecore::impl::EObjectInternal',classNamespace)/]> [className/]<I...>::createInternal()
+{
+    return std::move( std::make_unique<EObjectInternalAdapter<[aClass.getInternalName()/]>>( *this ) );
+}
+[/template]

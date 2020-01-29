@@ -8,6 +8,7 @@
 [import soft::generator::cpp::generateStructuralFeature /]
 [import soft::generator::cpp::lib::generateCommon /]
 [import soft::generator::cpp::lib::cls::generateReflectives /]
+[import soft::generator::cpp::lib::cls::generateInternal /]
 
 [template public generateBaseHeader(aClass : EClass){ className : String = aClass.getBaseName() ; namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); guardName : String = '_'.concat(className); }]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className +'.hpp', false, 'UTF-8')]
@@ -93,6 +94,9 @@ namespace [namespaceName/]
         [dataInitializationFeatures.generateDataInitializationMethodDeclaration()/]
 [/if]
 [/let]
+[if hasOnlyImplementationFeatures()]
+    [generateInternalAdapterDeclaration()/]
+[/if]
 
 [let dataDeclarationFeatures : OrderedSet(EAttribute) = aClass.eStructuralFeatures->select( isField() )]
 [if dataDeclarationFeatures->notEmpty()]

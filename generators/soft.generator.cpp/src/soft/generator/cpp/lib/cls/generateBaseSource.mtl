@@ -9,6 +9,7 @@
 [import soft::generator::cpp::generateStructuralFeature /]
 [import soft::generator::cpp::lib::generateCommon /]
 [import soft::generator::cpp::lib::cls::generateReflectives /]
+[import soft::generator::cpp::lib::cls::generateInternal /]
 
 
 [template public generateBaseSource(aClass : EClass) { 
@@ -148,6 +149,9 @@ namespace [namespaceName/]
     [dataFeatures.generateDataInitializationMethodDefinition()/]
 [/if]
 [/let]
+[if hasOnlyImplementationFeatures()]
+    [generateInternalAdapterDefinition()/]
+[/if]    
 }
 // [protected (className + ' [definition-end]') ]
 // [/protected]
