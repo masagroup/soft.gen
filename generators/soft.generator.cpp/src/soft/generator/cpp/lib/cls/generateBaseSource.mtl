@@ -42,6 +42,9 @@
 #include [include/]
 [/for]
 [/let]
+[if hasOnlyImplementationFeatures()]
+#include "[namespaceToFolder(aClass.getQualifiedInternalName())/].hpp"
+[/if]
 
 #include <cassert>
 #include <iostream>
