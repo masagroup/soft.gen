@@ -14,18 +14,34 @@
 
 [template public generateInternalHeader(aClass : EClass) ? ( hasOnlyImplementationFeatures() ) { 
     className : String = aClass.getInternalName(); 
-    classNamespace : String = aClass.ePackage.getImplementationNamespaceName(); } 
+    classNamespace : String = aClass.ePackage.getImplementationNamespaceName();
+    guardName : String = '_' + className; } 
 ]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
-[startGuard(aClass)/]
+[startGuard(guardName)/]
 
 namespace [classNamespace/] 
 {
     class [className/]  {
-    }
+    public:
+    [for ( aFeature : EStructuralFeature | aClass.eStructuralFeatures->select(isOnlyImplementation()) )]
+        [if aFeature.hasGetter('public',true) and not aFeature.hasGetter('public',false)]
+            [aFeature.generateGetDeclaration(false)/]
+
+        [/if]
+        [if aFeature.hasSetter('public',true) and not aFeature.hasSetter('public',false)]
+            [aFeature.generateSetDeclaration(false)/]
+
+        [/if]
+        [if aFeature.hasUnSetter('public',true) and not aFeature.hasUnSetter('public',false)]
+            [aFeature.generateUnSetDeclaration(false)/]
+
+        [/if]
+    [/for]
+    };
 }
 
-[endGuard(aClass)/]
+[endGuard(guardName)/]
 [/file]
 [/template]
