@@ -1,6 +1,10 @@
 package soft.generator.cpp;
 
+import java.io.InputStream;
+import java.util.Arrays;
+
 import org.eclipse.emf.common.util.BasicMonitor;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import soft.generator.common.Generator;
 
@@ -39,6 +43,16 @@ public class Generate extends Generator {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    protected void postGenerate(ResourceSet resourceSet) {
+        if (Arrays.stream(getTemplateNames()).anyMatch(t -> t.equals("generateTestsCMakeProject"))) {
+            InputStream s = getClass().getResourceAsStream("cmake/BoostTest.cmake");
+            if (s == null)
+                System.out.println("not found");
+            else
+                System.out.println("found");
         }
     }
 

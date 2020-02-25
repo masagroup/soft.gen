@@ -55,7 +55,7 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>cmake</name>
+			<name>src/soft/generator/cpp/cmake</name>
 			<type>2</type>
 			<locationURI>$%7BPARENT-3-PROJECT_LOC%7D/cpp/cmake</locationURI>
 		</link>
