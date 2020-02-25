@@ -223,7 +223,7 @@ public class Generator extends AbstractAcceleoGenerator {
         URI newModelURI = URI.createURI(modelPath, true);
         model = ModelUtils.load(newModelURI, modelResourceSet);
         targetFolder = new File(targetPath);
-        generationArguments = Collections.emptyList();
+        generationArguments = Collections.<Object>emptyList();
         this.postInitialize();
     }
 
