@@ -32,7 +32,6 @@ import org.eclipse.acceleo.engine.service.AcceleoService;
 import org.eclipse.acceleo.model.mtl.Module;
 import org.eclipse.acceleo.model.mtl.resource.AcceleoResourceFactoryRegistry;
 import org.eclipse.acceleo.model.mtl.resource.AcceleoResourceSetImpl;
-import org.eclipse.emf.common.util.BasicMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.plugin.EcorePlugin;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -63,121 +62,22 @@ public class Generator extends AbstractAcceleoGenerator {
         }
     }
 
-    /**
-     * The list of properties files from the launch parameters (Launch
-     * configuration).
-     */
     private String moduleName;
+    private String[] defaultTemplates;
+
+    private String modelPath;
+    private String targetPath;
     private List<String> templates;
     private Properties properties = new Properties();
     private List<String> propertiesFiles = new ArrayList<String>();
-    private boolean silent = false;
+    private boolean silentMode = false;
 
-    protected Generator() {
-
+    protected Generator(String moduleName, String[] defaultTemplates) {
+        this.moduleName = moduleName;
+        this.defaultTemplates = defaultTemplates;
     }
 
-    /**
-     * This allows clients to instantiates a generator with all required
-     * information.
-     * 
-     * @param modelURI     URI where the model on which this generator will be used
-     *                     is located.
-     * @param targetFolder This will be used as the output folder for this
-     *                     generation : it will be the base path against which all
-     *                     file block URLs will be resolved.
-     * @param arguments    If the template which will be called requires more than
-     *                     one argument taken from the model, pass them here.
-     * @throws IOException This can be thrown in three scenarios : the module cannot
-     *                     be found, it cannot be loaded, or the model cannot be
-     *                     loaded.
-     * @generated
-     */
-    private Generator(URI modelURI, File targetFolder, List<? extends Object> arguments) throws IOException {
-        initializeArguments(arguments);
-        initializeGenerator(modelURI, targetFolder, Collections.emptyList());
-    }
-
-    private void initializeArguments(List<? extends Object> arguments) {
-        this.moduleName = (String) arguments.get(0);
-        @SuppressWarnings("unchecked")
-        List<String> templates = (List<String>) arguments.get(1);
-        this.templates = templates;
-        Properties properties = (Properties) arguments.get(2);
-        this.properties = properties;
-        Boolean silent = (Boolean) arguments.get(3);
-        this.silent = silent;
-    }
-
-    public void initializeGenerator(URI modelURI, File folder, List<? extends Object> arguments) throws IOException {
-        ResourceSet modulesResourceSet = new AcceleoResourceSetImpl();
-        modulesResourceSet.setPackageRegistry(AcceleoPackageRegistry.INSTANCE);
-
-        resourceFactoryRegistry = modulesResourceSet.getResourceFactoryRegistry();
-        modulesResourceSet.setResourceFactoryRegistry(new ResourceFactoryRegistry(resourceFactoryRegistry));
-
-        URIConverter uriConverter = createURIConverter();
-        if (uriConverter != null) {
-            modulesResourceSet.setURIConverter(uriConverter);
-        }
-
-        Map<URI, URI> uriMap = EcorePlugin.computePlatformURIMap(false);
-
-        // make sure that metamodel projects in the workspace override those in plugins
-        modulesResourceSet.getURIConverter().getURIMap().putAll(uriMap);
-
-        registerResourceFactories(modulesResourceSet);
-        registerPackages(modulesResourceSet);
-
-        ResourceSet modelResourceSet = new AcceleoResourceSetImpl();
-        modelResourceSet.setPackageRegistry(AcceleoPackageRegistry.INSTANCE);
-        if (uriConverter != null) {
-            modelResourceSet.setURIConverter(uriConverter);
-        }
-
-        // make sure that metamodel projects in the workspace override those in plugins
-        modelResourceSet.getURIConverter().getURIMap().putAll(uriMap);
-
-        registerResourceFactories(modelResourceSet);
-        registerPackages(modelResourceSet);
-
-        String moduleName = getModuleName();
-        if (moduleName.endsWith('.' + IAcceleoConstants.MTL_FILE_EXTENSION)) {
-            moduleName = moduleName.substring(0, moduleName.lastIndexOf('.'));
-        }
-        if (!moduleName.endsWith('.' + IAcceleoConstants.EMTL_FILE_EXTENSION)) {
-            moduleName += '.' + IAcceleoConstants.EMTL_FILE_EXTENSION;
-        }
-
-        URL moduleURL = findModuleURL(moduleName);
-
-        if (moduleURL == null) {
-            throw new IOException("'" + getModuleName() + ".emtl' not found"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        URI moduleURI = createTemplateURI(moduleURL.toString());
-        moduleURI = URI.createURI(moduleURI.toString(), true);
-        module = (Module) ModelUtils.load(moduleURI, modulesResourceSet);
-
-        URI newModelURI = URI.createURI(modelURI.toString(), true);
-        model = ModelUtils.load(newModelURI, modelResourceSet);
-        targetFolder = folder;
-        generationArguments = arguments;
-
-        this.postInitialize();
-    }
-
-    protected AcceleoService createAcceleoService() {
-        AcceleoService service = super.createAcceleoService();
-        service.addProperties(Maps.fromProperties(properties));
-        return service;
-    }
-
-    /**
-     * This can be used to launch the generation from a standalone application.
-     * 
-     * @param args Arguments of the generation.
-     */
-    public static void generate(String[] args, String moduleName, String[] defaultTemplates) {
+    public boolean parse(String[] args) {
         Options generateOptions = new Options();
         Option helpOption = new Option("help", "print this message");
         Option templateOption = Option.builder("t")
@@ -227,13 +127,13 @@ public class Generator extends AbstractAcceleoGenerator {
             CommandLine line = parser.parse(generateOptions, args);
             if (line.hasOption("help")) {
                 help.printHelp("Generate", generateOptions);
-                return;
+                return false;
             }
-            URI model = URI.createFileURI(line.getOptionValue("m"));
-            File output = new File(line.getOptionValue("o"));
+            modelPath = line.getOptionValue("m");
+            targetPath = line.getOptionValue("o");
 
             // templates
-            List<String> templates = Lists.newArrayList(defaultTemplates);
+            templates = Lists.newArrayList(defaultTemplates);
             if (line.hasOption("t")) {
                 String[] regexs = line.getOptionValues("t");
                 for (String regex : regexs) {
@@ -256,26 +156,81 @@ public class Generator extends AbstractAcceleoGenerator {
             }
 
             // properties
-            Properties properties = new Properties();
+            properties = new Properties();
             if (line.hasOption("p"))
                 properties = line.getOptionProperties("p");
 
             // silent mode
-            boolean silentMode = false;
+            silentMode = false;
             if (line.hasOption("s"))
                 silentMode = true;
-
-            Generator generator = new Generator(model,
-                                                output,
-                                                Arrays.asList(moduleName, templates, properties, silentMode));
-            generator.doGenerate(new BasicMonitor());
-
         } catch (ParseException e) {
-            System.out.println(e.getMessage());
             help.printHelp("Generate", generateOptions);
-        } catch (IOException e) {
-            e.printStackTrace();
+            return false;
         }
+        return true;
+    }
+
+    public void initialize() throws IOException {
+        ResourceSet modulesResourceSet = new AcceleoResourceSetImpl();
+        modulesResourceSet.setPackageRegistry(AcceleoPackageRegistry.INSTANCE);
+
+        resourceFactoryRegistry = modulesResourceSet.getResourceFactoryRegistry();
+        modulesResourceSet.setResourceFactoryRegistry(new ResourceFactoryRegistry(resourceFactoryRegistry));
+
+        URIConverter uriConverter = createURIConverter();
+        if (uriConverter != null) {
+            modulesResourceSet.setURIConverter(uriConverter);
+        }
+
+        Map<URI, URI> uriMap = EcorePlugin.computePlatformURIMap(false);
+
+        // make sure that metamodel projects in the workspace override those in plugins
+        modulesResourceSet.getURIConverter().getURIMap().putAll(uriMap);
+
+        registerResourceFactories(modulesResourceSet);
+        registerPackages(modulesResourceSet);
+
+        ResourceSet modelResourceSet = new AcceleoResourceSetImpl();
+        modelResourceSet.setPackageRegistry(AcceleoPackageRegistry.INSTANCE);
+        if (uriConverter != null) {
+            modelResourceSet.setURIConverter(uriConverter);
+        }
+
+        // make sure that metamodel projects in the workspace override those in plugins
+        modelResourceSet.getURIConverter().getURIMap().putAll(uriMap);
+
+        registerResourceFactories(modelResourceSet);
+        registerPackages(modelResourceSet);
+
+        String moduleName = getModuleName();
+        if (moduleName.endsWith('.' + IAcceleoConstants.MTL_FILE_EXTENSION)) {
+            moduleName = moduleName.substring(0, moduleName.lastIndexOf('.'));
+        }
+        if (!moduleName.endsWith('.' + IAcceleoConstants.EMTL_FILE_EXTENSION)) {
+            moduleName += '.' + IAcceleoConstants.EMTL_FILE_EXTENSION;
+        }
+
+        URL moduleURL = findModuleURL(moduleName);
+
+        if (moduleURL == null) {
+            throw new IOException("'" + getModuleName() + ".emtl' not found"); //$NON-NLS-1$ //$NON-NLS-2$
+        }
+        URI moduleURI = createTemplateURI(moduleURL.toString());
+        moduleURI = URI.createURI(moduleURI.toString(), true);
+        module = (Module) ModelUtils.load(moduleURI, modulesResourceSet);
+
+        URI newModelURI = URI.createURI(modelPath, true);
+        model = ModelUtils.load(newModelURI, modelResourceSet);
+        targetFolder = new File(targetPath);
+        generationArguments = Collections.emptyList();
+        this.postInitialize();
+    }
+
+    protected AcceleoService createAcceleoService() {
+        AcceleoService service = super.createAcceleoService();
+        service.addProperties(Maps.fromProperties(properties));
+        return service;
     }
 
     /**
@@ -289,7 +244,7 @@ public class Generator extends AbstractAcceleoGenerator {
     @Override
     public List<IAcceleoTextGenerationListener> getGenerationListeners() {
         List<IAcceleoTextGenerationListener> listeners = super.getGenerationListeners();
-        if (!silent)
+        if (!silentMode)
             listeners.add(new IAcceleoTextGenerationListener() {
 
                 @Override

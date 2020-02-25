@@ -5,7 +5,7 @@
 [query public isVoid(aOperation : EOperation) : Boolean = aOperation.eType.oclIsUndefined() /]
 
 [query public join( aSequence : Sequence(String) , aDelimiter : String ) : String = 
-    aSequence->iterate(s ; res: String ='' | ( res.concat( if ( aSequence->first() = s ) then '' else aDelimiter endif ).concat(s)))
+    aSequence->iterate(s ; res: String ='' | ( res + ( if ( aSequence->first() = s ) then '' else aDelimiter endif ) +  s ))
 /]
 
 [query public format( aString : String , aArguments : Sequence(String) ) : String =
@@ -73,12 +73,12 @@
     endif endif endif
 /]
 [query private getMemberName(anEClassifier : EClassifier) : String = anEClassifier.name.toLowerFirst() /]
-[query private getMemberName(aStructural : EStructuralFeature) : String = aStructural.eContainingClass.name.toLowerFirst().concat('_').concat(aStructural.name.toUpperFirst()) /]
-[query private getMemberName(aOperation : EOperation) : String = aOperation.eContainingClass.name.toLowerFirst().concat('_'.concat(aOperation.name.toUpperFirst()).concat(aOperation.getParameterListName())) /]
-[query private getParameterListName( aOperation : EOperation) : String = if aOperation.eParameters->notEmpty() then '_'.concat(aOperation.getParameterListDetailsName()) else '' endif /]
-[query private getParameterListDetailsName(aOperation : EOperation) : String = if aOperation.eParameters->size()>1 then aOperation.eParameters->first().eType.name.concat('_').concat(aOperation.eParameters->last().eType.name) else aOperation.eParameters->first().eType.name endif /]
+[query private getMemberName(aStructural : EStructuralFeature) : String = aStructural.eContainingClass.name.toLowerFirst() + '_' + aStructural.name.toUpperFirst() /]
+[query private getMemberName(aOperation : EOperation) : String = aOperation.eContainingClass.name.toLowerFirst() + '_' + aOperation.name.toUpperFirst() + aOperation.getParameterListName() /]
+[query private getParameterListName( aOperation : EOperation) : String = if aOperation.eParameters->notEmpty() then '_' + aOperation.getParameterListDetailsName() else '' endif /]
+[query private getParameterListDetailsName(aOperation : EOperation) : String = if aOperation.eParameters->size()>1 then aOperation.eParameters->first().eType.name + '_' + aOperation.eParameters->last().eType.name else aOperation.eParameters->first().eType.name endif /]
 
-[query public getElementIdentifier(anENamedElement : ENamedElement) : String = anENamedElement.name.concat( if anENamedElement.oclIsKindOf(EOperation) then anENamedElement.oclAsType(EOperation).getParameterListName() else '' endif) /]
+[query public getElementIdentifier(anENamedElement : ENamedElement) : String = anENamedElement.name + (if anENamedElement.oclIsKindOf(EOperation) then anENamedElement.oclAsType(EOperation).getParameterListName() else '' endif) /]
 [query public getElementAccessorName(anENamedElement : ENamedElement) : String = anENamedElement.getMemberName().toUpperFirst() /]
 [query public getElementIDAccessorName(anEClass : EClass) : String = 
     if(name = 'EClass' or name = 'EDataType' or name = 'EEnum') then 'Classifier'
@@ -88,20 +88,20 @@
     endif endif endif/]
 
 [query public getClassifierIDName( anEClass : EClassifier ) : String = splitAndCombineWords(anEClass.name,'_').toUpperCase()/]
-[query public getClassifierIDName( anEClass : EClass ,anEClassifier : EClassifier) : String = anEClass.getClassifierIDName().concat('__').concat(splitAndCombineWords(anEClassifier.name,'_')).toUpperCase()/]
+[query public getClassifierIDName( anEClass : EClass ,anEClassifier : EClassifier) : String = (anEClass.getClassifierIDName() + '__' + splitAndCombineWords(anEClassifier.name,'_')).toUpperCase()/]
 [query public getClassifierIDValue(anEClassifier : EClassifier) : EInt = if (anEClassifier.getClassifierID() = 0) then anEClassifier.ePackage.eClassifiers->selectByKind(EClassifier)->size() else anEClassifier.getClassifierID() endif/]
 
-[query public getOperationCountID( aEClass : EClass ) : String = aEClass.getClassifierIDName().concat('_OPERATION_COUNT')/]
+[query public getOperationCountID( aEClass : EClass ) : String = aEClass.getClassifierIDName() + '_OPERATION_COUNT'/]
 [query public getOperationCountValue( aEClass : EClass ) : String = 
     let baseClass : EClass = aEClass.getBaseClass() in
     if baseClass.oclIsUndefined() then
         aEClass.getOperationCount()
     else
         let baseCount : String = if baseClass.ePackage = aEClass.ePackage then baseClass.getOperationCountID() else baseClass.getOperationCountID() endif in
-        baseCount.concat(' + ').concat( (aEClass.getOperationCount() - baseClass.getOperationCount()).toString() )
+        baseCount + ' + ' +  (aEClass.getOperationCount() - baseClass.getOperationCount()).toString()
     endif
 /]
-[query public getOperationIDName(anEClass : EClass ,aOperation : EOperation) : String = anEClass.getClassifierIDName().concat('__').concat( splitAndCombineWords(aOperation.name , '_')).concat(aOperation.getParameterListName()).toUpperCase() /]
+[query public getOperationIDName(anEClass : EClass ,aOperation : EOperation) : String = (anEClass.getClassifierIDName() + '__' +  splitAndCombineWords(aOperation.name , '_') + aOperation.getParameterListName()).toUpperCase() /]
 [query public getOperationValue(aEClass : EClass , aOperation : EOperation ) : String = 
     let index : Integer = aEClass.eAllOperations->indexOf(aOperation) - 1 in
     let baseClass : EClass = aEClass.getBaseClass() in
@@ -113,7 +113,7 @@
             if baseClass.ePackage = aEClass.ePackage then baseClass.getOperationIDName( aOperation ) else baseClass.getOperationIDName( aOperation ) endif
         else
             let baseCountID : String = if aEClass.ePackage = baseClass.ePackage then baseClass.getOperationCountID() else baseClass.getOperationCountID() endif in
-            baseCountID.concat(' + ').concat( (index-baseCount).toString())
+            baseCountID + ' + ' + (index-baseCount).toString()
         endif 
     endif 
 /]
@@ -154,14 +154,14 @@
             if baseClass.ePackage = aEClass.ePackage then baseClass.getFeatureIDName( aEFeature ) else baseClass.getFeatureIDName( aEFeature ) endif
         else
             let baseCountID : String = if aEClass.ePackage = baseClass.ePackage then baseClass.getFeatureCountID() else baseClass.getFeatureCountID() endif in
-            baseCountID.concat(' + ').concat( (index-baseCount).toString())
+            baseCountID + ' + ' + (index-baseCount).toString()
         endif 
     endif 
 /]
 
-[query public getFeatureIDName(anEClass : EClass ,aStructural : EStructuralFeature) : String = anEClass.getClassifierIDName().concat('__').concat( splitAndCombineWords(aStructural.name,'_')).toUpperCase() /]
+[query public getFeatureIDName(anEClass : EClass ,aStructural : EStructuralFeature) : String = (anEClass.getClassifierIDName() + '__' + splitAndCombineWords(aStructural.name,'_')).toUpperCase() /]
 
-[query public getFeatureCountID( aEClass : EClass ) : String = aEClass.getClassifierIDName().concat('_FEATURE_COUNT')/]
+[query public getFeatureCountID( aEClass : EClass ) : String = aEClass.getClassifierIDName() + '_FEATURE_COUNT'/]
 
 [query public getFeatureCountValue( aEClass : EClass ) : String = 
     let baseClass : EClass = aEClass.getBaseClass() in
@@ -169,7 +169,7 @@
         aEClass.getFeatureCount()
     else
         let baseCount : String = if baseClass.ePackage = aEClass.ePackage then baseClass.getFeatureCountID() else baseClass.getFeatureCountID() endif in
-        baseCount.concat(' + ').concat( (aEClass.getFeatureCount() - baseClass.getFeatureCount()).toString() )
+        baseCount + ' + ' +  (aEClass.getFeatureCount() - baseClass.getFeatureCount()).toString()
     endif
 /]
 

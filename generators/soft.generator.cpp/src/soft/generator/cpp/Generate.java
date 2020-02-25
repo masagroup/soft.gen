@@ -1,5 +1,7 @@
 package soft.generator.cpp;
 
+import org.eclipse.emf.common.util.BasicMonitor;
+
 import soft.generator.common.Generator;
 
 /**
@@ -23,13 +25,21 @@ public class Generate extends Generator {
                                                     "generateTestsCMakeSources",
                                                     "generateTestsCMakeProject" };
 
-    /**
-     * This can be used to launch the generation from a standalone application.
-     * 
-     * @param args Arguments of the generation.
-     */
+    private Generate() {
+        super(MODULE_FILE_NAME, TEMPLATE_NAMES);
+    }
+
     public static void main(String[] args) {
-        generate(args, MODULE_FILE_NAME, TEMPLATE_NAMES);
+        try {
+            Generate g = new Generate();
+            boolean p = g.parse(args);
+            if (p) {
+                g.initialize();
+                g.generate(new BasicMonitor());
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
 }
