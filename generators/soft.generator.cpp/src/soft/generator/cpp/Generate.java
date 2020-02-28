@@ -1,9 +1,16 @@
 package soft.generator.cpp;
 
-import java.io.InputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
 import org.eclipse.emf.common.util.BasicMonitor;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
 import soft.generator.common.Generator;
@@ -48,11 +55,34 @@ public class Generate extends Generator {
 
     protected void postGenerate(ResourceSet resourceSet) {
         if (Arrays.stream(getTemplateNames()).anyMatch(t -> t.equals("generateTestsCMakeProject"))) {
-            InputStream s = getClass().getResourceAsStream("cmake/BoostTest.cmake");
-            if (s == null)
-                System.out.println("not found");
-            else
-                System.out.println("found");
+            EObject eModel = getModel();
+            if (eModel instanceof EPackage) {
+                EPackage ePackage = (EPackage) eModel;
+                try {
+                    URL srcUrl = getClass().getResource("cmake");
+                    Path from = Paths.get(srcUrl.toURI()).normalize();
+                    Path to = Paths.get(targetFolder.toURI()).resolve(ePackage.getName() + "/tests/cmake").normalize();
+                    Files.walk(from).forEach(src -> {
+                        final Path dest = to.resolve(from.relativize(src).toString());
+                        try {
+                            if (Files.isDirectory(src)) {
+                                if (Files.notExists(dest)) {
+                                    System.out.println("creating directory:" + to);
+                                    Files.createDirectories(dest);
+                                }
+                            } else {
+                                System.out.println("extracting file:" + dest);
+                                Files.copy(src, dest, StandardCopyOption.REPLACE_EXISTING);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
     }
 
