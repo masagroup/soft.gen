@@ -21,6 +21,28 @@
 
     <build>
         <plugins>
+        	<plugin>
+		        <artifactId>maven-resources-plugin</artifactId>
+		        <version>3.1.0</version>
+		        <executions>
+		          <execution>
+		            <id>copy-resources</id>
+		            <phase>validate</phase>
+		            <goals>
+		              <goal>copy-resources</goal>
+		            </goals>
+		            <configuration>
+		              <outputDirectory>${project.target}/classes/soft/generator/cpp/cmake</outputDirectory>
+		              <resources>          
+		                <resource>
+		                  <directory>${project.basedir}/../../../cpp/cmake</directory>
+		                  <filtering>true</filtering>
+		                </resource>
+		              </resources>              
+		            </configuration>            
+		          </execution>
+		        </executions>
+		    </plugin>
             <plugin>
                 <groupId>org.eclipse.acceleo</groupId>
                 <artifactId>org.eclipse.acceleo.maven</artifactId>
