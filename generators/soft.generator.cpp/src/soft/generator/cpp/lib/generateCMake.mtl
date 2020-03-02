@@ -85,21 +85,21 @@ endif()
                                                , getAllNamespaces( aPackage.getImplementationNamespaceName() )
                                                , getAllNamespaces( aPackage.getExtensionNamespaceName() )
                                                }->flatten()->asOrderedSet()->sortedBy(s | s)]
-add_library(${PROJECT_NAME} STATIC  ${CMAKE_FILES}
+add_library([packageName/] STATIC  ${CMAKE_FILES}
 [for (variable : String | namespaces->getAllVariables())]
                                     [variable/]
 [/for]
 )
-target_include_directories(${PROJECT_NAME} PUBLIC src src-gen )
-target_compile_options(${PROJECT_NAME} PRIVATE /MP /wd4250 /wd4251 /bigobj) 
-set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
+target_include_directories([packageName/] PUBLIC src src-gen )
+target_compile_options([packageName/] PRIVATE /MP /wd4250 /wd4251 /bigobj) 
+set_target_properties([packageName/] PROPERTIES PREFIX "")
 
 [generateSourceGroup(namespaces)/]
 
 #-----------------------------------------------------
 # Install binaries and header
 #-----------------------------------------------------
-install(TARGETS ${PROJECT_NAME} DESTINATION lib )
+install(TARGETS [packageName/] DESTINATION lib )
 [for ( namespace : String | namespaces )]
 [let namespaceVar : String = getVarName(namespace)]
 install(FILES [getVarName('HEADER',namespaceVar,'FILES')/] [getVarName('GENERATED_HEADER',namespaceVar,'FILES')/] DESTINATION include[if namespace<>'']/[namespaceToFolder(namespace)/][/if])
