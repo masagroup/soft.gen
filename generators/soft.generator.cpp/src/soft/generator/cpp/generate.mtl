@@ -81,3 +81,6 @@
 [aPackage.generateTestsCMakeLists()/]
 [/template]
 
+[template public generateTestsCMakeDependencies(aPackage : EPackage)]
+[comment @main/]
+[/template]

@@ -42,6 +42,7 @@ public class Generate extends Generator {
                                                     "generateLibraryCMakeSources",
                                                     "generateLibraryCMakeProject",
                                                     "generateTests",
+                                                    "generateTestsCMakeDependencies",
                                                     "generateTestsCMakeSources",
                                                     "generateTestsCMakeProject" };
 
@@ -97,7 +98,7 @@ public class Generate extends Generator {
     }
 
     protected void postGenerate(ResourceSet resourceSet) {
-        if (Arrays.stream(getTemplateNames()).anyMatch(t -> t.equals("generateTestsCMakeProject"))) {
+        if (Arrays.stream(getTemplateNames()).anyMatch(t -> t.equals("generateTestsCMakeDependencies"))) {
             EObject eModel = getModel();
             if (eModel instanceof EPackage) {
                 EPackage ePackage = (EPackage) eModel;
