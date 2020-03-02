@@ -35,7 +35,7 @@
 		              <outputDirectory>${project.target}/classes/soft/generator/cpp/cmake</outputDirectory>
 		              <resources>          
 		                <resource>
-		                  <directory>${project.basedir}/../../../cpp/cmake</directory>
+		                  <directory>${project.basedir}/src/soft/generator/cpp/cmake</directory>
 		                  <filtering>true</filtering>
 		                </resource>
 		              </resources>              
@@ -43,7 +43,7 @@
 		          </execution>
 		        </executions>
 		    </plugin>
-            <plugin>
+		    <plugin>
                 <groupId>org.eclipse.acceleo</groupId>
                 <artifactId>org.eclipse.acceleo.maven</artifactId>
                 <version>3.6.4</version>
