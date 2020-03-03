@@ -61,6 +61,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 
 project([packageName/].lib CXX)
 
+# options
 if(NOT CMAKE_BUILD_TYPE) 
     set(CMAKE_BUILD_TYPE Debug)
 endif()
@@ -68,9 +69,18 @@ set(CMAKE_DEBUG_POSTFIX d)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# dependencies
+[if packageName <> 'ecore']
+find_package(Ecore)
+[/if]
+find_package(XercesC REQUIRED)
+find_package(Threads REQUIRED)
+find_package(Boost REQUIRED regex)
+
 include( CMakeFiles.txt OPTIONAL)
 include( CMakeGenerated.txt OPTIONAL)
 
+# cmake files
 set(CMAKE_FILES
     CMakeLists.txt
 )
@@ -81,32 +91,64 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/CMakeGenerated.txt")
    list(APPEND CMAKE_FILES "CMakeGenerated.txt")
 endif()
 
+set(PROJECT_SOURCES ${CMAKE_FILES}
 [let namespaces : OrderedSet(String) = Sequence{ getAllNamespaces( aPackage.getInterfaceNamespaceName() ) 
                                                , getAllNamespaces( aPackage.getImplementationNamespaceName() )
                                                , getAllNamespaces( aPackage.getExtensionNamespaceName() )
                                                }->flatten()->asOrderedSet()->sortedBy(s | s)]
-add_library([packageName/] STATIC  ${CMAKE_FILES}
 [for (variable : String | namespaces->getAllVariables())]
-                                    [variable/]
+                    [variable/]
 [/for]
 )
-target_include_directories([packageName/] PUBLIC src src-gen )
-target_compile_options([packageName/] PRIVATE /MP /wd4250 /wd4251 /bigobj) 
-set_target_properties([packageName/] PROPERTIES PREFIX "")
+# shared library
+add_library([packageName/] SHARED ${PROJECT_SOURCES})
+add_library([packageName/]::shared ALIAS [packageName/])
+target_include_directories([packageName/]
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src-gen>
+)
+target_compile_options([packageName/] PRIVATE /MP /wd4250 /wd4251 /bigobj)
+target_compile_definitions( [packageName/] PRIVATE [packageName.toUpper()/]_EXPORTS)
+target_compile_definitions( [packageName/] PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+target_link_libraries([packageName/] PUBLIC [if packageName <> 'ecore']Ecore::ecore::shared[/if] XercesC::XercesC Boost::regex)
+
+# static library
+add_library([packageName/].static STATIC ${PROJECT_SOURCES})
+add_library([packageName/]::static ALIAS [packageName/].static)
+target_include_directories([packageName/].static
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src-gen>
+)
+target_compile_options([packageName/].static PRIVATE /MP /wd4250 /bigobj)
+target_compile_definitions([packageName/].static PUBLIC [packageName.toUpper()/]_STATIC_LIB)
+target_compile_definitions([packageName/].static PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
+target_link_libraries([packageName/].static PRIVATE [if packageName <> 'ecore']Ecore::ecore::static[/if] XercesC::XercesC Boost::regex)
+
+# libraries names
+set_target_properties([packageName/].static PROPERTIES PREFIX lib)
+set_target_properties([packageName/] [packageName/].static PROPERTIES OUTPUT_NAME [packageName/]-vc${MSVC_TOOLSET_VERSION}-mt$<$<CONFIG:Debug>:-gd>)
 
 [generateSourceGroup(namespaces)/]
 
 #-----------------------------------------------------
 # Install binaries and header
 #-----------------------------------------------------
-install(TARGETS [packageName/] DESTINATION lib )
+include(GNUInstallDirs)
+install(TARGETS [packageName/] [packageName/].static
+        EXPORT  [packageName/].targets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 [for ( namespace : String | namespaces )]
 [let namespaceVar : String = getVarName(namespace)]
 install(FILES [getVarName('HEADER',namespaceVar,'FILES')/] [getVarName('GENERATED_HEADER',namespaceVar,'FILES')/] DESTINATION include[if namespace<>'']/[namespaceToFolder(namespace)/][/if])
 [/let]
 [/for]
 [/let]
-
 
 #-----------------------------------------------------
 # Package binaries and header
