@@ -157,7 +157,7 @@ endif/]
 
 [template public generateDataDeclaration(aStructuralFeature : EStructuralFeature) ]
 [if aStructuralFeature.isLazy()]
-[let shortQualifiedLazyClass : String = getShortQualifiedName('ecore::impl::Lazy', aStructuralFeature.eContainingClass.ePackage.getQualifiedImplementationName())]
+[let shortQualifiedLazyClass : String = getShortQualifiedName('ecore::impl::Lazy', aStructuralFeature.getEPackage().getQualifiedImplementationName())]
 [shortQualifiedLazyClass/]<[aStructuralFeature.generateDataType()/][if aStructuralFeature.getLazy() = 'action'],void[/if]> [aStructuralFeature.name/]_;
 [/let]
 [else]
@@ -476,11 +476,11 @@ void [className/]<I...>::[methodName/]([aStructuralFeature.generateParameterType
 [/template]
 
 [template private getListConstructor( anEAttribute : EAttribute ) post(trim())]
-ArrayEList<[anEAttribute.eGenericType.generateCppType()/],[anEAttribute.unique/]>()
+ArrayEList<[anEAttribute.eGenericType.generateCppType(anEAttribute.getEPackage())/],[anEAttribute.unique/]>()
 [/template]
 
 [template private getListConstructor( anEReference : EReference ) post(trim())]
-[let typeArgument : String = anEReference.eGenericType.generateCppType()]
+[let typeArgument : String = anEReference.eGenericType.generateCppType(anEReference.getEPackage())]
 [let packageName : String = anEReference.getPackageName(anEReference.eContainingClass)]
 [let featureID : String = anEReference.eContainingClass.getFeatureIDName( anEReference )]
 [let thisPtrName : String = anEReference.eContainingClass.getThisPtrName() + '_']
@@ -578,7 +578,7 @@ void [className/]<I...>::[methodName/]()
     [if isListType()]
     if ([aStructuralFeature.name/]_)
     {
-        auto unsettable = std::static_pointer_cast<ecore::EUnsettableList<[aStructuralFeature.eGenericType.generateCppType()/]>>([aStructuralFeature.name/]_[if isLazy()].get()[/if]);
+        auto unsettable = std::static_pointer_cast<ecore::EUnsettableList<[aStructuralFeature.eGenericType.generateCppType(aStructuralFeature.getEPackage())/]>>([aStructuralFeature.name/]_[if isLazy()].get()[/if]);
         unsettable->unset();
     }
     [elseif isBidirectional() or isContains()]

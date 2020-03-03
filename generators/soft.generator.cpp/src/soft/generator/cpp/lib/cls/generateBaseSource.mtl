@@ -106,7 +106,7 @@ namespace [namespaceName/]
     }
 
     template <typename... I>
-    std::shared_ptr<EClass> [className/]<I...>::eStaticClass() const
+    std::shared_ptr<[getShortQualifiedName('ecore::EClass', aClass.ePackage.name)/]> [className/]<I...>::eStaticClass() const
     {
         return [aClass.ePackage.getInterfaceName()/]::eInstance()->get[aClass.getElementAccessorName()/]();
     }

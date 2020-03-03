@@ -8,17 +8,6 @@
 [query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
 [query private isShared(aReference : EReference) : Boolean = if (aReference.hasKey('aggregation')) then aReference.valueKey('aggregation')='shared' else false endif/]
 
-[query private getEPackage( eElement : ETypedElement ) : EPackage =
-    let containingClass : EClass = 
-    if eElement.oclIsKindOf(EStructuralFeature) then  eElement.oclAsType(EStructuralFeature).eContainingClass
-    else if eElement.oclIsKindOf(EOperation) then  eElement.oclAsType(EOperation).eContainingClass
-    else if eElement.oclIsKindOf(EParameter) then  eElement.oclAsType(EParameter).eOperation.eContainingClass
-    else null endif endif endif in
-    if containingClass.oclIsUndefined() then null
-    else containingClass.ePackage
-    endif
-/] 
-
 [template public generateEffectiveType(aElement : ETypedElement) post(trim())]
 [let aPackage : EPackage = aElement.getEPackage()]
 [if (aElement.isListType())]

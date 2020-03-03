@@ -191,3 +191,13 @@
 
 [query private getBaseClass( aEClass : EClass ) : EClass = if (aEClass.eSuperTypes->isEmpty() ) then null else aEClass.eSuperTypes->first() endif/]
 
+[query public getEPackage( eElement : ETypedElement ) : EPackage =
+    let containingClass : EClass = 
+    if eElement.oclIsKindOf(EStructuralFeature) then  eElement.oclAsType(EStructuralFeature).eContainingClass
+    else if eElement.oclIsKindOf(EOperation) then  eElement.oclAsType(EOperation).eContainingClass
+    else if eElement.oclIsKindOf(EParameter) then  eElement.oclAsType(EParameter).eOperation.eContainingClass
+    else null endif endif endif in
+    if containingClass.oclIsUndefined() then null
+    else containingClass.ePackage
+    endif
+/] 

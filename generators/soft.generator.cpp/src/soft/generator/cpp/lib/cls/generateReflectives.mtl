@@ -58,15 +58,15 @@ virtual void eUnset(int featureID);
 [/template]
 
 [template private generateEInvokeDeclaration(aClass : EClass)]
-virtual ecore::Any eInvoke( int operationID, const std::shared_ptr<EList<ecore::Any>>& arguments );
+virtual [getShortQualifiedName('ecore::Any', aClass.ePackage.name)/] eInvoke( int operationID, const std::shared_ptr<[getShortQualifiedName('ecore::EList', aClass.ePackage.name)/]<[getShortQualifiedName('ecore::Any', aClass.ePackage.name)/]>>& arguments );
 [/template]
 
 [template private generateEInverseAddDeclaration(aClass : EClass)]
-virtual std::shared_ptr<ENotificationChain> eBasicInverseAdd( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications );
+virtual std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePackage.name)/]> eBasicInverseAdd( const std::shared_ptr<[getShortQualifiedName('ecore::EObject', aClass.ePackage.name)/]>& otherEnd, int featureID, const std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePackage.name)/]>& notifications );
 [/template]
 
 [template private generateEInverseRemoveDeclaration(aClass : EClass)]
-virtual std::shared_ptr<ENotificationChain> eBasicInverseRemove( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications );
+virtual std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePackage.name)/]> eBasicInverseRemove( const std::shared_ptr<[getShortQualifiedName('ecore::EObject', aClass.ePackage.name)/]>& otherEnd, int featureID, const std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePackage.name)/]>& notifications );
 [/template]
 
 [template public generateReflectivesDefinition(aClass : EClass)]
@@ -163,7 +163,7 @@ bool [aClass.getBaseName()/]<I...>::eIsSet(int featureID) const
 
 [template private generateESetDefinition(aClass : EClass)]
 template <typename... I>
-void [aClass.getBaseName()/]<I...>::eSet(int featureID, const ecore::Any& newValue)
+void [aClass.getBaseName()/]<I...>::eSet(int featureID, const [getShortQualifiedName('ecore::Any', aClass.ePackage.name)/]& newValue)
 {
     switch(featureID)
     {
@@ -173,7 +173,7 @@ void [aClass.getBaseName()/]<I...>::eSet(int featureID, const ecore::Any& newVal
     [let varName : String = anStructFeature.name.first(1)]
     [if anStructFeature.isListType()]
             auto list = anyListCast<std::shared_ptr<EObject>>(newValue);
-            auto [varName/] = list->asEListOf<[anStructFeature.eGenericType.generateCppType()/]>();
+            auto [varName/] = list->asEListOf<[anStructFeature.eGenericType.generateCppType( aClass.ePackage )/]>();
             [anStructFeature.getGetterName()/]()->clear();
             [anStructFeature.getGetterName()/]()->addAll(*[varName/]);
     [else]
@@ -226,7 +226,7 @@ void [className/]<I...>::eUnset(int featureID)
 [template private generateEInvokeDefinition(aClass : EClass)]
 [let className : String = aClass.getBaseName()]
 template <typename... I>
-ecore::Any [className/]<I...>::eInvoke(int operationID, const std::shared_ptr<EList<ecore::Any>>& arguments)
+[getShortQualifiedName('ecore::Any', aClass.ePackage.name)/] [className/]<I...>::eInvoke(int operationID, const std::shared_ptr<[getShortQualifiedName('ecore::EList', aClass.ePackage.name)/]<[getShortQualifiedName('ecore::Any', aClass.ePackage.name)/]>>& arguments)
 {
     // [protected ( className + '::eInvoke')]
     switch( operationID )
@@ -250,7 +250,7 @@ ecore::Any [className/]<I...>::eInvoke(int operationID, const std::shared_ptr<EL
 [/template]
 
 [template private generateOperationInvoke(eOperation : EOperation )]
-[if eOperation.getVisibilityType(true) = 'no' and eOperation.eContainingClass.name = 'EObject']AbstractEObject<I...>::[/if][eOperation.name/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())][if needCast]ecore::anyCast<[eParameter.generateEffectiveType()/]>([/if]arguments->get([i-1/])[if needCast])[/if][/let][/for]);
+[if eOperation.getVisibilityType(true) = 'no' and eOperation.eContainingClass.name = 'EObject']AbstractEObject<I...>::[/if][eOperation.name/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())][if needCast][getShortQualifiedName('ecore::anyCast', eOperation.getEPackage().name)/]<[eParameter.generateEffectiveType()/]>([/if]arguments->get([i-1/])[if needCast])[/if][/let][/for]);
 [/template]
 
 
@@ -311,7 +311,7 @@ ecore::Any [className/]<I...>::eInvoke(int operationID, const std::shared_ptr<EL
 [template public generateEInverseAddDefinition(aClass : EClass) ]
 [let className : String = aClass.getBaseName()]
 template <typename... I>
-std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseAdd( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications )
+std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePackage.name)/]> [className/]<I...>::eBasicInverseAdd( const std::shared_ptr<[getShortQualifiedName('ecore::EObject', aClass.ePackage.name)/]>& otherEnd, int featureID, const std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePackage.name)/]>& notifications )
 {
     // [protected (className + '::eBasicInverseAdd')]
     switch( featureID )
@@ -320,7 +320,7 @@ std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseAdd( const 
         case [aFeature.getQualifiedFeatureIDName()/]:
         {
     [if aFeature.isListType()]
-            auto list = std::static_pointer_cast<ENotifyingList<[aFeature.eGenericType.generateCppType()/]>>( [aFeature.getGetterName()/]() );
+            auto list = std::static_pointer_cast<[getShortQualifiedName('ecore::ENotifyingList', aClass.ePackage.name)/]<[aFeature.eGenericType.generateCppType(aClass.ePackage)/]>>( [aFeature.getGetterName()/]() );
             auto other = std::static_pointer_cast<[aFeature.generateElementType()/]>(otherEnd);
 			return list->add( other , notifications );
     [elseif aFeature.isContainer()]
@@ -361,7 +361,7 @@ std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseAdd( const 
 [template public generateEInverseRemoveDefinition(aClass : EClass) ? (aClass.getEInverseRemoveFeatures()->notEmpty()) ]
 [let className : String = aClass.getBaseName()]
 template <typename... I>
-std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseRemove( const std::shared_ptr<EObject>& otherEnd, int featureID, const std::shared_ptr<ENotificationChain>& notifications )
+std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePackage.name)/]> [className/]<I...>::eBasicInverseRemove( const std::shared_ptr<[getShortQualifiedName('ecore::EObject', aClass.ePackage.name)/]>& otherEnd, int featureID, const std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePackage.name)/]>& notifications )
 {
     // [protected (className + '::eBasicInverseRemove')]
     switch( featureID )
@@ -370,7 +370,7 @@ std::shared_ptr<ENotificationChain> [className/]<I...>::eBasicInverseRemove( con
         case [aFeature.getQualifiedFeatureIDName()/]:
         {
     [if aFeature.isListType()]
-            auto list = std::static_pointer_cast<ENotifyingList<[aFeature.eGenericType.generateCppType()/]>>( [aFeature.getGetterName()/]() );
+            auto list = std::static_pointer_cast<[getShortQualifiedName('ecore::ENotifyingList', aClass.ePackage.name)/]<[aFeature.eGenericType.generateCppType(aClass.ePackage)/]>>( [aFeature.getGetterName()/]() );
             auto other = std::static_pointer_cast<[aFeature.generateElementType()/]>(otherEnd);
 			return list->add( other , notifications );
     [elseif aFeature.isContainer() and not aFeature.isBasicSet()]

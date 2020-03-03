@@ -18,48 +18,53 @@
                                                                 name = 'EMap' or 
                                                                 name = 'EJavaObject' )/]
 
-[template public generateCppType(anEDataType : EGenericType) post (trim())]
-[generateCppType(true,false)/]
+[template public generateCppType(anEDataType : EGenericType, aPackage: EPackage) post (trim())]
+[generateCppType(aPackage,true,false)/]
 [/template]
 
-[template private generateCppType(anEDataType : EGenericType , decorate : Boolean, const : Boolean ) post (trim())]
+[template private generateCppType(anEDataType : EGenericType , aPackage : EPackage, decorate : Boolean, const : Boolean ) post (trim())]
 [if (anEDataType.oclIsUndefined())]
 void
 [else]
     [if (anEDataType.eTypeArguments->notEmpty())]
-        [anEDataType.generateGenericType(const)/]
+        [anEDataType.generateGenericType(aPackage,const)/]
     [elseif (decorate and not anEDataType.eClassifier.oclIsKindOf(EDataType))]
-        std::shared_ptr<[if const]const [/if][anEDataType.eClassifier.getType()/]>
+        std::shared_ptr<[if const]const [/if][getShortQualifiedName(anEDataType.eClassifier.getType(), aPackage.name )/]>
     [else]
-        [anEDataType.eClassifier.getType()/]
+        [getShortQualifiedName(anEDataType.eClassifier.getType(), aPackage.name )/]
     [/if]
 [/if]
 [/template]
 
-[template public generateGenericArgumentType(anEDataType : EGenericType) post (trim())]
+[template public generateGenericArgumentType(anEDataType : EGenericType, aPackage : EPackage ) post (trim())]
 [if (anEDataType.oclIsUndefined())]
 void[elseif (anEDataType.eClassifier.oclIsUndefined())]
-ecore::Any[elseif (not anEDataType.eClassifier.oclIsKindOf(EDataType))]
-std::shared_ptr<[anEDataType.eClassifier.getType()/]>[else]
-[anEDataType.eClassifier.getType()/][/if]
+[getShortQualifiedName('ecore::Any', aPackage.name )/][elseif (not anEDataType.eClassifier.oclIsKindOf(EDataType))]
+std::shared_ptr<[getShortQualifiedName(anEDataType.eClassifier.getType(), aPackage.name )/]>[else]
+[getShortQualifiedName(anEDataType.eClassifier.getType(), aPackage.name )/][/if]
 [/template]
 
-[template public generateGenericType(anEDataType : EGenericType, const : Boolean) post (trim())]
+[template public generateGenericType(anEDataType : EGenericType, aPackage : EPackage, const : Boolean) post (trim())]
 [if (anEDataType.eClassifier.name = 'EJavaClass')]
-[if const]const [/if][anEDataType.eClassifier.getType()/]
+[if const]const [/if][getShortQualifiedName(anEDataType.eClassifier.getType(), aPackage.name )/]
 [else]
-std::shared_ptr<[if const]const [/if][anEDataType.eClassifier.getType()/]<[for (g : EGenericType | anEDataType.eTypeArguments) separator (',')][g.generateGenericArgumentType()/][/for]>>[/if]
+std::shared_ptr<[if const]const [/if][getShortQualifiedName(anEDataType.eClassifier.getType(), aPackage.name )/]<[for (g : EGenericType | anEDataType.eTypeArguments) separator (',')][g.generateGenericArgumentType(aPackage)/][/for]>>[/if]
 [/template]
 
 [template public generateEffectiveType(eElement : ETypedElement ) post(trim())]
-[eElement.generateEffectiveType(hasKey('const') and valueKey('const') = 'return')/]
+[if eElement.oclIsUndefined()]
+[else]
+[let aPackage : EPackage = eElement.getEPackage()]
+[eElement.generateEffectiveType(aPackage,hasKey('const') and valueKey('const') = 'return')/]
+[/let]
+[/if]
 [/template]
 
-[template public generateEffectiveType(eElement : ETypedElement, const : Boolean ) post(trim())]
+[template public generateEffectiveType(eElement : ETypedElement, aPackage : EPackage,const : Boolean ) post(trim())]
 [if (isListType())]
-std::shared_ptr<[if const]const [/if]EList<[eElement.eGenericType.generateCppType()/]>>
+std::shared_ptr<[if const]const [/if][getShortQualifiedName('ecore::EList', aPackage.name )/]<[eElement.eGenericType.generateCppType(aPackage)/]>>
 [else]
-[eElement.eGenericType.generateCppType(true,const)/]
+[eElement.eGenericType.generateCppType(aPackage,true,const)/]
 [/if]
 [/template]
 
@@ -93,7 +98,7 @@ const [aAttribute.generateEffectiveType()/]&
 [/template]
 
 [template public generateElementType(aStructuralFeature : EStructuralFeature) post (trim())]
-[aStructuralFeature.eGenericType.generateCppType(false,false)/]
+[aStructuralFeature.eGenericType.generateCppType(aStructuralFeature.getEPackage(),false,false)/]
 [/template]
 
 [template public generateDataType(aStructuralFeature : EStructuralFeature) post (trim())]
@@ -101,17 +106,19 @@ const [aAttribute.generateEffectiveType()/]&
 [/template]
 
 [template public generateDataType(eReference : EReference) post (trim())]
+[let aPackage : EPackage = eReference.getEPackage()]
 [if isListType()]
-[let shortQualifiedListClass : String = getShortQualifiedName('ecore::EList', eReference.eContainingClass.ePackage.getQualifiedImplementationName())]
-std::shared_ptr<[shortQualifiedListClass/]<[eReference.eGenericType.generateCppType()/]>>
+[let shortQualifiedListClass : String = getShortQualifiedName('ecore::EList', eReference.getEPackage().getQualifiedImplementationName())]
+std::shared_ptr<[shortQualifiedListClass/]<[eReference.eGenericType.generateCppType(aPackage)/]>>
 [/let]
 [elseif isProxy()]
-[let shortQualifiedProxyClass : String = getShortQualifiedName('ecore::impl::Proxy', eReference.eContainingClass.ePackage.getQualifiedImplementationName())]
-[shortQualifiedProxyClass/]<[eReference.eGenericType.generateCppType()/]>
+[let shortQualifiedProxyClass : String = getShortQualifiedName('ecore::impl::Proxy', eReference.getEPackage().getQualifiedImplementationName())]
+[shortQualifiedProxyClass/]<[eReference.eGenericType.generateCppType(aPackage)/]>
 [/let]
 [else]
-[eReference.pointerType()/]<[eReference.eGenericType.eClassifier.getType()/]>
+[eReference.pointerType()/]<[getShortQualifiedName(eReference.eGenericType.eClassifier.getType(), aPackage.name )/]>
 [/if]
+[/let]
 [/template]
 
 [template private pointerType(aReference : EReference) post(trim())]
@@ -142,7 +149,7 @@ std::shared_ptr
     }
 /]
 
-[query public getType( aClassifier : EClassifier ) : String = 
+[query private getType( aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then 'ecore::Any'
     else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getType()
     else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getType()
