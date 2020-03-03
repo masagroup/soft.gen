@@ -19,11 +19,13 @@
 #include "ecore/EPackage.hpp"
 #include "[anEPackage.getInterfaceFolder()/]/Exports.hpp"
 
-namespace [namespaceName/] 
+namespace ecore 
 {
-[for (elements : EClass| anEPackage.getMetaMetaModelClasses()->selectByKind(EClass)->asOrderedSet()->sortedBy(name))]
-    class [elements.getInterfaceName()/];
-[/for]
+    class EAttribute;
+    class EClass;
+    class EDataType;
+    class EEnum;
+    class EReference;
 }
 
 [comment namespace /]
@@ -33,7 +35,7 @@ namespace [anEPackage.name/]
     The Metamodel Package for the [anEPackage.name/] metamodel. This package is used to enable the reflection of model elements. 
     It contains all model elements which were described in an ecore file.
     */
-    class [anEPackage.name.toUpper()/]_API [className/] : public virtual [getShortQualifiedName('ecore::EPackage',namespaceName)/] 
+    class [anEPackage.name.toUpper()/]_API [className/] : public [getShortQualifiedName('ecore::EPackage',namespaceName)/] 
     {
     [generateSingletonDeclaration(className)/]
    
