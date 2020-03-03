@@ -17,7 +17,7 @@
 #error This file may only be included from [className/].hpp
 #endif
 
-[let includes : OrderedSet(String) = Set{ anEPackage.eAllContents(EClass)->collect( c | if c.hasExtension() then c.getQualifiedExtensionName() else c.getQualifiedImplementationName() endif)->asSet()
+[let includes : OrderedSet(String) = Set{ anEPackage.eAllContents(EClass)->select( c | not c.interface )->collect( c | if c.hasExtension() then c.getQualifiedExtensionName() else c.getQualifiedImplementationName() endif)->asSet()
                                         , Set {
                                                     'ecore::EList',
                                                     'ecore::EClass'
