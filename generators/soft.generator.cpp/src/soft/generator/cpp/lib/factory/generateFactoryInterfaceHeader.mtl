@@ -29,7 +29,7 @@ namespace [namespaceName/]
 [comment namespace /]
 namespace [namespaceName/] 
 {
-    class [anEPackage.name.toUpper()/]_API [className/] : public virtual [getShortQualifiedName('ecore::EFactory',namespaceName)/] 
+    class [anEPackage.name.toUpper()/]_API [className/] : public [getShortQualifiedName('ecore::EFactory',namespaceName)/] 
     {
     [generateSingletonDeclaration(className)/]
 

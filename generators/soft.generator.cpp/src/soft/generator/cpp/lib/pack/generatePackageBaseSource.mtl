@@ -26,7 +26,7 @@
                                         , aPackage.metaModelIncludes()->collect( p | p.getQualifiedInterfaceName())->asSet()
                                         , Set {
                                                     'ecore::EList',
-                                                    'ecore::impl::PackageResourceRegistry'
+                                                    'ecore::EPackageResourceRegistry'
                                               }
                                         }->flatten()->asOrderedSet()->sortedBy( s | s)]
 [for ( include : String | includes )]
@@ -65,7 +65,7 @@ namespace [namespaceName/]
 	{
 	    auto resource = [getShortQualifiedName('ecore::ext::EPackageBaseExt<I...>' ,aPackage.getImplementationNamespaceName())/]::eResource();
 	    if (!resource)
-	        resource = PackageResourceRegistry::getInstance()->getResource(getThisPtr());    
+	        resource = [getShortQualifiedName('ecore::EPackageResourceRegistry' ,aPackage.getImplementationNamespaceName())/]::getInstance()->getResource(getThisPtr());    
 	    return resource;
 	}
 	
