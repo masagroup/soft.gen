@@ -26,7 +26,7 @@
 
 namespace [namespaceName/] 
 {
-    typedef [classBaseName/]<[aPackage.getInterfaceName()/]> [className/];
+    typedef [classBaseName/]<[aPackage.getFactoryInterfaceName()/]> [className/];
 }
 
 [endGuard(guardName)/]
