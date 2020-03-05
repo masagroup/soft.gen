@@ -23,8 +23,8 @@
 #endif
 
 [let includes : OrderedSet(String) = Set{ aPackage.getMetaMetaModelClasses()->selectByKind(EClass)->collect( c | c.getQualifiedInterfaceName())->asSet()
-                                        , aPackage.metaModelIncludes()->collect( p | p.getQualifiedInterfaceName())->asSet()
                                         , Set {
+													aPackage.getFactoryQualifiedInterfaceName(),
                                                     'ecore::EList',
                                                     'ecore::EPackageResourceRegistry'
                                               }
