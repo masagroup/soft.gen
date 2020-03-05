@@ -69,10 +69,6 @@ endif
 [query public hasDataInitializationMethod( aStructuralFeature : EStructuralFeature ) : Boolean = 
 isLazy() and ( let lazyType : String = aStructuralFeature.getLazy() in lazyType = 'action' or lazyType = 'function')/]
 
-[query public getDataInitializationFeatures( aClass : EClass ) : OrderedSet(EStructuralFeature) = 
-         aClass.eStructuralFeatures->select( not isVolatile() and hasDataInitializationMethod() and getLazy() = 'function')
-->addAll(aClass.eStructuralFeatures->select( not isVolatile() and hasDataInitializationMethod() and getLazy() = 'action' ))/]
-
 [query private getMethodInitializationName(feature : EStructuralFeature) : String = 
 if hasKey('MethodInitializationName') then 
     valueKey('MethodInitializationName') 
@@ -112,33 +108,33 @@ endif/]
 [/template]
 
 
-[template public generateDefinition(aStructuralFeature : EStructuralFeature)]
+[template public generateDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [if hasGetter('public',true)]
-[aStructuralFeature.generateGetDefinition()/]
+[aStructuralFeature.generateGetDefinition(aClass)/]
 
 [/if]
 [if hasSetter('public',true)]
-[aStructuralFeature.generateSetDefinition()/]
+[aStructuralFeature.generateSetDefinition(aClass)/]
 
 [/if]
 [if hasUnSetter('public',true)]
-[aStructuralFeature.generateUnSetDefinition()/]
+[aStructuralFeature.generateUnSetDefinition(aClass)/]
 
 [/if]
 [/template]
 
 
-[template public generateBasicDefinition(aStructuralFeature : EStructuralFeature)]
+[template public generateBasicDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [if isBasicGet()]
-[aStructuralFeature.generateBasicGetDefinition()/]
+[aStructuralFeature.generateBasicGetDefinition(aClass)/]
 
 [/if]
 [if isBasicSet()]
-[aStructuralFeature.generateBasicSetDefinition()/]
+[aStructuralFeature.generateBasicSetDefinition(aClass)/]
 
 [/if]
 [if isBasicUnSet()]
-[aStructuralFeature.generateBasicUnSetDefinition()/]
+[aStructuralFeature.generateBasicUnSetDefinition(aClass)/]
 
 [/if]
 [/template]
@@ -275,8 +271,8 @@ virtual [aStructuralFeature.generateReturnType()/] basic[methodName/]() const;
 [/let]
 [/template]
 
-[template public generateBasicGetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
+[template public generateBasicGetDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let className : String = aClass.getBaseName()]
 [let methodName : String = 'basic' + aStructuralFeature.getGetterName().toUpperFirst()]
 template <typename... I>
 [aStructuralFeature.generateReturnType()/] [className/]<I...>::[methodName/]() const 
@@ -307,8 +303,8 @@ template <typename... I>
 virtual [aStructuralFeature.generateReturnType()/] [aStructuralFeature.getGetterName()/]() const [abstractSufix(impl)/];
 [/template]
 
-[template public generateGetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
+[template public generateGetDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let className : String = aClass.getBaseName()]
 template <typename... I>
 [aStructuralFeature.generateReturnType()/] [className/]<I...>::[aStructuralFeature.getGetterName()/]() const 
 {
@@ -354,8 +350,8 @@ std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( [a
 [/template]
 
 
-[template public generateBasicSetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
+[template public generateBasicSetDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let className : String = aClass.getBaseName()]
 [let methodName : String = 'basic' +aStructuralFeature.getSetterName().toUpperFirst()]
 [let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
 template <typename... I>
@@ -398,8 +394,8 @@ std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( [a
 virtual void [aStructuralFeature.getSetterName()/]([aStructuralFeature.generateParameterType()/] ['new' + aStructuralFeature.name.toUpperFirst()/]) [abstractSufix(impl)/];
 [/template]
 
-[template public generateSetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
+[template public generateSetDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let className : String = aClass.getBaseName()]
 [let methodName : String = aStructuralFeature.getSetterName()]
 [let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
 template <typename... I>
@@ -527,8 +523,8 @@ std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( co
 [/template]
 
 
-[template public generateBasicUnSetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
+[template public generateBasicUnSetDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let className : String = aClass.getBaseName()]
 [let methodName : String = 'basic' + aStructuralFeature.getUnSetterName().toUpperFirst()]
 [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
 [let varName : String = aStructuralFeature.name + '_']    
@@ -567,8 +563,8 @@ std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( co
 virtual void [aStructuralFeature.getUnSetterName()/]() [abstractSufix(impl)/];
 [/template]
 
-[template public generateUnSetDefinition(aStructuralFeature : EStructuralFeature)]
-[let className : String = aStructuralFeature.eContainingClass.getBaseName()]
+[template public generateUnSetDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let className : String = aClass.getBaseName()]
 [let methodName : String = aStructuralFeature.getUnSetterName()]
 template <typename... I>
 void [className/]<I...>::[methodName/]()
