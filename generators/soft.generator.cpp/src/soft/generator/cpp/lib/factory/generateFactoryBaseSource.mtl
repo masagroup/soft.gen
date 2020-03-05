@@ -62,7 +62,7 @@ namespace [namespaceName/]
         {
         [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
             case [anEPackage.getInterfaceName()/]::[aClass.getClassifierIDName()/]:
-                return this->create[aClass.name/]();
+                return std::static_pointer_cast<[getShortQualifiedName('ecore::EObject',namespaceName)/]>( create[aClass.name/]() );
         [/for]
         default:
                 throw "create: " + eClass->getName() + " not found";
