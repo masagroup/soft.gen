@@ -41,11 +41,13 @@
 [query public isVolatile(aStructuralFeature : EStructuralFeature) : Boolean = 
     let eReverseFeature : EReference = if aStructuralFeature.oclIsKindOf(EReference) then aStructuralFeature.oclAsType(EReference).eOpposite else null endif in
     aStructuralFeature.volatile or ( not eReverseFeature.oclIsUndefined() and eReverseFeature.volatile )
-/]
+/] 
+[query public isFeatureMapType( aEFeature : EStructuralFeature ) : Boolean = isFeatureMap(aEFeature.eType.instanceClassName)/]
 [query public isListType(aTypedElement : ETypedElement ) : Boolean = (not aTypedElement.oclIsUndefined() ) and ( aTypedElement.many or aTypedElement.upperBound <> 1 )/]  
 [query public isProxy(aStructuralFeature : EStructuralFeature) : Boolean = (not isContainer() and not isContains()) and aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).resolveProxies/]  
 [query public isField(aStructuralFeature : EStructuralFeature) : Boolean = not isContainer() and not isVolatile()/]
 [query public isMap(  aEFeature : EStructuralFeature , n : String  ) : Boolean = let entries : Sequence(String) = Sequence{'java.util.Map.Entry','java.util.Map$Entry'} in entries->includes(n)/]
+[query public isFeatureMap(  aEFeature : EStructuralFeature , n : String  ) : Boolean = let entries : Sequence(String) = Sequence{'org.eclipse.emf.ecore.util.FeatureMap.Entry','org.eclipse.emf.ecore.util.FeatureMap$Entry'} in entries->includes(n)/]
 
 [query public isGet(aStructuralFeature : EStructuralFeature) : Boolean = true/]
 [query public isSet(aStructuralFeature : EStructuralFeature) : Boolean = isChangeable() and aStructuralFeature.upperBound = 1/]
