@@ -367,7 +367,7 @@ std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( [a
     auto notifications = msgs;
     if ( eNotificationRequired() )
     {
-        auto notification = std::make_shared<Notification>(getThisPtr(), Notification::SET, [aStructuralFeature.getQualifiedFeatureIDName()/], [oldVarName/], [newVarName/] );
+        auto notification = std::make_shared<ecore::impl::Notification>(getThisPtr(), ecore::ENotification::SET, [aStructuralFeature.getQualifiedFeatureIDName()/], [oldVarName/], [newVarName/] );
         if (notifications)
             notifications->add( notification );
         else
@@ -406,7 +406,7 @@ void [className/]<I...>::[methodName/]([aStructuralFeature.generateParameterType
     [if isContainer()]
     if ( [newVarName/] != eContainer() || ([newVarName/] && eContainerFeatureID() !=  [aStructuralFeature.getQualifiedFeatureIDName()/])) 
     {
-        std::shared_ptr<ENotificationChain> notifications;
+        std::shared_ptr<ecore::ENotificationChain> notifications;
         if ( eContainer() )
             notifications = eBasicRemoveFromContainer(notifications);
         if ( [newVarName/] )
@@ -416,7 +416,7 @@ void [className/]<I...>::[methodName/]([aStructuralFeature.generateParameterType
             notifications->dispatch();
     }
     else if ( eNotificationRequired() )
-        eNotify( std::make_shared<Notification>(getThisPtr() , Notification::SET, [aStructuralFeature.getQualifiedFeatureIDName()/], [newVarName/], [newVarName/]));
+        eNotify( std::make_shared<ecore::impl::Notification>(getThisPtr() , ecore::ENotification::SET, [aStructuralFeature.getQualifiedFeatureIDName()/], [newVarName/], [newVarName/]));
     [elseif isBidirectional() or isContains()]
         [if aStructuralFeature.isBackReference()]
     auto [aStructuralFeature.name/] = [aStructuralFeature.name/]_.lock();
@@ -427,9 +427,9 @@ void [className/]<I...>::[methodName/]([aStructuralFeature.generateParameterType
         std::shared_ptr<ENotificationChain> notifications;
         if ( [currentVarName/] )
         [if not isBidirectional()]
-            notifications = [currentVarName/]->getInternal().eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
+            notifications = [currentVarName/]->getInternal().eInverseRemove( getThisPtr(), ecore::EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
         if ( [newVarName/] )
-            notifications = [newVarName/]->getInternal().eInverseAdd( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
+            notifications = [newVarName/]->getInternal().eInverseAdd( getThisPtr(), ecore::EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
             notifications = [currentVarName/]->getInternal().eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
@@ -449,7 +449,7 @@ void [className/]<I...>::[methodName/]([aStructuralFeature.generateParameterType
     auto [oldVarName/] = [aStructuralFeature.name/]_[if isProxy()].value()[elseif isLazy()].value()[elseif isBackReference()].lock()[/if];
     [aStructuralFeature.name/]_ = [newVarName/];
     if ( eNotificationRequired() )
-        eNotify( std::make_shared<Notification>(getThisPtr(), Notification::SET, [aStructuralFeature.getQualifiedFeatureIDName()/], [oldVarName/], [newVarName/]));
+        eNotify( std::make_shared<ecore::impl::Notification>(getThisPtr(), ecore::ENotification::SET, [aStructuralFeature.getQualifiedFeatureIDName()/], [oldVarName/], [newVarName/]));
         [/let]
     [/if]
 [elseif hasKey('setterBody')]
@@ -482,18 +482,18 @@ ArrayEList<[anEAttribute.eGenericType.generateCppType(anEAttribute.getEPackage()
 [let thisPtrName : String = anEReference.eContainingClass.getThisPtrName() + '_']
 [if (anEReference.containment)]
     [if anEReference.eOpposite.oclIsUndefined() ]
-        std::make_shared<EObjectEList<[typeArgument/],true,true,false,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [anEReference.getQualifiedFeatureIDName()/] )
+        std::make_shared<ecore::impl::EObjectEList<[typeArgument/],true,true,false,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [anEReference.getQualifiedFeatureIDName()/] )
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
-        std::make_shared<EObjectEList<[typeArgument/],true,true,true,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [anEReference.getQualifiedFeatureIDName()/] , [reverseFeature.getQualifiedFeatureIDName()/])
+        std::make_shared<ecore::impl::EObjectEList<[typeArgument/],true,true,true,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [anEReference.getQualifiedFeatureIDName()/] , [reverseFeature.getQualifiedFeatureIDName()/])
         [/let]
     [/if]
 [else]
     [if anEReference.eOpposite.oclIsUndefined() ]
-        std::make_shared<EObjectEList<[typeArgument/],false,false,false,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [packageName/]::[featureID/])
+        std::make_shared<ecore::impl::EObjectEList<[typeArgument/],false,false,false,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [packageName/]::[featureID/])
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
-        std::make_shared<EObjectEList<[typeArgument/],false,true,true,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [anEReference.getQualifiedFeatureIDName()/] , [reverseFeature.getQualifiedFeatureIDName()/])
+        std::make_shared<ecore::impl::EObjectEList<[typeArgument/],false,true,true,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>([thisPtrName/], [anEReference.getQualifiedFeatureIDName()/] , [reverseFeature.getQualifiedFeatureIDName()/])
         [/let]
     [/if]
 [/if]
@@ -538,7 +538,7 @@ std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( co
     auto notifications = msgs;
     if ( eNotificationRequired())
     {
-        auto notification = std::make_shared<Notification>(getThisPtr() , Notification::UNSET, [aStructuralFeature.getQualifiedFeatureIDName()/], [oldVarName/], ecore::Any());
+        auto notification = std::make_shared<ecore::impl::Notification>(getThisPtr() , ecore::ENotification::UNSET, [aStructuralFeature.getQualifiedFeatureIDName()/], [oldVarName/], ecore::Any());
         if ( notifications )
             notifications->add( notification );
         else
@@ -582,7 +582,7 @@ void [className/]<I...>::[methodName/]()
     {
         std::shared_ptr<ENotificationChain> notifications;
         [if not isBidirectional()]
-        notifications = [aStructuralFeature.name/]_->getInternal().eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
+        notifications = [aStructuralFeature.name/]_->getInternal().eInverseRemove( getThisPtr(), ecore::EOPPOSITE_FEATURE_BASE - [aStructuralFeature.getQualifiedFeatureIDName()/] , notifications );
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
         notifications = [aStructuralFeature.name/]_->getInternal().eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , notifications );
@@ -593,10 +593,10 @@ void [className/]<I...>::[methodName/]()
             notifications->dispatch();
     }
     else if ( eNotificationRequired() )
-        eNotify( std::make_shared<Notification>(getThisPtr() , Notification::UNSET, [aStructuralFeature.getQualifiedFeatureIDName()/], ecore::Any(), ecore::Any()));
+        eNotify( std::make_shared<ecore::impl::Notification>(getThisPtr() , ecore::ENotification::UNSET, [aStructuralFeature.getQualifiedFeatureIDName()/], ecore::Any(), ecore::Any()));
     [else]
         if ( eNotificationRequired() )
-        eNotify( std::make_shared<Notification>(getThisPtr() , Notification::UNSET, [aStructuralFeature.getQualifiedFeatureIDName()/], ecore::Any(), ecore::Any()));
+        eNotify( std::make_shared<ecore::impl::Notification>(getThisPtr() , ecore::ENotification::UNSET, [aStructuralFeature.getQualifiedFeatureIDName()/], ecore::Any(), ecore::Any()));
     [/if]
 [elseif hasKey('unsetterBody')]
     [valueKey('unsetterBody')/] 
