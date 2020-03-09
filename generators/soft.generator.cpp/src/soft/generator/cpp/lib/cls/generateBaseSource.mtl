@@ -93,10 +93,9 @@ namespace [namespaceName/]
 
 	[if features->exists( not isLazy() and isDataInitializationDefered() )]
     template <typename... I>
-    std::shared_ptr<[className/]<I...>> [className/]<I...>::[getThisPtrGetterName()/]() const
+    inline std::shared_ptr<[className/]<I...>> [className/]<I...>::[getThisPtrGetterName()/]() const
     {
-		auto thisPtr = [removeNamespace(aClass.getClassExtends())/]::[getThisPtrGetterName()/](); 
-        return std::static_pointer_cast<[className/]<I...>>(thisPtr);
+	    return std::static_pointer_cast<[className/]<I...>>([removeNamespace(aClass.getClassExtends())/]::[getThisPtrGetterName()/]());
     }
     
     template <typename... I>

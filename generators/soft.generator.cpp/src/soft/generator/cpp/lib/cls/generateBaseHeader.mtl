@@ -50,6 +50,7 @@ namespace [namespaceName/]
         template<typename... I> friend class [aClass.ePackage.getFactoryBaseName()/];
         [className/]();
 [if features->exists( not isLazy() and isDataInitializationDefered() )]
+
         std::shared_ptr<[className/]> [getThisPtrGetterName()/]() const;
         void [getThisPtrSetterName()/](const std::shared_ptr<[className/]>& [getThisPtrName()/]);
 [/if]
