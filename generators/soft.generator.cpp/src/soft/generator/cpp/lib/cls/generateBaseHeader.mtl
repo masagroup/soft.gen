@@ -49,8 +49,10 @@ namespace [namespaceName/]
     protected:
         template<typename... I> friend class [aClass.ePackage.getFactoryBaseName()/];
         [className/]();
+[if features->exists( not isLazy() and isDataInitializationDefered() )]
         std::shared_ptr<[className/]> [getThisPtrGetterName()/]() const;
         void [getThisPtrSetterName()/](const std::shared_ptr<[className/]>& [getThisPtrName()/]);
+[/if]
 
     public:
         virtual ~[className/]();
@@ -112,9 +114,6 @@ namespace [namespaceName/]
         [dataDeclarationFeatures.generateDataDeclaration()/]
 [/if]
 [/let]
-    private:
-        std::weak_ptr<[className/]> [getThisPtrName()/]_;
-    
         // [protected (className + ' [declaration-methods]')]
         // [/protected]
     };

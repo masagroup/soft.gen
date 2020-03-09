@@ -340,10 +340,10 @@ std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePack
             auto msgs = notifications;
             if ( [varName/] )
             [if aFeature.isContains()]
-                msgs = [varName/]->getInternal().eInverseRemove( getThisPtr(), EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/] , msgs );
+                msgs = [varName/]->getInternal().eInverseRemove( getThisAsEObject(), EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/] , msgs );
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-                msgs = [varName/]->getInternal().eInverseRemove( getThisPtr(), [reverseFeature.getQualifiedFeatureIDName()/] , msgs );
+                msgs = [varName/]->getInternal().eInverseRemove( getThisAsEObject(), [reverseFeature.getQualifiedFeatureIDName()/] , msgs );
                 [/let]
             [/if] 
             return basic[aFeature.getSetterName().toUpperFirst()/](std::static_pointer_cast<[aFeature.generateElementType()/]>(otherEnd),msgs);
