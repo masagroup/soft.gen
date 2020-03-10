@@ -472,7 +472,7 @@ void [className/]<I...>::[methodName/]([aStructuralFeature.generateParameterType
 [/template]
 
 [template private getListConstructor( anEAttribute : EAttribute ) post(trim())]
-ArrayEList<[anEAttribute.eGenericType.generateCppType(anEAttribute.getEPackage())/],[anEAttribute.unique/]>()
+std::make_shared<ecore::impl::ArrayEList<[anEAttribute.eGenericType.generateCppType(anEAttribute.getEPackage())/],[anEAttribute.unique/]>>()
 [/template]
 
 [template private getListConstructor( anEReference : EReference ) post(trim())]
