@@ -119,18 +119,18 @@ ecore::Any [className/]<I...>::eGet(int featureID, bool resolve, bool coreType) 
 {
     switch(featureID)
     {
-    [for (anStructFeature : EStructuralFeature | aClass.eStructuralFeatures->asOrderedSet()->sortedBy(name))]
+    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
         case [anStructFeature.getQualifiedFeatureIDName()/]:
         [if anStructFeature.isListType()]
         {
             auto list = [anStructFeature.getGetterName()/]();
-            auto objects = list->asEListOf<std::shared_ptr<EObject>>();
+            auto objects = list->asEListOf<std::shared_ptr<ecore::EObject>>();
             return objects->asEListOf<Any>();
         }
         [elseif anStructFeature.oclIsKindOf(EReference)]
         {
             auto value = [anStructFeature.getGetterName()/]();
-            auto object = std::static_pointer_cast<EObject>(value);
+            auto object = std::static_pointer_cast<ecore::EObject>(value);
             return object;
         }
         [else]
