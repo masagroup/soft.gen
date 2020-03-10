@@ -140,7 +140,7 @@ std::shared_ptr
 		Sequence{ 'EFeatureMapEntry' , 'std::shared_ptr<ecore::EFeatureMapEntry>' , '' ,'"ecore/EFeatureMap.hpp"'},
         Sequence{ 'EFloat' , 'EFloatObject', 'float' , '0.f',''},
         Sequence{ 'EEList' , 'ecore::EList', '','"ecore/EList.hpp"'},
-        Sequence{ 'EDate' , 'std::time_t', '' , '<ctime>'},
+        Sequence{ 'EDate' , 'std::time_t', 'std::time_t(-1)' , '<ctime>'},
         Sequence{ 'EMap' , 'std::map', '' , '<map>'},
         Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'ecore::Any', 'NO_VALUE' , '"ecore/Any.hpp"'},
         Sequence{ 'EJavaClass' , 'const std::type_info*', 'nullptr' , '<typeinfo>'},
