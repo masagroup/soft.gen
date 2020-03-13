@@ -124,8 +124,12 @@ ecore::Any [className/]<I...>::eGet(int featureID, bool resolve, bool coreType) 
         [if anStructFeature.isListType()]
         {
             auto list = [anStructFeature.getGetterName()/]();
+		[if anStructFeature.isFeatureMapType()]
+			return list->asEListOf<Any>();
+		[else]
             auto objects = list->asEListOf<std::shared_ptr<ecore::EObject>>();
             return objects->asEListOf<Any>();
+		[/if]
         }
         [elseif anStructFeature.oclIsKindOf(EReference)]
         {
@@ -172,9 +176,13 @@ void [aClass.getBaseName()/]<I...>::eSet(int featureID, const [getShortQualified
         {
     [let varName : String = anStructFeature.name.first(1)]
     [if anStructFeature.isListType()]
-            auto list = anyListCast<std::shared_ptr<EObject>>(newValue);
+	[if anStructFeature.isFeatureMapType()]
+			auto [varName/] = anyListCast<std::shared_ptr<ecore::EFeatureMapEntry>>(newValue);
+	[else]
+            auto list = anyListCast<std::shared_ptr<ecore::EObject>>(newValue);
             auto [varName/] = list->asEListOf<[anStructFeature.eGenericType.generateCppType( aClass.ePackage )/]>();
-            [anStructFeature.getGetterName()/]()->clear();
+    [/if]
+			[anStructFeature.getGetterName()/]()->clear();
             [anStructFeature.getGetterName()/]()->addAll(*[varName/]);
     [else]
         [if anStructFeature.eGenericType.eClassifier.isAny()]
