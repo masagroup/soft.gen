@@ -30,6 +30,7 @@
                                                 '"ecore/Any.hpp"',
                                                 '"ecore/AnyCast.hpp"',
                                                 '"ecore/EClass.hpp"',
+												'"ecore/SmartPtr.hpp"',
 												'"ecore/TypeTraits.hpp"',
                                                 '"ecore/impl/EObjectEList.hpp"'
                                               }

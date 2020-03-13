@@ -313,7 +313,7 @@ template <typename... I>
     if ( eContainerFeatureID() != [aStructuralFeature.getQualifiedFeatureIDName()/] )
         return [aStructuralFeature.generateEffectiveType()/]();
     else
-        return std::static_pointer_cast<[aStructuralFeature.generateElementType()/]>(eContainer());
+        return ecore::derived_pointer_cast<[aStructuralFeature.generateElementType()/]>(eContainer());
 [elseif not isVolatile()]
     return [aStructuralFeature.name/]_[if aStructuralFeature.isProxy() and not aStructuralFeature.isListType()].get()[elseif aStructuralFeature.isLazy()].get()[elseif aStructuralFeature.isBackReference()].lock()[/if];
 [elseif hasKey('getterBody')]
