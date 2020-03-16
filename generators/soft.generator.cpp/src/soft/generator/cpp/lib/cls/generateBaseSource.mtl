@@ -147,7 +147,7 @@ namespace [namespaceName/]
     [basicFeatures.generateBasicDefinition(aClass)/]
 [/if]
 [/let]
-[aClass.generateReflectivesDefinition()/]
+	[aClass.generateReflectivesDefinition()/]
 [let dataFeatures : OrderedSet(EStructuralFeature) = features->select( not isVolatile() and hasDataInitializationMethod() )]
 [if dataFeatures->notEmpty()]
     //*********************************
