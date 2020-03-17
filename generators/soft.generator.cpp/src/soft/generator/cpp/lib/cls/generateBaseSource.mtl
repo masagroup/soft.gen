@@ -92,7 +92,7 @@ namespace [namespaceName/]
     //[/protected]
     }
 
-	[if features->exists( not isLazy() and isDataInitializationDefered() )]
+	[if features->exists( isNotLazy() and isDataInitializationDefered() )]
     template <typename... I>
     inline std::shared_ptr<[className/]<I...>> [className/]<I...>::[getThisPtrGetterName()/]() const
     {
@@ -103,8 +103,8 @@ namespace [namespaceName/]
     void [className/]<I...>::[getThisPtrSetterName()/](const std::shared_ptr<[className/]<I...>>& [getThisPtrName()/])
     {
 		[removeNamespace(aClass.getClassExtends())/]::[getThisPtrSetterName()/]([getThisPtrName()/]);
-	[let dataFeatures : OrderedSet(EStructuralFeature) = aClass.eStructuralFeatures->select(isField()) ]
-        [dataFeatures.generateDataInitializationDefered()/]
+	[let dataFeatures : OrderedSet(EStructuralFeature) = features->select(isField()) ]
+		[dataFeatures.generateDataInitializationDefered()/]
     [/let]
     }
 	[/if]

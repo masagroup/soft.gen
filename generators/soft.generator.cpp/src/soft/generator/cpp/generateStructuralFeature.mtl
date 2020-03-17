@@ -63,6 +63,7 @@ endif
 
 
 [query public isLazy( aStructuralFeature : EStructuralFeature ) : Boolean = aStructuralFeature.getLazy() <> 'no'/] 
+[query public isNotLazy( aStructuralFeature : EStructuralFeature ) : Boolean = aStructuralFeature.getLazy() = 'no'/]
 
 [query public isDataInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
 
