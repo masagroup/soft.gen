@@ -129,7 +129,7 @@ target_include_directories([packageName/].static
 target_compile_options([packageName/].static PRIVATE /MP /wd4250 /bigobj)
 target_compile_definitions([packageName/].static PUBLIC [packageName.toUpper()/]_STATIC_LIB)
 target_compile_definitions([packageName/].static PRIVATE _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
-target_link_libraries([packageName/].static PRIVATE [if packageName <> 'ecore']Ecore::ecore::static[/if] XercesC::XercesC Boost::regex)
+target_link_libraries([packageName/].static PUBLIC [if packageName <> 'ecore']Ecore::ecore::static[/if] XercesC::XercesC Boost::regex)
 
 # libraries names
 set_target_properties([packageName/].static PROPERTIES PREFIX lib)
