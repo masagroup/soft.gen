@@ -120,7 +120,7 @@ ecore::Any [className/]<I...>::eGet(int featureID, bool resolve, bool coreType) 
     switch(featureID)
     {
     [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
-        case [anStructFeature.getQualifiedFeatureIDName()/]:
+        case [aClass.getQualifiedIDName(anStructFeature)/]:
         [if anStructFeature.isListType()]
         {
             auto list = [anStructFeature.getGetterName()/]();
@@ -156,7 +156,7 @@ bool [aClass.getBaseName()/]<I...>::eIsSet(int featureID) const
     switch(featureID)
     {
 [for (anStructFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
-        case [anStructFeature.getQualifiedFeatureIDName()/]:
+        case [aClass.getQualifiedIDName(anStructFeature)/]:
             return [anStructFeature.generateComparison()/];
 [/for]
     }
@@ -172,7 +172,7 @@ void [aClass.getBaseName()/]<I...>::eSet(int featureID, const [getShortQualified
     switch(featureID)
     {
 [for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
-        case [anStructFeature.getQualifiedFeatureIDName()/]:
+        case [aClass.getQualifiedIDName(anStructFeature)/]:
         {
     [let varName : String = anStructFeature.name.first(1)]
     [if anStructFeature.isListType()]
@@ -211,7 +211,7 @@ void [className/]<I...>::eUnset(int featureID)
     switch(featureID)
     {
 [for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
-        case [aStructFeature.getQualifiedFeatureIDName()/]:
+        case [aClass.getQualifiedIDName(aStructFeature)/]:
         {
     [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
             [aStructFeature.getGetterName()/]()->clear();
@@ -240,7 +240,7 @@ template <typename... I>
     switch( operationID )
     {
     [for ( eOperation : EOperation | aClass.eOperations->sortedBy(name) )]
-        case [eOperation.getQualifiedOperationIDName()/]:
+        case [aClass.getQualifiedIDName(eOperation)/]:
         {
             [if eOperation.isVoid() ]
             [eOperation.generateOperationInvoke()/]
@@ -325,7 +325,7 @@ std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePack
     switch( featureID )
     {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
-        case [aFeature.getQualifiedFeatureIDName()/]:
+        case [aClass.getQualifiedIDName(aFeature)/]:
         {
     [if aFeature.isListType()]
             auto list = std::static_pointer_cast<[getShortQualifiedName('ecore::ENotifyingList', aClass.ePackage.name)/]<[aFeature.eGenericType.generateCppType(aClass.ePackage)/]>>( [aFeature.getGetterName()/]() );
@@ -338,7 +338,7 @@ std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePack
         [if aFeature.isBasicSet()]
             return basic[aFeature.getSetterName().toUpperFirst()/]( ecore::derived_pointer_cast<[aFeature.generateElementType()/]>(otherEnd), msgs );
         [else]
-            return eBasicSetContainer( otherEnd , [aFeature.getQualifiedFeatureIDName()/], msgs );
+            return eBasicSetContainer( otherEnd , [aClass.getQualifiedIDName(aFeature)/], msgs );
         [/if]
     [else]
         [if aFeature.isVolatile() or aFeature.isBackReference()]
@@ -348,10 +348,10 @@ std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePack
             auto msgs = notifications;
             if ( [varName/] )
             [if aFeature.isContains()]
-                msgs = [varName/]->getInternal().eInverseRemove( getThisAsEObject(), EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/] , msgs );
+                msgs = [varName/]->getInternal().eInverseRemove( getThisAsEObject(), EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/] , msgs );
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-                msgs = [varName/]->getInternal().eInverseRemove( getThisAsEObject(), [reverseFeature.getQualifiedFeatureIDName()/] , msgs );
+                msgs = [varName/]->getInternal().eInverseRemove( getThisAsEObject(), [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/] , msgs );
                 [/let]
             [/if] 
             return basic[aFeature.getSetterName().toUpperFirst()/](ecore::derived_pointer_cast<[aFeature.generateElementType()/]>(otherEnd),msgs);
@@ -375,14 +375,14 @@ std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePack
     switch( featureID )
     {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
-        case [aFeature.getQualifiedFeatureIDName()/]:
+        case [aClass.getQualifiedIDName(aFeature)/]:
         {
     [if aFeature.isListType()]
             auto list = std::static_pointer_cast<[getShortQualifiedName('ecore::ENotifyingList', aClass.ePackage.name)/]<[aFeature.eGenericType.generateCppType(aClass.ePackage)/]>>( [aFeature.getGetterName()/]() );
             auto other = ecore::derived_pointer_cast<[aFeature.generateElementType()/]>(otherEnd);
 			return list->add( other , notifications );
     [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
-            return eBasicSetContainer( nullptr , [aFeature.getQualifiedFeatureIDName()/], notifications );
+            return eBasicSetContainer( nullptr , [aClass.getQualifiedIDName(aFeature)/], notifications );
     [elseif aFeature.isUnSet()]
             return basic[aFeature.getUnSetterName().toUpperFirst()/]( notifications );
     [else]

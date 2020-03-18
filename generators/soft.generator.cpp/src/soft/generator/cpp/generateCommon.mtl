@@ -212,8 +212,8 @@
 [query public isTurtleMock( aPackage : EPackage ) : Boolean = getMockLibrary() = 'Turtle'/]
 
 
-[query public getPackageName(aStructural : EStructuralFeature,aClass: EClass) : String = if( aStructural.eContainingClass.ePackage = aClass.ePackage  ) then aStructural.eContainingClass.ePackage.getInterfaceName() else aStructural.eContainingClass.ePackage.getQualifiedInterfaceName() endif/]
-[query public getPackageName(aOperation : EOperation,aClass: EClass) : String = if( aOperation.eContainingClass.ePackage = aClass.ePackage  ) then aOperation.eContainingClass.ePackage.getInterfaceName() else aOperation.eContainingClass.ePackage.getQualifiedInterfaceName() endif/]
+[query private getPackageName(aStructural : EStructuralFeature,aClass: EClass) : String = if( aStructural.eContainingClass.ePackage = aClass.ePackage  ) then aStructural.eContainingClass.ePackage.getInterfaceName() else aStructural.eContainingClass.ePackage.getQualifiedInterfaceName() endif/]
+[query private getPackageName(aOperation : EOperation,aClass: EClass) : String = if( aOperation.eContainingClass.ePackage = aClass.ePackage  ) then aOperation.eContainingClass.ePackage.getInterfaceName() else aOperation.eContainingClass.ePackage.getQualifiedInterfaceName() endif/]
 
 [query public getElementInstanceName(anENamedElement : ENamedElement) : String = anENamedElement.getMemberName().concat('_') /]
 
@@ -229,12 +229,12 @@
 [query public needMetaModelPackageGetter(aClassifier1 : EClassifier ,aClassifier2 : EClassifier ) : String = if(aClassifier1.ePackage.name = aClassifier2.ePackage.name )then '' else  aClassifier1.ePackage.nsPrefix.concat('::').concat(aClassifier1.ePackage.name.toUpperFirst()).concat('Package').concat('::eInstance()->')  endif /]
 
 
-[query public getQualifiedFeatureIDName( aStructuralFeature : EStructuralFeature ) : String =
-    aStructuralFeature.getPackageName(aStructuralFeature.eContainingClass) + '::' + aStructuralFeature.eContainingClass.getFeatureIDName( aStructuralFeature )
+[query public getQualifiedIDName( aClass : EClass , aStructuralFeature : EStructuralFeature ) : String =
+    aStructuralFeature.getPackageName(aClass) + '::' + aClass.getFeatureIDName( aStructuralFeature )
 /]
 
-[query public getQualifiedOperationIDName( aOperation : EOperation ) : String =
-    aOperation.getPackageName(aOperation.eContainingClass) + '::' + aOperation.eContainingClass.getOperationIDName( aOperation )
+[query public getQualifiedIDName( aClass : EClass , aOperation : EOperation ) : String =
+    aOperation.getPackageName(aClass) + '::' + aClass.getOperationIDName( aOperation )
 /]
 
 [**

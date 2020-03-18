@@ -112,7 +112,7 @@ namespace [namespaceName/]
 [let dataDeclarationFeatures : OrderedSet(EAttribute) = features->select( isField() )]
 [if dataDeclarationFeatures->notEmpty()]
     protected:
-        [dataDeclarationFeatures.generateDataDeclaration()/]
+        [dataDeclarationFeatures.generateDataDeclaration(aClass)/]
 [/if]
 [/let]
         // [protected (className + ' [declaration-methods]')]
