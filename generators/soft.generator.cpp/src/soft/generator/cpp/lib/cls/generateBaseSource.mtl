@@ -13,11 +13,11 @@
 
 
 [template public generateBaseSource(aClass : EClass) { 
-	className : String = aClass.getBaseName(); 
-	namespaceName : String = aClass.ePackage.getImplementationNamespaceName();
-	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
- 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( name );
-	guardName : String = '_'.concat(className);}]
+    className : String = aClass.getBaseName(); 
+    namespaceName : String = aClass.ePackage.getImplementationNamespaceName();
+    features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
+    operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( name );
+    guardName : String = '_'.concat(className);}]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className + '.inl', false, 'UTF-8')]
 [fileComment()/]
 
@@ -30,8 +30,8 @@
                                                 '"ecore/Any.hpp"',
                                                 '"ecore/AnyCast.hpp"',
                                                 '"ecore/EClass.hpp"',
-												'"ecore/SmartPtr.hpp"',
-												'"ecore/TypeTraits.hpp"',
+                                                '"ecore/SmartPtr.hpp"',
+                                                '"ecore/TypeTraits.hpp"',
                                                 '"ecore/impl/EObjectEList.hpp"'
                                               }
                                         , Set {
@@ -92,22 +92,22 @@ namespace [namespaceName/]
     //[/protected]
     }
 
-	[if features->exists( isNotLazy() and isDataInitializationDefered() )]
+    [if features->exists( isNotLazy() and isDataInitializationDefered() )]
     template <typename... I>
     inline std::shared_ptr<[className/]<I...>> [className/]<I...>::[getThisPtrGetterName()/]() const
     {
-	    return std::static_pointer_cast<[className/]<I...>>([removeNamespace(aClass.getClassExtends())/]::[getThisPtrGetterName()/]());
+        return std::static_pointer_cast<[className/]<I...>>([removeNamespace(aClass.getClassExtends())/]::[getThisPtrGetterName()/]());
     }
     
     template <typename... I>
     void [className/]<I...>::[getThisPtrSetterName()/](const std::shared_ptr<[className/]<I...>>& [getThisPtrName()/])
     {
-		[removeNamespace(aClass.getClassExtends())/]::[getThisPtrSetterName()/]([getThisPtrName()/]);
-	[let dataFeatures : OrderedSet(EStructuralFeature) = features->select(isField()) ]
-		[dataFeatures.generateDataInitializationDefered(aClass)/]
+        [removeNamespace(aClass.getClassExtends())/]::[getThisPtrSetterName()/]([getThisPtrName()/]);
+    [let dataFeatures : OrderedSet(EStructuralFeature) = features->select(isField()) ]
+        [dataFeatures.generateDataInitializationDefered(aClass)/]
     [/let]
     }
-	[/if]
+    [/if]
 
     template <typename... I>
     std::shared_ptr<[getShortQualifiedName('ecore::EClass', aClass.ePackage.name)/]> [className/]<I...>::eStaticClass() const
@@ -147,7 +147,7 @@ namespace [namespaceName/]
     [basicFeatures.generateBasicDefinition(aClass)/]
 [/if]
 [/let]
-	[aClass.generateReflectivesDefinition()/]
+    [aClass.generateReflectivesDefinition()/]
 [let dataFeatures : OrderedSet(EStructuralFeature) = features->select( not isVolatile() and hasDataInitializationMethod() )]
 [if dataFeatures->notEmpty()]
     //*********************************

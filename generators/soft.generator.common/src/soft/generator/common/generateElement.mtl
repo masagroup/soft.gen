@@ -46,3 +46,5 @@
 [query public requiresResource(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EResource' endif/]
 [query public requiresResource(anGenericType : EGenericType) : Boolean = if (oclIsUndefined()) then false else anGenericType.eClassifier.requiresResource() endif/]
 
+
+

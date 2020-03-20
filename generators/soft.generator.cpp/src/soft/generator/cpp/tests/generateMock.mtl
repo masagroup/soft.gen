@@ -7,10 +7,10 @@
 [import soft::generator::cpp::tests::generateCommon/]
 
 [template public generateMock(aClass : EClass) {
-	className : String = aClass.getMockName(); 
-	classBaseName : String = aClass.getMockBaseName(); 
-	namespaceName : String = aClass.ePackage.getTestsNamespaceName();
-	guardName : String = '_'.concat(className); }  ]
+    className : String = aClass.getMockName(); 
+    classBaseName : String = aClass.getMockBaseName(); 
+    namespaceName : String = aClass.ePackage.getTestsNamespaceName();
+    guardName : String = '_'.concat(className); }  ]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getTestsFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
 [startGuard(guardName)/]
@@ -23,7 +23,7 @@
 namespace [namespaceName/]
 {
 
-	template <typename I>
+    template <typename I>
     class [classBaseName/] : public [getShortQualifiedName(aClass.ePackage.getBaseName(aClass.getMockExtends()),namespaceName)/]<I> 
     {
     public:
@@ -34,7 +34,7 @@ namespace [namespaceName/]
         // [/protected]
     };
 
-	typedef [classBaseName/]<[for ( implClass : String | aClass.getMockImplements()->asOrderedSet()->sortedBy(s | s)) separator (', ')][getShortQualifiedName(implClass, namespaceName)/][/for]> [className/];
+    typedef [classBaseName/]<[for ( implClass : String | aClass.getMockImplements()->asOrderedSet()->sortedBy(s | s)) separator (', ')][getShortQualifiedName(implClass, namespaceName)/][/for]> [className/];
 } 
 
 [endGuard(guardName)/]
