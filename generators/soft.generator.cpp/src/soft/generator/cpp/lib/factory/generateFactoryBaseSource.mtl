@@ -131,30 +131,8 @@ namespace [namespaceName/]
     }
     
     [for (aDataType : EDataType | dataTypes)]
-    [let createMethodName : String = 'create' + aDataType.name + 'FromString']
-    template <typename... I>
-    ecore::Any [className/]<I...>::[createMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
-    {
-        // [protected (className +'::' + createMethodName)]
-    #if defined(__FUNCSIG__)
-        std::cout << __FUNCSIG__  << std::endl;
-    #endif
-        throw "NotImplementedException";
-        // [/protected]
-    }
-    [/let]
-    [let convertMethodName : String = 'convert' + aDataType.name + 'ToString']
-    template <typename... I>
-    std::string [className/]<I...>::[convertMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
-    {
-        // [protected (className +'::' + convertMethodName)]
-    #if defined(__FUNCSIG__)
-        std::cout << __FUNCSIG__  << std::endl;
-    #endif
-        throw "NotImplementedException";
-        // [/protected]
-    }
-    [/let]
+    [anEPackage.generateCreateFromString(aDataType)/]
+	[anEPackage.generateConvertToString(aDataType)/]
     [/for]
     [/let]
     
@@ -166,6 +144,90 @@ namespace [namespaceName/]
 }
 [/file]
 [/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
+[let className : String = aPackage.getFactoryBaseName()]
+[let namespaceName : String = aPackage.getImplementationNamespaceName()]
+[let createMethodName : String = 'create' + aDataType.name + 'FromString']
+[let enumTypeName : String = aDataType.name ]
+[let varName : String = enumTypeName.toLowerFirst() ]
+template <typename... I>
+ecore::Any [className/]<I...>::[createMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
+{
+    // [protected (className +'::' + createMethodName)]
+	[aDataType.name/] [varName/];
+	std::stringstream s(literalValue);
+	s >> [varName/];
+	return [varName/];
+    // [/protected]
+}
+[/let]
+[/let]
+[/let]
+[/let]
+[/let]
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType )]
+[let className : String = aPackage.getFactoryBaseName()]
+[let namespaceName : String = aPackage.getImplementationNamespaceName()]
+[let createMethodName : String = 'create' + aDataType.name + 'FromString']template <typename... I>
+ecore::Any [className/]<I...>::[createMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const std::string& literalValue) const
+{
+    // [protected (className +'::' + createMethodName)]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";
+    // [/protected]
+}
+[/let]
+[/let]
+[/let]
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
+[let className : String = aPackage.getFactoryBaseName()]
+[let namespaceName : String = aPackage.getImplementationNamespaceName()]
+[let convertMethodName : String = 'convert' + aDataType.name + 'ToString']
+[let enumTypeName : String = aDataType.name ]
+[let varName : String = enumTypeName.toLowerFirst() ]
+template <typename... I>
+std::string [className/]<I...>::[convertMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
+{
+	// [protected (className +'::' + convertMethodName)]
+	auto [varName/] = ecore::anyCast<[enumTypeName/]>(instanceValue);
+	std::stringstream s;
+	s << [varName/];
+	return s.str(); 
+    // [/protected]
+}
+[/let]
+[/let]
+[/let]
+[/let]
+[/let]
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )]
+[let className : String = aPackage.getFactoryBaseName()]
+[let namespaceName : String = aPackage.getImplementationNamespaceName()]
+[let convertMethodName : String = 'convert' + aDataType.name + 'ToString']
+template <typename... I>
+std::string [className/]<I...>::[convertMethodName/](const std::shared_ptr<[getShortQualifiedName('ecore::EDataType',namespaceName)/]>& eDataType,const ecore::Any& instanceValue) const
+{
+    // [protected (className +'::' + convertMethodName)]
+#if defined(__FUNCSIG__)
+    std::cout << __FUNCSIG__  << std::endl;
+#endif
+    throw "NotImplementedException";
+    // [/protected]
+}
+[/let]
+[/let]
+[/let]
+[/template]
+
 
 [template public generateCreateFunctionContent(aClass : EClass, ref : OrderedSet(EReference), aReference : EReference, anEPackage : EPackage, addID : Boolean)]
 [if(addID)]
