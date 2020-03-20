@@ -191,7 +191,30 @@
     endif
 /]
 
-[query private getBaseClass( aEClass : EClass ) : EClass = if (aEClass.eSuperTypes->isEmpty() ) then null else aEClass.eSuperTypes->first() endif/]
+[query public getBaseClass( aEClass : EClass ) : EClass = if (aEClass.eSuperTypes->isEmpty() ) then null else aEClass.eSuperTypes->first() endif/]
+
+[query public getMixinClasses(aClass : EClass) : Set(EClass) =
+	if aClass.eSuperTypes->isEmpty() or ( aClass.eSuperTypes->size() = 1 and ( not aClass.eSuperTypes->first().interface ) ) then
+		OrderedSet{}
+	else
+		let baseClass : EClass = aClass.getBaseClass() in
+		OrderedSet {
+			if baseClass.interface then
+				baseClass.getMixinClasses()
+			else 
+				OrderedSet{}
+			endif
+			,
+			let allBasesClasses : OrderedSet(EClass) = aClass.eAllSuperTypes in
+			let ndx : Integer = allBasesClasses->indexOf( baseClass ) + 1 in
+			if ndx > allBasesClasses->size() then
+				OrderedSet{}
+			else
+				allBasesClasses->subOrderedSet(ndx,allBasesClasses->size())
+			endif
+		}->flatten()		
+	endif
+/]
 
 [query public getEPackage( eElement : ETypedElement ) : EPackage =
     let containingClass : EClass = 

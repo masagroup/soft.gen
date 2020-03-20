@@ -2,12 +2,19 @@
 [module generateReflectives('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
 [import soft::generator::common::generateReflectives/]
 [import soft::generator::cpp::generateCommon /]
 [import soft::generator::cpp::generateType /]
 
+[query private hasElementID( aClass :EClass ) : Boolean =  
+    let mixinClasses : Set(EClass) = aClass.getMixinClasses() in 
+    mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty() or c.getImplementedOperations()->notEmpty() )
+/]
+
 [template public generateReflectivesDeclaration(aClass : EClass)]
-[if aClass.getEGetFeatures()->notEmpty() or
+[if aClass.hasElementID() or
+    aClass.getEGetFeatures()->notEmpty() or
     aClass.getESetFeatures()->notEmpty() or
     aClass.getEUnSetFeatures()->notEmpty() or
     aClass.getEIsSetFeatures()->notEmpty() or
@@ -17,6 +24,9 @@
 //*********************************
 // Reflectives
 //*********************************
+[if aClass.hasElementID()]
+[aClass.generateElementIDDeclaration()/]
+[/if]
 [if aClass.getEGetFeatures()->notEmpty()]
 [aClass.generateEGetDeclaration()/]
 [/if]
@@ -39,6 +49,17 @@
 [aClass.generateEInverseRemoveDeclaration()/]
 [/if]
 [/if]
+[/template]
+
+[template private generateElementIDDeclaration(aClass: EClass)]
+[let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
+[if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())] 
+virtual int eStructuralFeatureID( const std::shared_ptr<[getShortQualifiedName('ecore::EObject', aClass.ePackage.name)/]>& eContainer, int featureID ) const;
+[/if]
+[if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
+virtual int eOperationID( const std::shared_ptr<[getShortQualifiedName('ecore::EObject', aClass.ePackage.name)/]>& eContainer, int operationID ) const;
+[/if]
+[/let] 
 [/template]
 
 [template private generateEGetDeclaration(aClass : EClass)]
@@ -70,7 +91,8 @@ virtual std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aCla
 [/template]
 
 [template public generateReflectivesDefinition(aClass : EClass)]
-[if aClass.getEGetFeatures()->notEmpty() or
+[if aClass.hasElementID() or
+    aClass.getEGetFeatures()->notEmpty() or
     aClass.getESetFeatures()->notEmpty() or
     aClass.getEUnSetFeatures()->notEmpty() or
     aClass.getEIsSetFeatures()->notEmpty() or
@@ -81,6 +103,10 @@ virtual std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aCla
 //*********************************
 // Reflectives
 //*********************************
+[if aClass.hasElementID()]
+[aClass.generateElementIDDefinition()/]
+
+[/if]
 [if aClass.getEGetFeatures()->notEmpty()]
 [aClass.generateEGetDefinition()/]
 
@@ -112,6 +138,48 @@ virtual std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aCla
 [/if]
 [/template]
 
+[template private generateElementIDDefinition(aClass: EClass)]
+[let className : String = aClass.getBaseName()]
+[let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
+[if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())] 
+template <typename... I>
+int [className/]<I...>::eStructuralFeatureID( const std::shared_ptr<ecore::EObject>& eContainer, int featureID ) const {
+    auto eClass = std::static_pointer_cast<ecore::EClass>(eContainer);
+[for (aMixinClass : EClass | mixinClasses)]
+    if (eClass == [aClass.ePackage.getInterfaceName()/]::eInstance()->get[aMixinClass.getElementAccessorName()/]()) {
+        switch(featureID) {
+[for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
+            case [aMixinClass.getQualifiedIDName(aFeature)/] : return [aClass.getQualifiedIDName(aFeature)/];
+[/for]
+            default: return -1;
+        }
+    }
+[/for]  
+    return [removeNamespace(aClass.getClassExtends())/]::eStructuralFeatureID(eContainer, featureID);
+}
+[/if]
+
+[if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
+template <typename... I>
+virtual int [className/]<I...>::eOperationID( const std::shared_ptr<ecore::EObject>& eContainer, int operationID ) const {
+    auto eClass = std::static_pointer_cast<ecore::EClass>(eContainer);
+[for (aMixinClass : EClass | mixinClasses)]
+    if (eClass == [aClass.ePackage.getInterfaceName()/]::eInstance()->get[aMixinClass.getElementAccessorName()/]() ) {
+        switch(featureID) {
+[for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
+            case [aMixinClass.getQualifiedIDName(aOperation)/] : return [aClass.getQualifiedIDName(aOperation)/];
+[/for]
+            default: return -1;
+        }
+    }
+[/for]
+    return [removeNamespace(aClass.getClassExtends())/]::eOperationID(eContainer, operationID);
+}
+[/if]
+[/let]
+[/let] 
+[/template]
+
 [template private generateEGetDefinition(aClass : EClass)]
 [let className : String = aClass.getBaseName()]
 template <typename... I>
@@ -124,12 +192,12 @@ ecore::Any [className/]<I...>::eGet(int featureID, bool resolve, bool coreType) 
         [if anStructFeature.isListType()]
         {
             auto list = [anStructFeature.getGetterName()/]();
-		[if anStructFeature.isFeatureMapType()]
-			return list->asEListOf<Any>();
-		[else]
+        [if anStructFeature.isFeatureMapType()]
+            return list->asEListOf<ecore::Any>();
+        [else]
             auto objects = list->asEListOf<std::shared_ptr<ecore::EObject>>();
-            return objects->asEListOf<Any>();
-		[/if]
+            return objects->asEListOf<ecore::Any>();
+        [/if]
         }
         [elseif anStructFeature.oclIsKindOf(EReference)]
         {
@@ -176,13 +244,13 @@ void [aClass.getBaseName()/]<I...>::eSet(int featureID, const [getShortQualified
         {
     [let varName : String = anStructFeature.name.first(1)]
     [if anStructFeature.isListType()]
-	[if anStructFeature.isFeatureMapType()]
-			auto [varName/] = anyListCast<std::shared_ptr<ecore::EFeatureMapEntry>>(newValue);
-	[else]
+    [if anStructFeature.isFeatureMapType()]
+            auto [varName/] = anyListCast<std::shared_ptr<ecore::EFeatureMapEntry>>(newValue);
+    [else]
             auto list = anyListCast<std::shared_ptr<ecore::EObject>>(newValue);
             auto [varName/] = list->asEListOf<[anStructFeature.eGenericType.generateCppType( aClass.ePackage )/]>();
     [/if]
-			[anStructFeature.getGetterName()/]()->clear();
+            [anStructFeature.getGetterName()/]()->clear();
             [anStructFeature.getGetterName()/]()->addAll(*[varName/]);
     [else]
         [if anStructFeature.eGenericType.eClassifier.isAny()]
@@ -330,7 +398,7 @@ std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePack
     [if aFeature.isListType()]
             auto list = std::static_pointer_cast<[getShortQualifiedName('ecore::ENotifyingList', aClass.ePackage.name)/]<[aFeature.eGenericType.generateCppType(aClass.ePackage)/]>>( [aFeature.getGetterName()/]() );
             auto other = ecore::derived_pointer_cast<[aFeature.generateElementType()/]>(otherEnd);
-			return list->add( other , notifications );
+            return list->add( other , notifications );
     [elseif aFeature.isContainer()]
             auto msgs = notifications;
             if (eContainer())
@@ -380,7 +448,7 @@ std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePack
     [if aFeature.isListType()]
             auto list = std::static_pointer_cast<[getShortQualifiedName('ecore::ENotifyingList', aClass.ePackage.name)/]<[aFeature.eGenericType.generateCppType(aClass.ePackage)/]>>( [aFeature.getGetterName()/]() );
             auto other = ecore::derived_pointer_cast<[aFeature.generateElementType()/]>(otherEnd);
-			return list->add( other , notifications );
+            return list->add( other , notifications );
     [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
             return eBasicSetContainer( nullptr , [aClass.getQualifiedIDName(aFeature)/], notifications );
     [elseif aFeature.isUnSet()]
