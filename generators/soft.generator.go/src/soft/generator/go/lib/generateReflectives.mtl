@@ -51,7 +51,7 @@
 [aClass.generateFunctionReceiver()/] EGetFromID(featureID int, resolve, coreType bool) interface{} {
     switch featureID {
     [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
-    case [anStructFeature.getQualifiedFeatureIDName()/]:
+    case [aClass.getQualifiedIDName(anStructFeature)/]:
         return [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
     [/for]
     default:
@@ -66,7 +66,7 @@
 [aClass.generateFunctionReceiver()/] EIsSetFromID(featureID int) bool {
     switch featureID {
 [for (anStructFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
-    case [anStructFeature.getQualifiedFeatureIDName()/]:
+    case [aClass.getQualifiedIDName(anStructFeature)/]:
         return [anStructFeature.generateComparison(aClass)/]
 [/for]
     default:
@@ -79,7 +79,7 @@
 [aClass.generateFunctionReceiver()/] ESetFromID(featureID int, newValue interface{}) {
     switch featureID {
 [for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
-    case [anStructFeature.getQualifiedFeatureIDName()/]:
+    case [aClass.getQualifiedIDName(anStructFeature)/]:
     [let varName : String = anStructFeature.name.first(1)]
         [varName/] := newValue.([anStructFeature.generateType()/])
     [if anStructFeature.isListType()]
@@ -103,7 +103,7 @@
 [aClass.generateFunctionReceiver()/] EUnsetFromID(featureID int) {
     switch featureID {
 [for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
-    case [aStructFeature.getQualifiedFeatureIDName()/]:
+    case [aClass.getQualifiedIDName(aStructFeature)/]:
     [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
         [aClass.getReceiverName()/].[aStructFeature.getGetterName()/]().Clear()
     [elseif aStructFeature.isUnSet() ]
@@ -225,7 +225,7 @@
 [aClass.generateFunctionReceiver()/] EBasicInverseAdd(otherEnd [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
-    case [aFeature.getQualifiedFeatureIDName()/]:
+    case [aClass.getQualifiedIDName(aFeature)/]:
     [if aFeature.isListType()]
         list := [aClass.getReceiverName()/].[aFeature.getGetterName()/]().([if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList)
         return list.AddWithNotification(otherEnd, notifications)
@@ -237,7 +237,7 @@
         [if aFeature.isBasicSet()]
         return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType()/]), msgs)
         [else]
-        return [aClass.getReceiverName()/].EBasicSetContainer(otherEnd, [aFeature.getQualifiedFeatureIDName()/], msgs)
+        return [aClass.getReceiverName()/].EBasicSetContainer(otherEnd, [aClass.getQualifiedIDName(aFeature)/], msgs)
         [/if]
     [else]
         [if aFeature.isVolatile() or aFeature.isBackReference()]
@@ -246,10 +246,10 @@
         msgs := notifications
         if [aClass.getReceiverName()/].[aFeature.name/] != nil {
             [if aFeature.isContains()]
-            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aFeature.getQualifiedFeatureIDName()/], msgs)
+            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs)
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [reverseFeature.getQualifiedFeatureIDName()/], msgs)
+            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/], msgs)
                 [/let]
             [/if]
         }
@@ -270,12 +270,12 @@
 [aClass.generateFunctionReceiver()/] EBasicInverseRemove(otherEnd  [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
-    case [aFeature.getQualifiedFeatureIDName()/]:
+    case [aClass.getQualifiedIDName(aFeature)/]:
     [if aFeature.isListType()]
         list := [aClass.getReceiverName()/].[aFeature.getGetterName()/]().([if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList)
         return list.RemoveWithNotification(otherEnd, notifications)
     [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
-        return [aClass.getReceiverName()/].EBasicSetContainer(nil, [aFeature.getQualifiedFeatureIDName()/], notifications)
+        return [aClass.getReceiverName()/].EBasicSetContainer(nil, [aClass.getQualifiedIDName(aFeature)/], notifications)
     [elseif aFeature.isUnSet()]
         return [aClass.getReceiverName()/].basic[aFeature.getUnSetterName().toUpperFirst()/](notifications)
     [else]
