@@ -17,6 +17,7 @@ import "strconv"
 [if not anEPackage.isEcorePackage()]
 import "[anEPackage.getImportForPackage('ecore')/]"
 [/if]
+
 type [anEPackage.getFactoryInternalName()/] interface {
 [let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
 [for (aDataType : EDataType | dataTypes)]
@@ -95,20 +96,49 @@ func new[className.toUpperFirst()/]() *[className/] {
     }
 }
 [for (aDataType : EDataType | dataTypes)]
-[let createMethodName : String = 'create' + aDataType.name + 'FromString']
-[anEPackage.generateFactoryImplementationMember()/] [createMethodName/](eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
-	panic("NotImplementedException")
-}
-[/let]
-[let convertMethodName : String = 'convert' + aDataType.name + 'ToString']
-[anEPackage.generateFactoryImplementationMember()/] [convertMethodName/](eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue interface{}) string {
-	panic("NotImplementedException")
-}
-[/let]
+    [anEPackage.generateCreateFromString(aDataType)/]
+	[anEPackage.generateConvertToString(aDataType)/]
 [/for]
 [/let]
-
 [/file]
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
+[let enumTypeName : String = aDataType.name ]
+[let varName : String = enumTypeName.toLowerFirst() ]
+[aPackage.generateFactoryImplementationMember()/] create[enumTypeName/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
+    var [varName/] [aDataType.name/] 
+	[varName/].FromString(literalValue)
+	return [varName/]
+}
+[/let]
+[/let]
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType )]
+[aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
+   panic("NotImplementedException")
+}
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
+[let enumTypeName : String = aDataType.name ]
+[let varName : String = enumTypeName.toLowerFirst() ]
+[aPackage.generateFactoryImplementationMember()/] convert[enumTypeName/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue interface{}) string { 
+	[varName/], ok:= instanceValue.([enumTypeName/])
+	if !ok {
+		return ""
+	}
+	return [varName/].ToString()	
+}
+[/let]
+[/let]
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )]
+[aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue interface{}) string { 
+	panic("NotImplementedException")
+}
 [/template]
 
 [template public generateCreateFunctionContent(aClass : EClass, aReference : EReference, addID : Boolean)]

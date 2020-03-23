@@ -29,22 +29,48 @@ func TestFactoryCreate(t *testing.T) {
     [/for]
 }
 
-func TestFactoryPanics(t *testing.T) {
+func TestFactoryConvert(t *testing.T) {
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
 	[for (aDataType : EDataType | ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name))]
-    {
-		mockEDataType := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEDataType{}
-		mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
-		assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
-    }
-	[/for]
-	[for (aDataType : EDataType | ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name))]
-    {
-		mockEDataType := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEDataType{}
-		mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
-		assert.Panics(t, func() { factory.ConvertToString(mockEDataType, "") })
-    }
-	[/for]
+    	[ePackage.generateCreateFrom(aDataType)/]
+		[ePackage.generateConvertTo(aDataType)/]
+	[/for]	
 }
 [/file]
+[/template]
+
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType)? (aDataType.oclIsTypeOf(EEnum))]
+{
+	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
+	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
+[for (lit : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
+	assert.Equal(t, [lit.name.toUpperCase()/], factory.CreateFromString(mockEDataType, "[lit.name.toUpperCase()/]") )
+[/for]
+}
+[/template]
+
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType)]
+{
+	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
+	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
+	assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
+}
+[/template]
+
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType)? (aDataType.oclIsTypeOf(EEnum))]
+{
+	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
+	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
+[for (lit : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
+	assert.Equal(t, "[lit.name.toUpperCase()/]", factory.ConvertToString(mockEDataType, [lit.name.toUpperCase()/]) )
+[/for]
+}
+[/template]
+
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType)]
+{
+	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
+	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
+	assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })	
+}
 [/template]
