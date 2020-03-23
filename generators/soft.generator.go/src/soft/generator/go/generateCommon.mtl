@@ -202,4 +202,9 @@ methodName.toUpperFirst()
 [query public getQualifiedIDName( aClass : EClass, aStructuralFeature : EStructuralFeature ) : String =
     aClass.getFeatureIDName( aStructuralFeature )
 /]
+
+[query public getQualifiedIDName( aClass : EClass, aOperation : EOperation ) : String =
+    aClass.getOperationIDName( aOperation )
+/]
+
 [query public getPackageName(aStructural : EStructuralFeature,aClass: EClass) : String = if( aStructural.eContainingClass.ePackage = aClass.ePackage  ) then aStructural.eContainingClass.ePackage.getInterfaceName() else aStructural.eContainingClass.ePackage.getQualifiedInterfaceName() endif/]

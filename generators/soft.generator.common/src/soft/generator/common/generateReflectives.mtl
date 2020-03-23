@@ -4,6 +4,11 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
 
+[query public hasElementID( aClass :EClass ) : Boolean =  
+    let mixinClasses : Set(EClass) = aClass.getMixinClasses() in 
+    mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty() or c.getImplementedOperations()->notEmpty() )
+/]
+
 [**
  * Reflectives eGet/eSet//eUnSet/eIsSet/eInverseAdd/eInverseRemove
 */]

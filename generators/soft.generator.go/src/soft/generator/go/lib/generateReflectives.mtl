@@ -2,20 +2,25 @@
 [module generateReflectives('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
 [import soft::generator::common::generateReflectives/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
 
 [template public generateReflectivesDefinition(aClass : EClass)]
-[if aClass.getEGetFeatures()->notEmpty() or
+[if aClass.hasElementID() or
+	aClass.getEGetFeatures()->notEmpty() or
     aClass.getESetFeatures()->notEmpty() or
     aClass.getEUnSetFeatures()->notEmpty() or
     aClass.getEIsSetFeatures()->notEmpty() or
     aClass.getEInvokeOperations()->notEmpty() or
     aClass.getEInverseAddFeatures()->notEmpty() or
     aClass.getEInverseRemoveFeatures()->notEmpty()]
+[if aClass.hasElementID()]
+[aClass.generateElementIDDefinition()/]
 
+[/if]
 [if aClass.getEGetFeatures()->notEmpty()]
 [aClass.generateEGetDefinition()/]
 
@@ -46,8 +51,47 @@
 [/if]
 [/template]
 
+[template private generateElementIDDefinition(aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
+[let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
+[if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())] 
+[aClass.generateFunctionReceiver()/] EDerivedFeatureID(eContainer [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int) int {
+	eClass := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
+[for (aMixinClass : EClass | mixinClasses)]
+    if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
+        switch featureID {
+[for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
+            case [aMixinClass.getQualifiedIDName(aFeature)/] : return [aClass.getQualifiedIDName(aFeature)/]
+[/for]
+            default: return -1
+        }
+    }
+[/for]  
+    return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EDerivedFeatureID(eContainer, featureID)
+}
+[/if]
+
+[if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
+[aClass.generateFunctionReceiver()/] EDerivedOperationID(eContainer [if not aPackage.isEcorePackage()]ecore.[/if]EObject, operationID int) int {
+	eClass := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
+[for (aMixinClass : EClass | mixinClasses)]
+    if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
+        switch featureID {
+[for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
+            case [aMixinClass.getQualifiedIDName(aOperation)/] : return [aClass.getQualifiedIDName(aOperation)/]
+[/for]
+            default: return -1
+        }
+    }
+[/for]  
+    return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EDerivedOperationID(eContainer, featureID)
+}
+[/if]
+[/let]
+[/let]
+[/template]
+
 [template private generateEGetDefinition(aClass : EClass)]
-[let className : String = aClass.getImplementationName()]
 [aClass.generateFunctionReceiver()/] EGetFromID(featureID int, resolve, coreType bool) interface{} {
     switch featureID {
     [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
@@ -58,7 +102,6 @@
         return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EGetFromID(featureID, resolve, coreType)
     }
 }
-[/let]
 [/template]
 
 
@@ -99,7 +142,6 @@
 
 
 [template private generateEUnSetDefinition(aClass : EClass)]
-[let className : String = aClass.getImplementationName()]
 [aClass.generateFunctionReceiver()/] EUnsetFromID(featureID int) {
     switch featureID {
 [for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
@@ -126,16 +168,14 @@
         [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EUnsetFromID(featureID)
     }
 }
-[/let]
 [/template]
 
 [template private generateEInvokeDefinition(aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
-[let className : String = aClass.getImplementationName()]
 [aClass.generateFunctionReceiver()/] EInvokeFromID(operationID int, arguments [if not aPackage.isEcorePackage()]ecore.[/if]EList) interface{} {
     switch operationID {
     [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy(name) )]
-    case [eOperation.eContainingClass.getOperationIDName(eOperation)/]:
+    case [aClass.getQualifiedIDName(eOperation)/]:
         [if eOperation.isVoid() ]
         [aClass.getReceiverName()/].[eOperation.generateOperationInvoke()/]
         return nil
@@ -147,7 +187,6 @@
         return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EInvokeFromID(operationID,arguments)
     }
 }
-[/let]
 [/let]
 [/template]
 
@@ -221,7 +260,6 @@
 
 [template public generateEInverseAddDefinition(aClass : EClass) ]
 [let aPackage : EPackage = aClass.ePackage]
-[let className : String = aClass.getImplementationName()]
 [aClass.generateFunctionReceiver()/] EBasicInverseAdd(otherEnd [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
@@ -261,12 +299,10 @@
     }
 }
 [/let]
-[/let]
 [/template]
 
 [template public generateEInverseRemoveDefinition(aClass : EClass) ? (aClass.getEInverseRemoveFeatures()->notEmpty()) ]
 [let aPackage : EPackage = aClass.ePackage]
-[let className : String = aClass.getImplementationName()]
 [aClass.generateFunctionReceiver()/] EBasicInverseRemove(otherEnd  [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
@@ -286,6 +322,5 @@
         return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EBasicInverseRemove(otherEnd, featureID, notifications)
     }
 }
-[/let]
 [/let]
 [/template]

@@ -7,11 +7,6 @@
 [import soft::generator::cpp::generateCommon /]
 [import soft::generator::cpp::generateType /]
 
-[query private hasElementID( aClass :EClass ) : Boolean =  
-    let mixinClasses : Set(EClass) = aClass.getMixinClasses() in 
-    mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty() or c.getImplementedOperations()->notEmpty() )
-/]
-
 [template public generateReflectivesDeclaration(aClass : EClass)]
 [if aClass.hasElementID() or
     aClass.getEGetFeatures()->notEmpty() or
