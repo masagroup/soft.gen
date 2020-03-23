@@ -6,6 +6,8 @@ import soft.generator.common.Generator;
 
 /**
  * Entry point of the 'Generate' generation module.
+ * 
+ * @generated NOT
  */
 public class Generate extends Generator {
     /**
