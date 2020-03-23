@@ -6,7 +6,11 @@
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::lib::generateCommon/]
 
-[template public generateEnum(aEEnum : EEnum) { enumName : String = aEEnum.name; aPackage : EPackage = aEEnum.ePackage }]
+[template public generateEnum(aEEnum : EEnum) { 
+	enumName : String = aEEnum.name;
+	varName : String = enumName.toLowerFirst(); 
+	aPackage : EPackage = aEEnum.ePackage; 
+	literals : OrderedSet(EEnumLiteral) = aEEnum.eLiterals->asOrderedSet()->sortedBy(name);  }]
 [file (aPackage.getOutputDirectory() + '/' + aEEnum.getInterfaceFileName( enumName ), false, 'UTF-8')]
 [fileComment()/]
 
@@ -15,10 +19,31 @@ package [aPackage.name/]
 type [enumName/] int32
 
 const (
-[for (lit : EEnumLiteral | aEEnum.eLiterals->asOrderedSet()->sortedBy(name))]
+[for (lit : EEnumLiteral | literals)]
     [lit.name.toUpperCase()/] [enumName/] = [lit.value.toString()/]
 [/for]    
 )
+
+var [varName/]ToString = map['['/][enumName/][']'/]string{
+[for (lit : EEnumLiteral | literals)]
+	[lit.name.toUpperCase()/]:"[lit.name.toUpperCase()/]",
+[/for]	
+}
+
+var [varName/]ToID = map['['/]string[']'/][enumName/]{
+[for (lit : EEnumLiteral | literals)]
+	"[lit.name.toUpperCase()/]" : [lit.name.toUpperCase()/],
+[/for]	
+}
+
+func ([varName/] *[enumName/]) ToString() string {
+	return [varName/]ToString['['/]*[varName/][']'/]
+}
+
+func ([varName/] *[enumName/]) FromString( s string ) {
+	*[varName/] = [varName/]ToID['['/]s[']'/]
+}
+
 
 [/file]
 [/template]
