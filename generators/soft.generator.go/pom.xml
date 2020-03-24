@@ -6,7 +6,7 @@
     <parent>
         <groupId>soft.generators</groupId>
         <artifactId>soft.generators</artifactId>
-        <version>0.1.0</version>
+        <version>1.0.0</version>
     </parent>
     
     <artifactId>soft.generator.go</artifactId>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>soft.generators</groupId>
             <artifactId>soft.generator.common</artifactId>
-            <version>0.1.0</version>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 
