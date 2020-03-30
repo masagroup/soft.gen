@@ -17,7 +17,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 [if not ePackage.isEcorePackage()]
-	"[ePackage.getImportForPackage('ecore')/]"
+	"[getImportForPackage('ecore')/]"
 [/if]
 )
 

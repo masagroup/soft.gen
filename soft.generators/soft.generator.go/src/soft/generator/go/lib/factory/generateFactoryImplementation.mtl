@@ -15,7 +15,7 @@ package [anEPackage.name/]
 
 import "strconv"
 [if not anEPackage.isEcorePackage()]
-import "[anEPackage.getImportForPackage('ecore')/]"
+import "[getImportForPackage('ecore')/]"
 [/if]
 
 type [anEPackage.getFactoryInternalName()/] interface {
