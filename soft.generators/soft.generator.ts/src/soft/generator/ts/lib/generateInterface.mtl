@@ -3,6 +3,7 @@
 
 [import soft::generator::common::generateElement]
 [import soft::generator::ts::generateCommon/]
+[import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
 
 [template public generateInterface(aClass : EClass) { 
@@ -13,15 +14,20 @@
 [file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-[let references : OrderedSet(String) = Set { interfaceExtends->asSet()
-                                           , aClass.getReferencedTypes()->collect(cls | cls.name )->asSet()
-										   }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[for ( reference : String | references )]
-import {[reference/]} from "./[reference/]"
+[for ( interfaceExtend : String | interfaceExtends->asOrderedSet()->sortedBy( str | str ) )]
+import {[interfaceExtend/]} from [getImport(interfaceExtend)/]
 [/for]
+[for ( referenceType : EClassifier | aClass.getReferencedTypes() )]
+[let referenceImport : String = referenceType.getImport()]
+[let referenceName : String = referenceType.getType()]
+[if referenceName <> interfaceName and referenceImport <> '']
+import {[referenceType.getType()/]} from [referenceImport/]
+[/if]
 [/let]
+[/let]
+[/for]
 
-export interface [interfaceName/] [for ( extend : String | interfaceExtends ) before (' extends ') separator (', ')][extend/][/for]
+export interface [interfaceName/][for ( extend : String | interfaceExtends ) before (' extends ') separator (', ')][extend/][/for]
 {
 }
 
