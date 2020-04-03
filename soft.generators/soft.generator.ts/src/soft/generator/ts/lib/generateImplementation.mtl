@@ -2,7 +2,9 @@
 [module generateImplementation('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateElement]
+[import soft::generator::common::generateUtils]
 [import soft::generator::ts::generateCommon/]
+[import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
 
 [template public generateImplementation(aClass : EClass) { 
@@ -14,16 +16,30 @@
 [file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-[let references : OrderedSet(String) = Set { Set{classExtend }
-										   , classImplements->asSet()
-                                           , aClass.getReferencedTypes()->collect(cls | cls.name )->asSet()
-										   }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[for ( reference : String | references )]
-import {[reference/]} from "./[reference/]"
+[let implementsTypes : OclAny = classImplements->iterate( classImplement : String ; res : OclAny = mapNew() | res.mapPut(classImplement,getTypeImport(classImplement)) )]
+[let referencesTypes : OclAny = aClass.getReferencedTypes()->iterate( referenceType : EClassifier ; res : OclAny = mapNew() | (
+	let typeName : String = referenceType.getTypeName() in
+	let typeImport : String = referenceType.getTypeImport() in
+	if (typeName <> className and typeImport <> '') then
+		res.mapPut(typeName,typeImport)
+	else
+		res
+	endif
+))]
+[let importTypes : OclAny = mapNew()
+							 .mapPut(classExtend,getTypeImport(classExtend))
+							 .mapPutAll(implementsTypes)
+							 .mapPutAll(referencesTypes)
+							 ]
+[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
+import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 [/for]
 [/let]
+[/let]
+[/let]
 
-class [className/] extends [classExtend/] [for ( interface : String | classImplements) before(' implements ') separator (',')][interface/][/for]
+
+export class [className/] extends [classExtend/] [for ( interface : String | classImplements) before(' implements ') separator (',')][interface/][/for]
 {
 }
 

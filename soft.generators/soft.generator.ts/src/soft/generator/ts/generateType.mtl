@@ -24,16 +24,16 @@
     }
 /]
 
-[query public getType( aClassifier : EClassifier ) : String = 
+[query public getTypeName(aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then 'any'
-    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getType()
-    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getType()
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getType()
+    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTypeName()
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTypeName()
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTypeName()
     else '' endif endif endif endif
 /]
-[query private getType( aClass : EClass ) : String = aClass.getInterfaceName()/]
-[query private getType( aEnum : EEnum ) : String = aEnum.name/]
-[query private getType( aDataType : EDataType ) : String = 
+[query private getTypeName( aClass : EClass ) : String = aClass.getInterfaceName()/]
+[query private getTypeName( aEnum : EEnum ) : String = aEnum.name/]
+[query private getTypeName( aDataType : EDataType ) : String = 
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then
@@ -48,18 +48,18 @@
 /] 
 
 
-[query public getImport( aClassifier : EClassifier ) : String = 
+[query public getTypeImport( aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then ''
-    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getImport()
-    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getImport()
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getImport()
+    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTypeImport()
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTypeImport()
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTypeImport()
     else '' endif endif endif endif
 /]
-[query public getImport( aName : String ) : String = '"./' + aName + '"'/]
+[query public getTypeImport( aName : String ) : String = '"./' + aName + '"'/]
 
-[query private getImport( aClass : EClass ) : String = getImport(aClass.getInterfaceName()) /]
-[query private getImport( aEnum : EEnum ) : String = getImport(aEnum.name)/]
-[query private getImport( aDataType : EDataType ) : String = 
+[query private getTypeImport( aClass : EClass ) : String = getTypeImport(aClass.getInterfaceName()) /]
+[query private getTypeImport( aEnum : EEnum ) : String = getTypeImport(aEnum.name)/]
+[query private getTypeImport( aDataType : EDataType ) : String = 
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then
