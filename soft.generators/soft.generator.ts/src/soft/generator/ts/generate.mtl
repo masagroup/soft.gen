@@ -1,0 +1,11 @@
+[comment encoding = UTF-8 /]
+[module generate('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[template public generateModel(aPackage : EPackage)]
+[comment @main/]
+[/template]
+
+[template public generateTests(aPackage : EPackage)]
+[comment @main/]
+
+[/template]
