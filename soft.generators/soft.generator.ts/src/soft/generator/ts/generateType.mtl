@@ -1,7 +1,38 @@
 [comment encoding = UTF-8 /]
 [module generateType('http://www.eclipse.org/emf/2002/Ecore')/]
 
+[import soft::generator::common::generateCommon/]
 [import soft::generator::ts::generateCommon/]
+
+[query public isBackReference(aStructuralFeature:EStructuralFeature) : Boolean = aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).isBackReference()/]
+[query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
+[query private isShared(aReference : EReference) : Boolean = if (aReference.hasKey('aggregation')) then aReference.valueKey('aggregation')='shared' else false endif/]
+
+[template public generateType(aElement : ETypedElement) post (trim())]
+[if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
+void
+[else]
+    [let aPackage : EPackage = aElement.getEPackage()]
+    [if aElement.isListType()]
+        EList<[aElement.eGenericType.generateType(aPackage)/]>
+    [else]
+        [aElement.eGenericType.generateType(aPackage)/][if aElement.eGenericType.eClassifier.name <> 'EJavaClass' and aElement.eGenericType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aElement.eGenericType.eTypeArguments) separator (',')][g.eClassifier.getTypeName()/][/for]>[/if]
+    [/if]
+    [/let]
+[/if]
+[/template]
+
+[template public generateType(anEDataType : EGenericType, aPackage : EPackage ) post (trim())]
+[if (anEDataType.oclIsUndefined() or anEDataType.eClassifier.oclIsUndefined())]
+void
+[else]
+[anEDataType.eClassifier.getTypeName()/]
+[/if]
+[/template]
+
+[template public generateParameterList(aOperation:EOperation ) post(trim())]
+[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterName()/] : [sParameter.generateType()/][/for]
+[/template]
 
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
     Sequence {
