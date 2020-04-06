@@ -33,7 +33,7 @@
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
-            'BasicEObject'
+            'AbstractEObject'
         else if ( aPackage.hasKey('dynamic' ) and aPackage.valueKey('dynamic') = 'true' ) then
             'DynamicEObjectImpl'
         else
