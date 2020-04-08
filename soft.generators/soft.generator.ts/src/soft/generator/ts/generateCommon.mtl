@@ -125,22 +125,13 @@ else ''
 endif endif endif endif
 /]
 
-[query public getReflectiveGetterName(anENamedElement : ENamedElement) : String = 
-let getterName : String = 'get' + anENamedElement.getElementAccessorName() in
-let ecorePackageClass : EClass = anENamedElement.eClass().ePackage.eClass() in
-let methodName : String = if ecorePackageClass.eAllOperations->exists( name = getterName ) then getterName + anENamedElement.getElementTypeName() else getterName endif in
-methodName.toUpperFirst()
-/]
-
 [** Accessors Names **/]
 [query public getterPrefix(feature : EStructuralFeature) : String = if feature.eType.name = 'EBoolean' then 'Is' else 'Get' endif/]
 
-[query public getSetterName(feature : EStructuralFeature) : String = feature.getElementName( name.toUpperFirst(), 'setterName', 'Set$1')/]
-[query public getGetterName(feature : EStructuralFeature) : String =  feature.getElementName( name.toUpperFirst(), 'getterName', feature.getterPrefix() + '$1')/]
-[query public getUnSetterName(feature : EStructuralFeature) : String = feature.getElementName( name.toUpperFirst(), 'unSetterName', 'Unset$1')/]
-[query public getIsSetName(feature : EStructuralFeature) : String = feature.getElementName( name.toUpperFirst(), 'isSetName', 'IsSet$1')/]
+[query public getUnSetterName(feature : EStructuralFeature) : String = feature.getElementName( name , 'unSetterName', 'Unset$1')/]
+[query public getIsSetName(feature : EStructuralFeature) : String = feature.getElementName( name , 'isSetName', 'IsSet$1')/]
 
-[query public getOperationName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' ).toUpperFirst()/]
+[query public getOperationName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' )/]
 
 [query public getParameterName(aParameter : EParameter) : String =
  	let n : String = aParameter.name in

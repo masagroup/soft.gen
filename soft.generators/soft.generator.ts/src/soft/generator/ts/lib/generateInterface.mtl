@@ -47,20 +47,20 @@ export interface [interfaceName/][for ( extend : String | interfaceExtends ) bef
 {
 [let attributes : OrderedSet(EAttribute) = aClass.eAttributes->asOrderedSet()->select( isGet() or isSet() )]
 [if attributes->notEmpty()]
-	// Attributes
-	[attributes->asOrderedSet().generateDeclaration()/]
+    // Attributes
+    [attributes->asOrderedSet().generateDeclaration()/]
 [/if]
 [/let]
 [let references : OrderedSet(EReference) = aClass.eReferences->asOrderedSet()->select( isGet() or isSet() )]
 [if references->notEmpty()]
-	// References
-	[references.generateDeclaration()/]
+    // References
+    [references.generateDeclaration()/]
 [/if]
 [/let]
 [let operations : OrderedSet(EOperation) = aClass.eOperations->asOrderedSet()]
 [if operations->notEmpty()]
-	// Operations
-	[operations.generateDeclaration()/]
+    // Operations
+    [operations.generateDeclaration()/]
 [/if]
 [/let]
 }
