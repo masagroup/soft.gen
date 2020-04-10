@@ -102,7 +102,9 @@ endif/]
 [/template]
 
 [template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) post(trim())]
-NewArrayEList([anEAttribute.unique/])
+[let aPackage : EPackage = aClass.ePackage]
+[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEList([anEAttribute.unique/])
+[/let]
 [/template]
 
 [template private getListConstructor( anEReference : EReference , aClass : EClass ) post(trim())]

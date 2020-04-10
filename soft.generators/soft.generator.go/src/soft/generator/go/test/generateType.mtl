@@ -9,15 +9,16 @@
 [/template]
 
 [query private getParameterType(sParameter : EParameter) : String =
+	let aPackage : EPackage = sParameter.eOperation.eContainingClass.ePackage in
 	if (sParameter.eGenericType.eRawType.name = 'EEList')
-    then 'NewEmptyArrayEList()'
+    then if not aPackage.isEcorePackage() then 'ecore.' else '' endif + 'NewEmptyBasicEList()'
     else sParameter.eType.getUnitTestValue()
     endif
 /]
 
 [query public getUnitTestType(aStructuralFeature : EStructuralFeature) : String =
+	let aPackage : EPackage = aStructuralFeature.eContainingClass.ePackage in
 	if aStructuralFeature.isListType() then
-		if not aStructuralFeature.eContainingClass.ePackage.isEcorePackage() then 'ecore.NewEmptyArrayEList()'
-		else 'NewEmptyArrayEList()' endif
+		if not aPackage.isEcorePackage() then 'ecore.' else '' endif + 'NewEmptyBasicEList()'
 	 else aStructuralFeature.eType.getUnitTestValue() endif
 /]
