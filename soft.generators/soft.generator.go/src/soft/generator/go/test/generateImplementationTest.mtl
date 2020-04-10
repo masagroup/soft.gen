@@ -21,8 +21,6 @@ package [aPackage.name/]
 
 import (
 	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 [let ecorePackage : Set(String) = if not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() ) then Set{ getImportForPackage('ecore') } else Set{} endif]
@@ -42,7 +40,6 @@ func discard[name.toUpperFirst()/]() {
 	_ = mock.Anything
 	_ = testing.Coverage
 	[if not aPackage.isEcorePackage()]_ = ecore.ADD[/if]
-	_ = time.Now()
 }
 
 [aClass.eStructuralFeatures->select(isField()).generateTestImplementation(aClass)/]
@@ -80,14 +77,15 @@ func Test[aClass.name.toUpperFirst()/][anEOperation.getOperationName()/]Operatio
 
 [template private generateGetSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage ]
-[let varName : String = aStructuralFeature.getVariableName() ]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
-	var newValue [getShortQualifiedName(aStructuralFeature.eType.getType(),aPackage.name)/] = [aStructuralFeature.eType.getTestValue(aPackage)/]
+	var newValue [aStructuralFeature.eType.getTestType(aPackage)/] = [aStructuralFeature.eType.getTestValue(aPackage)/]
+	[if not isListType() and isProxy()]
+	newValue.On("EIsProxy").Return(false)
+	[/if]
 	obj := [aClass.getConstructorName()/]()
 	obj.[aStructuralFeature.getSetterName()/](newValue)
 	assert.Equal(t, newValue, obj.[aStructuralFeature.getGetterName()/]())
 }
-[/let]
 [/let]
 [/template]
 
@@ -95,7 +93,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 [let aPackage : EPackage = aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
-	var newValue [getShortQualifiedName(aStructuralFeature.eType.getType(),aPackage.name)/] = [aStructuralFeature.eType.getTestValue(aPackage)/]
+	var newValue [aStructuralFeature.eType.getTestType(aPackage)/] = [aStructuralFeature.eType.getTestValue(aPackage)/]
 	obj := [aClass.getConstructorName()/]()
 	mockAdapter := &[getShortQualifiedName('ecore.MockEAdapter',aPackage.name)/]{}
 	mockAdapter.On("SetTarget",obj).Once()		
@@ -162,7 +160,7 @@ func Test[aClass.name.toUpperFirst()/]EGet(t *testing.T) {
 
 [template private generateEInvokeTestImplementation(aClass : EClass)]
 [let operations : Collection(EOperation) = aClass.getEInvokeOperations()]
-[if operations->notEmpty()]
+[if aClass.name <> 'EObject' and operations->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EInvoke(t *testing.T) {
 	obj := [aClass.getConstructorName()/]()
     [for ( eOperation : EOperation | operations )]
