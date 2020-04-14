@@ -247,7 +247,7 @@ endif/]
                 [/let]
                 [/let]
             [/if]
-            if [newVarName/].EContainer() == nil {
+            if [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInternalContainer() == nil {
             [if not isBidirectional()]
             notifications = [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseAdd( [receiverName/], [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications )
             [else]
