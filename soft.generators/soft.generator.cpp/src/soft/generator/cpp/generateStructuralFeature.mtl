@@ -285,7 +285,7 @@ template <typename... I>
     else
         return std::static_pointer_cast<[aStructuralFeature.generateElementType()/]>(eContainer());
 [elseif not isVolatile()]
-    return [aStructuralFeature.name/]_[if aStructuralFeature.isProxy() and not aStructuralFeature.isListType()].value()[elseif aStructuralFeature.isLazy()].value()[elseif aStructuralFeature.isBackReference()].lock()[/if];
+    return [aStructuralFeature.name/]_[if aStructuralFeature.isProxy() and not aStructuralFeature.isListType()].get()[elseif aStructuralFeature.isLazy()].value()[elseif aStructuralFeature.isBackReference()].lock()[/if];
 [elseif (hasKey('getterBody'))]
     [valueKey('getterBody')/]
 [else]
@@ -316,7 +316,48 @@ template <typename... I>
     else
         return ecore::derived_pointer_cast<[aStructuralFeature.generateElementType()/]>(eContainer());
 [elseif not isVolatile()]
-    return [aStructuralFeature.name/]_[if aStructuralFeature.isProxy() and not aStructuralFeature.isListType()].get()[elseif aStructuralFeature.isLazy()].get()[elseif aStructuralFeature.isBackReference()].lock()[/if];
+	[if not isListType() and isProxy()]
+	[let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
+	[let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]	
+	auto [oldVarName/] = [aStructuralFeature.name/]_.get();
+	if ( [oldVarName/] && [oldVarName/]->eIsProxy() ) {
+		auto [newVarName/] = eResolveProxy([oldVarName/]);
+		if ( [newVarName/] && [newVarName/] != [oldVarName/] ) {
+			[aStructuralFeature.name/]_.set([newVarName/]);			
+ 		[if isContains()]
+			std::shared_ptr<ENotificationChain> notifications;
+		 	[if not isBidirectional()]
+            notifications = [oldVarName/]->getInternal().eInverseRemove( getThisAsEObject(), EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications );
+            [else]
+                [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+                [let reverseClass : EClass = reverseFeature.eContainingClass]
+            notifications = [oldVarName/]->getInternal().eInverseRemove( getThisAsEObject(), [reverseClass.getFeatureIDName(reverseFeature)/] , notifications );
+                [/let]
+                [/let]
+            [/if]
+            if (![newVarName/]->getInternal().eInternalContainer()) {
+            [if not isBidirectional()]
+            notifications = [newVarName/]->getInternal().eInverseAdd( getThisAsEObject(), EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications );
+            [else]
+                [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+                [let reverseClass : EClass = reverseFeature.eContainingClass]
+            notifications = [newVarName/]->getInternal().eInverseAdd( getThisAsEObject(), [reverseClass.getFeatureIDName(reverseFeature)/] , notifications );
+                [/let]
+                [/let]
+            [/if]
+            }
+            if (notifications)
+                notifications->dispatch();
+        [/if]
+			if ( eNotificationRequired() )
+        		eNotify( std::make_shared<ecore::impl::Notification>( getThisAsEObject() , ecore::ENotification::RESOLVE, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]));
+		}
+	}	
+	[/let]
+	[/let]
+	[else]
+	return [aStructuralFeature.name/]_[if aStructuralFeature.isLazy()].get()[elseif aStructuralFeature.isBackReference()].lock()[/if];
+	[/if]
 [elseif hasKey('getterBody')]
     [valueKey('getterBody')/]
 [else]
@@ -363,7 +404,7 @@ std::shared_ptr<ecore::ENotificationChain> [className/]<I...>::[methodName/]( [a
     return eBasicSetContainer([newVarName/],[aClass.getQualifiedIDName(aStructuralFeature)/],msgs); 
 [elseif not isVolatile()]
     [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
-    auto [oldVarName/] = [aStructuralFeature.name/]_[if isProxy()].value()[elseif isLazy()].value()[elseif isBackReference()].lock()[/if];
+    auto [oldVarName/] = [aStructuralFeature.name/]_[if isProxy()].get()[elseif isLazy()].value()[elseif isBackReference()].lock()[/if];
     [aStructuralFeature.name/]_ = [newVarName/];
     auto notifications = msgs;
     if ( eNotificationRequired() )
@@ -447,7 +488,7 @@ void [className/]<I...>::[methodName/]([aStructuralFeature.generateParameterType
         [/let]
     [else]
         [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
-    auto [oldVarName/] = [aStructuralFeature.name/]_[if isProxy()].value()[elseif isLazy()].value()[elseif isBackReference()].lock()[/if];
+    auto [oldVarName/] = [aStructuralFeature.name/]_[if isProxy()].get()[elseif isLazy()].value()[elseif isBackReference()].lock()[/if];
     [aStructuralFeature.name/]_ = [newVarName/];
     if ( eNotificationRequired() )
         eNotify( std::make_shared<ecore::impl::Notification>(getThisAsEObject(), ecore::ENotification::SET, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]));
