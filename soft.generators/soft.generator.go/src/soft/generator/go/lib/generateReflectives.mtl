@@ -174,7 +174,7 @@
 [let aPackage : EPackage = aClass.ePackage]
 [aClass.generateFunctionReceiver()/] EInvokeFromID(operationID int, arguments [if not aPackage.isEcorePackage()]ecore.[/if]EList) interface{} {
     switch operationID {
-    [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy(name) )]
+    [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy( getOperationName() ) )]
     case [aClass.getQualifiedIDName(eOperation)/]:
         [if eOperation.isVoid() ]
         [aClass.getReceiverName()/].[eOperation.generateOperationInvoke()/]
