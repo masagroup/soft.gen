@@ -6,7 +6,7 @@
 [import soft::generator::go::lib::generateCommon/]
 
 [template public generateDeclaration(anEOperation : EOperation)]
-[anEOperation.getFunctionName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/]
+[anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/]
 
 [/template]
 
@@ -16,9 +16,9 @@
 [/template]
 
 [template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? ( anEOperation.isDefault() )]
-// [anEOperation.getFunctionName()/] default implementation
-[aClass.generateFunctionReceiver()/] [anEOperation.getFunctionName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/] {
-    panic("[anEOperation.getFunctionName()/] not implemented")
+// [anEOperation.getOperationName()/] default implementation
+[aClass.generateFunctionReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/] {
+    panic("[anEOperation.getOperationName()/] not implemented")
 }
 
 [/template]

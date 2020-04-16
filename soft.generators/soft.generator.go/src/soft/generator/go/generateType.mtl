@@ -42,6 +42,7 @@
 [for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.generateType()/][/for]
 [/template]
 
+[comment {ecore types..., go type, default value, test value, comparison operator}/]
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
     Sequence {
         Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'false' , 'true', ''},
@@ -64,18 +65,17 @@
     }
 /]
 
-[query public getUnitTestValue(aDataType : EClassifier) : String =
-	let value : String = getUnitTestValueInternal(aDataType) in
-	if aDataType.oclIsKindOf( EEnum ) then
-		0
-	else if value = aDataType.name or value = '' then
-		if aDataType.name = 'EObject' then 'New' + aDataType.name + 'Impl()' else 'new' + aDataType.name + 'Impl()' endif
-	else
-		value
-	endif endif
+[query public getTestValue(aClassifier : EClassifier,aPackage : EPackage) : String =
+	if aClassifier.oclIsUndefined() then 'nil'
+    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(aPackage)
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue()
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTestValue()
+    else '' endif endif endif endif	
 /]
 
-[query private getUnitTestValueInternal(aDataType : EClassifier) : String =
+[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = '&' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name )+'{}'/]
+[query private getTestValue( aEnum : EEnum ) : String = '0'/]
+[query private getTestValue( aDataType : EDataType ) : String = 
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then
