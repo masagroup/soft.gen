@@ -127,7 +127,7 @@
         [varName/] := newValue.([anStructFeature.generateType()/])
     [if anStructFeature.isListType()]
         [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Clear()
-        [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Add([varName/])
+        [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().AddAll([varName/])
     [else]
         [aClass.getReceiverName()/].[anStructFeature.getSetterName()/]([varName/])
     [/if]
@@ -174,7 +174,7 @@
 [let aPackage : EPackage = aClass.ePackage]
 [aClass.generateFunctionReceiver()/] EInvokeFromID(operationID int, arguments [if not aPackage.isEcorePackage()]ecore.[/if]EList) interface{} {
     switch operationID {
-    [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy(name) )]
+    [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy( getOperationName() ) )]
     case [aClass.getQualifiedIDName(eOperation)/]:
         [if eOperation.isVoid() ]
         [aClass.getReceiverName()/].[eOperation.generateOperationInvoke()/]
@@ -191,7 +191,7 @@
 [/template]
 
 [template private generateOperationInvoke(eOperation : EOperation )]
-[eOperation.getFunctionName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]arguments.Get([i-1/])[if needCast].([eParameter.generateEffectiveType()/])[/if][/let][/for])
+[eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]arguments.Get([i-1/])[if needCast].([eParameter.generateEffectiveType()/])[/if][/let][/for])
 [/template]
 
 [template public generateDefaultValue(anEAttribute : EAttribute) post (trim())]

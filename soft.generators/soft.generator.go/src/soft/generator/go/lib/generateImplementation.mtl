@@ -17,7 +17,7 @@
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
 	fieldFeatures : Collection(EStructuralFeature) = features->select(isField());
 	initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
-	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( name );
+	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 }]
 [file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]

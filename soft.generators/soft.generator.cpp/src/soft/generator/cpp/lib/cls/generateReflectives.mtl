@@ -321,7 +321,7 @@ template <typename... I>
 [/template]
 
 [template private generateOperationInvoke(eOperation : EOperation )]
-[if eOperation.getVisibilityType(true) = 'no' and eOperation.eContainingClass.name = 'EObject']AbstractEObject<I...>::[/if][eOperation.name/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())][if needCast][getShortQualifiedName('ecore::anyCast', eOperation.getEPackage().name)/]<[eParameter.generateEffectiveType()/]>([/if]arguments->get([i-1/])[if needCast])[/if][/let][/for]);
+[if eOperation.getVisibilityType(true) = 'no' and eOperation.eContainingClass.name = 'EObject']BasicEObject<I...>::[/if][eOperation.name/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())][if needCast][getShortQualifiedName('ecore::anyCast', eOperation.getEPackage().name)/]<[eParameter.generateEffectiveType()/]>([/if]arguments->get([i-1/])[if needCast])[/if][/let][/for]);
 [/template]
 
 

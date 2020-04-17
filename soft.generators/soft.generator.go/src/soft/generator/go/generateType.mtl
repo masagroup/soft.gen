@@ -42,6 +42,7 @@
 [for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.generateType()/][/for]
 [/template]
 
+[comment {ecore types..., go type, default value, test value, comparison operator}/]
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
     Sequence {
         Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'false' , 'true', ''},
@@ -51,7 +52,7 @@
         Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'byte' , '\'\'', '\'a\'', ''},
         Sequence{ 'EByteArray' , '[]byte' , 'nil', 'nil' , ''},
         Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '0.0', '1.2', ''},
-        Sequence{ 'EEList' , 'ecore.EList', 'nil', 'NewEmptyArrayEList()', ''},
+        Sequence{ 'EEList' , 'ecore.EList', 'nil', 'ecore.NewEmptyBasicEList()', ''},
         Sequence{ 'EDate' , 'time.Time', '', 'time.Now()' , 'IsZero'},
         Sequence{ 'EMap' , 'map[interface{}]interface{}', 'nil', 'nil' , ''},
         Sequence{ 'EFeatureMap', 'interface{}', 'nil', 'nil', ''},
@@ -64,18 +65,27 @@
     }
 /]
 
-[query public getUnitTestValue(aDataType : EClassifier) : String =
-	let value : String = getUnitTestValueInternal(aDataType) in
-	if aDataType.oclIsKindOf( EEnum ) then
-		0
-	else if value = aDataType.name or value = '' then
-		if aDataType.name = 'EObject' then 'New' + aDataType.name + 'Impl()' else 'new' + aDataType.name + 'Impl()' endif
-	else
-		value
-	endif endif
+[query public getTestType(aClassifier : EClassifier,aPackage : EPackage) : String =
+	if aClassifier.oclIsKindOf( EClass ) then '*' + aClassifier.oclAsType(EClass).getTestType(aPackage)
+    else getShortQualifiedName(aClassifier.getType(),aPackage.name) endif
 /]
 
-[query private getUnitTestValueInternal(aDataType : EClassifier) : String =
+[query private getTestType( aClass : EClass ,aPackage : EPackage ) : String = getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name )/]
+
+[query public getTestValue(aClassifier : EClassifier,aPackage : EPackage) : String =
+	if aClassifier.oclIsUndefined() then 'nil'
+    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(aPackage)
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue()
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTestValue()
+    else '' endif endif endif endif	
+/]
+
+[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = '&' + aClass.getTestType(aPackage)+'{}'/]
+[query private getTestValue( aEnum : EEnum ) : String = 
+	if aEnum.eLiterals->size() > 1 then aEnum.eLiterals->at(2).name.toUpperCase() 
+	else if aEnum.eLiterals->size() = 1 then aEnum.eLiterals->at(1).name.toUpperCase() 
+	else 0 endif endif/]
+[query private getTestValue( aDataType : EDataType ) : String = 
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then

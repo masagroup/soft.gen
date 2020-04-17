@@ -123,6 +123,10 @@ endif endif endif
     if  aNamedElement.isExported() then name.toUpperFirst()
     else name.toLowerFirst() endif/]
 
+[** Mock Names **/]
+[query public getMockName( aClass : EClass ) : String = aClass.getMockName(aClass.name )/]
+[query private getMockName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'mockName', 'Mock$1')/]
+
 
 [query public getQualifiedExtensionName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getExtensionName()/]
 
@@ -158,14 +162,11 @@ methodName.toUpperFirst()
 [query public getUnSetterName(feature : EStructuralFeature) : String = feature.getElementName( name.toUpperFirst(), 'unSetterName', 'Unset$1')/]
 [query public getIsSetName(feature : EStructuralFeature) : String = feature.getElementName( name.toUpperFirst(), 'isSetName', 'IsSet$1')/]
 
-[query public getThisPtrName(anEClass : EClass) : String = 'thisPtr'/]
-[query public getThisPtrSetterName(anEClass : EClass) : String = 'Set' + getThisPtrName().toUpperFirst()/]
-[query public getThisPtrGetterName(anEClass : EClass) : String = 'Get' + getThisPtrName().toUpperFirst()/]
-
-[query public getFunctionName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' ).toUpperFirst()/]
+[query public getOperationName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' ).toUpperFirst()/]
 
 [query public getMetaType(aPackage : EPackage , anENamedElement : ENamedElement) : String = getShortQualifiedName( anENamedElement.eClass().getQualifiedInterfaceName(), aPackage.name ) /]
 
+[** Name Qualification **]
 [query public getShortQualifiedName( aQualifiedName : String , aNamespaceName : String ) : String =
     let aQualifiedNames : Sequence(String) = aQualifiedName.tokenize('.') in
     let aNamespaceNames : Sequence(String) = aNamespaceName.tokenize('.') in
@@ -207,4 +208,3 @@ methodName.toUpperFirst()
     aClass.getOperationIDName( aOperation )
 /]
 
-[query public getPackageName(aStructural : EStructuralFeature,aClass: EClass) : String = if( aStructural.eContainingClass.ePackage = aClass.ePackage  ) then aStructural.eContainingClass.ePackage.getInterfaceName() else aStructural.eContainingClass.ePackage.getQualifiedInterfaceName() endif/]

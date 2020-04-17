@@ -291,7 +291,7 @@
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
-            'ecore::impl::AbstractEObject'
+            'ecore::impl::BasicEObject'
         else if ( aPackage.hasKey('dynamic' ) and aPackage.valueKey('dynamic') = 'true' ) then
             'ecore::impl::DynamicEObjectBase'
         else
