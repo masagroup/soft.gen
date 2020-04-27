@@ -220,7 +220,7 @@ public class Generator extends AbstractAcceleoGenerator {
         moduleURI = URI.createURI(moduleURI.toString(), true);
         module = (Module) ModelUtils.load(moduleURI, modulesResourceSet);
 
-        URI newModelURI = URI.createURI(modelPath, true);
+        URI newModelURI = URI.createFileURI(modelPath);
         model = ModelUtils.load(newModelURI, modelResourceSet);
         targetFolder = new File(targetPath);
         generationArguments = Collections.<Object>emptyList();
