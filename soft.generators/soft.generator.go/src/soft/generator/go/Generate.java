@@ -33,7 +33,7 @@ public class Generate extends Generator {
                 g.generate(new BasicMonitor());
             }
         } catch (Exception e) {
-
+            System.out.println(e.getMessage());
         }
     }
 
