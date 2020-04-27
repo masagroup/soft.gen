@@ -28,10 +28,8 @@ namespace [enumNamespace/]
         switch( [varName/] )
         {
 [for (lit : EEnumLiteral | literals)]
-[let litName : String = lit.name.toUpperCase()]
-        case [enumName/]::[litName/]:
-            return os << "[litName/]";
-[/let]
+        case [enumName/]::[lit.name.toUpperCase()/]:
+            return os << "[lit.name/]";
 [/for]
         default:
             return os;
@@ -43,10 +41,8 @@ namespace [enumNamespace/]
         std::string s;
         is >> s;
 [for (lit : EEnumLiteral | literals)]
-[let litName : String = lit.name.toUpperCase()]
-        [if lit <> literals->first()]else [/if]if ( s == "[litName/]" )
-            [varName/] = [enumName/]::[litName/];
-[/let]    
+        [if lit <> literals->first()]else [/if]if ( s == "[lit.name/]" )
+            [varName/] = [enumName/]::[lit.name.toUpperCase()/];
 [/for]
         return is;  
     }
