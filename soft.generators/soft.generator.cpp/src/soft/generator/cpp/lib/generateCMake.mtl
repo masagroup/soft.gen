@@ -79,6 +79,7 @@ find_package(Ecore)
 find_package(XercesC REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED regex)
+find_package(Date REQUIRED)
 
 include( CMakeFiles.txt OPTIONAL)
 include( CMakeGenerated.txt OPTIONAL)
