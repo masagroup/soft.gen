@@ -26,13 +26,13 @@ const (
 
 var [varName/]ToString = map['['/][enumName/][']'/]string{
 [for (lit : EEnumLiteral | literals)]
-	[lit.name.toUpperCase()/]:"[lit.name.toUpperCase()/]",
+	[lit.name.toUpperCase()/]:"[lit.name/]",
 [/for]	
 }
 
 var [varName/]ToID = map['['/]string[']'/][enumName/]{
 [for (lit : EEnumLiteral | literals)]
-	"[lit.name.toUpperCase()/]" : [lit.name.toUpperCase()/],
+	"[lit.name/]" : [lit.name.toUpperCase()/],
 [/for]	
 }
 
