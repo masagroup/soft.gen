@@ -47,7 +47,7 @@ func TestFactoryConvert(t *testing.T) {
 	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
 	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
 [for (lit : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
-	assert.Equal(t, [lit.name.toUpperCase()/], factory.CreateFromString(mockEDataType, "[lit.name.toUpperCase()/]") )
+	assert.Equal(t, [lit.name.toUpperCase()/], factory.CreateFromString(mockEDataType, "[lit.name/]") )
 [/for]
 }
 [/template]
@@ -65,7 +65,7 @@ func TestFactoryConvert(t *testing.T) {
 	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
 	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
 [for (lit : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
-	assert.Equal(t, "[lit.name.toUpperCase()/]", factory.ConvertToString(mockEDataType, [lit.name.toUpperCase()/]) )
+	assert.Equal(t, "[lit.name/]", factory.ConvertToString(mockEDataType, [lit.name.toUpperCase()/]) )
 [/for]
 }
 [/template]

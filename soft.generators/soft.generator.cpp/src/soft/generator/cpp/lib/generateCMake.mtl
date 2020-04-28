@@ -68,7 +68,6 @@ project([packageName/].lib CXX)
 if(NOT CMAKE_BUILD_TYPE) 
     set(CMAKE_BUILD_TYPE Debug)
 endif()
-set(CMAKE_DEBUG_POSTFIX d)
 
 set(CMAKE_CXX_STANDARD 17)
 
