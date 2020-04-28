@@ -104,6 +104,9 @@
                             <addClasspath>true</addClasspath>
                             <mainClass>soft.generator.cpp.Generate</mainClass>
                         </manifest>
+                        <manifestEntries>
+                        	<Build-TimeStamp>${maven.build.timestamp}</Build-TimeStamp>
+                        </manifestEntries>manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
