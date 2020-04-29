@@ -168,9 +168,8 @@
 
 [query public getMockName( aClass : EClass ) : String = getMockName(aClass.name, aClass.ePackage)/]
 [query private getMockName( aElementName : String , aPackage : EPackage ) : String = 
-    let name : String = if aElementName.first(1) = 'I' or aElementName.first(1) = 'E' then aElementName.substring(2) else aElementName endif in
     let pattern : String = aPackage.getMockNamePattern() in 
-    if pattern ='' then 'Mock' + name else pattern.format(Sequence{name}) endif 
+    if pattern ='' then 'Mock' + aElementName else pattern.format(Sequence{aElementName}) endif 
 /]
 [query private getMockNamePattern( aPackage : EPackage ) : String = if hasKey('mockNamePattern') then valueKey('mockNamePattern') else '' endif/]
 [query public getMockBaseName( aClass : EClass ) : String = aClass.ePackage.getBaseName(getMockName())/]
@@ -312,9 +311,9 @@
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
-            'ecore::tests::MockNotifier'
+            'ecore::tests::MockENotifier'
         else
-            'ecore::tests::MockObject'
+            'ecore::tests::MockEObject'
         endif
     else
         extendsClass.getQualifiedMockName()
