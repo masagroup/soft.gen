@@ -13,7 +13,7 @@
     namespaceName : String = aClass.ePackage.getTestsNamespaceName();
     guardName : String = '_'.concat(className);
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
-	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( name ); }  ]
+	operations : Collection(EOperation) = aClass.getImplementedOperations(); }  ]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getTestsFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
 [startGuard(guardName)/]
