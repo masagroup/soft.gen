@@ -26,22 +26,22 @@
     <dependency>
     	<groupId>org.eclipse.acceleo</groupId>
     	<artifactId>org.eclipse.acceleo.parser</artifactId>
-    	<version>3.7.8-SNAPSHOT</version>
+    	<version>3.7.10-SNAPSHOT</version>
     </dependency>
     <dependency>
     	<groupId>org.eclipse.acceleo</groupId>
     	<artifactId>org.eclipse.acceleo.model</artifactId>
-    	<version>3.7.8-SNAPSHOT</version>
+    	<version>3.7.10-SNAPSHOT</version>
     </dependency>
     <dependency>
     	<groupId>org.eclipse.acceleo</groupId>
     	<artifactId>org.eclipse.acceleo.common</artifactId>
-    	<version>3.7.8-SNAPSHOT</version>
+    	<version>3.7.10-SNAPSHOT</version>
     </dependency>
     <dependency>
-    	<groupId>org.eclipse.acceleo</groupId>
+    	<groupId>org.eclipse.emf</groupId>
     	<artifactId>org.eclipse.emf.common</artifactId>
-    	<version>2.10.1.v20150123-0348</version>
+    	<version>2.18.0</version>
     </dependency>  
   </dependencies>
   
@@ -69,7 +69,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.8.1</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
