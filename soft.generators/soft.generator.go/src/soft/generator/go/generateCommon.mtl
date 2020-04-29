@@ -126,6 +126,7 @@ endif endif endif
 [** Mock Names **/]
 [query public getMockName( aClass : EClass ) : String = aClass.getMockName(aClass.name )/]
 [query private getMockName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'mockName', 'Mock$1')/]
+[query public getQualifiedMockName( aClass : EClass ) : String = aClass.ePackage.name + '.'  + aClass.getMockName()/]
 
 
 [query public getQualifiedExtensionName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getExtensionName()/]

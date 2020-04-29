@@ -57,12 +57,12 @@ type [aClass.getInitializersInterface()/] interface {
     [initializerFeatures.generateVariableInitializationMethodDeclaration()/]
 }
 
-[aClass.generateFunctionReceiver()/] getInitializers() [aClass.getInitializersInterface()/] {
+[aClass.generateFunctionImplementationReceiver()/] getInitializers() [aClass.getInitializersInterface()/] {
     return [aClass.getReceiverName()/].AsEObject().([aClass.getInitializersInterface()/])
 }
 [/if]
 
-[aClass.generateFunctionReceiver()/] EStaticClass() [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
+[aClass.generateFunctionImplementationReceiver()/] EStaticClass() [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
     return GetPackage().[aClass.getReflectiveGetterName()/]()
 }
 

@@ -17,9 +17,15 @@
 
 [template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? ( anEOperation.isDefault() )]
 // [anEOperation.getOperationName()/] default implementation
-[aClass.generateFunctionReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/] {
+[aClass.generateFunctionImplementationReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/] {
     panic("[anEOperation.getOperationName()/] not implemented")
 }
 
 [/template]
 
+[template public generateMock(anEOperation : EOperation, aClass : EClass)]
+// [anEOperation.getOperationName()/] provides mock implementation
+[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/] {
+}
+
+[/template]
