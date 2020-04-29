@@ -6,7 +6,7 @@
 [import soft::generator::go::lib::generateCommon/]
 
 [template public generateDeclaration(anEOperation : EOperation)]
-[anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/]
+[anEOperation.getOperationName()/]([anEOperation.generateParameterList(false)/]) [anEOperation.generateType()/]
 
 [/template]
 
@@ -17,15 +17,38 @@
 
 [template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? ( anEOperation.isDefault() )]
 // [anEOperation.getOperationName()/] default implementation
-[aClass.generateFunctionImplementationReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/] {
+[aClass.generateFunctionImplementationReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(false)/]) [anEOperation.generateType()/] {
     panic("[anEOperation.getOperationName()/] not implemented")
 }
 
 [/template]
 
-[template public generateMock(anEOperation : EOperation, aClass : EClass)]
+[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined())]
 // [anEOperation.getOperationName()/] provides mock implementation
-[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/] {
+[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(true)/]) [anEOperation.generateType()/] {
+	[aClass.getReceiverName()/].Called([anEOperation.generateParameterCall()/])
 }
 
+
 [/template]
+
+[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (not (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined()))]
+// [anEOperation.getOperationName()/] provides mock implementation
+[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(true)/]) [anEOperation.generateType()/] {
+	ret := [aClass.getReceiverName()/].Called([anEOperation.generateParameterCall()/])
+
+	var r [anEOperation.generateType()/]
+	if rf, ok := ret.Get(0).(func() [anEOperation.generateType()/]); ok {
+		r = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r = ret.Get(0).([anEOperation.generateType()/])
+		}
+	}
+
+	return r
+}
+
+
+[/template]
+

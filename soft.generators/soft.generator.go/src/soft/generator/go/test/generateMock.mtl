@@ -25,6 +25,8 @@
 [template public generateMock(aClass : EClass) { 
 	aPackage : EPackage = aClass.ePackage;
 	mockExtends : String = aClass.getMockExtends();
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
+	operations : Collection(EOperation) = aClass.getImplementedOperations();
 }]
 [file (ePackage.getOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
@@ -47,8 +49,8 @@ type [aClass.getMockName()/] struct {
 	[getShortQualifiedName( mockExtends ,aPackage.name)/]
 }
 
-[aClass.eAllStructuralFeatures.generateMock(aClass)/]
-[aClass.eAllOperations.generateMock(aClass)/]
+[features.generateMock(aClass)/]
+[operations.generateMock(aClass)/]
 
 [/file]
 [/template]

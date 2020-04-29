@@ -38,9 +38,15 @@
 [/if]
 [/template]
 
-[template public generateParameterList(aOperation:EOperation ) post(trim())]
-[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.generateType()/][/for]
+[template public generateParameterList(aOperation:EOperation, names : Boolean ) post(trim())]
+[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][if names][sParameter.name/] [/if][sParameter.generateType()/][/for]
 [/template]
+
+[template public generateParameterCall(aOperation:EOperation) post(trim())]
+[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.name/][/for]
+[/template]
+
+
 
 [comment {ecore types..., go type, default value, test value, comparison operator}/]
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
