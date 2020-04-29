@@ -8,6 +8,7 @@
 [import soft::generator::go::lib::factory::generateFactory/]
 [import soft::generator::go::test::generateImplementationTest/]
 [import soft::generator::go::test::generateFactoryTest/]
+[import soft::generator::go::test::generateMock/]
 
 [template public generateModel(aPackage : EPackage)]
 [comment @main/]
@@ -33,3 +34,12 @@
 [/for]
 [aPackage.generateFactoryTest()/]
 [/template]
+
+[template public generateMocks(aPackage : EPackage)]
+[comment @main/]
+[for (aClass : EClass | aPackage.eAllContents(EClass))]
+	[aClass.generateMock()/]
+[/for]
+[aPackage.generateFactoryTest()/]
+[/template]
+

@@ -18,7 +18,7 @@ public class Generate extends Generator {
     /**
      * The name of the templates that are to be generated.
      */
-    public static final String[] TEMPLATE_NAMES = { "generateModel", "generateTests" };
+    public static final String[] TEMPLATE_NAMES = { "generateModel", "generateTests", "generateMocks" };
 
     private Generate() {
         super(MODULE_FILE_NAME, TEMPLATE_NAMES);
