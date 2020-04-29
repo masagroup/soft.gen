@@ -9,10 +9,10 @@
 [import soft::generator::cpp::generateStructuralFeature/]
 [import soft::generator::cpp::lib::generateCommon/]
 
-[template public generateInternalHeader(aClass : EClass) ? ( not hasOnlyImplementationFeatures() ) ] 
+[template public generateInternal(aClass : EClass) ? ( not hasOnlyImplementationFeatures() ) ] 
 [/template]
 
-[template public generateInternalHeader(aClass : EClass) ? ( hasOnlyImplementationFeatures() ) { 
+[template public generateInternal(aClass : EClass) ? ( hasOnlyImplementationFeatures() ) { 
     className : String = aClass.getInternalName(); 
     classNamespace : String = aClass.ePackage.getImplementationNamespaceName();
     classExtends : String = aClass.getInternalExtends();

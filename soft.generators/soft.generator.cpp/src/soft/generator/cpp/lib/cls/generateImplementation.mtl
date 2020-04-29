@@ -1,5 +1,5 @@
 [comment encoding = UTF-8 /]
-[module generateImplementationHeader('http://www.eclipse.org/emf/2002/Ecore')]
+[module generateImplementation('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
@@ -8,7 +8,7 @@
 
 
 
-[template public generateImplementationHeader(aClass : EClass){ 
+[template public generateImplementation(aClass : EClass){ 
     className : String = aClass.getImplementationName(); 
     classBaseName : String = aClass.getBaseName(); 
     namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); 
