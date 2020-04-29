@@ -6,7 +6,11 @@
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::common::generateCommon/]
 
-[template public generateFactoryTest(ePackage : EPackage)]
+[template public generateFactoryTest(ePackage : EPackage) { 
+	allClasses : OrderedSet(EClass) = ePackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	allDataTypes : Sequence(EDataType) = ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+ } ]
+[if allDataTypes->notEmpty() or allClasses->notEmpty()] 
 [file (ePackage.getOutputDirectory() + '/' + ePackage.getFactoryTestFileName(ePackage.name), false, 'UTF-8')]
 [fileComment()/]
 
@@ -21,9 +25,11 @@ import (
 [/if]
 )
 
+
+[if allClasses->notEmpty()]
 func TestFactoryCreate(t *testing.T) {
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
-    [for (aClass : EClass | ePackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
+    [for (aClass : EClass | allClasses) ? (aClass.abstract=false)]
 	{
 		mockEClass := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEClass{}
 		mockEClass.On("GetClassifierID").Return([aClass.getClassifierIDName()/])
@@ -31,15 +37,20 @@ func TestFactoryCreate(t *testing.T) {
 	}
     [/for]
 }
+[/if]
 
+
+[if allDataTypes->notEmpty()]
 func TestFactoryConvert(t *testing.T) {
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
-	[for (aDataType : EDataType | ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name))]
+	[for (aDataType : EDataType | allDataTypes)]
     	[ePackage.generateCreateFrom(aDataType)/]
 		[ePackage.generateConvertTo(aDataType)/]
 	[/for]	
 }
+[/if]
 [/file]
+[/if]
 [/template]
 
 [template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType)? (aDataType.oclIsTypeOf(EEnum))]
