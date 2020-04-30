@@ -31,10 +31,6 @@ import (
 	"[i/]"
 [/for]
 [/let]
-
-[if requiresEcore]
-	[getImportForPackage('ecore')/]
-[/if]
 )
 
 func discard[mockName.toUpperFirst()/]() {

@@ -260,9 +260,9 @@ endif/]
 [/template]
 
 [template public generateGetMockTest(aStructuralFeature : EStructuralFeature, aClass : EClass) ? (not isListType())]
-[let mockName : String =aClass.getMockName()]
-[let getterMethodName : String =aStructuralFeature.getGetterName()] 
-[let testMethodName : String ='Test' + mockName + getterMethodName.toUpperFirst()]
+[let mockName : String = aClass.getMockName()]
+[let getterMethodName : String = aStructuralFeature.getGetterName()] 
+[let testMethodName : String = 'Test' + mockName + getterMethodName.toUpperFirst()]
 // [testMethodName/] tests method [getterMethodName/]
 func [testMethodName/](t *testing.T) {
 	o := &[mockName/]{}
@@ -281,23 +281,23 @@ func [testMethodName/](t *testing.T) {
 [/template]
 
 [template public generateGetMockTest(aStructuralFeature : EStructuralFeature, aClass : EClass) ? (isListType())]
-[let getterMethodName : String =aStructuralFeature.getGetterName()] 
-[let testMethodName : String ='Test' + getterMethodName.toUpperFirst()]
+[let mockName : String = aClass.getMockName()]
+[let getterMethodName : String = aStructuralFeature.getGetterName()] 
+[let testMethodName : String = 'Test' + mockName + getterMethodName.toUpperFirst()]
 // [testMethodName/] tests method [getterMethodName/]
 func [testMethodName/](t *testing.T) {
-	o := &[aClass.getMockName()/]{}
+	o := &[mockName/]{}
 	l := &[if not isEcorePackage(aClass.ePackage)]ecore.[/if]MockEList{}
 	// return a value
 	o.On("[getterMethodName/]").Once().Return(l)
-	assert.Equal(t,l,o.[getterMethodName/]())
-	//return a function that returns a value
 	o.On("[getterMethodName/]").Once().Return( func () [aStructuralFeature.generateType()/] {
 		return l
-	})
+	})	
 	assert.Equal(t,l,o.[getterMethodName/]())
-	// expectations
+	assert.Equal(t,l,o.[getterMethodName/]())
 	o.AssertExpectations(t)
 }
+[/let]
 [/let]
 [/let]
 [/template]
