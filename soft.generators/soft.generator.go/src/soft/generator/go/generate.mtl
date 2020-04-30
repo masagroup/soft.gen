@@ -6,9 +6,9 @@
 [import soft::generator::go::lib::generateImplementation/]
 [import soft::generator::go::lib::pack::generatePackage/]
 [import soft::generator::go::lib::factory::generateFactory/]
-[import soft::generator::go::test::generateImplementationTest/]
-[import soft::generator::go::test::generateFactoryTest/]
-[import soft::generator::go::test::generateMock/]
+[import soft::generator::go::tests::generateImplementationTests/]
+[import soft::generator::go::tests::generateFactoryTests/]
+[import soft::generator::go::tests::generateMock/]
 
 [template public generateModel(aPackage : EPackage)]
 [comment @main/]
@@ -29,10 +29,10 @@
 [comment @main/]
 [for (aClass : EClass | aPackage.eAllContents(EClass))]
 	[if not aClass.interface]
-		[aClass.generateImplementationTest()/]
+		[aClass.generateImplementationTests()/]
 	[/if]
 [/for]
-[aPackage.generateFactoryTest()/]
+[aPackage.generateFactoryTests()/]
 [/template]
 
 [template public generateMocks(aPackage : EPackage)]
@@ -40,6 +40,5 @@
 [for (aClass : EClass | aPackage.eAllContents(EClass))]
 	[aClass.generateMock()/]
 [/for]
-[aPackage.generateFactoryTest()/]
 [/template]
 
