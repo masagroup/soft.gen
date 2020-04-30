@@ -15,8 +15,8 @@
 [template public generateBaseSource(aClass : EClass) { 
     className : String = aClass.getBaseName(); 
     namespaceName : String = aClass.ePackage.getImplementationNamespaceName();
-    features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
-    operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( name );
+    features : Set(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
+    operations : Set(EOperation) = aClass.getImplementedOperations()->sortedBy( name );
     guardName : String = '_'.concat(className);}]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className + '.inl', false, 'UTF-8')]
 [fileComment()/]
@@ -67,7 +67,7 @@ namespace [namespaceName/]
     //*********************************
     template <typename... I>
     [className/]<I...>::[className/]()
-    [let dataFeatures : OrderedSet(EStructuralFeature) = features->select(isField())]
+    [let dataFeatures : Set(EStructuralFeature) = features->select(isField())]
     [for ( aFeature : EStructuralFeature | dataFeatures ) before(':') separator(',')]
        [aFeature.generateDataInitialization(aClass)/]
     [/for]
@@ -103,7 +103,7 @@ namespace [namespaceName/]
     void [className/]<I...>::[getThisPtrSetterName()/](const std::shared_ptr<[className/]<I...>>& [getThisPtrName()/])
     {
         [removeNamespace(aClass.getClassExtends())/]::[getThisPtrSetterName()/]([getThisPtrName()/]);
-    [let dataFeatures : OrderedSet(EStructuralFeature) = features->select(isField()) ]
+    [let dataFeatures : Set(EStructuralFeature) = features->select(isField()) ]
         [dataFeatures.generateDataInitializationDefered(aClass)/]
     [/let]
     }
@@ -115,7 +115,7 @@ namespace [namespaceName/]
         return [aClass.ePackage.getInterfaceName()/]::eInstance()->get[aClass.getElementAccessorName()/]();
     }
 
-[let publicOperations : OrderedSet(EOperation) = operations->select( isPublic(true) )]
+[let publicOperations : Set(EOperation) = operations->select( isPublic(true) )]
 [if publicOperations->notEmpty()]
     //*********************************
     // Operations
@@ -123,7 +123,7 @@ namespace [namespaceName/]
     [publicOperations.generateDefinition()/]
 [/if]
 [/let]
-[let attributes : OrderedSet(EAttribute) = features->selectByKind(EAttribute)->select( hasSetter('public',true) or hasGetter('public',true) )]
+[let attributes : Set(EAttribute) = features->selectByKind(EAttribute)->select( hasSetter('public',true) or hasGetter('public',true) )]
 [if attributes->notEmpty()]
     //*********************************
     // Attributes
@@ -131,7 +131,7 @@ namespace [namespaceName/]
     [attributes.generateDefinition(aClass)/]
 [/if]
 [/let]
-[let references : OrderedSet(EAttribute) = features->selectByKind(EReference)->select( hasSetter('public',true) or hasGetter('public',true)  )]
+[let references : Set(EReference) = features->selectByKind(EReference)->select( hasSetter('public',true) or hasGetter('public',true)  )]
 [if references->notEmpty()]
     //*********************************
     // References
@@ -139,7 +139,7 @@ namespace [namespaceName/]
     [references.generateDefinition(aClass)/]
 [/if]
 [/let]
-[let basicFeatures : OrderedSet(EAttribute) = features->select( isBasicGet() or isBasicSet() )]
+[let basicFeatures : Set(EStructuralFeature) = features->select( isBasicGet() or isBasicSet() )]
 [if basicFeatures->notEmpty()]
     //*********************************
     // Basics
@@ -148,7 +148,7 @@ namespace [namespaceName/]
 [/if]
 [/let]
     [aClass.generateReflectivesDefinition()/]
-[let dataFeatures : OrderedSet(EStructuralFeature) = features->select( not isVolatile() and hasDataInitializationMethod() )]
+[let dataFeatures : Set(EStructuralFeature) = features->select( not isVolatile() and hasDataInitializationMethod() )]
 [if dataFeatures->notEmpty()]
     //*********************************
     // Initializations

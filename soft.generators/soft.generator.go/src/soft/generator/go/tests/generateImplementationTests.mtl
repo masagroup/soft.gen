@@ -253,7 +253,7 @@ func Test[aClass.name.toUpperFirst()/]ESet(t *testing.T) {
 [/template]
 
 [template private generateEInverseAddTestImplementation(aClass : EClass)]
-[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseAddFeatures()]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseAddFeatures()->sortedBy(name)]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EInverseAdd(t *testing.T) {
 	[for ( aFeature : EStructuralFeature | features )]
