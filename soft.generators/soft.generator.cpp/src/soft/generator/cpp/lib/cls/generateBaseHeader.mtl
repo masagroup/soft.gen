@@ -16,8 +16,8 @@
 	namespaceName : String = aClass.ePackage.getImplementationNamespaceName(); 
 	guardName : String = '_'.concat(className);
 	classExtend : String = aClass.getClassExtends();
-	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
-	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( name );
+	features : Set(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
+	operations : Set(EOperation) = aClass.getImplementedOperations()->sortedBy( name );
 }]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getImplementationFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
@@ -58,7 +58,7 @@ namespace [namespaceName/]
     public:
         virtual ~[className/]();
         
-[let operations : OrderedSet(EOperation) = operations->select( isPublic(true) )]
+[let operations : Set(EOperation) = operations->select( isPublic(true) )]
 [if operations->notEmpty()]
         //*********************************
         // Operations
@@ -66,7 +66,7 @@ namespace [namespaceName/]
         [operations.generateDeclaration(true)/]
 [/if]
 [/let]
-[let attributes : OrderedSet(EAttribute) = features->selectByKind(EAttribute)->select( hasSetter('public',true) or hasGetter('public',true) )]
+[let attributes : Set(EAttribute) = features->selectByKind(EAttribute)->select( hasSetter('public',true) or hasGetter('public',true) )]
 [if attributes->notEmpty()]
         //*********************************
         // Attributes
@@ -74,7 +74,7 @@ namespace [namespaceName/]
         [attributes.generateDeclaration(true)/]
 [/if]
 [/let]
-[let references : OrderedSet(EAttribute) = features->selectByKind(EReference)->select( hasSetter('public',true) or hasGetter('public',true)  )]
+[let references : Set(EReference) = features->selectByKind(EReference)->select( hasSetter('public',true) or hasGetter('public',true)  )]
 [if references->notEmpty()]
         //*********************************
         // References
@@ -85,7 +85,7 @@ namespace [namespaceName/]
 
     protected:
         virtual std::shared_ptr<[getShortQualifiedName('ecore::EClass',namespaceName)/]> eStaticClass() const;
-[let basicFeatures : OrderedSet(EAttribute) = features->select( isBasicGet() or isBasicSet() )]
+[let basicFeatures : Set(EStructuralFeature) = features->select( isBasicGet() or isBasicSet() )]
 [if basicFeatures->notEmpty()]
 
         //*********************************
@@ -97,7 +97,7 @@ namespace [namespaceName/]
 
         [aClass.generateReflectivesDeclaration()/]
 
-[let dataInitializationFeatures : OrderedSet(EStructuralFeature) = features->select( not isVolatile() and hasDataInitializationMethod() )]
+[let dataInitializationFeatures : Set(EStructuralFeature) = features->select( not isVolatile() and hasDataInitializationMethod() )]
 [if dataInitializationFeatures->notEmpty()]
         //*********************************
         // Initializers
@@ -109,7 +109,7 @@ namespace [namespaceName/]
     [generateInternalAdapterDeclaration()/]
 [/if]
 
-[let dataDeclarationFeatures : OrderedSet(EAttribute) = features->select( isField() )]
+[let dataDeclarationFeatures : Set(EStructuralFeature) = features->select( isField() )]
 [if dataDeclarationFeatures->notEmpty()]
     protected:
         [dataDeclarationFeatures.generateDataDeclaration(aClass)/]
