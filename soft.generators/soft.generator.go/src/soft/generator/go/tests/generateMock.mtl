@@ -26,7 +26,7 @@
 	aPackage : EPackage = aClass.ePackage;
 	mockExtends : String = aClass.getMockExtends();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
-	operations : Collection(EOperation) = aClass.getImplementedOperations();
+	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 }]
 [file (ePackage.getOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]

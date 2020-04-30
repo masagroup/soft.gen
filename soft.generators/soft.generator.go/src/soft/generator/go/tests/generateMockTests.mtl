@@ -13,7 +13,7 @@
 	aPackage : EPackage = aClass.ePackage;
 	mockName : String = aClass.getMockName();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
-	operations : Collection(EOperation) = aClass.getImplementedOperations();
+	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() );
 }]
 [file (ePackage.getOutputDirectory() + '/' + aClass.getMockTestFileName(aClass.name), false, 'UTF-8')]
