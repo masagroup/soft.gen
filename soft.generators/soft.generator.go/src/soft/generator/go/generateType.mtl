@@ -38,9 +38,15 @@
 [/if]
 [/template]
 
-[template public generateParameterList(aOperation:EOperation ) post(trim())]
-[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.generateType()/][/for]
+[template public generateParameterList(aOperation:EOperation, names : Boolean ) post(trim())]
+[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][if names][sParameter.name/] [/if][sParameter.generateType()/][/for]
 [/template]
+
+[template public generateParameterCall(aOperation:EOperation) post(trim())]
+[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.name/][/for]
+[/template]
+
+
 
 [comment {ecore types..., go type, default value, test value, comparison operator}/]
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
@@ -65,22 +71,17 @@
     }
 /]
 
-[query public getTestType(aClassifier : EClassifier,aPackage : EPackage) : String =
-	if aClassifier.oclIsKindOf( EClass ) then '*' + aClassifier.oclAsType(EClass).getTestType(aPackage)
-    else getShortQualifiedName(aClassifier.getType(),aPackage.name) endif
-/]
-
-[query private getTestType( aClass : EClass ,aPackage : EPackage ) : String = getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name )/]
-
 [query public getTestValue(aClassifier : EClassifier,aPackage : EPackage) : String =
 	if aClassifier.oclIsUndefined() then 'nil'
     else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(aPackage)
     else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue()
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTestValue()
+    else if aClassifier.oclIsKindOf( EDataType ) then 
+		let v : String = aClassifier.oclAsType(EDataType).getTestValue() in 
+		if v = 'nil' then getShortQualifiedName(aClassifier.getType(),aPackage.name) + '(' + v + ')' else getShortQualifiedName(v,aPackage.name)  endif
     else '' endif endif endif endif	
 /]
 
-[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = '&' + aClass.getTestType(aPackage)+'{}'/]
+[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = '&' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name ) +'{}'/]
 [query private getTestValue( aEnum : EEnum ) : String = 
 	if aEnum.eLiterals->size() > 1 then aEnum.eLiterals->at(2).name.toUpperCase() 
 	else if aEnum.eLiterals->size() = 1 then aEnum.eLiterals->at(1).name.toUpperCase() 

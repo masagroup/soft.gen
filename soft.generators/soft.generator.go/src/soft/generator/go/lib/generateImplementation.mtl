@@ -24,8 +24,7 @@
 
 package [aPackage.name/]
 
-[let ecorePackage : Set(String) = if not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() ) then Set{ getImportForPackage('ecore') } else Set{} endif]
-[let imports : OrderedSet(String) = Set { ecorePackage
+[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() ) then Set{ getImportForPackage('ecore') } else Set{} endif
 										, Set { aPackage.getImport(classExtend) }
 									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImport( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
@@ -33,7 +32,6 @@ package [aPackage.name/]
 [for ( i : String | imports )]
 import "[i/]"
 [/for]
-[/let]
 [/let]
 
 
@@ -57,12 +55,12 @@ type [aClass.getInitializersInterface()/] interface {
     [initializerFeatures.generateVariableInitializationMethodDeclaration()/]
 }
 
-[aClass.generateFunctionReceiver()/] getInitializers() [aClass.getInitializersInterface()/] {
+[aClass.generateFunctionImplementationReceiver()/] getInitializers() [aClass.getInitializersInterface()/] {
     return [aClass.getReceiverName()/].AsEObject().([aClass.getInitializersInterface()/])
 }
 [/if]
 
-[aClass.generateFunctionReceiver()/] EStaticClass() [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
+[aClass.generateFunctionImplementationReceiver()/] EStaticClass() [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
     return GetPackage().[aClass.getReflectiveGetterName()/]()
 }
 

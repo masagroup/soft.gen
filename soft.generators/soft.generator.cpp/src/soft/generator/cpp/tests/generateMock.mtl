@@ -1,6 +1,7 @@
 [comment encoding = UTF-8 /]
 [module generateMock('http://www.eclipse.org/emf/2002/Ecore')]
 
+[import soft::generator::common::generateElement/]
 [import soft::generator::cpp::generateCommon/]
 [import soft::generator::cpp::generateOperation/]
 [import soft::generator::cpp::generateStructuralFeature/]
@@ -10,7 +11,9 @@
     className : String = aClass.getMockName(); 
     classBaseName : String = aClass.getMockBaseName(); 
     namespaceName : String = aClass.ePackage.getTestsNamespaceName();
-    guardName : String = '_'.concat(className); }  ]
+    guardName : String = '_'.concat(className);
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
+	operations : Collection(EOperation) = aClass.getImplementedOperations(); }  ]
 [file (aClass.ePackage.getOutputDirectory() + '/src-gen/' + aClass.ePackage.getTestsFolder() + '/' + className +'.hpp', false, 'UTF-8')]
 [fileComment()/]
 [startGuard(guardName)/]
@@ -28,8 +31,9 @@ namespace [namespaceName/]
     {
     public:
         typedef [aClass.name.toUpperFirst()/] base_type;
-        [aClass.eOperations.generateMock()/]
-        [aClass.eStructuralFeatures.generateMock()/]
+        [features.generateMock()/]
+		[operations.generateMock()/]
+
         // [protected (className)]
         // [/protected]
     };

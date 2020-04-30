@@ -6,7 +6,7 @@
 [import soft::generator::go::lib::generateCommon/]
 
 [template public generateDeclaration(anEOperation : EOperation)]
-[anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/]
+[anEOperation.getOperationName()/]([anEOperation.generateParameterList(false)/]) [anEOperation.generateType()/]
 
 [/template]
 
@@ -17,9 +17,83 @@
 
 [template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? ( anEOperation.isDefault() )]
 // [anEOperation.getOperationName()/] default implementation
-[aClass.generateFunctionReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) [anEOperation.generateType()/] {
+[aClass.generateFunctionImplementationReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(false)/]) [anEOperation.generateType()/] {
     panic("[anEOperation.getOperationName()/] not implemented")
 }
 
+[/template]
+
+[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined())]
+// [anEOperation.getOperationName()/] provides mock implementation
+[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(true)/]) {
+	[aClass.getReceiverName()/].Called([anEOperation.generateParameterCall()/])
+}
+
+
+[/template]
+
+[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (not (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined()))]
+// [anEOperation.getOperationName()/] provides mock implementation
+[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(true)/]) [anEOperation.generateType()/] {
+	ret := [aClass.getReceiverName()/].Called([anEOperation.generateParameterCall()/])
+
+	var r [anEOperation.generateType()/]
+	if rf, ok := ret.Get(0).(func() [anEOperation.generateType()/]); ok {
+		r = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r = ret.Get(0).([anEOperation.generateType()/])
+		}
+	}
+
+	return r
+}
+
+
+[/template]
+
+[template public generateMockTests(aOperation : EOperation, aClass : EClass) ? (aOperation.oclIsUndefined() or aOperation.eGenericType.oclIsUndefined())]
+[let mockName : String =aClass.getMockName()]
+[let methodName : String =aOperation.getOperationName()] 
+[let testMethodName : String ='Test' + mockName + methodName.toUpperFirst()]
+// [testMethodName/] tests method [methodName/]
+func [testMethodName/](t *testing.T) {
+	o := &[mockName/]{}
+[for (aParameter : EParameter | aOperation.eParameters)]
+	[aParameter.name/] := [aParameter.eType.getTestValue(aClass.ePackage)/]
+[/for]
+	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Once()	
+	o.[methodName/]([aOperation.generateParameterCall()/])
+	o.AssertExpectations(t)
+}
+[/let]
+[/let]
+[/let]
+[/template]
+
+[template public generateMockTests(aOperation : EOperation, aClass : EClass) ? (not (aOperation.oclIsUndefined() or aOperation.eGenericType.oclIsUndefined()))]
+[let aPackage : EPackage =aClass.ePackage]
+[let mockName : String =aClass.getMockName()]
+[let methodName : String =aOperation.getOperationName()] 
+[let testMethodName : String ='Test' + mockName + methodName.toUpperFirst()]
+// [testMethodName/] tests method [methodName/]
+func [testMethodName/](t *testing.T) {
+	o := &[mockName/]{}
+[for (aParameter : EParameter | aOperation.eParameters)]
+	[aParameter.name/] := [aParameter.eType.getTestValue(aPackage)/]
+[/for]
+	r := [aOperation.eGenericType.eClassifier.getTestValue(aPackage)/]
+	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Return(r).Once()	
+	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Return( func () [aOperation.generateType()/] {
+		return r
+	}).Once()	
+	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
+	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
+	o.AssertExpectations(t)
+}
+[/let]
+[/let]
+[/let]
+[/let]
 [/template]
 

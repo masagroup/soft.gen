@@ -15,16 +15,18 @@
 
 [query public getReceiverName(aClass : EClass) : String = aClass.name.toLowerFirst()/]
 
-[template public generateFunctionReceiver(aClass : EClass)]
+[template public generateFunctionImplementationReceiver(aClass : EClass)]
 func ([aClass.getReceiverName()/] *[aClass.getImplementationName()/])
+[/template]
+
+[template public generateFunctionMockReceiver(aClass : EClass)]
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
 [/template]
 
 
 [**
  * Classes Onthology
 */]
-
-
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
     if ( aClass.eSuperTypes->isEmpty() ) then
         if ( aClass.name = 'EObject' ) then

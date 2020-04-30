@@ -12,7 +12,7 @@
 // This file is part of a MASA library or program.
 // Refer to the included end-user license agreement for restrictions.
 //
-// Copyright (c) 2019 MASA Group
+// Copyright (c) 2020 MASA Group
 //
 // *****************************************************************************
 
@@ -126,6 +126,7 @@ endif endif endif
 [** Mock Names **/]
 [query public getMockName( aClass : EClass ) : String = aClass.getMockName(aClass.name )/]
 [query private getMockName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'mockName', 'Mock$1')/]
+[query public getQualifiedMockName( aClass : EClass ) : String = aClass.ePackage.name + '.'  + aClass.getMockName()/]
 
 
 [query public getQualifiedExtensionName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getExtensionName()/]
@@ -133,6 +134,8 @@ endif endif endif
 [** FileNames **/]
 [query public getInterfaceFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceFileName', '$1.go').toLower()/]
 [query public getImplementationFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationFileName', '$1_impl.go').toLower()/]
+[query public getMockFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'mockFileName', '$1_mock.go').toLower()/]
+[query public getMockTestFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'mockTestFileName', '$1_mock_test.go').toLower()/]
 [query public getImplementationTestFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationTestFileName', '$1_impl_test.go').toLower()/]
 [query public getFactoryTestFileName( aNamedElement : ENamedElement, packageName : String ) : String = aNamedElement.getElementName( packageName + 'factory', 'implementationTestFileName', '$1_impl_test.go').toLower()/]
 

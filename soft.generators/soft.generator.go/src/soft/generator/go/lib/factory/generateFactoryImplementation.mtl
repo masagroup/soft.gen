@@ -100,8 +100,8 @@ func new[className.toUpperFirst()/]() *[className/] {
     }
 }
 [for (aDataType : EDataType | dataTypes)]
-    [anEPackage.generateCreateFromString(aDataType)/]
-	[anEPackage.generateConvertToString(aDataType)/]
+[anEPackage.generateCreateFromString(aDataType)/]
+[anEPackage.generateConvertToString(aDataType)/]
 [/for]
 [/let]
 [/file]

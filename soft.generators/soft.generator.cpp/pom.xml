@@ -17,11 +17,6 @@
             <artifactId>soft.generator.common</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <dependency>
-        	<groupId>org.apache.maven.plugins</groupId>
-		    <artifactId>maven-resources-plugin</artifactId>
-		    <version>3.1.0</version>
-        </dependency>
     </dependencies>
 
     <build>

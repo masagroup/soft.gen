@@ -1,0 +1,56 @@
+[comment encoding = UTF-8 /]
+[module generateMock('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
+[import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateType/]
+[import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::lib::generateStructuralFeature/]
+[import soft::generator::go::lib::generateOperation/]
+
+[query public getMockExtends(aClass : EClass ) : String =
+    let extendsClass : EClass = aClass.getClassExtendsClass() in
+    if ( extendsClass.oclIsUndefined() ) then
+        if ( aClass.name = 'EObject' ) then
+            'ecore.MockENotifier'
+        else
+            'ecore.MockEObject'
+        endif
+    else
+        extendsClass.getQualifiedMockName()
+    endif 
+/]
+
+[template public generateMock(aClass : EClass) { 
+	aPackage : EPackage = aClass.ePackage;
+	mockExtends : String = aClass.getMockExtends();
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
+	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
+}]
+[file (ePackage.getOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
+[fileComment()/]
+
+package [aPackage.name/]
+
+[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ getImportForPackage('ecore') } else Set{} endif
+										, Set { aPackage.getImport(mockExtends) }
+									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImport( extend ) )->asSet()
+                                        , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
+                                        }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
+[for ( i : String | imports )]
+import "[i/]"
+[/for]
+[/let]
+
+type [aClass.getMockName()/] struct {
+	[getShortQualifiedName( mockExtends ,aPackage.name)/]
+}
+
+[features.generateMock(aClass)/]
+[operations.generateMock(aClass)/]
+
+[/file]
+[/template]
+
+
