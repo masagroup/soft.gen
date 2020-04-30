@@ -83,12 +83,11 @@ func [testMethodName/](t *testing.T) {
 	[aParameter.name/] := [aParameter.eType.getTestValue(aPackage)/]
 [/for]
 	r := [aOperation.eGenericType.eClassifier.getTestValue(aPackage)/]
-	
 	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Return(r).Once()	
-	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
 	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Return( func () [aOperation.generateType()/] {
 		return r
 	}).Once()	
+	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
 	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
 	o.AssertExpectations(t)
 }
