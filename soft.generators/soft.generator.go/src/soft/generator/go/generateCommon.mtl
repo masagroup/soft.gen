@@ -135,6 +135,7 @@ endif endif endif
 [query public getInterfaceFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceFileName', '$1.go').toLower()/]
 [query public getImplementationFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationFileName', '$1_impl.go').toLower()/]
 [query public getMockFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'mockFileName', '$1_mock.go').toLower()/]
+[query public getMockTestFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'mockTestFileName', '$1_mock_test.go').toLower()/]
 [query public getImplementationTestFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationTestFileName', '$1_impl_test.go').toLower()/]
 [query public getFactoryTestFileName( aNamedElement : ENamedElement, packageName : String ) : String = aNamedElement.getElementName( packageName + 'factory', 'implementationTestFileName', '$1_impl_test.go').toLower()/]
 

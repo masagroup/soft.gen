@@ -1,0 +1,53 @@
+[comment encoding = UTF-8 /]
+[module generateMockTests('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
+[import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateType/]
+[import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::lib::generateStructuralFeature/]
+[import soft::generator::go::lib::generateOperation/]
+
+[template public generateMockTests(aClass : EClass) { 
+	aPackage : EPackage = aClass.ePackage;
+	mockName : String = aClass.getMockName();
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
+	operations : Collection(EOperation) = aClass.getImplementedOperations();
+	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() );
+}]
+[file (ePackage.getOutputDirectory() + '/' + aClass.getMockTestFileName(aClass.name), false, 'UTF-8')]
+[fileComment()/]
+
+package [aPackage.name/]
+
+import (
+	"testing"
+	"github.com/stretchr/testify/assert"
+[let imports : OrderedSet(String) = Set { if requiresEcore then Set{ getImportForPackage('ecore') } else Set{} endif
+										, OrderedSet{aClass.eSuperTypes
+              									    ,aClass.getImplementedFeatures().eType}->flatten()->select( cls | not cls.oclIsUndefined() )->collect( cls | aPackage.getImport(cls) )->asSet()
+                                        }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
+[for ( i : String | imports )]
+	"[i/]"
+[/for]
+[/let]
+
+[if requiresEcore]
+	[getImportForPackage('ecore')/]
+[/if]
+)
+
+func discard[mockName.toUpperFirst()/]() {
+	_ = assert.Equal
+	_ = testing.Coverage
+[if requiresEcore]
+	_ = ecore.ADD
+[/if]
+}
+
+[features.generateMockTests(aClass)/]
+[operations.generateMockTests(aClass)/]
+
+[/file]
+[/template]

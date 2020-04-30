@@ -52,3 +52,11 @@
 
 [/template]
 
+[template public generateMockTests(anEOperation : EOperation, aClass : EClass) ? (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined())]
+
+[/template]
+
+[template public generateMockTests(anEOperation : EOperation, aClass : EClass) ? (not (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined()))]
+
+[/template]
+

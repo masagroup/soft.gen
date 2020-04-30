@@ -227,6 +227,18 @@ endif/]
 [/if]
 [/template]
 
+[template public generateMockTests(aStructuralFeature : EStructuralFeature , aClass : EClass)]
+[if isGet()]
+[aStructuralFeature.generateGetMockTest(aClass)/]
+[/if]
+[if isSet()]
+[aStructuralFeature.generateSetMockTest(aClass)/]
+[/if]
+[if isUnSet()]
+[aStructuralFeature.generateUnSetMockTest(aClass)/]
+[/if]
+[/template]
+
 [template public generateGetMock(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [let methodName : String =aStructuralFeature.getGetterName()] 
 // [methodName/] get the value of [aStructuralFeature.getVariableName()/]
@@ -244,6 +256,48 @@ endif/]
 
 	return r
 }
+[/let]
+[/template]
+
+[template public generateGetMockTest(aStructuralFeature : EStructuralFeature, aClass : EClass) ? (not isListType())]
+[let mockName : String =aClass.getMockName()]
+[let getterMethodName : String =aStructuralFeature.getGetterName()] 
+[let testMethodName : String ='Test' + mockName + getterMethodName.toUpperFirst()]
+// [testMethodName/] tests method [getterMethodName/]
+func [testMethodName/](t *testing.T) {
+	o := &[mockName/]{}
+	r := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	o.On("[getterMethodName/]").Once().Return(r)
+	assert.Equal(t,r,o.[getterMethodName/]())
+	
+	o.On("[getterMethodName/]").Once().Return( func () [aStructuralFeature.generateType()/] {
+		return r
+	})
+	assert.Equal(t,r,o.[getterMethodName/]())
+	o.AssertExpectations(t)
+}
+[/let]
+[/let]
+[/let]
+[/template]
+
+[template public generateGetMockTest(aStructuralFeature : EStructuralFeature, aClass : EClass) ? (isListType())]
+[let getterMethodName : String =aStructuralFeature.getGetterName()] 
+[let testMethodName : String ='Test' + getterMethodName.toUpperFirst()]
+// [testMethodName/] tests method [getterMethodName/]
+func [testMethodName/](t *testing.T) {
+	o := &[aClass.getMockName()/]{}
+	l := &[if not isEcorePackage(aClass.ePackage)]ecore.[/if]MockEList{}
+	o.On("[getterMethodName/]").Once().Return(l)
+	assert.Equal(t,l,o.[getterMethodName/]())
+	
+	o.On("[getterMethodName/]").Once().Return( func () [aStructuralFeature.generateType()/] {
+		return l
+	})
+	assert.Equal(t,l,o.[getterMethodName/]())
+	o.AssertExpectations(t)
+}
+[/let]
 [/let]
 [/template]
 
@@ -383,6 +437,26 @@ endif/]
 [/let]
 [/template]
 
+
+[template public generateSetMockTest(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let mockName : String =aClass.getMockName()]
+[let setterMethodName : String =aStructuralFeature.getSetterName()] 
+[let testMethodName : String ='Test' + mockName + setterMethodName.toUpperFirst()]
+// [testMethodName/] tests method [setterMethodName/]
+func [testMethodName/](t *testing.T) {
+	o := &[mockName/]{}
+	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	o.On("[setterMethodName/]",v).Once()
+	
+	o.[setterMethodName/](v)
+	o.AssertExpectations(t)
+}
+[/let]
+[/let]
+[/let]
+[/template]
+
+
 [template public generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let methodName : String = aStructuralFeature.getSetterName()]
@@ -500,6 +574,23 @@ endif/]
 [aClass.generateFunctionMockReceiver()/] [methodName/]() {
 	[aClass.getReceiverName()/].Called()
 }
+[/let]
+[/template]
+
+[template public generateUnSetMockTest(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let mockName : String =aClass.getMockName()]
+[let unsetMethodName : String =aStructuralFeature.getUnSetterName()] 
+[let testMethodName : String ='Test' + mockName + unsetMethodName.toUpperFirst()]
+// [testMethodName/] tests method [unsetMethodName/]
+func [testMethodName/](t *testing.T) {
+	o := &[mockName/]{}
+	o.On("[unsetMethodName/]").Once()
+	
+	o.[unsetMethodName/]()
+	o.AssertExpectations(t)
+}
+[/let]
+[/let]
 [/let]
 [/template]
 

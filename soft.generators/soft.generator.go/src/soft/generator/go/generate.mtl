@@ -9,6 +9,7 @@
 [import soft::generator::go::tests::generateImplementationTests/]
 [import soft::generator::go::tests::generateFactoryTests/]
 [import soft::generator::go::tests::generateMock/]
+[import soft::generator::go::tests::generateMockTests/]
 
 [template public generateModel(aPackage : EPackage)]
 [comment @main/]
@@ -39,6 +40,13 @@
 [comment @main/]
 [for (aClass : EClass | aPackage.eAllContents(EClass))]
 	[aClass.generateMock()/]
+[/for]
+[/template]
+
+[template public generateMocksTests(aPackage : EPackage)]
+[comment @main/]
+[for (aClass : EClass | aPackage.eAllContents(EClass))]
+	[aClass.generateMockTests()/]
 [/for]
 [/template]
 
