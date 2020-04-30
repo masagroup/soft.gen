@@ -25,8 +25,7 @@ import (
 	"testing"
 	"github.com/stretchr/testify/assert"
 [let imports : OrderedSet(String) = Set { if requiresEcore then Set{ getImportForPackage('ecore') } else Set{} endif
-										, OrderedSet{aClass.eSuperTypes
-              									    ,aClass.getImplementedFeatures().eType}->flatten()->select( cls | not cls.oclIsUndefined() )->collect( cls | aPackage.getImport(cls) )->asSet()
+										, aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined() )->collect( cls | aPackage.getImport(cls) )->asSet()
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
 	"[i/]"

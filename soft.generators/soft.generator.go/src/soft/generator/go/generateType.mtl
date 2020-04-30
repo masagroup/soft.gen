@@ -77,7 +77,7 @@
     else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue()
     else if aClassifier.oclIsKindOf( EDataType ) then 
 		let v : String = aClassifier.oclAsType(EDataType).getTestValue() in 
-		if v = 'nil' then getShortQualifiedName(aClassifier.getType(),aPackage.name) + '(' + v + ')' else v endif
+		if v = 'nil' then getShortQualifiedName(aClassifier.getType(),aPackage.name) + '(' + v + ')' else getShortQualifiedName(v,aPackage.name)  endif
     else '' endif endif endif endif	
 /]
 

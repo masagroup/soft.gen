@@ -269,7 +269,6 @@ func [testMethodName/](t *testing.T) {
 	r := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
 	o.On("[getterMethodName/]").Once().Return(r)
 	assert.Equal(t,r,o.[getterMethodName/]())
-	
 	o.On("[getterMethodName/]").Once().Return( func () [aStructuralFeature.generateType()/] {
 		return r
 	})
@@ -290,7 +289,6 @@ func [testMethodName/](t *testing.T) {
 	l := &[if not isEcorePackage(aClass.ePackage)]ecore.[/if]MockEList{}
 	o.On("[getterMethodName/]").Once().Return(l)
 	assert.Equal(t,l,o.[getterMethodName/]())
-	
 	o.On("[getterMethodName/]").Once().Return( func () [aStructuralFeature.generateType()/] {
 		return l
 	})
@@ -447,7 +445,6 @@ func [testMethodName/](t *testing.T) {
 	o := &[mockName/]{}
 	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
 	o.On("[setterMethodName/]",v).Once()
-	
 	o.[setterMethodName/](v)
 	o.AssertExpectations(t)
 }
@@ -585,7 +582,6 @@ func [testMethodName/](t *testing.T) {
 func [testMethodName/](t *testing.T) {
 	o := &[mockName/]{}
 	o.On("[unsetMethodName/]").Once()
-	
 	o.[unsetMethodName/]()
 	o.AssertExpectations(t)
 }

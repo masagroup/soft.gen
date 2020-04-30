@@ -25,7 +25,7 @@
 
 [template public generateMock(anEOperation : EOperation, aClass : EClass) ? (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined())]
 // [anEOperation.getOperationName()/] provides mock implementation
-[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(true)/]) [anEOperation.generateType()/] {
+[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(true)/]) {
 	[aClass.getReceiverName()/].Called([anEOperation.generateParameterCall()/])
 }
 
@@ -52,11 +52,49 @@
 
 [/template]
 
-[template public generateMockTests(anEOperation : EOperation, aClass : EClass) ? (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined())]
-
+[template public generateMockTests(aOperation : EOperation, aClass : EClass) ? (aOperation.oclIsUndefined() or aOperation.eGenericType.oclIsUndefined())]
+[let mockName : String =aClass.getMockName()]
+[let methodName : String =aOperation.getOperationName()] 
+[let testMethodName : String ='Test' + mockName + methodName.toUpperFirst()]
+// [testMethodName/] tests method [methodName/]
+func [testMethodName/](t *testing.T) {
+	o := &[mockName/]{}
+[for (aParameter : EParameter | aOperation.eParameters)]
+	[aParameter.name/] := [aParameter.eType.getTestValue(aClass.ePackage)/]
+[/for]
+	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Once()	
+	o.[methodName/]([aOperation.generateParameterCall()/])
+	o.AssertExpectations(t)
+}
+[/let]
+[/let]
+[/let]
 [/template]
 
-[template public generateMockTests(anEOperation : EOperation, aClass : EClass) ? (not (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined()))]
-
+[template public generateMockTests(aOperation : EOperation, aClass : EClass) ? (not (aOperation.oclIsUndefined() or aOperation.eGenericType.oclIsUndefined()))]
+[let aPackage : EPackage =aClass.ePackage]
+[let mockName : String =aClass.getMockName()]
+[let methodName : String =aOperation.getOperationName()] 
+[let testMethodName : String ='Test' + mockName + methodName.toUpperFirst()]
+// [testMethodName/] tests method [methodName/]
+func [testMethodName/](t *testing.T) {
+	o := &[mockName/]{}
+[for (aParameter : EParameter | aOperation.eParameters)]
+	[aParameter.name/] := [aParameter.eType.getTestValue(aPackage)/]
+[/for]
+	r := [aOperation.eGenericType.eClassifier.getTestValue(aPackage)/]
+	
+	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Return(r).Once()	
+	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
+	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Return( func () [aOperation.generateType()/] {
+		return r
+	}).Once()	
+	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
+	o.AssertExpectations(t)
+}
+[/let]
+[/let]
+[/let]
+[/let]
 [/template]
 
