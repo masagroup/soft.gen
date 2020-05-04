@@ -32,7 +32,7 @@
                                                 '"ecore/EClass.hpp"',
                                                 '"ecore/SmartPtr.hpp"',
                                                 '"ecore/TypeTraits.hpp"',
-                                                '"ecore/impl/EObjectEList.hpp"'
+                                                '"ecore/impl/BasicEObjectList.hpp"'
                                               }
                                         , Set {
                                                 aClass.ePackage.getQualifiedInterfaceName(),
