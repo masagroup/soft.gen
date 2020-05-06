@@ -18,10 +18,15 @@
 [fileComment()/]
 [startGuard(guardName)/]
 
-[for (implInclude : String | aClass.getMockImplements()->asOrderedSet()->sortedBy(s | s))]
-#include "[namespaceToFolder(implInclude)/].hpp"
+[let includes : OrderedSet(String) = Set{ Set { namespaceToFolder(aClass.getMockExtends()) }
+									    , aClass.getMockImplements()->collect( c | namespaceToFolder(c) )->asSet() 
+										, aClass.getReferencedTypes()->selectByKind(EClass)->collect( c | namespaceToFolder(c.getQualifiedInterfaceName()) )->asSet() 
+                                        }->flatten()->asOrderedSet()->sortedBy( s | s)]
+
+[for (i : String | includes)]
+#include "[i/].hpp"
 [/for]
-#include "[namespaceToFolder(aClass.getMockExtends())/].hpp"
+[/let]
 
 namespace [namespaceName/]
 {
