@@ -184,25 +184,7 @@ ecore::Any [className/]<I...>::eGet(int featureID, bool resolve, bool coreType) 
     {
     [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
         case [aClass.getQualifiedIDName(anStructFeature)/]:
-        [if anStructFeature.isListType()]
-        {
-            auto list = [anStructFeature.getGetterName()/]();
-        [if anStructFeature.isFeatureMapType()]
-            return list->asEListOf<ecore::Any>();
-        [else]
-            auto objects = list->asEListOf<std::shared_ptr<ecore::EObject>>();
-            return objects->asEListOf<ecore::Any>();
-        [/if]
-        }
-        [elseif anStructFeature.oclIsKindOf(EReference)]
-        {
-            auto value = [anStructFeature.getGetterName()/]();
-            auto object = std::static_pointer_cast<ecore::EObject>(value);
-            return object;
-        }
-        [else]
-            return [anStructFeature.getGetterName()/]();
-        [/if]
+			return toAny([anStructFeature.getGetterName()/]());
     [/for]
     }
     return [removeNamespace(aClass.getClassExtends())/]::eGet(featureID, resolve, coreType);
@@ -239,12 +221,7 @@ void [aClass.getBaseName()/]<I...>::eSet(int featureID, const [getShortQualified
         {
     [let varName : String = anStructFeature.name.first(1)]
     [if anStructFeature.isListType()]
-    [if anStructFeature.isFeatureMapType()]
-            auto [varName/] = anyListCast<std::shared_ptr<ecore::EFeatureMapEntry>>(newValue);
-    [else]
-            auto list = anyListCast<std::shared_ptr<ecore::EObject>>(newValue);
-            auto [varName/] = list->asEListOf<[anStructFeature.eGenericType.generateCppType( aClass.ePackage )/]>();
-    [/if]
+			auto [varName/] = anyListCast<[anStructFeature.eGenericType.generateCppType( aClass.ePackage )/]>(newValue);
             [anStructFeature.getGetterName()/]()->clear();
             [anStructFeature.getGetterName()/]()->addAll(*[varName/]);
     [else]
@@ -306,10 +283,10 @@ template <typename... I>
         case [aClass.getQualifiedIDName(eOperation)/]:
         {
             [if eOperation.isVoid() ]
-            [eOperation.generateOperationInvoke()/]
+            [eOperation.generateOperationInvoke()/];
             return ecore::Any();
             [else]
-            return [eOperation.generateOperationInvoke()/] 
+            return toAny([eOperation.generateOperationInvoke()/]);
             [/if]
         }
     [/for]
@@ -321,7 +298,7 @@ template <typename... I>
 [/template]
 
 [template private generateOperationInvoke(eOperation : EOperation )]
-[if eOperation.getVisibilityType(true) = 'no' and eOperation.eContainingClass.name = 'EObject']BasicEObject<I...>::[/if][eOperation.name/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())][if needCast][getShortQualifiedName('ecore::anyCast', eOperation.getEPackage().name)/]<[eParameter.generateEffectiveType()/]>([/if]arguments->get([i-1/])[if needCast])[/if][/let][/for]);
+[if eOperation.getVisibilityType(true) = 'no' and eOperation.eContainingClass.name = 'EObject']BasicEObject<I...>::[/if][eOperation.name/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())][if needCast][getShortQualifiedName('ecore::anyCast', eOperation.getEPackage().name)/]<[eParameter.generateEffectiveType()/]>([/if]arguments->get([i-1/])[if needCast])[/if][/let][/for])
 [/template]
 
 
