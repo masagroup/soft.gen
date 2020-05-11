@@ -58,7 +58,7 @@ virtual int eOperationID( const std::shared_ptr<[getShortQualifiedName('ecore::E
 [/template]
 
 [template private generateEGetDeclaration(aClass : EClass)]
-virtual ecore::Any eGet(int featureID, bool resolve, bool coreType) const;
+virtual ecore::Any eGet(int featureID, bool resolve) const;
 [/template]
 
 [template private generateEIsSetDeclaration(aClass : EClass)]
@@ -178,7 +178,7 @@ virtual int [className/]<I...>::eOperationID( const std::shared_ptr<ecore::EObje
 [template private generateEGetDefinition(aClass : EClass)]
 [let className : String = aClass.getBaseName()]
 template <typename... I>
-ecore::Any [className/]<I...>::eGet(int featureID, bool resolve, bool coreType) const
+ecore::Any [className/]<I...>::eGet(int featureID, bool resolve) const
 {
     switch(featureID)
     {
@@ -187,7 +187,7 @@ ecore::Any [className/]<I...>::eGet(int featureID, bool resolve, bool coreType) 
 			return toAny([anStructFeature.getGetterName()/]());
     [/for]
     }
-    return [removeNamespace(aClass.getClassExtends())/]::eGet(featureID, resolve, coreType);
+    return [removeNamespace(aClass.getClassExtends())/]::eGet(featureID, resolve);
 }
 [/let]
 [/template]
