@@ -518,18 +518,18 @@ std::make_shared<ecore::impl::BasicEList<[anEAttribute.eGenericType.generateCppT
 [let typeArgument : String = anEReference.eGenericType.generateCppType(anEReference.getEPackage())]
 [if (anEReference.containment)]
     [if anEReference.eOpposite.oclIsUndefined() ]
-        std::make_shared<ecore::impl::EObjectEList<[typeArgument/],true,true,false,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>(getThisAsEObject(), [aClass.getQualifiedIDName(anEReference)/] )
+        std::make_shared<ecore::impl::BasicEObjectList<[typeArgument/],true,true,false,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>(getThisAsEObject(), [aClass.getQualifiedIDName(anEReference)/] )
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
-        std::make_shared<ecore::impl::EObjectEList<[typeArgument/],true,true,true,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>(getThisAsEObject(), [aClass.getQualifiedIDName(anEReference)/] , [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/])
+        std::make_shared<ecore::impl::BasicEObjectList<[typeArgument/],true,true,true,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>(getThisAsEObject(), [aClass.getQualifiedIDName(anEReference)/] , [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/])
         [/let]
     [/if]
 [else]
     [if anEReference.eOpposite.oclIsUndefined() ]
-        std::make_shared<ecore::impl::EObjectEList<[typeArgument/],false,false,false,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>(getThisAsEObject(), [aClass.getQualifiedIDName(anEReference)/] )
+        std::make_shared<ecore::impl::BasicEObjectList<[typeArgument/],false,false,false,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>(getThisAsEObject(), [aClass.getQualifiedIDName(anEReference)/] )
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
-        std::make_shared<ecore::impl::EObjectEList<[typeArgument/],false,true,true,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>(getThisAsEObject(), [aClass.getQualifiedIDName(anEReference)/] , [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/])
+        std::make_shared<ecore::impl::BasicEObjectList<[typeArgument/],false,true,true,[anEReference.isProxy()/],[anEReference.isUnSettable()/]>>(getThisAsEObject(), [aClass.getQualifiedIDName(anEReference)/] , [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/])
         [/let]
     [/if]
 [/if]
