@@ -184,7 +184,19 @@ ecore::Any [className/]<I...>::eGet(int featureID, bool resolve) const
     {
     [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
         case [aClass.getQualifiedIDName(anStructFeature)/]:
+	[if anStructFeature.isProxy()]
+		[if anStructFeature.isListType()]
+		{
+			auto l = [anStructFeature.getGetterName()/]();
+			return toAny( resolve ? l : l->getUnResolvedList() );
+		}
+		[else]
+			return toAny( resolve ? [anStructFeature.getGetterName()/]()
+								  : basic[anStructFeature.getGetterName().toUpperFirst()/]() );
+		[/if]		
+	[else] 
 			return toAny([anStructFeature.getGetterName()/]());
+	[/if]
     [/for]
     }
     return [removeNamespace(aClass.getClassExtends())/]::eGet(featureID, resolve);
