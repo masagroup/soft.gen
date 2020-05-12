@@ -221,8 +221,12 @@
     [elseif eType.oclIsKindOf(EDataType)]
 		[let comparisonFunction : String = eType.oclAsType(EDataType).getComparisonFunction()]
 		[if comparisonFunction <> '']
-        [aClass.getReceiverName()/].[accessor/].[comparisonFunction/]()
-        [else]
+		[if comparisonFunction.at(1) = '!']
+		![aClass.getReceiverName()/].[accessor/].[comparisonFunction.substring(2)/]()
+		[else]
+		[aClass.getReceiverName()/].[accessor/].[comparisonFunction/]()
+		[/if]		
+		[else]
         [aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue()/]
         [/if]
         [/let]

@@ -238,7 +238,7 @@ func Test[aClass.name.toUpperFirst()/]ESet(t *testing.T) {
 	[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.volatile]
 		_ = o
 	[elseif anStructFeature.isListType()]
-		l := NewImmutableEList(['['/][']'/]interface{}{})
+		l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{})
 		o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], l)
 		assert.Equal(t, 0, o.[anStructFeature.getGetterName()/]().Size())
 		// assert.Equal(t, elem, o.[anStructFeature.getGetterName()/]().Get(0))
