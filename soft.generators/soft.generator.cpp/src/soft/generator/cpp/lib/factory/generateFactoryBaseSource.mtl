@@ -74,9 +74,11 @@ namespace [namespaceName/]
     template <typename... I>
     std::shared_ptr<[aClass.getInterfaceName()/]> [className/]<I...>::create[aClass.name/]() const
     {
-    [let pointerName : String = if aClass.hasExtension() then aClass.getExtensionName() else aClass.getImplementationName() endif]
-        std::shared_ptr<[pointerName/]> element( new [pointerName/]() );
+    [let pointerName : String = if aClass.hasExtension() then aClass.getQualifiedExtensionName() else aClass.getQualifiedImplementationName() endif]
+	[let shortPointerName : String = getShortQualifiedName(pointerName,namespaceName)]
+        std::shared_ptr<[shortPointerName/]> element( new [shortPointerName/]() );
     [/let]
+	[/let]
         element->[getThisPtrSetterName()/](element);
         return element;
     }

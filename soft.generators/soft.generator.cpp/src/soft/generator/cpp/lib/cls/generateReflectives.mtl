@@ -178,7 +178,7 @@ virtual int [className/]<I...>::eOperationID( const std::shared_ptr<ecore::EObje
 [template private generateEGetDefinition(aClass : EClass)]
 [let className : String = aClass.getBaseName()]
 template <typename... I>
-ecore::Any [className/]<I...>::eGet(int featureID, bool resolve) const
+[getShortQualifiedName('ecore::Any', aClass.ePackage.name)/] [className/]<I...>::eGet(int featureID, bool resolve) const
 {
     switch(featureID)
     {
@@ -188,14 +188,14 @@ ecore::Any [className/]<I...>::eGet(int featureID, bool resolve) const
 		[if anStructFeature.isListType()]
 		{
 			auto l = [anStructFeature.getGetterName()/]();
-			return toAny( resolve ? l : l->getUnResolvedList() );
+			return [getShortQualifiedName('ecore::toAny', aClass.ePackage.name)/]( resolve ? l : l->getUnResolvedList() );
 		}
 		[else]
-			return toAny( resolve ? [anStructFeature.getGetterName()/]()
+			return [getShortQualifiedName('ecore::toAny', aClass.ePackage.name)/]( resolve ? [anStructFeature.getGetterName()/]()
 								  : basic[anStructFeature.getGetterName().toUpperFirst()/]() );
 		[/if]		
 	[else] 
-			return toAny([anStructFeature.getGetterName()/]());
+			return [getShortQualifiedName('ecore::toAny', aClass.ePackage.name)/]([anStructFeature.getGetterName()/]());
 	[/if]
     [/for]
     }
@@ -233,16 +233,16 @@ void [aClass.getBaseName()/]<I...>::eSet(int featureID, const [getShortQualified
         {
     [let varName : String = anStructFeature.name.first(1)]
     [if anStructFeature.isListType()]
-			auto [varName/] = anyListCast<[anStructFeature.eGenericType.generateCppType( aClass.ePackage )/]>(newValue);
+			auto [varName/] = [getShortQualifiedName('ecore::anyListCast', aClass.ePackage.name)/]<[anStructFeature.eGenericType.generateCppType( aClass.ePackage )/]>(newValue);
             [anStructFeature.getGetterName()/]()->clear();
             [anStructFeature.getGetterName()/]()->addAll(*[varName/]);
     [else]
         [if anStructFeature.eGenericType.eClassifier.isAny()]
             auto [varName/] = newValue;
         [elseif anStructFeature.eGenericType.eClassifier.oclIsKindOf(EClass)]
-            auto [varName/] = anyObjectCast<[anStructFeature.generateEffectiveType()/]>(newValue);
+            auto [varName/] = [getShortQualifiedName('ecore::anyObjectCast', aClass.ePackage.name)/]<[anStructFeature.generateEffectiveType()/]>(newValue);
         [else]
-            auto [varName/] = anyCast<[anStructFeature.generateEffectiveType()/]>(newValue);
+            auto [varName/] = [getShortQualifiedName('ecore::anyCast', aClass.ePackage.name)/]<[anStructFeature.generateEffectiveType()/]>(newValue);
         [/if]
             [anStructFeature.getSetterName()/]([varName/]);
     [/if]
@@ -296,9 +296,9 @@ template <typename... I>
         {
             [if eOperation.isVoid() ]
             [eOperation.generateOperationInvoke()/];
-            return ecore::Any();
+            return [getShortQualifiedName('ecore::Any', aClass.ePackage.name)/]();
             [else]
-            return toAny([eOperation.generateOperationInvoke()/]);
+            return [getShortQualifiedName('ecore::toAny', aClass.ePackage.name)/]([eOperation.generateOperationInvoke()/]);
             [/if]
         }
     [/for]
