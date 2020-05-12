@@ -233,16 +233,16 @@ void [aClass.getBaseName()/]<I...>::eSet(int featureID, const [getShortQualified
         {
     [let varName : String = anStructFeature.name.first(1)]
     [if anStructFeature.isListType()]
-			auto [varName/] = anyListCast<[anStructFeature.eGenericType.generateCppType( aClass.ePackage )/]>(newValue);
+			auto [varName/] = [getShortQualifiedName('ecore::anyListCast', aClass.ePackage.name)/]<[anStructFeature.eGenericType.generateCppType( aClass.ePackage )/]>(newValue);
             [anStructFeature.getGetterName()/]()->clear();
             [anStructFeature.getGetterName()/]()->addAll(*[varName/]);
     [else]
         [if anStructFeature.eGenericType.eClassifier.isAny()]
             auto [varName/] = newValue;
         [elseif anStructFeature.eGenericType.eClassifier.oclIsKindOf(EClass)]
-            auto [varName/] = anyObjectCast<[anStructFeature.generateEffectiveType()/]>(newValue);
+            auto [varName/] = [getShortQualifiedName('ecore::anyObjectCast', aClass.ePackage.name)/]<[anStructFeature.generateEffectiveType()/]>(newValue);
         [else]
-            auto [varName/] = anyCast<[anStructFeature.generateEffectiveType()/]>(newValue);
+            auto [varName/] = [getShortQualifiedName('ecore::anyCast', aClass.ePackage.name)/]<[anStructFeature.generateEffectiveType()/]>(newValue);
         [/if]
             [anStructFeature.getSetterName()/]([varName/]);
     [/if]
