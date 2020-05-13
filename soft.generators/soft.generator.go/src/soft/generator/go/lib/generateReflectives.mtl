@@ -92,14 +92,31 @@
 [/template]
 
 [template private generateEGetDefinition(aClass : EClass)]
-[aClass.generateFunctionImplementationReceiver()/] EGetFromID(featureID int, resolve, coreType bool) interface{} {
+[aClass.generateFunctionImplementationReceiver()/] EGetFromID(featureID int, resolve bool) interface{} {
     switch featureID {
     [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
     case [aClass.getQualifiedIDName(anStructFeature)/]:
+	[if anStructFeature.isProxy()]
+		[if anStructFeature.isListType()]
+		eList := [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]();
+		if !resolve {
+			if eObjectList , _ := eList.(EObjectList); eObjectList != nil {
+				return eObjectList.GetUnResolvedList()
+			}
+		}
+		return eList
+		[else]
+		if resolve {
+			return [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
+		}
+		return  [aClass.getReceiverName()/].basic[anStructFeature.getGetterName().toUpperFirst()/]()
+		[/if]		
+	[else] 
         return [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
+	[/if]
     [/for]
     default:
-        return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EGetFromID(featureID, resolve, coreType)
+        return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EGetFromID(featureID, resolve)
     }
 }
 [/template]
