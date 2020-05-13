@@ -148,11 +148,11 @@ func Test[aClass.name.toUpperFirst()/]EGet(t *testing.T) {
 		[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.volatile]
 		_ = o
 		[elseif not anStructFeature.isContainer() and anStructFeature.isVolatile() and not anStructFeature.hasKey('getterBody')]
-		assert.Panics(t, func() { o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false, false) })
+		assert.Panics(t, func() { o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], true) })
 		[elseif not anStructFeature.isContainer() and not anStructFeature.isVolatile() and lazy <> 'no' and lazy = 'action']
 		_ = o
 		[else]
-		assert.Equal(t, o.[anStructFeature.getGetterName()/](), o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false, false))
+		assert.Equal(t, o.[anStructFeature.getGetterName()/](), o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], true))
 		[/if]
 	[/let]
 	}
