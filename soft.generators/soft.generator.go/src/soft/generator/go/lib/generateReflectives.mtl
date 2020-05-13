@@ -98,13 +98,13 @@
     case [aClass.getQualifiedIDName(anStructFeature)/]:
 	[if anStructFeature.isProxy()]
 		[if anStructFeature.isListType()]
-		eList := [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]();
+		list := [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]();
 		if !resolve {
-			if eObjectList , _ := eList.([if not aClass.ePackage.isEcorePackage()]ecore.[/if]EObjectList); eObjectList != nil {
-				return eObjectList.GetUnResolvedList()
+			if objects , _ := list.([if not aClass.ePackage.isEcorePackage()]ecore.[/if]EObjectList); objects != nil {
+				return objects.GetUnResolvedList()
 			}
 		}
-		return eList
+		return list
 		[else]
 		if resolve {
 			return [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
@@ -140,23 +140,19 @@
     switch featureID {
 [for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
     case [aClass.getQualifiedIDName(anStructFeature)/]:
-    [let varName : String = anStructFeature.name.first(1)]
-        [varName/] := newValue.([anStructFeature.generateType()/])
     [if anStructFeature.isListType()]
-        [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Clear()
-        [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().AddAll([varName/])
+		list := [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
+        list.Clear()
+        list.AddAll(newValue.([anStructFeature.generateType()/]))
     [else]
-        [aClass.getReceiverName()/].[anStructFeature.getSetterName()/]([varName/])
-    [/if]
-    [/let]
+        [aClass.getReceiverName()/].[anStructFeature.getSetterName()/](newValue.([anStructFeature.generateType()/]))
+    [/if]    
 [/for]
     default:
         [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].ESetFromID(featureID, newValue)
     }
 }
 [/template]
-
-
 
 [template private generateEUnSetDefinition(aClass : EClass)]
 [aClass.generateFunctionImplementationReceiver()/] EUnsetFromID(featureID int) {
