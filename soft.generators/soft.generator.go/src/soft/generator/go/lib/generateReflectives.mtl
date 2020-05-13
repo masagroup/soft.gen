@@ -100,7 +100,7 @@
 		[if anStructFeature.isListType()]
 		eList := [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]();
 		if !resolve {
-			if eObjectList , _ := eList.(EObjectList); eObjectList != nil {
+			if eObjectList , _ := eList.([if not aClass.ePackage.isEcorePackage()]ecore.[/if]EObjectList); eObjectList != nil {
 				return eObjectList.GetUnResolvedList()
 			}
 		}
