@@ -112,23 +112,23 @@ endif/]
 [let receiverName : String = aClass.getReceiverName()]
 [if (anEReference.containment)]
     [if anEReference.eOpposite.oclIsUndefined() ]
-[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].AsEObjectInternal() , [aClass.getFeatureIDName(anEReference)/] , -1, true , true , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEObjectList([receiverName/].AsEObjectInternal() , [aClass.getFeatureIDName(anEReference)/] , -1, true , true , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].AsEObjectInternal() , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEObjectList([receiverName/].AsEObjectInternal() , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
         [/let]
         [/let]
     [/if]
 [else]
     [if anEReference.eOpposite.oclIsUndefined() ]
         [let featureID : String = anEReference.eContainingClass.getFeatureIDName( anEReference )]
-[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].AsEObjectInternal() , [featureID/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEObjectList([receiverName/].AsEObjectInternal() , [featureID/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
         [/let]
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-[if not aPackage.isEcorePackage()]ecore.[/if]NewEObjectEList([receiverName/].AsEObjectInternal() , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]  )
+[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEObjectList([receiverName/].AsEObjectInternal() , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]  )
         [/let]
         [/let]
     [/if]
