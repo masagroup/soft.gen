@@ -98,7 +98,7 @@
     case [aClass.getQualifiedIDName(anStructFeature)/]:
 	[if anStructFeature.isProxy()]
 		[if anStructFeature.isListType()]
-		list := [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]();
+		list := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]();
 		if !resolve {
 			if objects , _ := list.([if not aClass.ePackage.isEcorePackage()]ecore.[/if]EObjectList); objects != nil {
 				return objects.GetUnResolvedList()
@@ -107,12 +107,12 @@
 		return list
 		[else]
 		if resolve {
-			return [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
+			return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
 		}
 		return  [aClass.getReceiverName()/].basic[anStructFeature.getGetterName().toUpperFirst()/]()
 		[/if]		
 	[else] 
-        return [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
+        return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
 	[/if]
     [/for]
     default:
@@ -141,11 +141,11 @@
 [for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
     case [aClass.getQualifiedIDName(anStructFeature)/]:
     [if anStructFeature.isListType()]
-		list := [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
+		list := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
         list.Clear()
         list.AddAll(newValue.([anStructFeature.generateType()/]))
     [else]
-        [aClass.getReceiverName()/].[anStructFeature.getSetterName()/](newValue.([anStructFeature.generateType()/]))
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue.([anStructFeature.generateType()/]))
     [/if]    
 [/for]
     default:
@@ -160,18 +160,18 @@
 [for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
     case [aClass.getQualifiedIDName(aStructFeature)/]:
     [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
-        [aClass.getReceiverName()/].[aStructFeature.getGetterName()/]().Clear()
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getGetterName()/]().Clear()
     [elseif aStructFeature.isUnSet() ]
-        [aClass.getReceiverName()/].[aStructFeature.getUnSetterName()/]()
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getUnSetterName()/]()
     [elseif aStructFeature.oclIsKindOf(EReference)]
-        [aClass.getReceiverName()/].[aStructFeature.getSetterName()/](nil)
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/](nil)
     [else]
 		[let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
 		[let defaultValue : String = aAttribute.getDefaultValue()]
 		[if defaultValue <> '']
-        [aClass.getReceiverName()/].[aStructFeature.getSetterName()/]([defaultValue/])
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/]([defaultValue/])
         [else]
-        [aClass.getReceiverName()/].[aStructFeature.getSetterName()/]([aAttribute.eType.getType()/]{})
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/]([aAttribute.eType.getType()/]{})
         [/if]
         [/let]
         [/let]
@@ -190,10 +190,10 @@
     [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy( getOperationName() ) )]
     case [aClass.getQualifiedIDName(eOperation)/]:
         [if eOperation.isVoid() ]
-        [aClass.getReceiverName()/].[eOperation.generateOperationInvoke()/]
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[eOperation.generateOperationInvoke()/]
         return nil
         [else]
-        return [aClass.getReceiverName()/].[eOperation.generateOperationInvoke()/] 
+        return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[eOperation.generateOperationInvoke()/] 
         [/if]
     [/for]
     default:
@@ -228,7 +228,7 @@
         [aClass.getReceiverName()/].[aAttribute.getGetterName()/]().Size() != 0
     [/if]
 [else]
-    [let accessor : String = if isField() then aAttribute.getVariableName() else aAttribute.getGetterName()+'()' endif]
+    [let accessor : String = if isField() then aAttribute.getVariableName() else 'as'+ aClass.getInterfaceName()+ '().' + aAttribute.getGetterName()+'()' endif]
     [if eType.oclIsKindOf(EEnum)]
         [aClass.getReceiverName()/].[accessor/] != [aAttribute.generateDefaultValue()/]
     [elseif eType.oclIsKindOf(EDataType)]
