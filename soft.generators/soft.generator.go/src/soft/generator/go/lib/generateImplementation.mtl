@@ -49,8 +49,8 @@ func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
     [fieldFeatures.generateVariableInitialization(aClass)/]
     return [aClass.getReceiverName()/]
 }
-
 [if initializerFeatures->notEmpty()]
+
 type [aClass.getInitializersInterface()/] interface {
     [initializerFeatures.generateVariableInitializationMethodDeclaration()/]
 }
@@ -59,6 +59,12 @@ type [aClass.getInitializersInterface()/] interface {
     return [aClass.getReceiverName()/].AsEObject().([aClass.getInitializersInterface()/])
 }
 [/if]
+
+[let interfaceName : String = aClass.getInterfaceName()]
+[aClass.generateFunctionImplementationReceiver()/] as[interfaceName/]() [interfaceName/] {
+	return [aClass.getReceiverName()/].GetInterfaces().([interfaceName/])
+}
+[/let]
 
 [aClass.generateFunctionImplementationReceiver()/] EStaticClass() [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
     return GetPackage().[aClass.getReflectiveGetterName()/]()
