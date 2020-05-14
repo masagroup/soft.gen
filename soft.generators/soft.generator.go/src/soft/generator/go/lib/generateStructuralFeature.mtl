@@ -101,11 +101,16 @@ endif/]
 [template private getListConstructor( anEAttribute : EStructuralFeature , aClass : EClass) post(trim())]
 [/template]
 
-[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) post(trim())]
+[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
 [let aPackage : EPackage = aClass.ePackage]
 [if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEList([anEAttribute.unique/])
 [/let]
 [/template]
+
+[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (anEAttribute.isFeatureMapType()) post(trim()) ]
+nil
+[/template]
+
 
 [template private getListConstructor( anEReference : EReference , aClass : EClass ) post(trim())]
 [let aPackage : EPackage = aClass.ePackage]
@@ -143,16 +148,14 @@ endif/]
 [/template]
 
 [template public generateVariableInitialization(aStructuralFeature : EStructuralFeature, aClass : EClass )]
-[if aStructuralFeature.oclIsKindOf(EAttribute) ]
-[let defaultValue : String = aStructuralFeature.oclAsType(EAttribute).getDefaultValue()]
+[/template]
+
+[template public generateVariableInitialization(aAttribute : EAttribute, aClass : EClass ) ]
+[let defaultValue : String = aAttribute.getDefaultValue()]
 [if defaultValue <> '']
-[aClass.getReceiverName()/].[aStructuralFeature.getVariableName()/] = [defaultValue/]
+[aClass.getReceiverName()/].[aAttribute.getVariableName()/] = [defaultValue/]
 [/if]
 [/let]
-[elseif aStructuralFeature.isListType() and not aStructuralFeature.isLazy()]
-[aClass.getReceiverName()/].[aStructuralFeature.getVariableName()/] = [aStructuralFeature.getListConstructor(aClass)/]
-[else]
-[/if]
 [/template]
 
 [template public generateVariableInitializationMethodDeclaration(aStructuralFeature : EStructuralFeature)]
@@ -354,8 +357,8 @@ func [testMethodName/](t *testing.T) {
         }
         [/let]
         [/let]
-    } 
-    [else]
+    }
+    [elseif aStructuralFeature.isLazy()]
         [let lazy : String = aStructuralFeature.getLazy()]
         [if lazy <> 'no']
             [if  lazy = 'function']
@@ -371,7 +374,11 @@ func [testMethodName/](t *testing.T) {
             [/if]
         [/if]
         [/let]
-    [/if]
+	[elseif aStructuralFeature.isListType()]
+	if [receiverName/].[varName/] == nil {
+		[receiverName/].[varName/] = [aStructuralFeature.getListConstructor(aClass)/]
+	}
+	[/if]
     return [receiverName/].[varName/]
 [elseif hasKey('getterBody')]
     [valueKey('getterBody')/]

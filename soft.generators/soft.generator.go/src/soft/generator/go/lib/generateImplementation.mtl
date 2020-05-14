@@ -15,7 +15,7 @@
 	aPackage : EPackage = aClass.ePackage; 
 	classExtend : String = aClass.getClassExtends();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
-	fieldFeatures : Collection(EStructuralFeature) = features->select(isField());
+	variableFeatures : Collection(EStructuralFeature) = features->select(isField());
 	initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 }]
@@ -46,7 +46,7 @@ func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
     [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
     [aClass.getReceiverName()/].[getUnQualifiedName(classExtend)/] = [getShortQualifiedName(getConstructorName(classExtend), aPackage.name)/]()
     [aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/]) 
-    [fieldFeatures.generateVariableInitialization(aClass)/]
+    [variableFeatures.generateVariableInitialization(aClass)/]
     return [aClass.getReceiverName()/]
 }
 [if initializerFeatures->notEmpty()]
