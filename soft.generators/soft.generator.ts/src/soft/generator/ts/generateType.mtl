@@ -103,3 +103,29 @@ void
     endif
  ) 
 /]
+
+
+[query public getDefaultValue(anEAttribute : EAttribute) : String = if (defaultValueLiteral->notEmpty()) then defaultValueLiteral else eType.getDefaultValue() endif/]
+
+
+[query public getDefaultValue(aClassifier : EClassifier) : String =
+    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue()
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue()
+    else 'null' endif endif
+/]
+
+[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.eLiterals->at(1).name.toUpperCase() else 0 endif/]
+
+[query public getDefaultValue(aDataType : EDataType) : String =
+    getAllDataTypes()->iterate( s ; res : String = '' |
+    if res = '' then
+        if s->exists(n : String | n = aDataType.name) then
+            s->at( s->size() - 1 )
+        else
+            res
+        endif
+    else 
+        res 
+    endif
+ ) 
+/]
