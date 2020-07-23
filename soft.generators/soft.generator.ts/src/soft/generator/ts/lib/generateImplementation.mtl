@@ -6,10 +6,12 @@
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
+[import soft::generator::ts::lib::generateStructuralFeature/]
 
 [template public generateImplementation(aClass : EClass) { 
 	className : String = aClass.getImplementationName();
 	classExtend : String = aClass.getClassExtends(); 
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
 	aPackage : EPackage = aClass.ePackage; 
 	classImplements : Sequence(String) = aClass.getClassImplements();
 }]
@@ -41,6 +43,7 @@ import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 
 export class [className/] extends [classExtend/] [for ( interface : String | classImplements) before(' implements ') separator (',')][interface/][/for]
 {
+	[features.generateVariableDeclaration()/]
 }
 
 [/file]

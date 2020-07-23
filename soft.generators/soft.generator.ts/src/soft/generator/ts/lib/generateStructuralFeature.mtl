@@ -4,6 +4,72 @@
 [import soft::generator::common::generateCommon /]
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType /]
+[import soft::generator::ts::lib::generateCommon /]
+
+[**
+ * lazy property can be defined as follow lazy = no|function|action
+ **]
+[query public getLazy( aStructuralFeature : EStructuralFeature ) : String =
+if aStructuralFeature.hasKey('lazy') then 
+    aStructuralFeature.valueKey('lazy')
+else
+    let aPackage : EPackage = aStructuralFeature.eContainingClass.ePackage in
+    if aStructuralFeature.isListType() then
+        aPackage.getLazy('list')
+    else if aStructuralFeature.isProxy() then
+        aPackage.getLazy('proxy')
+    else 
+        aPackage.getLazy('')
+    endif
+    endif
+endif/]
+
+[**
+ * lazy property can be defined as follow lazy = ((*|list|proxy):(no|function|action))+
+ **]
+[query private getLazy( aPackage : EPackage , type : String ) : String =
+if aPackage.hasKey('lazy') then
+    let lazy : String = aPackage.valueKey('lazy') in
+    let value : String = lazy.tokenize()->iterate( s ; res: String = '' | (
+        if res = '' then 
+            let index : Integer = s.index( ':' ) in 
+            if index = -1 then
+                s
+            else
+                let t : String = s.substring(1 , index - 1 ) in
+                if t = type then
+                    s.substring( index + 1 )
+                else
+                    ''
+                endif
+            endif
+        else
+            res
+        endif
+    )) in
+    if value = '' then
+        'no'
+    else
+        value
+    endif
+else 
+    'no'
+endif
+/]
+
+[query public isLazy( aStructuralFeature : EStructuralFeature ) : Boolean = aStructuralFeature.getLazy() <> 'no'/] 
+
+[query public isInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
+
+[query public hasInitializationMethod( aStructuralFeature : EStructuralFeature ) : Boolean = 
+not isVolatile() and isLazy() and ( let lazyType : String = aStructuralFeature.getLazy() in lazyType = 'action' or lazyType = 'function')/]
+
+[query private getMethodInitializationName(feature : EStructuralFeature) : String = 
+if hasKey('initializationName') then 
+    valueKey('initializationName') 
+else 
+    'init'.concat(name.toUpperFirst()) 
+endif/]
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature)]
 [if isGet() or isSet()]
@@ -20,4 +86,142 @@
 
 [template private generateUnSetDeclaration(aStructuralFeature : EStructuralFeature)]
 [aStructuralFeature.getUnSetterName()/]() : void;
+[/template]
+
+[template public generateVariableDeclaration(aStructuralFeature : EStructuralFeature)]
+[aStructuralFeature.getVariableName()/] : [aStructuralFeature.generateType()/];
+
+[/template]
+
+[template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
+[if isGet()]
+[aStructuralFeature.generateGetImplementation(aClass)/]
+[/if]
+[/template]
+
+[template public generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+// get the value of [aStructuralFeature.name/]
+get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
+[let aPackage : EPackage =  aClass.ePackage ]
+[let varName : String = aStructuralFeature.getVariableName() ]
+[if isContainer()]
+    if this.eContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] {
+        return this.eContainer().([aStructuralFeature.generateType()/]);
+    } 
+    return null;
+[elseif not isVolatile()]
+    [if not isListType() and isProxy()]
+    if this.[varName/] != null && this.[varName/].eIsProxy() {
+        [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
+        [let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
+        [oldVarName/] := this.[varName/];
+        [newVarName/] := this.eResolveProxy([oldVarName/]).([aStructuralFeature.generateType()/]);
+        this.[varName/] = [newVarName/]
+        if [newVarName/] != [oldVarName/] {
+        [if isContains()]
+            let notifications : ENotificationChain = null;
+            [if not isBidirectional()]
+            notifications = (<EObjectInternal>[oldVarName/]).eInverseRemove( this, EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications );
+            [else]
+                [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+                [let reverseClass : EClass = reverseFeature.eContainingClass]
+            notifications = (<EObjectInternal>[oldVarName/]).eInverseRemove( this, [reverseClass.getFeatureIDName(reverseFeature)/] , notifications );
+                [/let]
+                [/let]
+            [/if]
+            if [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInternalContainer() == nil {
+            [if not isBidirectional()]
+            notifications = (<EObjectInternal>[newVarName/]).eInverseAdd( this, EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications );
+            [else]
+                [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+                [let reverseClass : EClass = reverseFeature.eContainingClass]
+            notifications = (<EObjectInternal>[newVarName/]).eInverseAdd( this, [reverseClass.getFeatureIDName(reverseFeature)/] , notifications );
+                [/let]
+                [/let]
+            [/if]
+            }
+            if notifications != null {
+                notifications.Dispatch();
+            }
+        [/if]
+            if this.eNotificationRequired() {
+                this.eNotify( new Notification(this, EventType.RESOLVE, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], NO_INDEX) );
+            }
+        }
+        [/let]
+        [/let]
+    }
+    [elseif aStructuralFeature.isLazy()]
+        [let lazy : String = aStructuralFeature.getLazy()]
+        [if lazy <> 'no']
+            [if  lazy = 'function']
+                [if aStructuralFeature.oclIsKindOf(EAttribute)]
+    if this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/] {
+                [else]
+    if this.[varName/] == null {
+                [/if]
+        this.[varName/] = this.[aStructuralFeature.getMethodInitializationName()/]();
+    }
+            [elseif lazy = 'action']
+    this.[aStructuralFeature.getMethodInitializationName()/]();
+            [/if]
+        [/if]
+        [/let]
+	[elseif aStructuralFeature.isListType()]
+	if this.[varName/] == null {
+		this.[varName/] = [aStructuralFeature.getListConstructor(aClass)/]
+	}
+	[/if]
+    return this.[varName/];
+[elseif hasKey('getterBody')]
+    [valueKey('getterBody')/]
+[else]
+	throw new Error("get [aStructuralFeature.name/] not implemented");
+[/if]
+[/let]
+[/let]
+}
+[/template]
+
+
+[template private getListConstructor( anEAttribute : EStructuralFeature , aClass : EClass) post(trim())]
+[/template]
+
+[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
+[let aPackage : EPackage = aClass.ePackage]
+new BasicEList([anEAttribute.unique/])
+[/let]
+[/template]
+
+[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (anEAttribute.isFeatureMapType()) post(trim()) ]
+null
+[/template]
+
+
+[template private getListConstructor( anEReference : EReference , aClass : EClass ) post(trim())]
+[let aPackage : EPackage = aClass.ePackage]
+[if (anEReference.containment)]
+    [if anEReference.eOpposite.oclIsUndefined() ]
+new BasicEObjectList(this , [aClass.getFeatureIDName(anEReference)/] , -1, true , true , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+    [else]
+        [let reverseFeature :EReference = anEReference.eOpposite ]
+        [let reverseClass :EClass = reverseFeature.eContainingClass ]
+new BasicEObjectList(this , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+        [/let]
+        [/let]
+    [/if]
+[else]
+    [if anEReference.eOpposite.oclIsUndefined() ]
+        [let featureID : String = anEReference.eContainingClass.getFeatureIDName( anEReference )]
+new BasicEObjectList(this , [featureID/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+        [/let]
+    [else]
+        [let reverseFeature :EReference = anEReference.eOpposite ]
+        [let reverseClass :EClass = reverseFeature.eContainingClass ]
+new BasicEObjectList(this , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]  )
+        [/let]
+        [/let]
+    [/if]
+[/if]
+[/let]
 [/template]
