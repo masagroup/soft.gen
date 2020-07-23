@@ -64,6 +64,7 @@ public class Generator extends AbstractAcceleoGenerator {
 
     private String moduleName;
     private String[] defaultTemplates;
+    private String nsURI;
 
     private String modelPath;
     private String targetPath;
@@ -72,8 +73,9 @@ public class Generator extends AbstractAcceleoGenerator {
     private List<String> propertiesFiles = new ArrayList<String>();
     private boolean silentMode = false;
 
-    protected Generator(String moduleName, String[] defaultTemplates) {
+    protected Generator(String moduleName, String nsURI, String[] defaultTemplates) {
         this.moduleName = moduleName;
+        this.nsURI = nsURI;
         this.defaultTemplates = defaultTemplates;
     }
 
@@ -159,6 +161,7 @@ public class Generator extends AbstractAcceleoGenerator {
             properties = new Properties();
             if (line.hasOption("p"))
                 properties = line.getOptionProperties("p");
+            properties.put("nsURI", nsURI);
 
             // silent mode
             silentMode = false;

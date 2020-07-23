@@ -16,6 +16,11 @@ public class Generate extends Generator {
     public static final String MODULE_FILE_NAME = "/soft/generator/go/generate";
 
     /**
+     * The namespace URI of the Go generator
+     */
+    public static final String NS_URI = "http://net.masagroup/soft/2019/GenGo";
+
+    /**
      * The name of the templates that are to be generated.
      */
     public static final String[] TEMPLATE_NAMES = { "generateModel",
@@ -24,7 +29,7 @@ public class Generate extends Generator {
                                                     "generateMocksTests" };
 
     private Generate() {
-        super(MODULE_FILE_NAME, TEMPLATE_NAMES);
+        super(MODULE_FILE_NAME, NS_URI, TEMPLATE_NAMES);
     }
 
     public static void main(String[] args) {
