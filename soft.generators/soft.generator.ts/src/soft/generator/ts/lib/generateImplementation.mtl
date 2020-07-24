@@ -28,14 +28,30 @@
 		res
 	endif
 ))]
+[let listTypes : OclAny = if aClass.requiresList() then 
+							   mapNew().mapPut('BasicEObjectList' , getTypeImport('BasicEObjectList'))
+									   .mapPut('BasicEList', getTypeImport('BasicEList') ) 
+					 	  else mapNew() 
+						  endif]
+[let notificationTypes : OclAny = if features->exists(requiresNotification()) then 
+								       mapNew().mapPut('ENotification' , getTypeImport('ENotification'))
+									           .mapPut('ENotificationChain' , getTypeImport('ENotificationChain'))
+			                                   .mapPut('Notification' , getTypeImport('Notification'))
+								               .mapPut('EventType',getTypeImport('ENotification')) 
+								  else mapNew() 
+								  endif]
 [let importTypes : OclAny = mapNew()
 							 .mapPut(classExtend,getTypeImport(classExtend))
+							 .mapPutAll(notificationTypes)
 							 .mapPutAll(implementsTypes)
 							 .mapPutAll(referencesTypes)
+							 .mapPutAll(listTypes)
 							 ]
 [for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
 import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 [/for]
+[/let]
+[/let]
 [/let]
 [/let]
 [/let]

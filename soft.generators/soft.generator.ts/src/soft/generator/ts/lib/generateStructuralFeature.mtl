@@ -9,6 +9,8 @@
 
 [query public isInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
 
+[query public requiresNotification( aStructuralFeature : EStructuralFeature ) : Boolean = isSet() or isUnSet()/]
+
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature)]
 [if isGet() or isSet()]
 [aStructuralFeature.generatePropertyDeclaration()/]
@@ -36,9 +38,11 @@
 [aStructuralFeature.generateGetImplementation(aClass)/]
 [/if]
 [if isSet()]
+
 [aStructuralFeature.generateSetImplementation(aClass)/]
 [/if]
 [if isBasicGet()]
+
 [aStructuralFeature.generateBasicGetImplementation(aClass)/]
 [/if]
 [/template]
@@ -65,21 +69,21 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
         [if isContains()]
             let notifications : ENotificationChain = null;
             [if not isBidirectional()]
-            notifications = ([oldVarName/] as EObjectInternal).eInverseRemove( this, EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications );
+            notifications = ([oldVarName/] as EObjectInternal).eInverseRemove(this,EOPPOSITE_FEATURE_BASE-[aClass.getFeatureIDName(aStructuralFeature)/],notifications);
             [else]
                 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
                 [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = ([oldVarName/] as EObjectInternal).eInverseRemove( this, [reverseClass.getFeatureIDName(reverseFeature)/] , notifications );
+            notifications = ([oldVarName/] as EObjectInternal).eInverseRemove(this,[reverseClass.getFeatureIDName(reverseFeature)/],notifications);
                 [/let]
                 [/let]
             [/if]
             if ([newVarName/] as EObjectInternal).eInternalContainer() == null) {
             [if not isBidirectional()]
-            notifications = ([newVarName/] as EObjectInternal).eInverseAdd( this, EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications );
+            notifications = ([newVarName/] as EObjectInternal).eInverseAdd(this,EOPPOSITE_FEATURE_BASE-[aClass.getFeatureIDName(aStructuralFeature)/],notifications);
             [else]
                 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
                 [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = ([newVarName/] as EObjectInternal).eInverseAdd( this, [reverseClass.getFeatureIDName(reverseFeature)/] , notifications );
+            notifications = ([newVarName/] as EObjectInternal).eInverseAdd(this, [reverseClass.getFeatureIDName(reverseFeature)/],notifications);
                 [/let]
                 [/let]
             [/if]
@@ -89,7 +93,7 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
             }
         [/if]
             if (this.eNotificationRequired) {
-                this.eNotify( new Notification(this, EventType.RESOLVE, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], NO_INDEX) );
+                this.eNotify(new Notification(this, EventType.RESOLVE, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], NO_INDEX));
             }
         }
         [/let]
@@ -128,6 +132,7 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
 [/template]
 
 [template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+// get the basic value of [aStructuralFeature.name/] with no proxy resolution
 basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.generateType()/] {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
@@ -135,7 +140,7 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
     if (this.EContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]) {
         return this.eContainer() as [aStructuralFeature.generateType()/];
     } 
-    return null
+    return null;
 [elseif not isVolatile()]
     [let lazy : String = aStructuralFeature.getLazy()]
     [if lazy <> 'no']
@@ -145,10 +150,10 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
             [else]
     if (this.[varName/] == null) {
             [/if]
-        this.[varName/] = this.[aStructuralFeature.getInitializationMethodName()/]()
+        this.[varName/] = this.[aStructuralFeature.getInitializationMethodName()/]();
     }
         [elseif lazy = 'action']
-    this.[aStructuralFeature.getInitializationMethodName()/]()
+    this.[aStructuralFeature.getInitializationMethodName()/]();
         [/if]
     [/if]
     [/let]
@@ -156,7 +161,7 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
 [elseif hasKey('getterBody')]
     [valueKey('getterBody')/]
 [else]
-    panic("basicGet[aStructuralFeature.name.toUpperFirst()/] not implemented")
+    throw new Error("basicGet[aStructuralFeature.name.toUpperFirst()/] not implemented");
 [/if]
 [/let]
 [/let]
@@ -167,8 +172,8 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
 [template public generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[let newVarName : String = 'new' + varName.toUpperFirst() ]
-[let oldVarName : String = 'old' + varName.toUpperFirst() ]
+[let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst() ]
+[let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst() ]
 // set the value of [aStructuralFeature.name/]
 set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType()/] ) {
 [if not isVolatile()]
@@ -183,7 +188,7 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
         }
         notifications = this.basicSet[aStructuralFeature.name.toUpperFirst()/]( [newVarName/], notifications );
         if ( notifications != null ) {
-            notifications.Dispatch();
+            notifications.dispatch();
         }
     } else if (this.eNotificationRequired) {
         this.eNotify(new Notification(this, EventType.SET, [aClass.getFeatureIDName(aStructuralFeature)/], [newVarName/], [newVarName/], NO_INDEX));
@@ -212,7 +217,7 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
         [/if]
         notifications = this.basicSet[aStructuralFeature.name.toUpperFirst()/]([newVarName/],notifications)
         if (notifications != null) {
-            notifications.Dispatch();
+            notifications.dispatch();
         }
     }
         [if isUnSettable()]
@@ -220,14 +225,14 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
     [else]
     let [oldVarName/] = this.[varName/];
     this.[varName/] = [newVarName/];
-    if (this.eNotificationRequired()) {
+    if (this.eNotificationRequired) {
         this.eNotify(new Notification(this, EventType.SET, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], NO_INDEX));
     }
     [/if]
 [elseif hasKey('setterBody')]
     [valueKey('setterBody')/]
 [else]
-    panic("set [aStructuralFeature.name/] not implemented");
+    throw new Error("set [aStructuralFeature.name/] not implemented");
 [/if]
 }
 [/let]
