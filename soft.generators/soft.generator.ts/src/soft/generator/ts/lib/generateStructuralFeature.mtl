@@ -121,6 +121,43 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
 }
 [/template]
 
+[template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.generateType()/] {
+[let aPackage : EPackage =  aClass.ePackage ]
+[let varName : String = aStructuralFeature.getVariableName() ]
+[if isContainer()]
+    if (this.EContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]) {
+        return <[aStructuralFeature.generateType()/]>this.eContainer();
+    } 
+    return null
+[elseif not isVolatile()]
+    [let lazy : String = aStructuralFeature.getLazy()]
+    [if lazy <> 'no']
+        [if  lazy = 'function']
+            [if aStructuralFeature.oclIsKindOf(EAttribute)]
+    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]) {
+            [else]
+    if (this.[varName/] == null) {
+            [/if]
+        this.[varName/] = this.[aStructuralFeature.getInitializationMethodName()/]()
+    }
+        [elseif lazy = 'action']
+    this.[aStructuralFeature.getInitializationMethodName()/]()
+        [/if]
+    [/if]
+    [/let]
+    return this.[varName/]
+[elseif hasKey('getterBody')]
+    [valueKey('getterBody')/]
+[else]
+    panic("basicGet[aStructuralFeature.name.toUpperFirst()/] not implemented")
+[/if]
+[/let]
+[/let]
+}
+
+[/template]
+
 
 [template private getListConstructor( anEAttribute : EStructuralFeature , aClass : EClass) post(trim())]
 [/template]
