@@ -43,19 +43,19 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
-    if this.eContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] {
-        return this.eContainer().([aStructuralFeature.generateType()/]);
+    if (this.eContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]) {
+        return <[aStructuralFeature.generateType()/]>this.eContainer();
     } 
     return null;
 [elseif not isVolatile()]
     [if not isListType() and isProxy()]
-    if this.[varName/] != null && this.[varName/].eIsProxy() {
+    if (this.[varName/] != null && this.[varName/].eIsProxy()) {
         [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
         [let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
         [oldVarName/] := this.[varName/];
         [newVarName/] := this.eResolveProxy([oldVarName/]).([aStructuralFeature.generateType()/]);
         this.[varName/] = [newVarName/]
-        if [newVarName/] != [oldVarName/] {
+        if ([newVarName/] != [oldVarName/]) {
         [if isContains()]
             let notifications : ENotificationChain = null;
             [if not isBidirectional()]
@@ -67,7 +67,7 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
                 [/let]
                 [/let]
             [/if]
-            if [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInternalContainer() == nil {
+            if ((<EObjectInternal>[newVarName/]).eInternalContainer() == null) {
             [if not isBidirectional()]
             notifications = (<EObjectInternal>[newVarName/]).eInverseAdd( this, EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications );
             [else]
@@ -82,7 +82,7 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
                 notifications.Dispatch();
             }
         [/if]
-            if this.eNotificationRequired() {
+            if (this.eNotificationRequired()) {
                 this.eNotify( new Notification(this, EventType.RESOLVE, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], NO_INDEX) );
             }
         }
@@ -94,9 +94,9 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
         [if lazy <> 'no']
             [if  lazy = 'function']
                 [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/] {
+    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]) {
                 [else]
-    if this.[varName/] == null {
+    if (this.[varName/] == null) {
                 [/if]
         this.[varName/] = this.[aStructuralFeature.getInitializationMethodName()/]();
     }
@@ -106,7 +106,7 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
         [/if]
         [/let]
 	[elseif aStructuralFeature.isListType()]
-	if this.[varName/] == null {
+	if (this.[varName/] == null) {
 		this.[varName/] = [aStructuralFeature.getListConstructor(aClass)/]
 	}
 	[/if]
