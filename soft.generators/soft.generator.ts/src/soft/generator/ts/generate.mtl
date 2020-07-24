@@ -3,6 +3,8 @@
 
 [import soft::generator::ts::lib::generateInterface/]
 [import soft::generator::ts::lib::generateImplementation/]
+[import soft::generator::ts::lib::pack::generatePackageImplementation/]
+[import soft::generator::ts::lib::pack::generatePackageInterface/]
 
 
 [template public generateModel(aPackage : EPackage)]
@@ -13,6 +15,8 @@
     	[aClass.generateImplementation()/]
 	[/if]
 [/for]
+[aPackage.generatePackageInterface()/]
+[aPackage.generatePackageImplementation()/]
 [/template]
 
 [template public generateTests(aPackage : EPackage)]
