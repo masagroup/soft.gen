@@ -53,7 +53,7 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
-    if (this.eContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]) {
+    if (this.eContainerFeatureID() == [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/]) {
         return this.eContainer() as [aStructuralFeature.generateType()/];
     } 
     return null;
@@ -93,7 +93,7 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
             }
         [/if]
             if (this.eNotificationRequired) {
-                this.eNotify(new Notification(this, EventType.RESOLVE, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], NO_INDEX));
+                this.eNotify(new Notification(this, EventType.RESOLVE, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]));
             }
         }
         [/let]
@@ -137,7 +137,7 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
-    if (this.EContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]) {
+    if (this.EContainerFeatureID() == [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/]) {
         return this.eContainer() as [aStructuralFeature.generateType()/];
     } 
     return null;
@@ -178,20 +178,20 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
 set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType()/] ) {
 [if not isVolatile()]
     [if isContainer()]
-    if ( [newVarName/] != this.eContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getFeatureIDName(aStructuralFeature)/])) {
+    if ( [newVarName/] != this.eContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/])) {
         let notifications : ENotificationChain = null;
         if ( this.eContainer() != null) {
             notifications = this.eBasicRemoveFromContainer(notifications);
         }
         if (isEObjectInternal([newVarName/])) {
-            notifications = [newVarName/].eInverseAdd(this, [aClass.getFeatureIDName(aStructuralFeature)/], notifications);
+            notifications = [newVarName/].eInverseAdd(this, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/], notifications);
         }
         notifications = this.basicSet[aStructuralFeature.name.toUpperFirst()/]( [newVarName/], notifications );
         if ( notifications != null ) {
             notifications.dispatch();
         }
     } else if (this.eNotificationRequired) {
-        this.eNotify(new Notification(this, EventType.SET, [aClass.getFeatureIDName(aStructuralFeature)/], [newVarName/], [newVarName/], NO_INDEX));
+        this.eNotify(new Notification(this, EventType.SET, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/], [newVarName/], [newVarName/]));
     }
     [elseif isBidirectional() or isContains()]
 	let [oldVarName/] = this.[varName/];
@@ -199,18 +199,18 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
         let notifications : ENotificationChain = null;
         if (isEObjectInternal([oldVarName/])) {
         [if not isBidirectional()]
-           notifications = [oldVarName/].eInverseRemove(this, EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications);
+           notifications = [oldVarName/].eInverseRemove(this, EOPPOSITE_FEATURE_BASE - [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/] , notifications);
         }
         if (isEObjectInternal([newVarName/])) {
-           notifications = [newVarName/].eInverseAdd(this, EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications);
+           notifications = [newVarName/].eInverseAdd(this, EOPPOSITE_FEATURE_BASE - [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/] , notifications);
         }
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
             [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = [oldVarName/].eInverseRemove(this, [reverseClass.getFeatureIDName(reverseFeature)/] , notifications);
+            notifications = [oldVarName/].eInverseRemove(this, [reverseClass.ePackage.getConstantsName()/].[reverseClass.getFeatureIDName(reverseFeature)/] , notifications);
         }
         if (isEObjectInternal([newVarName/])) {
-            notifications = [newVarName/].eInverseAdd(this, [reverseClass.getFeatureIDName(reverseFeature)/] , notifications);
+            notifications = [newVarName/].eInverseAdd(this, [reverseClass.ePackage.getConstantsName()/].[reverseClass.getFeatureIDName(reverseFeature)/] , notifications);
         }
             [/let]
             [/let]
@@ -226,7 +226,7 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
     let [oldVarName/] = this.[varName/];
     this.[varName/] = [newVarName/];
     if (this.eNotificationRequired) {
-        this.eNotify(new Notification(this, EventType.SET, [aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/], NO_INDEX));
+        this.eNotify(new Notification(this, EventType.SET, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]));
     }
     [/if]
 [elseif hasKey('setterBody')]
@@ -248,12 +248,12 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
 
 [template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
 [let aPackage : EPackage = aClass.ePackage]
-new BasicEList<[anEAttribute.eGenericType.generateType(aPackage)/]>([anEAttribute.unique/])
+new BasicEList<[anEAttribute.eGenericType.generateType(aPackage)/]>([anEAttribute.unique/]);
 [/let]
 [/template]
 
 [template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (anEAttribute.isFeatureMapType()) post(trim()) ]
-null
+null;
 [/template]
 
 
@@ -262,23 +262,21 @@ null
 [let aType : String = anEReference.eGenericType.generateType(aPackage)]
 [if (anEReference.containment)]
     [if anEReference.eOpposite.oclIsUndefined() ]
-new BasicEObjectList<[aType/]>(this , [aClass.getFeatureIDName(anEReference)/] , -1, true , true , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+new BasicEObjectList<[aType/]>(this , [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(anEReference)/] , -1, true , true , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]);
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-new BasicEObjectList<[aType/]>(this , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+new BasicEObjectList<[aType/]>(this , [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(anEReference)/] , [reverseClass.ePackage.getConstantsName()/].[reverseClass.getFeatureIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]);
         [/let]
         [/let]
     [/if]
 [else]
-    [if anEReference.eOpposite.oclIsUndefined() ]
-        [let featureID : String = anEReference.eContainingClass.getFeatureIDName( anEReference )]
-new BasicEObjectList<[aType/]>(this , [featureID/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
-        [/let]
+    [if anEReference.eOpposite.oclIsUndefined() ]     
+new BasicEObjectList<[aType/]>(this , [anEReference.eContainingClass.ePackage.getConstantsName()/].[anEReference.eContainingClass.getFeatureIDName( anEReference )/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]);
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-new BasicEObjectList<[aType/]>(this , [aClass.getFeatureIDName(anEReference)/] , [reverseClass.getFeatureIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]  )
+new BasicEObjectList<[aType/]>(this , [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(anEReference)/] , [reverseClass.ePackage.getConstantsName()/].[reverseClass.getFeatureIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] );
         [/let]
         [/let]
     [/if]

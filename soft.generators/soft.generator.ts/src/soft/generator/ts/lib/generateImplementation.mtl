@@ -35,9 +35,10 @@
 						  endif]
 [let notificationTypes : OclAny = if features->exists(requiresNotification()) then 
 								       mapNew().mapPut('ENotification' , getTypeImport('ENotification'))
-									           .mapPut('ENotificationChain' , getTypeImport('ENotificationChain'))
+											   .mapPut('ENotificationChain' , getTypeImport('ENotificationChain'))
 			                                   .mapPut('Notification' , getTypeImport('Notification'))
-								               .mapPut('EventType',getTypeImport('ENotification')) 
+								               .mapPut('EventType',getTypeImport('ENotification'))
+											   .mapPut(aPackage.getConstantsName(),getTypeImport(aPackage.getConstantsName())) 
 								  else mapNew() 
 								  endif]
 [let importTypes : OclAny = mapNew()
@@ -47,7 +48,7 @@
 							 .mapPutAll(referencesTypes)
 							 .mapPutAll(listTypes)
 							 .mapPut('isEObjectInternal',getTypeImport('BasicEObject'))
-]							 ]
+							 ]
 [for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
 import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 [/for]
