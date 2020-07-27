@@ -35,6 +35,7 @@
 
 [template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
 [if isGet()]
+
 [aStructuralFeature.generateGetImplementation(aClass)/]
 [/if]
 [if isSet()]
@@ -44,6 +45,10 @@
 [if isBasicGet()]
 
 [aStructuralFeature.generateBasicGetImplementation(aClass)/]
+[/if]
+[if isBasicSet()]
+
+[aStructuralFeature.generateBasicSetImplementation(aClass)/]
 [/if]
 [/template]
 
@@ -166,7 +171,6 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
 [/let]
 [/let]
 }
-
 [/template]
 
 [template public generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
@@ -239,7 +243,40 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
 [/let]
 [/let]
 [/let]
+[/template]
 
+[template public generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
+[let varName : String = aStructuralFeature.getVariableName() ]
+[let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
+basicSet[aStructuralFeature.name.toUpperFirst()/]( [newVarName/] : [aStructuralFeature.generateType()/] , msgs : ENotificationChain ) : ENotificationChain 
+{
+[if isContainer()]
+    return this.eBasicSetContainer([newVarName/],[aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/],msgs);
+[elseif not isVolatile()]
+    [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
+    [oldVarName/] := this.[varName/];
+    this.[varName/] = [newVarName/];
+    let notifications = msgs
+    if ( this.eNotificationRequired ) {
+        notification := new Notification(this, EventType.SET, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]);
+        if (notifications != null ) {
+            notifications.add( notification );
+        } else {
+            notifications = notification;
+        }
+    }
+    return notifications;
+    [/let]
+[elseif (hasKey('setterBody'))]
+    [valueKey('setterBody')/]
+[else]
+    panic("basicSet[aStructuralFeature.name.toUpperFirst()/] not implemented")
+[/if]
+}
+[/let]
+[/let]
+[/let]
 [/template]
 
 
