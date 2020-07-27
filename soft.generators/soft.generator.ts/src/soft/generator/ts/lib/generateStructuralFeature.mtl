@@ -183,7 +183,7 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
         if ( this.eContainer() != null) {
             notifications = this.eBasicRemoveFromContainer(notifications);
         }
-        if ([newVarName/] instanceof EObjectInternal) {
+        if (isEObjectInternal([newVarName/])) {
             notifications = [newVarName/].eInverseAdd(this, [aClass.getFeatureIDName(aStructuralFeature)/], notifications);
         }
         notifications = this.basicSet[aStructuralFeature.name.toUpperFirst()/]( [newVarName/], notifications );
@@ -197,11 +197,11 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
 	let [oldVarName/] = this.[varName/];
     if ( [newVarName/] != [oldVarName/] ) {
         let notifications : ENotificationChain = null;
-        if ([oldVarName/] instanceof EObjectInternal) {
+        if (isEObjectInternal([oldVarName/])) {
         [if not isBidirectional()]
            notifications = [oldVarName/].eInverseRemove(this, EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications);
         }
-        if ([newVarName/] instanceof EObjectInternal) {
+        if (isEObjectInternal([newVarName/])) {
            notifications = [newVarName/].eInverseAdd(this, EOPPOSITE_FEATURE_BASE - [aClass.getFeatureIDName(aStructuralFeature)/] , notifications);
         }
         [else]
@@ -209,7 +209,7 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
             [let reverseClass : EClass = reverseFeature.eContainingClass]
             notifications = [oldVarName/].eInverseRemove(this, [reverseClass.getFeatureIDName(reverseFeature)/] , notifications);
         }
-        if ([newVarName/] instanceof EObjectInternal) {
+        if (isEObjectInternal([newVarName/])) {
             notifications = [newVarName/].eInverseAdd(this, [reverseClass.getFeatureIDName(reverseFeature)/] , notifications);
         }
             [/let]

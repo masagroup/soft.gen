@@ -46,7 +46,8 @@
 							 .mapPutAll(implementsTypes)
 							 .mapPutAll(referencesTypes)
 							 .mapPutAll(listTypes)
-							 ]
+							 .mapPut('isEObjectInternal',getTypeImport('BasicEObject'))
+]							 ]
 [for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
 import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 [/for]
