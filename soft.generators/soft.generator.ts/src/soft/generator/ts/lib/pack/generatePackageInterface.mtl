@@ -1,5 +1,33 @@
 [comment encoding = UTF-8 /]
 [module generatePackageInterface('http://www.eclipse.org/emf/2002/Ecore')/]
 
-[template public generatePackageInterface(anEPackage : EPackage)]
+[import soft::generator::common::generateUtils/]
+[import soft::generator::ts::generateCommon /]
+[import soft::generator::ts::lib::pack::generateCommon/]
+
+[template public generatePackageInterface(anEPackage : EPackage) {className : String = anEPackage.getInterfaceName();}]
+[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
+[fileComment()/]
+
+import {EPackage} from "./EPackage";
+
+export interface [className/] extends EPackage {
+
+	public static readonly eName : string = "[anEPackage.name/]";
+
+	public static readonly eNS_URI : string = "[anEPackage.nsURI/]";
+
+ 	public static readonly eNS_Prefix : string = "[anEPackage.nsPrefix/]";
+
+[for (aClass : EClass | anEPackage.getOrderedClasses())]
+    [aClass.generateStaticClassID()/]
+    [aClass.eAllStructuralFeatures.generateStaticFeatureID(aClass)/]
+    [aClass.generateStaticFeatureCountID()/]
+    [aClass.eAllOperations.generateStaticOperationID(aClass)/]
+    [aClass.generateStaticOperationCountID()/]
+[/for]
+    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateStaticDataTypeID()/];
+}
+
+[/file]
 [/template]

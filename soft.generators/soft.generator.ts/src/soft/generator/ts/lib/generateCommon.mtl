@@ -4,14 +4,7 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::ts::generateCommon/]
 
-[query public getOutputDirectory( anPackage : EPackage ) : String = 
-    let property : OclAny = getProperty('library.output.dir') in 
-    if property.oclIsUndefined() or property = '' then 
-        anPackage.name + '/src-gen/'
-    else 
-        property 
-    endif
-/]
+
 
 [**
  * Classes Onthology

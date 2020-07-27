@@ -1,0 +1,41 @@
+[comment encoding = UTF-8 /]
+[module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon /]
+
+[template public generateStaticClassID(aEClass : EClass)]
+// [aEClass.getClassifierIDName()/] is the meta object id for the class [aEClass.name/].
+public static readonly [aEClass.getClassifierIDName()/] : number = [aEClass.getClassifierIDValue()/];
+
+[/template]
+
+[template public generateStaticFeatureID(anStructFeature : EStructuralFeature,aClass : EClass )]
+// [aClass.getFeatureIDName(anStructFeature)/] is the feature id for the [aClass.name/] '[anStructFeature.name.toUpperFirst()/]' [anStructFeature.getFeatureKind()/].
+public static readonly [aClass.getFeatureIDName(anStructFeature)/] : number = [aClass.getFeatureIDInteger(anStructFeature)/];
+
+
+[/template]
+
+[template public generateStaticFeatureCountID(aClass : EClass )]
+// [aClass.getFeatureCountIDName()/] is the number of structural features of the class [aClass.name/].
+public static readonly [aClass.getFeatureCountIDName()/] : number = [aClass.getFeatureCountIDInteger()/]; 
+
+[/template]
+
+[template public generateStaticOperationID(aOperation : EOperation , aClass : EClass )]
+// [aClass.getOperationIDName(aOperation)/] is the operation id for the '[aOperation.name/]' operation.
+public static readonly [aClass.getOperationIDName(aOperation)/] : number = [aClass.getOperationIDInteger(aOperation)/]; // [aClass.getOperationIDValue(aOperation)/]
+
+[/template]
+
+[template public generateStaticOperationCountID(aClass : EClass )]
+// [aClass.getOperationCountIDName()/] is the number of [aClass.getOperationCountIDName()/].
+public static readonly [aClass.getOperationCountIDName()/] : number = [aClass.getOperationCountIDInteger()/];
+
+[/template]
+
+[template public generateStaticDataTypeID(aEDatatype : EDataType )]
+// [aEDatatype.getClassifierIDName()/] The meta object id for the [if aEDatatype.oclIsKindOf(EEnum)]enum[else]data type[/if] [aEDatatype.name/].
+public static readonly [aEDatatype.getClassifierIDName()/] : number = [aEDatatype.getClassifierIDValue()/];
+
+[/template]
