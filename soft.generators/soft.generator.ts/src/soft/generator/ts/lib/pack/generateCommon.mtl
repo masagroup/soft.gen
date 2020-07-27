@@ -24,7 +24,7 @@ public static readonly [aClass.getFeatureCountIDName()/] : number = [aClass.getF
 
 [template public generateStaticOperationID(aOperation : EOperation , aClass : EClass )]
 // [aClass.getOperationIDName(aOperation)/] is the operation id for the '[aOperation.name/]' operation.
-public static readonly [aClass.getOperationIDName(aOperation)/] : number = [aClass.getOperationIDInteger(aOperation)/]; // [aClass.getOperationIDValue(aOperation)/]
+public static readonly [aClass.getOperationIDName(aOperation)/] : number = [aClass.getOperationIDInteger(aOperation)/];
 
 [/template]
 

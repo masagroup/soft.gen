@@ -1,15 +1,15 @@
 [comment encoding = UTF-8 /]
-[module generatePackageInterface('http://www.eclipse.org/emf/2002/Ecore')/]
+[module generatePackageConstants('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::lib::pack::generateCommon/]
 
-[template public generatePackageInterface(anEPackage : EPackage) {className : String = anEPackage.getInterfaceName();}]
-[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
+[template public generatePackageConstants(anEPackage : EPackage) {className : String = anEPackage.getConstantsName();}]
+[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getConstantsFileName(className) , false, 'UTF-8')]
 [fileComment()/]
 
-export class [anEPackage.name.toUpperFirst()/]Constants {
+export class [className/] {
 
 	public static readonly eName : string = "[anEPackage.name/]";
 
@@ -29,3 +29,4 @@ export class [anEPackage.name.toUpperFirst()/]Constants {
 
 [/file]
 [/template]
+

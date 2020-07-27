@@ -3,6 +3,7 @@
 
 [import soft::generator::ts::lib::generateInterface/]
 [import soft::generator::ts::lib::generateImplementation/]
+[import soft::generator::ts::lib::pack::generatePackageConstants/]
 [import soft::generator::ts::lib::pack::generatePackageImplementation/]
 [import soft::generator::ts::lib::pack::generatePackageInterface/]
 
@@ -15,6 +16,7 @@
     	[aClass.generateImplementation()/]
 	[/if]
 [/for]
+[aPackage.generatePackageConstants()/]
 [aPackage.generatePackageInterface()/]
 [aPackage.generatePackageImplementation()/]
 [/template]
