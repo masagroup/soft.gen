@@ -223,7 +223,7 @@
     if baseClass.oclIsUndefined() then
         aEClass.getFeatureCount()
     else
-        baseClass.getFeatureCountIDValue() + ' + ' +  (aEClass.getFeatureCount() - baseClass.getFeatureCount()).toString()
+        baseClass.getFeatureCountIDName() + ' + ' +  (aEClass.getFeatureCount() - baseClass.getFeatureCount()).toString()
     endif
 /]
 
