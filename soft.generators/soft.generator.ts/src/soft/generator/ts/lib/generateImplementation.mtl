@@ -6,12 +6,14 @@
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
+[import soft::generator::ts::lib::generateOperation/]
 [import soft::generator::ts::lib::generateStructuralFeature/]
 
 [template public generateImplementation(aClass : EClass) { 
 	className : String = aClass.getImplementationName();
 	classExtend : String = aClass.getClassExtends(); 
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
+	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName());
 	aPackage : EPackage = aClass.ePackage; 
 	classImplements : Sequence(String) = aClass.getClassImplements();
 }]
@@ -64,6 +66,8 @@ export class [className/] extends [classExtend/] [for ( interface : String | cla
 	[features.generateVariableDeclaration()/]
 
 	[features.generateImplementation(aClass)/]
+
+	[operations.generateImplementation(aClass)/]
 }
 
 [/file]
