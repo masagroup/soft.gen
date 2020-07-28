@@ -20,4 +20,6 @@
 [anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) : [anEOperation.generateType()/] {
     throw new Error("[anEOperation.getOperationName()/] not implemented");
 }
+
+
 [/template]

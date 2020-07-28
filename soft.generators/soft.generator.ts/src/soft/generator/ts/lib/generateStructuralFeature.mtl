@@ -303,7 +303,7 @@ basicSet[aStructuralFeature.name.toUpperFirst()/]( [newVarName/] : [aStructuralF
     return this.eBasicSetContainer([newVarName/],[aClass.getQualifiedIDName(aStructuralFeature)/],msgs);
 [elseif not isVolatile()]
     [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
-    [oldVarName/] := this.[varName/];
+    let [oldVarName/] = this.[varName/];
     this.[varName/] = [newVarName/];
     let notifications = msgs
     if ( this.eNotificationRequired ) {

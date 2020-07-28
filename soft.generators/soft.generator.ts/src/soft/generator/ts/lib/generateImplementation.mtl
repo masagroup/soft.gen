@@ -36,28 +36,36 @@
 ))]
 [let listTypes : OclAny = if aClass.requiresList() then 
 							   mapNew().mapPut('BasicEObjectList' , getTypeImport('BasicEObjectList'))
-									   .mapPut('BasicEList', getTypeImport('BasicEList') ) 
+									   .mapPut('BasicEList', getTypeImport('BasicEList') )
+									   .mapPut(aPackage.getConstantsName(),getTypeImport(aPackage.getConstantsName())) 
 					 	  else mapNew() 
 						  endif]
 [let notificationTypes : OclAny = if features->exists(requiresNotification()) then 
 								       mapNew().mapPut('ENotification' , getTypeImport('ENotification'))
 											   .mapPut('ENotificationChain' , getTypeImport('ENotificationChain'))
-			                                   .mapPut('Notification' , getTypeImport('Notification'))
-								               .mapPut('EventType',getTypeImport('ENotification'))
+			                                   .mapPut('EventType',getTypeImport('ENotification'))
+ 											   .mapPut('Notification' , getTypeImport('Notification'))
+											   .mapPut('EOPPOSITE_FEATURE_BASE', getTypeImport('Constants'))
 											   .mapPut(aPackage.getConstantsName(),getTypeImport(aPackage.getConstantsName())) 
 								  else mapNew() 
 								  endif]
+[let containerTypes : OclAny = if features->exists(isContainer()) then
+									mapNew().mapPut(aPackage.getConstantsName(),getTypeImport(aPackage.getConstantsName())) 
+							   else mapNew()
+							   endif]
 [let importTypes : OclAny = mapNew()
 							 .mapPut(classExtend,getTypeImport(classExtend))
 							 .mapPutAll(notificationTypes)
 							 .mapPutAll(implementsTypes)
 							 .mapPutAll(referencesTypes)
 							 .mapPutAll(listTypes)
-							 .mapPut('isEObjectInternal',getTypeImport('BasicEObject'))
+							 .mapPutAll(containerTypes)
+							 .mapPut('isEObjectInternal',getTypeImport('EObjectInternal'))
 							 ]
 [for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
 import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 [/for]
+[/let]
 [/let]
 [/let]
 [/let]
