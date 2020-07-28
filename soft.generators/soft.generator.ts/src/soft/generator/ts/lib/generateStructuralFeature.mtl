@@ -33,6 +33,46 @@
 
 [/template]
 
+[template public generateVariableInitialization(aStructuralFeature : EStructuralFeature, aClass : EClass )]
+[/template]
+
+[template public generateVariableInitialization(aAttribute : EAttribute, aClass : EClass ) ]
+[let defaultValue : String = aAttribute.getDefaultValue()]
+[if defaultValue <> '']
+this.[aAttribute.getVariableName()/] = [defaultValue/];
+[/if]
+[/let]
+[/template]
+
+[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'function' )]
+protected [aStructuralFeature.getInitializationMethodName()/]() : [aStructuralFeature.generateType()/] {
+[if isListType()]
+    return [getListConstructor(aClass)/];
+[elseif aStructuralFeature.oclIsKindOf(EAttribute)]
+    return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
+[else]
+    throw new Error("[aStructuralFeature.getInitializationMethodName()/] not implemented");
+[/if]
+}
+
+[/template]
+
+[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'action' )]
+protected [aStructuralFeature.getInitializationMethodName()/]() : void {
+[let varName : String = aStructuralFeature.getVariableName() ]
+[if isListType()]
+    this.[varName/] = [getListConstructor(aClass)/];
+[elseif isProxy()]
+[elseif aStructuralFeature.oclIsKindOf(EAttribute)]
+    this.[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
+[else]
+    throw new Error("[aStructuralFeature.getInitializationMethodName()/] not implemented")
+[/if]
+}
+[/let]
+
+[/template]
+
 [template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
 [if isGet()]
 

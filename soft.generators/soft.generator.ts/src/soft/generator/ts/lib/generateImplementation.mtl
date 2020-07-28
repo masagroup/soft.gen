@@ -1,7 +1,9 @@
 [comment encoding = UTF-8 /]
 [module generateImplementation('http://www.eclipse.org/emf/2002/Ecore')/]
 
+[import soft::generator::common::generateCommon]
 [import soft::generator::common::generateElement]
+[import soft::generator::common::generateStructuralFeature]
 [import soft::generator::common::generateUtils]
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType/]
@@ -13,6 +15,8 @@
 	className : String = aClass.getImplementationName();
 	classExtend : String = aClass.getClassExtends(); 
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
+	variableFeatures : Collection(EStructuralFeature) = features->select(isField());
+	initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName());
 	aPackage : EPackage = aClass.ePackage; 
 	classImplements : Sequence(String) = aClass.getClassImplements();
@@ -65,9 +69,16 @@ export class [className/] extends [classExtend/] [for ( interface : String | cla
 {
 	[features.generateVariableDeclaration()/]
 
+	constructor() {
+		super();
+		[variableFeatures.generateVariableInitialization(aClass)/]
+	}
+
 	[features.generateImplementation(aClass)/]
 
 	[operations.generateImplementation(aClass)/]
+
+	[initializerFeatures.generateVariableInitializationMethodDefinition(aClass)/]
 }
 
 [/file]
