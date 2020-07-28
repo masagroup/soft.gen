@@ -45,3 +45,12 @@
 
 [query public getVariableName( aFeature : EStructuralFeature ) : String = 
 '_' + if aFeature.eType.name = 'EBoolean' then 'is' + aFeature.name.toUpperFirst() else aFeature.name endif/]
+
+[query public getQualifiedIDName( aClass : EClass, aStructuralFeature : EStructuralFeature ) : String =
+    aClass.ePackage.getConstantsName() + '.' +  aClass.getFeatureIDName( aStructuralFeature )
+/]
+
+[query public getQualifiedIDName( aClass : EClass, aOperation : EOperation ) : String =
+    aClass.ePackage.getConstantsName() + '.' + aClass.getOperationIDName( aOperation )
+/]
+

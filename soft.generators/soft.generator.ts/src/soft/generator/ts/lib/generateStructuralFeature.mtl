@@ -122,21 +122,21 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
         [if isContains()]
             let notifications : ENotificationChain = null;
             [if not isBidirectional()]
-            notifications = ([oldVarName/] as EObjectInternal).eInverseRemove(this,EOPPOSITE_FEATURE_BASE-[aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/],notifications);
+            notifications = ([oldVarName/] as EObjectInternal).eInverseRemove(this,EOPPOSITE_FEATURE_BASE-[aClass.getQualifiedIDName(aStructuralFeature)/],notifications);
             [else]
                 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
                 [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = ([oldVarName/] as EObjectInternal).eInverseRemove(this,[reverseClass.ePackage.getConstantsName()/].[reverseClass.getFeatureIDName(reverseFeature)/],notifications);
+            notifications = ([oldVarName/] as EObjectInternal).eInverseRemove(this,[reverseClass.getQualifiedIDName(reverseFeature)/],notifications);
                 [/let]
                 [/let]
             [/if]
             if ([newVarName/] as EObjectInternal).eInternalContainer() == null) {
             [if not isBidirectional()]
-            notifications = ([newVarName/] as EObjectInternal).eInverseAdd(this,EOPPOSITE_FEATURE_BASE-[aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/],notifications);
+            notifications = ([newVarName/] as EObjectInternal).eInverseAdd(this,EOPPOSITE_FEATURE_BASE-[aClass.getQualifiedIDName(aStructuralFeature)/],notifications);
             [else]
                 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
                 [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = ([newVarName/] as EObjectInternal).eInverseAdd(this, [reverseClass.ePackage.getConstantsName()/].[reverseClass.getFeatureIDName(reverseFeature)/],notifications);
+            notifications = ([newVarName/] as EObjectInternal).eInverseAdd(this, [reverseClass.getQualifiedIDName(reverseFeature)/],notifications);
                 [/let]
                 [/let]
             [/if]
@@ -146,7 +146,7 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
             }
         [/if]
             if (this.eNotificationRequired) {
-                this.eNotify(new Notification(this, EventType.RESOLVE, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]));
+                this.eNotify(new Notification(this, EventType.RESOLVE, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]));
             }
         }
         [/let]
@@ -190,7 +190,7 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
-    if (this.EContainerFeatureID() == [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/]) {
+    if (this.EContainerFeatureID() == [aClass.getQualifiedIDName(aStructuralFeature)/]) {
         return this.eContainer() as [aStructuralFeature.generateType()/];
     } 
     return null;
@@ -230,20 +230,20 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
 set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType()/] ) {
 [if not isVolatile()]
     [if isContainer()]
-    if ( [newVarName/] != this.eContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/])) {
+    if ( [newVarName/] != this.eContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getQualifiedIDName(aStructuralFeature)/])) {
         let notifications : ENotificationChain = null;
         if ( this.eContainer() != null) {
             notifications = this.eBasicRemoveFromContainer(notifications);
         }
         if (isEObjectInternal([newVarName/])) {
-            notifications = [newVarName/].eInverseAdd(this, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/], notifications);
+            notifications = [newVarName/].eInverseAdd(this, [aClass.getQualifiedIDName(aStructuralFeature)/], notifications);
         }
         notifications = this.basicSet[aStructuralFeature.name.toUpperFirst()/]( [newVarName/], notifications );
         if ( notifications != null ) {
             notifications.dispatch();
         }
     } else if (this.eNotificationRequired) {
-        this.eNotify(new Notification(this, EventType.SET, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/], [newVarName/], [newVarName/]));
+        this.eNotify(new Notification(this, EventType.SET, [aClass.getQualifiedIDName(aStructuralFeature)/], [newVarName/], [newVarName/]));
     }
     [elseif isBidirectional() or isContains()]
 	let [oldVarName/] = this.[varName/];
@@ -251,18 +251,18 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
         let notifications : ENotificationChain = null;
         if (isEObjectInternal([oldVarName/])) {
         [if not isBidirectional()]
-           notifications = [oldVarName/].eInverseRemove(this, EOPPOSITE_FEATURE_BASE - [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/] , notifications);
+           notifications = [oldVarName/].eInverseRemove(this, EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/] , notifications);
         }
         if (isEObjectInternal([newVarName/])) {
-           notifications = [newVarName/].eInverseAdd(this, EOPPOSITE_FEATURE_BASE - [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/] , notifications);
+           notifications = [newVarName/].eInverseAdd(this, EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/] , notifications);
         }
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
             [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = [oldVarName/].eInverseRemove(this, [reverseClass.ePackage.getConstantsName()/].[reverseClass.getFeatureIDName(reverseFeature)/] , notifications);
+            notifications = [oldVarName/].eInverseRemove(this, [reverseClass.getQualifiedIDName(reverseFeature)/] , notifications);
         }
         if (isEObjectInternal([newVarName/])) {
-            notifications = [newVarName/].eInverseAdd(this, [reverseClass.ePackage.getConstantsName()/].[reverseClass.getFeatureIDName(reverseFeature)/] , notifications);
+            notifications = [newVarName/].eInverseAdd(this, [reverseClass.getQualifiedIDName(reverseFeature)/] , notifications);
         }
             [/let]
             [/let]
@@ -278,7 +278,7 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
     let [oldVarName/] = this.[varName/];
     this.[varName/] = [newVarName/];
     if (this.eNotificationRequired) {
-        this.eNotify(new Notification(this, EventType.SET, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]));
+        this.eNotify(new Notification(this, EventType.SET, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]));
     }
     [/if]
 [elseif hasKey('setterBody')]
@@ -300,14 +300,14 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
 basicSet[aStructuralFeature.name.toUpperFirst()/]( [newVarName/] : [aStructuralFeature.generateType()/] , msgs : ENotificationChain ) : ENotificationChain 
 {
 [if isContainer()]
-    return this.eBasicSetContainer([newVarName/],[aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/],msgs);
+    return this.eBasicSetContainer([newVarName/],[aClass.getQualifiedIDName(aStructuralFeature)/],msgs);
 [elseif not isVolatile()]
     [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
     [oldVarName/] := this.[varName/];
     this.[varName/] = [newVarName/];
     let notifications = msgs
     if ( this.eNotificationRequired ) {
-        let notification = new Notification(this, EventType.SET, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]);
+        let notification = new Notification(this, EventType.SET, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]);
         if (notifications != null ) {
             notifications.add( notification );
         } else {
@@ -347,21 +347,21 @@ null;
 [let aType : String = anEReference.eGenericType.generateType(aPackage)]
 [if (anEReference.containment)]
     [if anEReference.eOpposite.oclIsUndefined() ]
-new BasicEObjectList<[aType/]>(this , [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(anEReference)/] , -1, true , true , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]);
+new BasicEObjectList<[aType/]>(this , [aClass.getQualifiedIDName(anEReference)/] , -1, true , true , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]);
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-new BasicEObjectList<[aType/]>(this , [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(anEReference)/] , [reverseClass.ePackage.getConstantsName()/].[reverseClass.getFeatureIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]);
+new BasicEObjectList<[aType/]>(this , [aClass.getQualifiedIDName(anEReference)/] ,[reverseClass.getQualifiedIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]);
         [/let]
         [/let]
     [/if]
 [else]
     [if anEReference.eOpposite.oclIsUndefined() ]     
-new BasicEObjectList<[aType/]>(this , [anEReference.eContainingClass.ePackage.getConstantsName()/].[anEReference.eContainingClass.getFeatureIDName( anEReference )/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]);
+new BasicEObjectList<[aType/]>(this , [anEReference.eContainingClass.getQualifiedIDName( anEReference )/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/]);
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-new BasicEObjectList<[aType/]>(this , [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(anEReference)/] , [reverseClass.ePackage.getConstantsName()/].[reverseClass.getFeatureIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] );
+new BasicEObjectList<[aType/]>(this , [aClass.getQualifiedIDName(anEReference)/] , [reverseClass.getQualifiedIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] );
         [/let]
         [/let]
     [/if]
@@ -396,10 +396,10 @@ new BasicEObjectList<[aType/]>(this , [aClass.ePackage.getConstantsName()/].[aCl
     if (this.[varName/] != null) {
         let notifications : ENotificationChain = null;
         [if not isBidirectional()]
-        notifications = (this.[varName/] as EObjectInternal).eInverseRemove( this, EOPPOSITE_FEATURE_BASE - [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/] , notifications );
+        notifications = (this.[varName/] as EObjectInternal).eInverseRemove( this, EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/] , notifications );
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
-        notifications = (this.[varName/] as EObjectInternal).eInverseRemove( this, [reverseFeature.eContainingClass.ePackage.getConstantsName()/].[reverseFeature.eContainingClass.getFeatureIDName(reverseFeature)/] , notifications );
+        notifications = (this.[varName/] as EObjectInternal).eInverseRemove( this,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/] , notifications );
             [/let]
         [/if]
         notifications = basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](notifications);
@@ -407,11 +407,11 @@ new BasicEObjectList<[aType/]>(this , [aClass.ePackage.getConstantsName()/].[aCl
             notifications.dispatch();
         }
     } else if (this.eNotificationRequired) {
-        this.eNotify(new Notification(this, EventType.UNSET, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/],null,null));
+        this.eNotify(new Notification(this, EventType.UNSET, [aClass.getQualifiedIDName(aStructuralFeature)/],null,null));
     }
     [else]
         if (this.eNotificationRequired) {
-            this.eNotify(new Notification(this,EventType.UNSET, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/],null,null));
+            this.eNotify(new Notification(this,EventType.UNSET, [aClass.getQualifiedIDName(aStructuralFeature)/],null,null));
         }
     [/if]
 [elseif hasKey('unsetterBody')]
@@ -435,7 +435,7 @@ basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( msgs : ENotificatio
 	let notifications = msgs;    
 	this.[varName/] = null;
     if (this.eNotificationRequired()) {
-        let notification = new Notification(this, EventType.UNSET, [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/], [oldVarName/], null);
+        let notification = new Notification(this, EventType.UNSET, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], null);
         if ( notifications != null ) {
             notifications.add( notification );
         } else {
