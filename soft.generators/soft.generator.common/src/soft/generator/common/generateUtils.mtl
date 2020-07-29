@@ -9,7 +9,7 @@
 
 [query public getOrderedClasses( anEPackage : EPackage ) : Sequence(EClass) = invoke('soft.generator.common.GenerateUtils','getOrderedClasses(org.eclipse.emf.ecore.EPackage)',Sequence{anEPackage}) /]
 
-[query public mapNew( eEObject : EObject ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapNew()',Sequence{}) /]
+[query public mapNew( o : OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapNew()',Sequence{}) /]
 
 [query public mapPut( map : OclAny , key: OclAny , value:OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapPut(java.util.Map,java.lang.Object,java.lang.Object)',Sequence{map,key,value }) /]
 
