@@ -1,5 +1,34 @@
 [comment encoding = UTF-8 /]
 [module generatePackageImplementation('http://www.eclipse.org/emf/2002/Ecore')/]
 
-[template public generatePackageImplementation(anEPackage : EPackage)]
+[import soft::generator::common::generateUtils/]
+[import soft::generator::ts::generateCommon /]
+[import soft::generator::ts::lib::pack::generateCommon/]
+
+
+[template public generatePackageImplementation(anEPackage : EPackage){ className : String = anEPackage.getImplementationName(); }]
+[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getImplementationFileName(anEPackage.getPackageName()),false, 'UTF-8')]
+[fileComment()/]
+
+import {EPackageImpl} from "./EPackageImpl"
+
+class [className/] extends EPackageImpl {
+
+	private static _instance : [className/];
+
+	private constructor() {
+		super();
+	}
+
+	static getInstance() : [className/] {
+		if (![className/]._instance)
+			[className/]._instance = new [className/]();
+		return [className/]._instance;
+	}
+
+}
+
+[/file]
 [/template]
+
+
