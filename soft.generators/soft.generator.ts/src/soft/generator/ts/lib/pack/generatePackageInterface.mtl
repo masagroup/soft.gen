@@ -5,26 +5,32 @@
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::lib::pack::generateCommon/]
 
+[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage )]
+
+// Returns the meta object for the [anENamedElement.name.toUpperFirst()/]
+[anENamedElement.getReflectiveGetterName()/]() : [anENamedElement.eClass().getInterfaceName()/];
+[/template]
+
 [template public generatePackageInterface(anEPackage : EPackage) {className : String = anEPackage.getInterfaceName();}]
 [file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
-export class [anEPackage.name.toUpperFirst()/]Constants {
+import {EPackage} from "./EPackage"
+import {EAttribute} from "./EAttribute"
+import {EClass} from "./EClass"
+import {EDataType} from "./EDataType"
+import {EEnum} from "./EEnum"
+import {EOperation} from "./EOperation"
+import {EReference} from "./EReference"
 
-	public static readonly eName : string = "[anEPackage.name/]";
-
-	public static readonly eNS_URI : string = "[anEPackage.nsURI/]";
-
- 	public static readonly eNS_Prefix : string = "[anEPackage.nsPrefix/]";
-
-[for (aClass : EClass | anEPackage.getOrderedClasses())]
-    [aClass.generateStaticClassID()/]
-    [aClass.eAllStructuralFeatures.generateStaticFeatureID(aClass)/]
-    [aClass.generateStaticFeatureCountID()/]
-    [aClass.eAllOperations.generateStaticOperationID(aClass)/]
-    [aClass.generateStaticOperationCountID()/]
+export interface [anEPackage.name.toUpperFirst()/] extends EPackage {
+[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
+    [aClass.generateGetter(anEPackage)/]
+    [aClass.eAttributes->sortedBy(name).generateGetter(anEPackage)/]
+    [aClass.eReferences->sortedBy(name).generateGetter(anEPackage)/]
+    [aClass.eOperations->sortedBy(name).generateGetter(anEPackage)/]
 [/for]
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateStaticDataTypeID()/]
+    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(anEPackage)/]
 }
 
 [/file]

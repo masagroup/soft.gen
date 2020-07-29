@@ -146,3 +146,10 @@ endif endif endif endif
 	else n
 	endif  
 /]
+
+[query public getReflectiveGetterName(anENamedElement : ENamedElement) : String = 
+let getterName : String = 'get' + anENamedElement.getElementAccessorName() in
+let ecorePackageClass : EClass = anENamedElement.eClass().ePackage.eClass() in
+let methodName : String = if ecorePackageClass.eAllOperations->exists( name = getterName ) then getterName + anENamedElement.getElementTypeName() else getterName endif in
+methodName.toUpperFirst()
+/]
