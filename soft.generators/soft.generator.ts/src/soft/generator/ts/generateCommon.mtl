@@ -111,10 +111,7 @@ endif endif endif
 [** Extension Names **/]
 [query public getExtensionName( aClass : EClass ) : String = aClass.getExtensionName(aClass.name )/]
 [query public getExtensionName( aPackage : EPackage ) : String = aPackage.getExtensionName( getPackageName() )/]
-[query private getExtensionName( aNamedElement : ENamedElement , aName : String ) : String = 
-    let name : String = aNamedElement.getElementName( aName, 'extensionName', '$1Ext') in
-    if  aNamedElement.isExported() then name.toUpperFirst()
-    else name.toLowerFirst() endif/]
+[query private getExtensionName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'extensionName', '$1Ext')/]
 
 [** FileNames **/]
 [query public getInterfaceFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceFileName', '$1.ts')/]
@@ -152,4 +149,20 @@ let getterName : String = 'get' + anENamedElement.getElementAccessorName() in
 let ecorePackageClass : EClass = anENamedElement.eClass().ePackage.eClass() in
 let methodName : String = if ecorePackageClass.eAllOperations->exists( name = getterName ) then getterName + anENamedElement.getElementTypeName() else getterName endif in
 methodName.toUpperFirst()
+/]
+
+[query public getQualifiedIDName( aClass : EClass, aStructuralFeature : EStructuralFeature ) : String =
+    aClass.ePackage.getConstantsName() + '.' +  aClass.getFeatureIDName( aStructuralFeature )
+/]
+
+[query public getQualifiedIDName( aClass : EClass, aOperation : EOperation ) : String =
+    aClass.ePackage.getConstantsName() + '.' + aClass.getOperationIDName( aOperation )
+/]
+
+[query public getQualifiedIDName( aDataType : EDataType ) : String =
+    aDataType.ePackage.getConstantsName() + '.' + aDataType.getClassifierIDName()
+/]
+
+[query public getQualifiedIDName( aClass : EClass ) : String =
+    aClass.ePackage.getConstantsName() + '.' + aClass.getClassifierIDName()
 /]

@@ -23,7 +23,7 @@ import {EEnum} from "./EEnum"
 import {EOperation} from "./EOperation"
 import {EReference} from "./EReference"
 
-export interface [anEPackage.name.toUpperFirst()/] extends EPackage {
+export interface [className/] extends EPackage {
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
     [aClass.generateGetter(anEPackage)/]
     [aClass.eAttributes->sortedBy(name).generateGetter(anEPackage)/]

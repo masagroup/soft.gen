@@ -10,9 +10,9 @@
 [file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getImplementationFileName(anEPackage.getPackageName()),false, 'UTF-8')]
 [fileComment()/]
 
-import {EPackageImpl} from "./EPackageImpl"
+import {EPackageExt} from "./EPackageExt"
 
-class [className/] extends EPackageImpl {
+class [className/] extends EPackageExt {
 
 	private static _instance : [className/];
 

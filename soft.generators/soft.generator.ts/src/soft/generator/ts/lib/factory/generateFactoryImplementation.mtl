@@ -1,0 +1,152 @@
+[comment encoding = UTF-8 /]
+[module generateFactoryImplementation('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
+[import soft::generator::ts::generateCommon/]
+[import soft::generator::ts::generateType/]
+[import soft::generator::ts::lib::generateCommon/]
+
+[template public generateFactoryImplementation(anEPackage : EPackage) { className : String = anEPackage.getFactoryImplementationName() ; }]
+[file (anEPackage.getOutputDirectory() + '/' + anEPackage.getImplementationFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
+[fileComment()/]
+
+[let referencesTypes : OclAny = anEPackage.eAllContents(EClass)->select( c | not c.interface )->iterate( eClass : EClass ; res : OclAny = mapNew() | (
+	let typeName : String = if eClass.hasExtension() then eClass.getExtensionName() else eClass.getImplementationName() endif in
+	let typeImport : String = getTypeImport(typeName) in
+	if (typeName <> className and typeImport <> '') then
+		res.mapPut(typeName,typeImport)
+	else
+		res
+	endif
+))]
+[let importTypes : OclAny = mapNew()
+					         .mapPut('EDataType', getTypeImport('EDataType'))
+							 .mapPut('EFactoryExt', getTypeImport('EFactoryExt'))
+						     .mapPut('EObject', getTypeImport('EObject'))
+							 .mapPut(anEPackage.getConstantsName(), getTypeImport(anEPackage.getConstantsName()))
+							 .mapPut(anEPackage.getFactoryName(), getTypeImport(anEPackage.getFactoryName()))
+							 .mapPutAll(referencesTypes)
+					         ]
+[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
+import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
+[/for]
+[/let]
+[/let]
+
+
+class [className/] extends EFactoryExt implements [anEPackage.getFactoryName()/] {
+    
+	create(eClass: EClass): EObject {
+		switch(eClass.classifierID){
+[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
+	    case [aClass.getQualifiedIDName()/]:
+        	return this.create[aClass.name/]();
+[/for]
+    	default:
+        	throw new Error("create: " + eClass.classifierID + " not found");
+		}
+	}
+[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
+
+	create[aClass.name/](): [aClass.getInterfaceName()/] {
+		return new [if aClass.hasExtension()][aClass.getExtensionName()/][else][aClass.getImplementationName()/][/if]();
+	}
+	[let ref : OrderedSet(EReference) = aClass.getAllContainers()]
+	[for(aReference:EReference | ref->sortedBy(name))]
+
+	create[aClass.name/]FromContainer(eContainer:[aReference.eGenericType.eClassifier.name/]): [aClass.getInterfaceName()/] {
+	    [generateCreateFunctionContent(aClass, aReference, false)/]
+	}
+	[if(aClass.getElementIDAccessorName().size() > 0)]
+
+	create[aClass.name/]FromContainerAndClassID(eContainer:[aReference.eGenericType.eClassifier.name/],classID: number): [aClass.getInterfaceName()/] {
+    	[generateCreateFunctionContent(aClass, aReference, true)/]
+	}
+	[/if]
+	[/for]
+	[/let]
+[/for]
+[let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
+
+	createFromString(eDataType: EDataType,literalValue: string): any {
+		switch (eDataType.classifierID) {
+	    [for (aDataType : EDataType | dataTypes)]
+	    	case [aDataType.getQualifiedIDName()/]:
+	        	return this.create[aDataType.name/]FromString(eDataType, literalValue);
+	    [/for]
+	    	default:
+	        	throw new Error("The datatype '" + eDataType.name + "' is not a valid classifier");
+		}
+	}
+
+	convertToString(eDataType: EDataType, instanceValue: any): string {
+    	switch (eDataType.classifierID) {
+		[for (aDataType : EDataType | dataTypes)]
+	    case [aDataType.getQualifiedIDName()/]:
+	        return this.convert[aDataType.name/]ToString(eDataType, instanceValue);
+		[/for]
+	    default:
+	        throw new Error("The datatype '" + eDataType.name + "' is not a valid classifier");
+	    }
+	}
+	[for (aDataType : EDataType | dataTypes)]
+
+	[anEPackage.generateCreateFromString(aDataType)/]
+
+	[anEPackage.generateConvertToString(aDataType)/]
+	[/for]
+[/let]
+}
+
+[/file]
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
+[let enumTypeName : String = aDataType.name ]
+[let varName : String = enumTypeName.toLowerFirst() ]
+create[enumTypeName/]FromString(eDataType: EDataType, literalValue: string): any {
+   throw new Error("NotImplementedException");
+}
+[/let]
+[/let]
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType )]
+create[aDataType.name/]FromString(eDataType: EDataType, literalValue: string): any {
+   throw new Error("NotImplementedException");
+}
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
+[let enumTypeName : String = aDataType.name ]
+[let varName : String = enumTypeName.toLowerFirst() ]
+convert[enumTypeName/]ToString(eDataType: EDataType, instanceValue: any): string { 
+	throw new Error("NotImplementedException");
+}
+[/let]
+[/let]
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )]
+convert[aDataType.name/]ToString(eDataType: EDataType, instanceValue: any): string { 
+	throw new Error("NotImplementedException");
+}
+[/template]
+
+[template public generateCreateFunctionContent(aClass : EClass, aReference : EReference, addID : Boolean)]
+let element = new [if aClass.hasExtension()][aClass.getExtensionName()/][else][aClass.getImplementationName()/][/if]();
+[if(addID)]
+element.[aClass.getElementIDAccessorName().toLowerFirst()/]ID = classID;
+[/if]
+[if(not aReference.eOpposite.name.oclIsUndefined())]
+if (eContainer != null) {
+[if(aReference.eOpposite.upperBound <> 1)]
+    eContainer.[aReference.eOpposite.name/].add(element);
+[else]
+    eContainer.[aReference.eOpposite.name/] = element;
+[/if]
+}
+[/if]
+return element
+[/template]
