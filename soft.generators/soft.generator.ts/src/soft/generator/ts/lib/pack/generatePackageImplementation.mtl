@@ -12,18 +12,12 @@
 
 import {EPackageExt} from "./EPackageExt"
 
-class [className/] extends EPackageExt {
+export class [className/] extends EPackageExt {
 
-	private static _instance : [className/];
+	static readonly eInstance : [className/] = new [className/]();
 
 	private constructor() {
 		super();
-	}
-
-	static getInstance() : [className/] {
-		if (![className/]._instance)
-			[className/]._instance = new [className/]();
-		return [className/]._instance;
 	}
 
 }

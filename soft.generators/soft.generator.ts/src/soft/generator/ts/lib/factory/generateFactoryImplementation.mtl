@@ -7,11 +7,14 @@
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
 
-[template public generateFactoryImplementation(anEPackage : EPackage) { className : String = anEPackage.getFactoryImplementationName() ; }]
+[template public generateFactoryImplementation(anEPackage : EPackage) { 
+	className : String = anEPackage.getFactoryImplementationName();
+	classes : Sequence(EClass) = anEPackage.eAllContents(EClass)->select( not interface and not abstract );  
+}]
 [file (anEPackage.getOutputDirectory() + '/' + anEPackage.getImplementationFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-[let referencesTypes : OclAny = anEPackage.eAllContents(EClass)->select( c | not c.interface )->iterate( eClass : EClass ; res : OclAny = mapNew() | (
+[let referencesTypes : OclAny = classes->iterate( eClass : EClass ; res : OclAny = mapNew() | (
 	let typeName : String = if eClass.hasExtension() then eClass.getExtensionName() else eClass.getImplementationName() endif in
 	let typeImport : String = getTypeImport(typeName) in
 	if (typeName <> className and typeImport <> '') then
@@ -20,7 +23,7 @@
 		res
 	endif
 ))]
-[let importTypes : OclAny = mapNew()
+[let importTypes : OclAny = mapNew(className)
 					         .mapPut('EDataType', getTypeImport('EDataType'))
 							 .mapPut('EFactoryExt', getTypeImport('EFactoryExt'))
 						     .mapPut('EObject', getTypeImport('EObject'))
@@ -35,11 +38,17 @@ import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 [/let]
 
 
-class [className/] extends EFactoryExt implements [anEPackage.getFactoryName()/] {
+export class [className/] extends EFactoryExt implements [anEPackage.getFactoryName()/] {
     
+	static readonly eInstance : [className/] = new [className/]();
+
+	private constructor() {
+		super();
+	} 
+
 	create(eClass: EClass): EObject {
 		switch(eClass.classifierID){
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
+[for (aClass : EClass | classes)]
 	    case [aClass.getQualifiedIDName()/]:
         	return this.create[aClass.name/]();
 [/for]
@@ -47,7 +56,7 @@ class [className/] extends EFactoryExt implements [anEPackage.getFactoryName()/]
         	throw new Error("create: " + eClass.classifierID + " not found");
 		}
 	}
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
+[for (aClass : EClass | classes)]
 
 	create[aClass.name/](): [aClass.getInterfaceName()/] {
 		return new [if aClass.hasExtension()][aClass.getExtensionName()/][else][aClass.getImplementationName()/][/if]();

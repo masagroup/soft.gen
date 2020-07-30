@@ -30,7 +30,7 @@
 	endif
 ))]
 [let listTypes : OclAny = if aClass.requiresList() then mapNew().mapPut('EList' , getTypeImport('EList')) else mapNew() endif]
-[let importTypes : OclAny = mapNew()
+[let importTypes : OclAny = mapNew(interfaceName)
 							 .mapPutAll(extendTypes)
 							 .mapPutAll(referencesTypes)
 							 .mapPutAll(listTypes) 

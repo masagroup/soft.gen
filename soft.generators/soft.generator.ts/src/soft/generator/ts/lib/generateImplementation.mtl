@@ -63,7 +63,7 @@
 										    .mapPut('ENotificationChain' , getTypeImport('ENotificationChain'))
 								else mapNew()
 							    endif]
-[let importTypes : OclAny = mapNew()
+[let importTypes : OclAny = mapNew(className)
 							 .mapPut(classExtend,getTypeImport(classExtend))
 							 .mapPutAll(notificationTypes)
 							 .mapPutAll(implementsTypes)

@@ -19,8 +19,9 @@
 		res
 	endif
 ))]
-[let importTypes : OclAny = mapNew()
+[let importTypes : OclAny = mapNew(className)
 							 		.mapPut('EFactory',getTypeImport('EFactory'))
+									.mapPut(anEPackage.getFactoryImplementationName(),getTypeImport(anEPackage.getFactoryImplementationName()))
 							     	.mapPutAll(referencesTypes)]
 [for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
 import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
@@ -43,6 +44,11 @@ export interface [className/] extends EFactory {
 [/if]
 [/for]
 }
+
+export function get[className/]() : [className/] {
+	return [anEPackage.getFactoryImplementationName()/].eInstance;
+}
+
 
 [/file]
 [/template]
