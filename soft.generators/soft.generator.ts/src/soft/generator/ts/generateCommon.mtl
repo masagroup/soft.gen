@@ -117,8 +117,6 @@ endif endif endif
 [query public getImplementationFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationFileName', '$1Impl.ts')/]
 [query public getConstantsFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'constantsFileName', '$1.ts')/]
 
-[query public getElementInstanceName(anENamedElement : ENamedElement) : String = anENamedElement.getMemberName()/]
-
 [query private getElementTypeName(anENamedElement : ENamedElement) : String =
 if anENamedElement.oclIsTypeOf(EClass) then 'Class'
 else if anENamedElement.oclIsTypeOf(EAttribute) then 'Attribute'

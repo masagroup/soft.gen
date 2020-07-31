@@ -11,11 +11,11 @@
 
 export class [className/] {
 
-	public static readonly eName : string = "[anEPackage.name/]";
+    public static readonly eNAME : string = "[anEPackage.name/]";
 
-	public static readonly eNS_URI : string = "[anEPackage.nsURI/]";
+    public static readonly eNS_URI : string = "[anEPackage.nsURI/]";
 
- 	public static readonly eNS_Prefix : string = "[anEPackage.nsPrefix/]";
+    public static readonly eNS_PREFIX : string = "[anEPackage.nsPrefix/]";
 
 [for (aClass : EClass | anEPackage.getOrderedClasses())]
     [aClass.generateStaticClassID()/]

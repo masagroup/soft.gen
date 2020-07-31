@@ -1,28 +1,147 @@
 [comment encoding = UTF-8 /]
 [module generatePackageImplementation('http://www.eclipse.org/emf/2002/Ecore')/]
 
+[import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon /]
+[import soft::generator::ts::generateType /]
 [import soft::generator::ts::lib::pack::generateCommon/]
 
 
-[template public generatePackageImplementation(anEPackage : EPackage){ className : String = anEPackage.getImplementationName(); }]
+
+
+[template public generatePackageImplementation(anEPackage : EPackage){ 
+	className : String = anEPackage.getImplementationName();
+	classes :  OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	dataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
+}]
 [file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getImplementationFileName(anEPackage.getPackageName()),false, 'UTF-8')]
 [fileComment()/]
 
-import {EPackageExt} from "./EPackageExt"
+[let importTypes : OclAny = mapNew(className)
+							 		.mapPut('EPackageExt',getTypeImport('EPackageExt'))
+									.mapPut(anEPackage.getInterfaceName(),getTypeImport(anEPackage.getInterfaceName()))
+									.mapPut(anEPackage.getConstantsName(),getTypeImport(anEPackage.getConstantsName()))
+									.mapPut('get' + anEPackage.getFactoryName(),getTypeImport(anEPackage.getFactoryName()))
+									.mapPut('getEcoreFactory',getTypeImport('EcoreFactory'))
+									.mapPut('EcoreFactory',getTypeImport('EcoreFactory'))
+									.mapPut('EAttribute',getTypeImport('EAttribute'))
+									.mapPut('EClass',getTypeImport('EClass'))
+									.mapPut('EDataType',getTypeImport('EDataType'))
+									.mapPut('EEnum',getTypeImport('EEnum'))
+									.mapPut('EOperation',getTypeImport('EOperation'))
+									.mapPut('EReference',getTypeImport('EReference'))
+]
+[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
+import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
+[/for]
+[/let]
 
-export class [className/] extends EPackageExt {
+export class [className/] extends EPackageExt implements [anEPackage.getInterfaceName()/] {
 
 	static readonly eInstance : [className/] = new [className/]();
 
+[for (aClass : EClass | classes)]
+    [let data : Sequence(ENamedElement) = Sequence{ Sequence{ aClass } , aClass.eStructuralFeatures, aClass.eOperations}->flatten()]
+    [data.generateVariableDeclaration(anEPackage)/]
+    [/let]
+[/for]
+    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateVariableDeclaration(anEPackage)/]
+
 	private constructor() {
 		super();
+		this.name = [anEPackage.getConstantsName()/].eNAME;
+		this.nsPrefix = [anEPackage.getConstantsName()/].eNS_PREFIX;
+		this.nsURI = [anEPackage.getConstantsName()/].eNS_URI;
+		this.eFactoryInstance = get[anEPackage.getFactoryName()/]();
+	    this.createPackageContents();
+    	this.initializePackageContents();
 	}
 
+
+	private createPackageContents() : void {
+		let factory = getEcoreFactory();
+[for (aClass : EClass | classes)]
+		this.create[aClass.name.toUpperFirst()/]Content(factory);
+[/for]
+		this.createPackageEDataTypes(factory);		
+	}
+[for (aClass : EClass | classes)]
+
+	private create[aClass.name.toUpperFirst()/]Content(factory : EcoreFactory) {
+	    [aClass.generateCreation()/]
+	    [aClass.eStructuralFeatures.generateCreation()/]
+	    [aClass.eOperations.generateCreation()/]
+	}
+[/for]
+
+	private createPackageEDataTypes(factory : EcoreFactory) {
+    	[dataTypes.generateCreation()/]
+	}
+
+	private initializePackageContents() : void {
+
+	}
+	
 }
 
 [/file]
 [/template]
 
+
+
+[query private getInstanceName(anENamedElement : ENamedElement) : String = 
+    '_' + 
+	if anENamedElement.oclIsKindOf(EDataType) then 
+        anENamedElement.oclAsType(EDataType).getElementInstanceName()
+	else if anENamedElement.oclIsKindOf(EClass) then 
+        anENamedElement.oclAsType(EClass).getElementInstanceName() 
+    else if anENamedElement.oclIsKindOf(EStructuralFeature) then 
+        anENamedElement.oclAsType(EStructuralFeature).getElementInstanceName()
+    else if anENamedElement.oclIsKindOf(EOperation) then
+        anENamedElement.oclAsType(EOperation).getElementInstanceName()
+    else
+        anENamedElement.name.toLowerFirst()
+    endif endif endif endif
+/]
+[query private getElementInstanceName(aDataType : EDataType) : String = aDataType.name.toLowerFirst() + 'Type'/]
+[query private getElementInstanceName(aClass : EClass) : String = aClass.name.toLowerFirst() + 'Class'/]
+[query private getElementInstanceName(aStructural : EStructuralFeature) : String = aStructural.eContainingClass.name.toLowerFirst() + '_' + aStructural.name.toUpperFirst() /]
+[query private getElementInstanceName(aOperation : EOperation) : String = aOperation.eContainingClass.name.toLowerFirst() + '_' + aOperation.name.toUpperFirst() + aOperation.getParameterListName() /]
+[query private getParameterListName( aOperation : EOperation) : String = if aOperation.eParameters->notEmpty() then '_' + aOperation.getParameterListDetailsName() else '' endif /]
+[query private getParameterListDetailsName(aOperation : EOperation) : String = if aOperation.eParameters->size()>1 then aOperation.eParameters->first().eType.name + '_' + aOperation.eParameters->last().eType.name else aOperation.eParameters->first().eType.name endif /]
+
+
+[template private generateVariableDeclaration(anENamedElement : ENamedElement, anEPackage : EPackage)] 
+private [anENamedElement.getInstanceName()/] : [anENamedElement.eClass().getInterfaceName()/]; 
+
+[/template]
+
+[template private generateCreation(aEClass : EClass)]
+this.[aEClass.getInstanceName()/] = factory.createEClassFromContainerAndClassID(this, [aEClass.getQualifiedIDName()/]);
+
+[/template]
+
+[template private generateCreation(aStructuralFeature : EStructuralFeature)]
+[/template]
+
+[template private generateCreation(anEAttribute : EAttribute)]
+this.[anEAttribute.getInstanceName()/] = factory.createEAttributeFromContainerAndClassID(this.[anEAttribute.eContainingClass.getInstanceName()/], [anEAttribute.eContainingClass.getQualifiedIDName(anEAttribute)/]);
+
+[/template]
+
+[template private generateCreation(anEReference : EReference)]
+this.[anEReference.getInstanceName()/] = factory.createEReferenceFromContainerAndClassID(this.[anEReference.eContainingClass.getInstanceName()/], [anEReference.eContainingClass.getQualifiedIDName(anEReference)/]);
+
+[/template] 
+
+[template private generateCreation(anEOperation : EOperation)]
+this.[anEOperation.getInstanceName()/] = factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingClass.getInstanceName()/], [anEOperation.eContainingClass.getQualifiedIDName(anEOperation)/]);
+
+[/template]
+
+[template private generateCreation(anEDatatype : EDataType)]
+this.[anEDatatype.getInstanceName()/] = factory.create[if (anEDatatype.oclIsKindOf(EEnum))]EEnum[else]EDataType[/if]FromContainerAndClassID(this, [anEDatatype.getQualifiedIDName()/]);
+
+[/template]
 

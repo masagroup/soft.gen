@@ -32,6 +32,7 @@ import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 export interface [className/] extends EFactory {
 [for (aEClass : EClass | anEPackage.eAllContents(EClass)->sortedBy(name))]
 [if (aEClass.abstract = false)]
+
 	create[aEClass.name/]() : [aEClass.getInterfaceName()/];
 [let ref:OrderedSet(EReference) = aEClass.getAllContainers()]
 [for(aReference:EReference | ref->sortedBy(name))]
