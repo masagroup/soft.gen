@@ -21,7 +21,7 @@
 [/template]
 
 [template private generatePropertyDeclaration(aStructuralFeature : EStructuralFeature)]
-[if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.name/] : [aStructuralFeature.generateType()/];
+[if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/] : [aStructuralFeature.generateType()/];
 [/template]
 
 [template private generateUnSetDeclaration(aStructuralFeature : EStructuralFeature)]
@@ -101,8 +101,8 @@ protected [aStructuralFeature.getInitializationMethodName()/]() : void {
 [/template]
 
 [template public generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
-// get the value of [aStructuralFeature.name/]
-get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
+// get the value of [aStructuralFeature.getPropertyName()/]
+get [aStructuralFeature.getPropertyName()/]() : [aStructuralFeature.generateType()/] {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
@@ -113,8 +113,8 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
 [elseif not isVolatile()]
     [if not isListType() and isProxy()]
     if (this.[varName/] != null && this.[varName/].eIsProxy()) {
-        [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
-        [let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
+        [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
+        [let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst()]
         let [oldVarName/] = this.[varName/];
         let [newVarName/] = this.eResolveProxy([oldVarName/]) as [aStructuralFeature.generateType()/];
         this.[varName/] = [newVarName/];
@@ -177,7 +177,7 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
 [elseif hasKey('getterBody')]
     [valueKey('getterBody')/]
 [else]
-	throw new Error("get [aStructuralFeature.name/] not implemented");
+	throw new Error("get [aStructuralFeature.getPropertyName()/] not implemented");
 [/if]
 [/let]
 [/let]
@@ -185,8 +185,8 @@ get [aStructuralFeature.name/]() : [aStructuralFeature.generateType()/] {
 [/template]
 
 [template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
-// get the basic value of [aStructuralFeature.name/] with no proxy resolution
-basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.generateType()/] {
+// get the basic value of [aStructuralFeature.getPropertyName()/] with no proxy resolution
+basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/]() : [aStructuralFeature.generateType()/] {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
@@ -214,7 +214,7 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
 [elseif hasKey('getterBody')]
     [valueKey('getterBody')/]
 [else]
-    throw new Error("basicGet[aStructuralFeature.name.toUpperFirst()/] not implemented");
+    throw new Error("basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/] not implemented");
 [/if]
 [/let]
 [/let]
@@ -224,10 +224,10 @@ basicGet[aStructuralFeature.name.toUpperFirst()/]() : [aStructuralFeature.genera
 [template public generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst() ]
-[let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst() ]
-// set the value of [aStructuralFeature.name/]
-set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType()/] ) {
+[let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst() ]
+[let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst() ]
+// set the value of [aStructuralFeature.getPropertyName()/]
+set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType()/] ) {
 [if not isVolatile()]
     [if isContainer()]
     if ( [newVarName/] != this.eContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getQualifiedIDName(aStructuralFeature)/])) {
@@ -238,7 +238,7 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
         if (isEObjectInternal([newVarName/])) {
             notifications = [newVarName/].eInverseAdd(this, [aClass.getQualifiedIDName(aStructuralFeature)/], notifications);
         }
-        notifications = this.basicSet[aStructuralFeature.name.toUpperFirst()/]( [newVarName/], notifications );
+        notifications = this.basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]( [newVarName/], notifications );
         if ( notifications != null ) {
             notifications.dispatch();
         }
@@ -267,7 +267,7 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
             [/let]
             [/let]
         [/if]
-        notifications = this.basicSet[aStructuralFeature.name.toUpperFirst()/]([newVarName/],notifications)
+        notifications = this.basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/],notifications)
         if (notifications != null) {
             notifications.dispatch();
         }
@@ -284,7 +284,7 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
 [elseif hasKey('setterBody')]
     [valueKey('setterBody')/]
 [else]
-    throw new Error("set [aStructuralFeature.name/] not implemented");
+    throw new Error("set [aStructuralFeature.getPropertyName()/] not implemented");
 [/if]
 }
 [/let]
@@ -296,13 +296,13 @@ set [aStructuralFeature.name/]([newVarName/] : [aStructuralFeature.generateType(
 [template public generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[let newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst()]
-basicSet[aStructuralFeature.name.toUpperFirst()/]( [newVarName/] : [aStructuralFeature.generateType()/] , msgs : ENotificationChain ) : ENotificationChain 
+[let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst()]
+basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]( [newVarName/] : [aStructuralFeature.generateType()/] , msgs : ENotificationChain ) : ENotificationChain 
 {
 [if isContainer()]
     return this.eBasicSetContainer([newVarName/],[aClass.getQualifiedIDName(aStructuralFeature)/],msgs);
 [elseif not isVolatile()]
-    [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
+    [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
     let [oldVarName/] = this.[varName/];
     this.[varName/] = [newVarName/];
     let notifications = msgs
@@ -319,7 +319,7 @@ basicSet[aStructuralFeature.name.toUpperFirst()/]( [newVarName/] : [aStructuralF
 [elseif (hasKey('setterBody'))]
     [valueKey('setterBody')/]
 [else]
-    throw new Error("basicSet[aStructuralFeature.name.toUpperFirst()/] not implemented");
+    throw new Error("basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/] not implemented");
 [/if]
 }
 [/let]
@@ -374,7 +374,7 @@ new BasicEObjectList<[aType/]>(this , [aClass.getQualifiedIDName(anEReference)/]
 [template public generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst() ]
+[let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst() ]
 // [aStructuralFeature.getUnSetterName()/] unset the value of [varName/]
 [aStructuralFeature.getUnSetterName()/]() : void {
 [if not isVolatile()]
@@ -428,7 +428,7 @@ new BasicEObjectList<[aType/]>(this , [aClass.getQualifiedIDName(anEReference)/]
 [template public generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName()]    
-[let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
+[let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
 basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( msgs : ENotificationChain )  : ENotificationChain {
 [if not isVolatile()]
     let [oldVarName/] = this.[varName/];

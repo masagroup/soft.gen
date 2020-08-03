@@ -43,7 +43,9 @@
 
 [query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getInterfaceName() }/]
 
-[query public getVariableName( aFeature : EStructuralFeature ) : String = 
-'_' + if aFeature.eType.name = 'EBoolean' then 'is' + aFeature.name.toUpperFirst() else aFeature.name endif/]
+[query public getPropertyName( aFeature : EStructuralFeature ) : String =
+if aFeature.eType.name = 'EBoolean' then 'is' + aFeature.name.toUpperFirst() else aFeature.name endif/]
 
+[query public getVariableName( aFeature : EStructuralFeature ) : String = 
+'_' + aFeature.getPropertyName()/]
 

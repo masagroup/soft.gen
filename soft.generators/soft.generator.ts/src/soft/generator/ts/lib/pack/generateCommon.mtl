@@ -2,6 +2,8 @@
 [module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon /]
+[import soft::generator::ts::lib::generateCommon/]
+
 
 [template public generateStaticClassID(aEClass : EClass)]
 // [aEClass.getClassifierIDName()/] is the meta object id for the class [aEClass.name/].
@@ -10,7 +12,7 @@ public static readonly [aEClass.getClassifierIDName()/] : number = [aEClass.getC
 [/template]
 
 [template public generateStaticFeatureID(anStructFeature : EStructuralFeature,aClass : EClass )]
-// [aClass.getFeatureIDName(anStructFeature)/] is the feature id for the [aClass.name/] '[anStructFeature.name.toUpperFirst()/]' [anStructFeature.getFeatureKind()/].
+// [aClass.getFeatureIDName(anStructFeature)/] is the feature id for the [aClass.name/] '[anStructFeature.getPropertyName().toUpperFirst()/]' [anStructFeature.getFeatureKind()/].
 public static readonly [aClass.getFeatureIDName(anStructFeature)/] : number = [aClass.getFeatureIDInteger(anStructFeature)/];
 
 
