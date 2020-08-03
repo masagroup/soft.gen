@@ -22,6 +22,7 @@ import {EDataType} from "./EDataType"
 import {EEnum} from "./EEnum"
 import {EOperation} from "./EOperation"
 import {EReference} from "./EReference"
+import {[anEPackage.getImplementationName()/]} from "./[anEPackage.getImplementationName()/]"
 
 export interface [className/] extends EPackage {
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
@@ -32,6 +33,11 @@ export interface [className/] extends EPackage {
 [/for]
     [anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(anEPackage)/]
 }
+
+export function get[className/]() : [className/] {
+    return [anEPackage.getImplementationName()/].eInstance;
+}
+
 
 [/file]
 [/template]
