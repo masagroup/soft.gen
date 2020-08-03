@@ -205,8 +205,8 @@ this.[aEClass.getInstanceName()/].eSuperTypes.add([superClass.getGetter(aEClass.
 
 [template private generateInitialization(aEClass : EClass)]
 this.[aEClass.getInstanceName()/].name = "[aEClass.name/]";
-this.[aEClass.getInstanceName()/].abstract = [aEClass.abstract.toString()/];
-this.[aEClass.getInstanceName()/].interface = [aEClass.interface.toString()/];
+this.[aEClass.getInstanceName()/].isAbstract = [aEClass.abstract.toString()/];
+this.[aEClass.getInstanceName()/].isInterface = [aEClass.interface.toString()/];
 [/template]
 
 [template private generateInitialization(anEAttribute : EAttribute, aPackage : EPackage )]
@@ -214,14 +214,14 @@ this.[anEAttribute.getInstanceName()/].name = "[anEAttribute.name/]";
 this.[anEAttribute.getInstanceName()/].eType = [anEAttribute.eType.getGetter(aPackage)/];
 this.[anEAttribute.getInstanceName()/].lowerBound = [anEAttribute.lowerBound/];
 this.[anEAttribute.getInstanceName()/].upperBound = [anEAttribute.upperBound/];
-this.[anEAttribute.getInstanceName()/].transient = [anEAttribute.transient.toString()/];
-this.[anEAttribute.getInstanceName()/].volatile = [anEAttribute.volatile.toString()/];
-this.[anEAttribute.getInstanceName()/].changeable = [anEAttribute.changeable.toString()/];
-this.[anEAttribute.getInstanceName()/].unsettable = [anEAttribute.unsettable.toString()/];
-this.[anEAttribute.getInstanceName()/].unique = [anEAttribute.unique.toString()/];
-this.[anEAttribute.getInstanceName()/].derived = [anEAttribute.derived.toString()/];
-this.[anEAttribute.getInstanceName()/].ordered = [anEAttribute.ordered.toString()/];
-this.[anEAttribute.getInstanceName()/].iD = [anEAttribute.iD.toString()/];
+this.[anEAttribute.getInstanceName()/].isTransient = [anEAttribute.transient.toString()/];
+this.[anEAttribute.getInstanceName()/].isVolatile = [anEAttribute.volatile.toString()/];
+this.[anEAttribute.getInstanceName()/].isChangeable = [anEAttribute.changeable.toString()/];
+this.[anEAttribute.getInstanceName()/].isUnsettable = [anEAttribute.unsettable.toString()/];
+this.[anEAttribute.getInstanceName()/].isUnique = [anEAttribute.unique.toString()/];
+this.[anEAttribute.getInstanceName()/].isDerived = [anEAttribute.derived.toString()/];
+this.[anEAttribute.getInstanceName()/].isOrdered = [anEAttribute.ordered.toString()/];
+this.[anEAttribute.getInstanceName()/].isID = [anEAttribute.iD.toString()/];
 [if ( anEAttribute.defaultValueLiteral <> '' )]
 this.[anEAttribute.getInstanceName()/].defaultValueLiteral = "[anEAttribute.defaultValueLiteral/]";
 [/if]
@@ -233,15 +233,15 @@ this.[anEReference.getInstanceName()/].name = "[anEReference.name/]";
 this.[anEReference.getInstanceName()/].eType = [anEReference.eGenericType.eClassifier.getGetter(aPackage)/];
 this.[anEReference.getInstanceName()/].lowerBound = [anEReference.lowerBound/];
 this.[anEReference.getInstanceName()/].upperBound = [anEReference.upperBound/];
-this.[anEReference.getInstanceName()/].transient = [anEReference.transient.toString()/];
-this.[anEReference.getInstanceName()/].volatile = [anEReference.volatile.toString()/];
-this.[anEReference.getInstanceName()/].changeable = [anEReference.changeable.toString()/];
-this.[anEReference.getInstanceName()/].unsettable = [anEReference.unsettable.toString()/];
-this.[anEReference.getInstanceName()/].unique = [anEReference.unique.toString()/];
-this.[anEReference.getInstanceName()/].derived = [anEReference.derived.toString()/];
-this.[anEReference.getInstanceName()/].ordered = [anEReference.ordered.toString()/];
-this.[anEReference.getInstanceName()/].containment = [anEReference.containment.toString()/];
-this.[anEReference.getInstanceName()/].resolveProxies = [anEReference.resolveProxies.toString()/];
+this.[anEReference.getInstanceName()/].isTransient = [anEReference.transient.toString()/];
+this.[anEReference.getInstanceName()/].isVolatile = [anEReference.volatile.toString()/];
+this.[anEReference.getInstanceName()/].isChangeable = [anEReference.changeable.toString()/];
+this.[anEReference.getInstanceName()/].isUnsettable = [anEReference.unsettable.toString()/];
+this.[anEReference.getInstanceName()/].isUnique = [anEReference.unique.toString()/];
+this.[anEReference.getInstanceName()/].isDerived = [anEReference.derived.toString()/];
+this.[anEReference.getInstanceName()/].isOrdered = [anEReference.ordered.toString()/];
+this.[anEReference.getInstanceName()/].isContainment = [anEReference.containment.toString()/];
+this.[anEReference.getInstanceName()/].isResolveProxies = [anEReference.resolveProxies.toString()/];
 [if ( anEReference.defaultValueLiteral <> '' )]
 this.[anEReference.getInstanceName()/].defaultValueLiteral = "[anEReference.defaultValueLiteral/]";
 [/if]
@@ -256,8 +256,8 @@ this.[anEOperation.getInstanceName()/].eType = [anEOperation.eType.getGetter(aPa
 this.[anEOperation.getInstanceName()/].name = "[anEOperation.name.toString()/]";
 this.[anEOperation.getInstanceName()/].lowerBound = [anEOperation.lowerBound/];
 this.[anEOperation.getInstanceName()/].upperBound = [anEOperation.upperBound/];
-this.[anEOperation.getInstanceName()/].unique = [anEOperation.unique.toString()/];
-this.[anEOperation.getInstanceName()/].ordered = [anEOperation.ordered.toString()/];
+this.[anEOperation.getInstanceName()/].isUnique = [anEOperation.unique.toString()/];
+this.[anEOperation.getInstanceName()/].isOrdered = [anEOperation.ordered.toString()/];
 [for (anEParameter : EParameter | anEOperation.eParameters)]
 {
     let parameter = factory.createEParameterFromContainer(this.[anEOperation.getInstanceName()/]);
@@ -265,8 +265,8 @@ this.[anEOperation.getInstanceName()/].ordered = [anEOperation.ordered.toString(
     parameter.eType = [anEParameter.eType.getGetter(aPackage)/];
     parameter.lowerBound = 0;
     parameter.upperBound = 1;
-    parameter.unique = true;
-    parameter.ordered = true;
+    parameter.isUnique = true;
+    parameter.isOrdered = true;
 }
 [/for]
 [/template]
@@ -277,7 +277,7 @@ this.[aDataType.getInstanceName()/].name ="[aDataType.name/]";
 //this.[aDataType.getInstanceName()/].instanceClass = typeOf [aDataType.instanceTypeName/];
 [/if]
 [if (not aDataType.oclIsKindOf(EEnum))]
-this.[aDataType.getInstanceName()/].serializable = [aDataType.serializable.toString()/];
+this.[aDataType.getInstanceName()/].isSerializable = [aDataType.serializable.toString()/];
 [/if]
 
 [/template]
