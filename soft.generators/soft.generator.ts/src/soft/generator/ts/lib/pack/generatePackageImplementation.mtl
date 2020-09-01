@@ -192,7 +192,7 @@ this.[anEDatatype.getInstanceName()/] = factory.create[if (anEDatatype.oclIsKind
 
 [query private getGetter(aClassifier : EClassifier , aPackage : EPackage ) : String =
     if aClassifier.oclIsUndefined() then 'null'
-    else if aClassifier.ePackage = aPackage then 'this.' + aClassifier.getInstanceName()
+    else if ( aClassifier.ePackage = aPackage ) or ( aClassifier.ePackage.name = aPackage.name ) then 'this.' + aClassifier.getInstanceName()
     else 'get' + aClassifier.ePackage.getInterfaceName() + '().' + aClassifier.getReflectiveGetterName() + '()'
     endif endif
 /]
@@ -230,7 +230,7 @@ this.[anEAttribute.getInstanceName()/].defaultValueLiteral = "[anEAttribute.defa
 
 [template private generateInitialization(anEReference : EReference, aPackage : EPackage )]
 this.[anEReference.getInstanceName()/].name = "[anEReference.name/]";
-this.[anEReference.getInstanceName()/].eType = [anEReference.eGenericType.eClassifier.getGetter(aPackage)/];
+this.[anEReference.getInstanceName()/].eType = [anEReference.eType.getGetter(aPackage)/];
 this.[anEReference.getInstanceName()/].lowerBound = [anEReference.lowerBound/];
 this.[anEReference.getInstanceName()/].upperBound = [anEReference.upperBound/];
 this.[anEReference.getInstanceName()/].isTransient = [anEReference.transient.toString()/];
