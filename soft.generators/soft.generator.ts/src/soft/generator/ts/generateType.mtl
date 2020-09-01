@@ -50,7 +50,7 @@ void
         Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'any', 'null' , ''},
         Sequence{ 'EJavaClass' , 'any', 'null' , ''},
         Sequence{ 'EString' , 'String', 'string', '""' , ''},
-        Sequence{ 'ETreeIterator' , 'ECollectionView', '' , '"./ECollectionView"'},
+        Sequence{ 'ETreeIterator' , 'IterableIterator', '' , ''},
         Sequence{ 'EResource' , 'EResource', '' , '"./EResource"'}
     }
 /]
