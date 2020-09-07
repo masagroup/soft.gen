@@ -6,7 +6,12 @@
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::generateType /]
 
-[template public generateFactoryInterface(anEPackage : EPackage) { className : String = anEPackage.getFactoryName(); packageName : String = anEPackage.name; }]
+[template public generateFactoryInterface(anEPackage : EPackage) { 
+    className : String = anEPackage.getFactoryName(); 
+    packageName : String = anEPackage.name;
+    extension : Boolean = anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension';
+    factoryName : String = if extension then anEPackage.getFactoryExtensionName() else anEPackage.getFactoryImplementationName() endif;
+}]
 [file (anEPackage.getOutputDirectory() + '/' + anEPackage.getInterfaceFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
@@ -21,7 +26,7 @@
 ))]
 [let importTypes : OclAny = mapNew(className)
 							 		.mapPut('EFactory',getTypeImport('EFactory'))
-									.mapPut(anEPackage.getFactoryImplementationName(),getTypeImport(anEPackage.getFactoryImplementationName()))
+                                    .mapPut(factoryName,getTypeImport(factoryName))
 							     	.mapPutAll(referencesTypes)]
 [for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
 import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
@@ -47,9 +52,8 @@ export interface [className/] extends EFactory {
 }
 
 export function get[className/]() : [className/] {
-	return [anEPackage.getFactoryImplementationName()/].eInstance;
+	return [factoryName/].eInstance;
 }
-
 
 [/file]
 [/template]

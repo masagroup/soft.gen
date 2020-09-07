@@ -42,7 +42,7 @@ export class [className/] extends EFactoryExt implements [anEPackage.getFactoryN
     
 	static readonly eInstance : [className/] = new [className/]();
 
-	private constructor() {
+	protected constructor() {
 		super();
 	} 
 

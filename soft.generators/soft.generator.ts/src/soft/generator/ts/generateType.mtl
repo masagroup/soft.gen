@@ -45,7 +45,7 @@ void
 		Sequence{ 'EFeatureMapEntry' , 'EFeatureMapEntry' , 'null' ,'"./EFeatureMap"'},
         Sequence{ 'EFloat' , 'EFloatObject', 'number' , '0.0',''},
         Sequence{ 'EEList' , 'EList', '','"./EList"'},
-        Sequence{ 'EDate' , 'std::time_t', 'std::time_t(-1)' , '<ctime>'},
+        Sequence{ 'EDate' , 'Date', 'null' , ''},
         Sequence{ 'EMap' , 'Map', '' , ''},
         Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'any', 'null' , ''},
         Sequence{ 'EJavaClass' , 'any', 'null' , ''},
