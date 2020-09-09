@@ -1,4 +1,4 @@
-package soft.generator.go;
+package soft.generator.ts;
 
 import org.eclipse.emf.common.util.BasicMonitor;
 
@@ -13,20 +13,17 @@ public class Generate extends Generator {
     /**
      * The name of the module.
      */
-    public static final String MODULE_FILE_NAME = "/soft/generator/go/generate";
+    public static final String MODULE_FILE_NAME = "/soft/generator/ts/generate";
 
     /**
-     * The namespace URI of the Go generator
+     * The namespace URI of the TypeScript generator
      */
-    public static final String NS_URI = "http://net.masagroup/soft/2019/GenGo";
+    public static final String NS_URI = "http://net.masagroup/soft/2020/GenTS";
 
     /**
      * The name of the templates that are to be generated.
      */
-    public static final String[] TEMPLATE_NAMES = { "generateModel",
-                                                    "generateTests",
-                                                    "generateMocks",
-                                                    "generateMocksTests" };
+    public static final String[] TEMPLATE_NAMES = { "generateModel", "generateTests" };
 
     private Generate() {
         super(MODULE_FILE_NAME, NS_URI, TEMPLATE_NAMES);
@@ -41,7 +38,7 @@ public class Generate extends Generator {
                 g.generate(new BasicMonitor());
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+
         }
     }
 

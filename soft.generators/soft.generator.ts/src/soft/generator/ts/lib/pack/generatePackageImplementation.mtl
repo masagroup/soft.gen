@@ -1,0 +1,284 @@
+[comment encoding = UTF-8 /]
+[module generatePackageImplementation('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
+[import soft::generator::ts::generateCommon /]
+[import soft::generator::ts::generateType /]
+[import soft::generator::ts::lib::pack::generateCommon/]
+
+
+
+
+[template public generatePackageImplementation(anEPackage : EPackage){ 
+	className : String = anEPackage.getImplementationName();
+	classes :  OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	dataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
+}]
+[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getImplementationFileName(anEPackage.getPackageName()),false, 'UTF-8')]
+[fileComment()/]
+
+[let externalPackages : OclAny = OrderedSet{ classes.eAttributes.eType , classes.eReferences.eType, classes.eOperations.eType }
+                                ->flatten()
+                                ->select( c | not c.oclIsUndefined() )
+                                ->iterate( c ; res : OclAny = mapNew(className + 'external') |
+    if c.ePackage = anEPackage then
+        res
+    else 
+        res.mapPut('get' + c.ePackage.getInterfaceName(), getTypeImport(c.ePackage.getInterfaceName()))
+    endif
+)
+] 
+[let importTypes : OclAny = mapNew(className)
+                                    .mapPutAll(externalPackages)
+							 		.mapPut('EPackageExt',getTypeImport('EPackageExt'))
+									.mapPut(anEPackage.getInterfaceName(),getTypeImport(anEPackage.getInterfaceName()))
+									.mapPut(anEPackage.getConstantsName(),getTypeImport(anEPackage.getConstantsName()))
+									.mapPut('get' + anEPackage.getFactoryName(),getTypeImport(anEPackage.getFactoryName()))
+									.mapPut('getEcoreFactory',getTypeImport('EcoreFactory'))
+									.mapPut('EcoreFactory',getTypeImport('EcoreFactory'))
+									.mapPut('EAttribute',getTypeImport('EAttribute'))
+									.mapPut('EClass',getTypeImport('EClass'))
+									.mapPut('EDataType',getTypeImport('EDataType'))
+									.mapPut('EEnum',getTypeImport('EEnum'))
+									.mapPut('EOperation',getTypeImport('EOperation'))
+									.mapPut('EReference',getTypeImport('EReference'))
+]
+[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
+import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
+[/for]
+[/let]
+[/let]
+
+export class [className/] extends EPackageExt implements [anEPackage.getInterfaceName()/] {
+
+	static readonly eInstance : [className/] = new [className/]();
+
+[for (aClass : EClass | classes)]
+    [let data : Sequence(ENamedElement) = Sequence{ Sequence{ aClass } , aClass.eStructuralFeatures, aClass.eOperations}->flatten()]
+    [data.generateVariableDeclaration(anEPackage)/]
+    [/let]
+[/for]
+    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateVariableDeclaration(anEPackage)/]
+
+	private constructor() {
+		super();
+		this.name = [anEPackage.getConstantsName()/].eNAME;
+		this.nsPrefix = [anEPackage.getConstantsName()/].eNS_PREFIX;
+		this.nsURI = [anEPackage.getConstantsName()/].eNS_URI;
+		this.eFactoryInstance = get[anEPackage.getFactoryName()/]();
+        let factory = getEcoreFactory();
+	    this.createPackageContents(factory);
+    	this.initializePackageContents(factory);
+	}
+
+[for (aClass : EClass | classes)]
+    [aClass.generateGetter(anEPackage)/]
+    [aClass.eAttributes->sortedBy(name).generateGetter(anEPackage)/]
+    [aClass.eReferences->sortedBy(name).generateGetter(anEPackage)/]
+    [aClass.eOperations->sortedBy(name).generateGetter(anEPackage)/]
+[/for]
+    [dataTypes.generateGetter(anEPackage)/]
+
+
+	private createPackageContents(factory : EcoreFactory) : void {		
+[for (aClass : EClass | classes)]
+		this.create[aClass.name.toUpperFirst()/]Content(factory);
+[/for]
+		this.createPackageEDataTypes(factory);		
+	}
+[for (aClass : EClass | classes)]
+
+	private create[aClass.name.toUpperFirst()/]Content(factory : EcoreFactory) : void{
+	    [aClass.generateCreation()/]
+	    [aClass.eStructuralFeatures.generateCreation()/]
+	    [aClass.eOperations.generateCreation()/]
+	}
+[/for]
+
+	private createPackageEDataTypes(factory : EcoreFactory) : void {
+    	[dataTypes.generateCreation()/]
+	}
+
+	private initializePackageContents(factory : EcoreFactory) : void {
+        // Add supertypes to classes
+        [classes.initSuperTypes()/]
+[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
+        this.initialize[aClass.name.toUpperFirst()/]Content(factory);
+[/for]
+        this.initializePackageEDataTypes(factory);
+	}
+	
+[for (aClass : EClass | classes)]
+    private initialize[aClass.name.toUpperFirst()/]Content(factory : EcoreFactory) : void {
+        [aClass.generateInitialization()/]
+        [aClass.eAttributes->sortedBy(name).generateInitialization(anEPackage)/]
+        [aClass.eReferences->sortedBy(name).generateInitialization(anEPackage)/]
+        [aClass.eOperations->sortedBy(name).generateInitialization(anEPackage)/]
+    }
+[/for]
+
+    private initializePackageEDataTypes(factory : EcoreFactory) : void {
+        [anEPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization()/]
+    }
+
+}
+
+[/file]
+[/template]
+
+
+
+[query private getInstanceName(anENamedElement : ENamedElement) : String = 
+    if anENamedElement.oclIsKindOf(EDataType) then 
+        anENamedElement.oclAsType(EDataType).getInstanceName()
+	else if anENamedElement.oclIsKindOf(EClass) then 
+        anENamedElement.oclAsType(EClass).getInstanceName() 
+    else if anENamedElement.oclIsKindOf(EStructuralFeature) then 
+        anENamedElement.oclAsType(EStructuralFeature).getInstanceName()
+    else if anENamedElement.oclIsKindOf(EOperation) then
+        anENamedElement.oclAsType(EOperation).getInstanceName()
+    else
+        anENamedElement.name.toLowerFirst()
+    endif endif endif endif
+/]
+[query private getInstanceName(aDataType : EDataType) : String = '_' + aDataType.name.toLowerFirst() + 'Type'/]
+[query private getInstanceName(aClass : EClass) : String = '_' + aClass.name.toLowerFirst() + 'Class'/]
+[query private getInstanceName(aStructural : EStructuralFeature) : String = '_' + aStructural.eContainingClass.name.toLowerFirst() + '_' + aStructural.name.toUpperFirst() /]
+[query private getInstanceName(aOperation : EOperation) : String = '_' + aOperation.eContainingClass.name.toLowerFirst() + '_' + aOperation.name.toUpperFirst() + aOperation.getParameterListName() /]
+[query private getParameterListName( aOperation : EOperation) : String = if aOperation.eParameters->notEmpty() then '_' + aOperation.getParameterListDetailsName() else '' endif /]
+[query private getParameterListDetailsName(aOperation : EOperation) : String = if aOperation.eParameters->size()>1 then aOperation.eParameters->first().eType.name + '_' + aOperation.eParameters->last().eType.name else aOperation.eParameters->first().eType.name endif /]
+
+
+[template private generateVariableDeclaration(anENamedElement : ENamedElement, anEPackage : EPackage)] 
+private [anENamedElement.getInstanceName()/] : [anENamedElement.eClass().getInterfaceName()/]; 
+
+[/template]
+
+[template private generateGetter(anENamedElement : ENamedElement, anEPackage : EPackage)]
+[anENamedElement.getReflectiveGetterName()/]() : [anENamedElement.eClass().getInterfaceName()/] {
+    return this.[anENamedElement.getInstanceName()/];
+}
+
+[/template]
+
+[template private generateCreation(aEClass : EClass)]
+this.[aEClass.getInstanceName()/] = factory.createEClassFromContainerAndClassID(this, [aEClass.getQualifiedIDName()/]);
+
+[/template]
+
+[template private generateCreation(aStructuralFeature : EStructuralFeature)]
+[/template]
+
+[template private generateCreation(anEAttribute : EAttribute)]
+this.[anEAttribute.getInstanceName()/] = factory.createEAttributeFromContainerAndClassID(this.[anEAttribute.eContainingClass.getInstanceName()/], [anEAttribute.eContainingClass.getQualifiedIDName(anEAttribute)/]);
+
+[/template]
+
+[template private generateCreation(anEReference : EReference)]
+this.[anEReference.getInstanceName()/] = factory.createEReferenceFromContainerAndClassID(this.[anEReference.eContainingClass.getInstanceName()/], [anEReference.eContainingClass.getQualifiedIDName(anEReference)/]);
+
+[/template] 
+
+[template private generateCreation(anEOperation : EOperation)]
+this.[anEOperation.getInstanceName()/] = factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingClass.getInstanceName()/], [anEOperation.eContainingClass.getQualifiedIDName(anEOperation)/]);
+
+[/template]
+
+[template private generateCreation(anEDatatype : EDataType)]
+this.[anEDatatype.getInstanceName()/] = factory.create[if (anEDatatype.oclIsKindOf(EEnum))]EEnum[else]EDataType[/if]FromContainerAndClassID(this, [anEDatatype.getQualifiedIDName()/]);
+
+[/template]
+
+[query private getGetter(aClassifier : EClassifier , aPackage : EPackage ) : String =
+    if aClassifier.oclIsUndefined() then 'null'
+    else if ( aClassifier.ePackage = aPackage ) or ( aClassifier.ePackage.name = aPackage.name ) then 'this.' + aClassifier.getInstanceName()
+    else 'get' + aClassifier.ePackage.getInterfaceName() + '().' + aClassifier.getReflectiveGetterName() + '()'
+    endif endif
+/]
+
+[template public initSuperTypes(aEClass : EClass)]
+[for (superClass : EClass | aEClass.eSuperTypes->asOrderedSet()->sortedBy(name))]
+this.[aEClass.getInstanceName()/].eSuperTypes.add([superClass.getGetter(aEClass.ePackage)/]);
+[/for]
+[/template]
+
+[template private generateInitialization(aEClass : EClass)]
+this.[aEClass.getInstanceName()/].name = "[aEClass.name/]";
+this.[aEClass.getInstanceName()/].isAbstract = [aEClass.abstract.toString()/];
+this.[aEClass.getInstanceName()/].isInterface = [aEClass.interface.toString()/];
+[/template]
+
+[template private generateInitialization(anEAttribute : EAttribute, aPackage : EPackage )]
+this.[anEAttribute.getInstanceName()/].name = "[anEAttribute.name/]";
+this.[anEAttribute.getInstanceName()/].eType = [anEAttribute.eType.getGetter(aPackage)/];
+this.[anEAttribute.getInstanceName()/].lowerBound = [anEAttribute.lowerBound/];
+this.[anEAttribute.getInstanceName()/].upperBound = [anEAttribute.upperBound/];
+this.[anEAttribute.getInstanceName()/].isTransient = [anEAttribute.transient.toString()/];
+this.[anEAttribute.getInstanceName()/].isVolatile = [anEAttribute.volatile.toString()/];
+this.[anEAttribute.getInstanceName()/].isChangeable = [anEAttribute.changeable.toString()/];
+this.[anEAttribute.getInstanceName()/].isUnsettable = [anEAttribute.unsettable.toString()/];
+this.[anEAttribute.getInstanceName()/].isUnique = [anEAttribute.unique.toString()/];
+this.[anEAttribute.getInstanceName()/].isDerived = [anEAttribute.derived.toString()/];
+this.[anEAttribute.getInstanceName()/].isOrdered = [anEAttribute.ordered.toString()/];
+this.[anEAttribute.getInstanceName()/].isID = [anEAttribute.iD.toString()/];
+[if ( anEAttribute.defaultValueLiteral <> '' )]
+this.[anEAttribute.getInstanceName()/].defaultValueLiteral = "[anEAttribute.defaultValueLiteral/]";
+[/if]
+
+[/template]
+
+[template private generateInitialization(anEReference : EReference, aPackage : EPackage )]
+this.[anEReference.getInstanceName()/].name = "[anEReference.name/]";
+this.[anEReference.getInstanceName()/].eType = [anEReference.eType.getGetter(aPackage)/];
+this.[anEReference.getInstanceName()/].lowerBound = [anEReference.lowerBound/];
+this.[anEReference.getInstanceName()/].upperBound = [anEReference.upperBound/];
+this.[anEReference.getInstanceName()/].isTransient = [anEReference.transient.toString()/];
+this.[anEReference.getInstanceName()/].isVolatile = [anEReference.volatile.toString()/];
+this.[anEReference.getInstanceName()/].isChangeable = [anEReference.changeable.toString()/];
+this.[anEReference.getInstanceName()/].isUnsettable = [anEReference.unsettable.toString()/];
+this.[anEReference.getInstanceName()/].isUnique = [anEReference.unique.toString()/];
+this.[anEReference.getInstanceName()/].isDerived = [anEReference.derived.toString()/];
+this.[anEReference.getInstanceName()/].isOrdered = [anEReference.ordered.toString()/];
+this.[anEReference.getInstanceName()/].isContainment = [anEReference.containment.toString()/];
+this.[anEReference.getInstanceName()/].isResolveProxies = [anEReference.resolveProxies.toString()/];
+[if ( anEReference.defaultValueLiteral <> '' )]
+this.[anEReference.getInstanceName()/].defaultValueLiteral = "[anEReference.defaultValueLiteral/]";
+[/if]
+[if not anEReference.eOpposite.oclIsUndefined()]
+this.[anEReference.getInstanceName()/].eOpposite = this.[anEReference.eOpposite.getInstanceName()/];
+[/if]
+
+[/template]
+
+[template private generateInitialization(anEOperation : EOperation , aPackage : EPackage )]
+this.[anEOperation.getInstanceName()/].eType = [anEOperation.eType.getGetter(aPackage)/];
+this.[anEOperation.getInstanceName()/].name = "[anEOperation.name.toString()/]";
+this.[anEOperation.getInstanceName()/].lowerBound = [anEOperation.lowerBound/];
+this.[anEOperation.getInstanceName()/].upperBound = [anEOperation.upperBound/];
+this.[anEOperation.getInstanceName()/].isUnique = [anEOperation.unique.toString()/];
+this.[anEOperation.getInstanceName()/].isOrdered = [anEOperation.ordered.toString()/];
+[for (anEParameter : EParameter | anEOperation.eParameters)]
+{
+    let parameter = factory.createEParameterFromContainer(this.[anEOperation.getInstanceName()/]);
+    parameter.name = "[anEParameter.name/]";
+    parameter.eType = [anEParameter.eType.getGetter(aPackage)/];
+    parameter.lowerBound = 0;
+    parameter.upperBound = 1;
+    parameter.isUnique = true;
+    parameter.isOrdered = true;
+}
+[/for]
+[/template]
+
+[template private generateInitialization(aDataType : EDataType)]
+this.[aDataType.getInstanceName()/].name ="[aDataType.name/]";
+[if not aDataType.instanceTypeName.oclIsUndefined() and not (aDataType.instanceTypeName = '')] 
+//this.[aDataType.getInstanceName()/].instanceClass = typeOf [aDataType.instanceTypeName/];
+[/if]
+[if (not aDataType.oclIsKindOf(EEnum))]
+this.[aDataType.getInstanceName()/].isSerializable = [aDataType.serializable.toString()/];
+[/if]
+
+[/template]
+

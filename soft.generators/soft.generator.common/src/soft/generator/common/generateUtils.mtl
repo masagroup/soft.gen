@@ -9,3 +9,14 @@
 
 [query public getOrderedClasses( anEPackage : EPackage ) : Sequence(EClass) = invoke('soft.generator.common.GenerateUtils','getOrderedClasses(org.eclipse.emf.ecore.EPackage)',Sequence{anEPackage}) /]
 
+[query public mapNew( o : OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapNew()',Sequence{}) /]
+
+[query public mapPut( map : OclAny , key: OclAny , value:OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapPut(java.util.Map,java.lang.Object,java.lang.Object)',Sequence{map,key,value }) /]
+
+[query public mapPutAll( map : OclAny , o : OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapPutAll(java.util.Map,java.util.Map)',Sequence{map,o }) /]
+
+[query public mapRemove( map : OclAny , key: OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapRemove(java.util.Map,java.lang.Object)',Sequence{map,key}) /]
+
+[query public mapGet( map : OclAny , key: OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapGet(java.util.Map,java.lang.Object)',Sequence{map,key}) /]
+
+[query public mapKeys( map : OclAny ) : Set(OclAny) = invoke('soft.generator.common.GenerateUtils','mapKeys(java.util.Map)',Sequence{map}) /]

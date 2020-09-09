@@ -12,26 +12,26 @@
 
 [template public generateStaticFeatureID(anStructFeature : EStructuralFeature,anEClass : EClass )]
 // [anEClass.getFeatureIDName(anStructFeature)/] is the feature id for the [anEClass.name/] '[anStructFeature.name.toUpperFirst()/]' [anStructFeature.getFeatureKind()/].
-[anEClass.getFeatureIDName(anStructFeature)/] = [anEClass.getFeatureValue(anStructFeature)/]
+[anEClass.getFeatureIDName(anStructFeature)/] = [anEClass.getFeatureIDValue(anStructFeature)/]
 
 
 [/template]
 
 [template public generateStaticFeatureCountID(anEClass : EClass )]
-// [anEClass.getFeatureCountID()/] is the number of structural features of the class [anEClass.name/].
-[anEClass.getFeatureCountID()/] = [anEClass.getFeatureCountValue()/]
+// [anEClass.getFeatureCountIDName()/] is the number of structural features of the class [anEClass.name/].
+[anEClass.getFeatureCountIDName()/] = [anEClass.getFeatureCountIDValue()/]
 
 [/template]
 
 [template public generateStaticOperationID(aOperation : EOperation , aClass : EClass )]
 // [aClass.getOperationIDName(aOperation)/] is the operation id for the '[aOperation.name/]' operation.
-[aClass.getOperationIDName(aOperation)/] = [aClass.getOperationValue(aOperation)/];
+[aClass.getOperationIDName(aOperation)/] = [aClass.getOperationIDValue(aOperation)/];
 
 [/template]
 
 [template public generateStaticOperationCountID(anEClass : EClass )]
-// [anEClass.getOperationCountID()/] is the number of [anEClass.getOperationCountID()/]
-[anEClass.getOperationCountID()/] = [anEClass.getOperationCountValue()/];
+// [anEClass.getOperationCountIDName()/] is the number of [anEClass.getOperationCountIDName()/]
+[anEClass.getOperationCountIDName()/] = [anEClass.getOperationCountIDValue()/];
 
 [/template]
 
@@ -40,5 +40,3 @@
 [aEDatatype.getClassifierIDName()/] = [aEDatatype.getClassifierIDValue()/];
 
 [/template]
-
-[query public getClassifierIDValue(anEClassifier : EClassifier) : EInt = if (anEClassifier.getClassifierID() = 0) then anEClassifier.ePackage.eClassifiers->selectByKind(EClassifier)->size() else anEClassifier.getClassifierID() endif/]

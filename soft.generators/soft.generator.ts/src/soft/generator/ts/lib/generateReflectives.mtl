@@ -1,0 +1,360 @@
+[comment encoding = UTF-8 /]
+[module generateReflectives('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
+[import soft::generator::common::generateReflectives/]
+[import soft::generator::ts::generateCommon/]
+[import soft::generator::ts::generateType/]
+[import soft::generator::ts::lib::generateCommon/]
+
+[query public hasReflectives(aClass : EClass) : Boolean = 
+	aClass.hasElementID() or
+	aClass.getEGetFeatures()->notEmpty() or
+    aClass.getESetFeatures()->notEmpty() or
+    aClass.getEUnSetFeatures()->notEmpty() or
+    aClass.getEIsSetFeatures()->notEmpty() or
+    aClass.getEInvokeOperations()->notEmpty() or
+    aClass.getEInverseAddFeatures()->notEmpty() or
+    aClass.getEInverseRemoveFeatures()->notEmpty()/]
+
+[template public generateReflectivesDefinition(aClass : EClass)]
+[if aClass.hasReflectives()]
+[if aClass.hasElementID()]
+[aClass.generateElementIDDefinition()/]
+
+[/if]
+[if aClass.getEGetFeatures()->notEmpty()]
+[aClass.generateEGetDefinition()/]
+
+[/if]
+[if aClass.getESetFeatures()->notEmpty()]
+[aClass.generateESetDefinition()/]
+
+[/if]
+[if aClass.getEUnSetFeatures()->notEmpty()]
+[aClass.generateEUnSetDefinition()/]
+
+[/if]
+[if aClass.getEIsSetFeatures()->notEmpty()]
+[aClass.generateEIsSetDefinition()/]
+
+[/if]
+[if aClass.getEInvokeOperations()->notEmpty()]
+[aClass.generateEInvokeDefinition()/]
+
+[/if]
+[if aClass.getEInverseAddFeatures()->notEmpty()]
+[aClass.generateEInverseAddDefinition()/]
+
+[/if]
+[if aClass.getEInverseRemoveFeatures()->notEmpty()]
+[aClass.generateEInverseRemoveDefinition()/]
+[/if]
+[/if]
+[/template]
+
+[template private generateElementIDDefinition(aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
+[let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
+[if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())] 
+eDerivedFeatureID(eContainer : EObject, featureID number) : number {
+	let eClass = eContainer as EClass;
+[for (aMixinClass : EClass | mixinClasses)]
+    if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
+        switch ( featureID ) {
+[for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
+            case [aMixinClass.getQualifiedIDName(aFeature)/] : {
+				return [aClass.getQualifiedIDName(aFeature)/]
+			}
+[/for]
+            default: {
+				return -1
+			}
+        }
+    }
+[/for]  
+    return super.eDerivedFeatureID(eContainer, featureID);
+}
+[/if]
+
+[if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
+eDerivedOperationID(eContainer : EObject, operationID number) number {
+	let eClass = eContainer as EClass;
+[for (aMixinClass : EClass | mixinClasses)]
+    if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
+        switch (featureID) {
+[for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
+            case [aMixinClass.getQualifiedIDName(aOperation)/] : {
+				return [aClass.getQualifiedIDName(aOperation)/];
+			}
+[/for]
+            default: {
+				return -1
+			}
+        }
+    }
+[/for]  
+    return super.eDerivedOperationID(eContainer, featureID);
+}
+[/if]
+[/let]
+[/let]
+[/template]
+
+[template private generateEGetDefinition(aClass : EClass)]
+eGetFromID(featureID : number , resolve : boolean ) : any {
+    switch ( featureID ) {
+    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
+    	case [aClass.getQualifiedIDName(anStructFeature)/]: {
+	[if anStructFeature.isProxy()]
+		[if anStructFeature.isListType()]
+			let list = this.[anStructFeature.getPropertyName()/];
+			if (!resolve) {
+				if (isEObjectList(list))
+					return list.getUnResolvedList();
+			}
+			return list;
+		[else]
+			if (resolve) {
+				return this.[anStructFeature.getPropertyName()/];
+			}
+			return  this.basicGet[anStructFeature.getPropertyName().toUpperFirst()/]();
+		[/if]		
+	[else] 
+        	return this.[anStructFeature.getPropertyName()/];
+	[/if]
+		}
+    [/for]
+		default: {
+	        return super.eGetFromID(featureID, resolve);
+		}
+    }
+}
+[/template]
+
+
+[template private generateEIsSetDefinition(aClass : EClass)]
+eIsSetFromID(featureID : number) : boolean {
+    switch (featureID) {
+[for (anStructFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
+	    case [aClass.getQualifiedIDName(anStructFeature)/]: {
+	        return [anStructFeature.generateComparison(aClass)/];
+		}
+[/for]
+    	default: {
+        	return super.eIsSetFromID(featureID);
+		}
+    }
+}
+[/template]
+
+[template private generateESetDefinition(aClass : EClass)]
+eSetFromID(featureID : number, newValue : any) {
+    switch (featureID) {
+[for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
+    	case [aClass.getQualifiedIDName(anStructFeature)/]: {
+    [if anStructFeature.isListType()]
+			this.[anStructFeature.getPropertyName()/].clear()
+	        this.[anStructFeature.getPropertyName()/].addAll(newValue as [anStructFeature.generateType()/]);
+    [else]
+        	this.[anStructFeature.getPropertyName()/] = newValue as [anStructFeature.generateType()/];
+    [/if]
+		}
+[/for]
+	    default: {
+	        	super.eSetFromID(featureID, newValue);
+		}
+    }
+}
+[/template]
+
+[template private generateEUnSetDefinition(aClass : EClass)]
+eUnsetFromID(featureID : number ) {
+    switch (featureID) {
+[for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
+    	case [aClass.getQualifiedIDName(aStructFeature)/]: {
+    [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
+        	this.[aStructFeature.getPropertyName()/].clear();
+    [elseif aStructFeature.isUnSet() ]
+        	this.[aStructFeature.getUnSetterName()/]();
+    [elseif aStructFeature.oclIsKindOf(EReference)]
+        	this.[aStructFeature.getPropertyName()/] = null;
+    [else]
+		[let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
+		[let defaultValue : String = aAttribute.getDefaultValue()]
+		[if defaultValue <> '']
+        	this.[aStructFeature.getPropertyName()/] = [defaultValue/];
+        [else]
+        	this.[aStructFeature.getPropertyName()/] = null;
+        [/if]
+        [/let]
+        [/let]
+    [/if]
+		}
+[/for]
+    	default: {
+        	super.eUnsetFromID(featureID);
+		}
+    }
+}
+[/template]
+
+[template private generateEInvokeDefinition(aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
+eInvokeFromID(operationID : number , args : EList<any>) : any {
+    switch (operationID) {
+    [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy( getOperationName() ) )]
+    	case [aClass.getQualifiedIDName(eOperation)/]: {
+        [if eOperation.isVoid() ]
+        	this.[eOperation.generateOperationInvoke()/];
+        	return null;
+        [else]
+        	return this.[eOperation.generateOperationInvoke()/]; 
+        [/if]
+		}
+    [/for]
+    	default: {
+        	return super.eInvokeFromID(operationID,args);
+		}
+    }
+}
+[/let]
+[/template]
+
+[template private generateOperationInvoke(eOperation : EOperation )]
+[eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]args.get([i-1/])[if needCast] as [eParameter.generateType()/][/if][/let][/for])
+[/template]
+
+[template public generateDefaultValue(anEAttribute : EAttribute) post (trim())]
+[if (anEAttribute.eType.oclIsTypeOf(EEnum))]
+    [if (anEAttribute.defaultValueLiteral->notEmpty())]
+        [anEAttribute.defaultValueLiteral.toUpperCase()/]
+    [else]
+        [anEAttribute.eType.oclAsType(EEnum).eLiterals->first().name.toUpperCase()/] 
+    [/if]
+[else]
+    [anEAttribute.getDefaultValue()/]
+[/if]
+[/template]
+
+[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
+[let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
+[if isListType()]
+    [if isField()]
+        this.[aAttribute.getPropertyName()/] != null && this.[aAttribute.getPropertyName()/].size() != 0;
+    [else]
+        this.[aAttribute.getPropertyName()/].size() != 0;
+    [/if]
+[else]
+    [let accessor : String = if isField() then aAttribute.getVariableName() else aAttribute.getPropertyName() endif]
+    [if eType.oclIsKindOf(EEnum)]
+        this.[accessor/] != [aAttribute.generateDefaultValue()/]
+    [else]
+		this.[accessor/] != [aAttribute.getDefaultValue()/]
+    [/if]
+    [/let]
+[/if]
+[/let]
+[/template]
+
+[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
+[if isListType()]
+    [if isField()]
+        this.[anStructFeature.getPropertyName()/] != null && this.[anStructFeature.getPropertyName()/].size() != 0
+    [else]
+        this.[anStructFeature.getPropertyName()/].size() != 0
+    [/if]
+[elseif anStructFeature.oclAsType(EReference).isBackReference() ]
+    [if anStructFeature.eType.name <> 'EBoolean']
+    this.[anStructFeature.getPropertyName()/] != null
+    [else]
+    this.[anStructFeature.getPropertyName()/]
+    [/if]
+[else]
+    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getPropertyName() endif]
+        this.[accessor/] != [anStructFeature.eType.getDefaultValue()/]
+    [/let]
+[/if]
+[/template]
+
+[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (eType.isAny()) post (trim())]
+this.[anStructFeature.getPropertyName()/] != ""
+[/template]
+
+[template public generateEInverseAddDefinition(aClass : EClass) ]
+[let aPackage : EPackage = aClass.ePackage]
+eBasicInverseAdd(otherEnd : EObject, featureID : number, notifications : ENotificationChain) : ENotificationChain {
+    switch (featureID) {
+[for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
+    	case [aClass.getQualifiedIDName(aFeature)/]: {
+    [if aFeature.isListType()]
+		[let type : String = aFeature.eGenericType.generateType(aPackage)]
+	        let list = this.[aFeature.getPropertyName()/] as ENotifyingList<[type/]>;
+			let end = otherEnd as [type/];
+		[/let]	    
+    		return list.addWithNotification(end, notifications);;
+	[elseif aFeature.isContainer()]
+	        let msgs = notifications;
+	        if (this.eContainer() != null) {
+	            msgs = this.eBasicRemoveFromContainer(msgs);
+	        }
+        [if aFeature.isBasicSet()]
+        	return this.basicSet[aFeature.getPropertyName().toUpperFirst()/](otherEnd as [aFeature.generateType()/], msgs);
+        [else]
+        	return this.eBasicSetContainer(otherEnd, [aClass.getQualifiedIDName(aFeature)/], msgs);
+        [/if]
+    [else]
+        [if aFeature.isVolatile() or aFeature.isBackReference()]
+        	let [aFeature.getPropertyName()/] = [if aFeature.isProxy()]this.basicGet[aFeature.getPropertyName().toUpperFirst()/]()[else]this.[aFeature.getPropertyName()/][/if];
+        [/if]
+	        let msgs = notifications;
+	        if (isEObjectInternal(this.[aFeature.getPropertyName()/])) {
+            [if aFeature.isContains()]
+            	msgs = this.[aFeature.getPropertyName()/].eInverseRemove(this, EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs);
+            [else]
+                [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
+            	msgs = this.[aFeature.getPropertyName()/].eInverseRemove(this, [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/], msgs);
+                [/let]
+            [/if]
+        	}
+        	return this.basicSet[aFeature.getPropertyName().toUpperFirst()/](otherEnd as [aFeature.generateType()/],msgs);
+    [/if]
+		}
+[/for]
+    	default: {
+        	return super.eBasicInverseAdd(otherEnd, featureID, notifications);
+		}
+    }
+}
+[/let]
+[/template]
+
+[template public generateEInverseRemoveDefinition(aClass : EClass) ? (aClass.getEInverseRemoveFeatures()->notEmpty()) ]
+[let aPackage : EPackage = aClass.ePackage]
+eBasicInverseRemove(otherEnd : EObject, featureID : number, notifications : ENotificationChain) : ENotificationChain {
+    switch (featureID) {
+[for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
+    	case [aClass.getQualifiedIDName(aFeature)/]: {
+    [if aFeature.isListType()]
+		[let type : String = aFeature.eGenericType.generateType(aPackage)]
+	        let list = this.[aFeature.getPropertyName()/] as ENotifyingList<[type/]>;
+			let end = otherEnd as [type/];
+	        return list.removeWithNotification(end, notifications);
+		[/let]
+    [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
+        	return this.eBasicSetContainer(null, [aClass.getQualifiedIDName(aFeature)/], notifications);
+    [elseif aFeature.isUnSet()]
+        	return this.basicUnSet[aFeature.getPropertyName().toUpperFirst()/](notifications);
+    [else]
+        	return this.basicSet[aFeature.getPropertyName().toUpperFirst()/](null, notifications);
+    [/if]
+		}
+[/for]
+		default: {
+        	return super.eBasicInverseRemove(otherEnd, featureID, notifications);
+		}
+    }
+}
+[/let]
+[/template]

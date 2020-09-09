@@ -1,10 +1,12 @@
 package soft.generator.common;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EClass;
@@ -108,6 +110,33 @@ public class GenerateUtils {
 
     private EClass getSuperType(EClass eClass) {
         return eClass.getESuperTypes().stream().findFirst().orElse(null);
+    }
+
+    public Map<Object, Object> mapNew() {
+        return new HashMap<>();
+    }
+
+    public Map<Object, Object> mapPut(Map<Object, Object> map, Object key, Object value) {
+        map.put(key, value);
+        return map;
+    }
+
+    public Map<Object, Object> mapPutAll(Map<Object, Object> map, Map<Object, Object> o) {
+        map.putAll(o);
+        return map;
+    }
+
+    public Map<Object, Object> mapRemove(Map<Object, Object> map, Object key) {
+        map.remove(key);
+        return map;
+    }
+
+    public Object mapGet(Map<Object, Object> map, Object key) {
+        return map.get(key);
+    }
+
+    public Set<Object> mapKeys(Map<Object, Object> map) {
+        return map.keySet();
     }
 
 }

@@ -1,7 +1,25 @@
 [comment encoding = UTF-8 /]
 [module generateCommon('http://www.eclipse.org/emf/2002/Ecore')]
 
-[query public isAny(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then true else (name = 'EEnumerator' or name = 'EDiagnosticChain' or name = 'EJavaObject') endif/]
+[query public getNSURI(o : OclAny) : String = getProperty('nsURI') /]
+
+[query public hasKey(aModelElement : EModelElement, aKey:String) : Boolean = 
+	if aModelElement.hasGenAnnotation() then 
+		aModelElement.getGenAnnotation().details->select(key = aKey)->notEmpty() 
+	else 
+		false 
+	endif 
+/]
+[query public valueKey(aModelElement : EModelElement, aKey:String) : String = 
+	aModelElement.getGenAnnotation().details->select(key = aKey)->first().value 
+/]
+
+[query private hasGenAnnotation(aModelElement : EModelElement) : Boolean = eAnnotations->select( source = getNSURI() )->notEmpty() /]
+[query private getGenAnnotation(aModelElement : EModelElement) : EAnnotation = eAnnotations->select( source = getNSURI() )->first() /]
+
+[query public isAny(anEClassifier : EClassifier) : Boolean = 
+	if (oclIsUndefined()) then true else (name = 'EEnumerator' or name = 'EDiagnosticChain' or name = 'EJavaObject') endif
+/]
 [query public isVoid(aOperation : EOperation) : Boolean = aOperation.eType.oclIsUndefined() /]
 
 [query public join( aSequence : Sequence(String) , aDelimiter : String ) : String = 
@@ -93,18 +111,25 @@
 [query public getClassifierIDName( anEClass : EClass ,anEClassifier : EClassifier) : String = (anEClass.getClassifierIDName() + '__' + splitAndCombineWords(anEClassifier.name,'_')).toUpperCase()/]
 [query public getClassifierIDValue(anEClassifier : EClassifier) : EInt = if (anEClassifier.getClassifierID() = 0) then anEClassifier.ePackage.eClassifiers->selectByKind(EClassifier)->size() else anEClassifier.getClassifierID() endif/]
 
-[query public getOperationCountID( aEClass : EClass ) : String = aEClass.getClassifierIDName() + '_OPERATION_COUNT'/]
-[query public getOperationCountValue( aEClass : EClass ) : String = 
+[query public getOperationCountIDName( aEClass : EClass ) : String = aEClass.getClassifierIDName() + '_OPERATION_COUNT'/]
+[query public getOperationCountIDValue( aEClass : EClass ) : String = 
     let baseClass : EClass = aEClass.getBaseClass() in
     if baseClass.oclIsUndefined() then
         aEClass.getOperationCount()
     else
-        let baseCount : String = if baseClass.ePackage = aEClass.ePackage then baseClass.getOperationCountID() else baseClass.getOperationCountID() endif in
-        baseCount + ' + ' +  (aEClass.getOperationCount() - baseClass.getOperationCount()).toString()
+        baseClass.getOperationCountIDName() + ' + ' +  (aEClass.getOperationCount() - baseClass.getOperationCount()).toString()
+    endif
+/]
+[query public getOperationCountIDInteger( aEClass : EClass ) : Integer = 
+    let baseClass : EClass = aEClass.getBaseClass() in
+    if baseClass.oclIsUndefined() then
+        aEClass.getOperationCount()
+    else
+        baseClass.getOperationCountIDInteger() + aEClass.getOperationCount() - baseClass.getOperationCount()
     endif
 /]
 [query public getOperationIDName(anEClass : EClass ,aOperation : EOperation) : String = (anEClass.getClassifierIDName() + '__' +  splitAndCombineWords(aOperation.name , '_') + aOperation.getParameterListName()).toUpperCase() /]
-[query public getOperationValue(aEClass : EClass , aOperation : EOperation ) : String = 
+[query public getOperationIDValue(aEClass : EClass , aOperation : EOperation ) : String = 
     let index : Integer = aEClass.eAllOperations->indexOf(aOperation) - 1 in
     let baseClass : EClass = aEClass.getBaseClass() in
     if baseClass.oclIsUndefined() then
@@ -112,10 +137,23 @@
     else
         let baseCount : Integer = baseClass.getOperationCount() in
         if ( index < baseCount ) then
-            if baseClass.ePackage = aEClass.ePackage then baseClass.getOperationIDName( aOperation ) else baseClass.getOperationIDName( aOperation ) endif
+            baseClass.getOperationIDName( aOperation )
         else
-            let baseCountID : String = if aEClass.ePackage = baseClass.ePackage then baseClass.getOperationCountID() else baseClass.getOperationCountID() endif in
-            baseCountID + ' + ' + (index-baseCount).toString()
+            baseClass.getOperationCountIDName() + ' + ' + (index-baseCount).toString()
+        endif 
+    endif 
+/]
+[query public getOperationIDInteger(aEClass : EClass , aOperation : EOperation ) : Integer = 
+    let index : Integer = aEClass.eAllOperations->indexOf(aOperation) - 1 in
+    let baseClass : EClass = aEClass.getBaseClass() in
+    if baseClass.oclIsUndefined() then
+        index
+    else
+        let baseCount : Integer = baseClass.getOperationCount() in
+        if ( index < baseCount ) then
+            baseClass.getOperationIDInteger( aOperation )
+        else
+            baseClass.getOperationCountIDInteger() + index - baseCount
         endif 
     endif 
 /]
@@ -145,7 +183,9 @@
     endif
 /]
 
-[query public getFeatureValue( aEClass : EClass , aEFeature : EStructuralFeature ) : String =
+[query public getFeatureIDName(anEClass : EClass ,aStructural : EStructuralFeature) : String = (anEClass.getClassifierIDName() + '__' + splitAndCombineWords(aStructural.name,'_')).toUpperCase() /]
+
+[query public getFeatureIDValue( aEClass : EClass , aEFeature : EStructuralFeature ) : String =
     let index : Integer = aEClass.eAllStructuralFeatures->indexOf(aEFeature) - 1 in
     let baseClass : EClass = aEClass.getBaseClass() in
     if baseClass.oclIsUndefined() then
@@ -153,25 +193,46 @@
     else
         let baseCount : Integer = baseClass.getFeatureCount() in
         if ( index < baseCount ) then
-            if baseClass.ePackage = aEClass.ePackage then baseClass.getFeatureIDName( aEFeature ) else baseClass.getFeatureIDName( aEFeature ) endif
+            baseClass.getFeatureIDName( aEFeature )
         else
-            let baseCountID : String = if aEClass.ePackage = baseClass.ePackage then baseClass.getFeatureCountID() else baseClass.getFeatureCountID() endif in
-            baseCountID + ' + ' + (index-baseCount).toString()
+            baseClass.getFeatureCountIDName() + ' + ' + (index-baseCount).toString()
         endif 
     endif 
 /]
 
-[query public getFeatureIDName(anEClass : EClass ,aStructural : EStructuralFeature) : String = (anEClass.getClassifierIDName() + '__' + splitAndCombineWords(aStructural.name,'_')).toUpperCase() /]
+[query public getFeatureIDInteger( aEClass : EClass , aEFeature : EStructuralFeature ) : Integer =
+    let index : Integer = aEClass.eAllStructuralFeatures->indexOf(aEFeature) - 1 in
+    let baseClass : EClass = aEClass.getBaseClass() in
+    if baseClass.oclIsUndefined() then
+        index
+    else
+        let baseCount : Integer = baseClass.getFeatureCount() in
+        if ( index < baseCount ) then
+            baseClass.getFeatureIDInteger( aEFeature )
+        else
+            baseClass.getFeatureCountIDInteger() + index - baseCount
+        endif 
+    endif 
+/]
 
-[query public getFeatureCountID( aEClass : EClass ) : String = aEClass.getClassifierIDName() + '_FEATURE_COUNT'/]
 
-[query public getFeatureCountValue( aEClass : EClass ) : String = 
+[query public getFeatureCountIDName( aEClass : EClass ) : String = aEClass.getClassifierIDName() + '_FEATURE_COUNT'/]
+
+[query public getFeatureCountIDValue( aEClass : EClass ) : String = 
     let baseClass : EClass = aEClass.getBaseClass() in
     if baseClass.oclIsUndefined() then
         aEClass.getFeatureCount()
     else
-        let baseCount : String = if baseClass.ePackage = aEClass.ePackage then baseClass.getFeatureCountID() else baseClass.getFeatureCountID() endif in
-        baseCount + ' + ' +  (aEClass.getFeatureCount() - baseClass.getFeatureCount()).toString()
+        baseClass.getFeatureCountIDName() + ' + ' +  (aEClass.getFeatureCount() - baseClass.getFeatureCount()).toString()
+    endif
+/]
+
+[query public getFeatureCountIDInteger( aEClass : EClass ) : Integer = 
+    let baseClass : EClass = aEClass.getBaseClass() in
+    if baseClass.oclIsUndefined() then
+        aEClass.getFeatureCount()
+    else
+        baseClass.getFeatureCountIDInteger() + aEClass.getFeatureCount() - baseClass.getFeatureCount()
     endif
 /]
 

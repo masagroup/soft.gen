@@ -1,0 +1,113 @@
+[comment encoding = UTF-8 /]
+[module generateImplementation('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon]
+[import soft::generator::common::generateElement]
+[import soft::generator::common::generateStructuralFeature]
+[import soft::generator::common::generateUtils]
+[import soft::generator::ts::generateCommon/]
+[import soft::generator::ts::generateType/]
+[import soft::generator::ts::lib::generateCommon/]
+[import soft::generator::ts::lib::generateOperation/]
+[import soft::generator::ts::lib::generateReflectives/]
+[import soft::generator::ts::lib::generateStructuralFeature/]
+
+[template public generateImplementation(aClass : EClass) { 
+	className : String = aClass.getImplementationName();
+	classExtend : String = aClass.getClassExtends(); 
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
+	variableFeatures : Collection(EStructuralFeature) = features->select(isField());
+	initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
+	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName());
+	aPackage : EPackage = aClass.ePackage; 
+	classImplements : Sequence(String) = aClass.getClassImplements();
+}]
+[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
+[fileComment()/]
+
+[let implementsTypes : OclAny = classImplements->iterate( classImplement : String ; res : OclAny = mapNew() | res.mapPut(classImplement,getTypeImport(classImplement)) )]
+[let referencesTypes : OclAny = aClass.getReferencedTypes()->iterate( referenceType : EClassifier ; res : OclAny = mapNew() | (
+	let typeName : String = referenceType.getTypeName() in
+	let typeImport : String = referenceType.getTypeImport() in
+	if (typeName <> className and typeImport <> '') then
+		res.mapPut(typeName,typeImport)
+	else
+		res
+	endif
+))]
+[let listTypes : OclAny = if aClass.requiresList() then 
+							   mapNew().mapPut('BasicEObjectList' , getTypeImport('BasicEObjectList'))
+									   .mapPut('BasicEList', getTypeImport('BasicEList') )
+									   .mapPut(aPackage.getConstantsName(),getTypeImport(aPackage.getConstantsName())) 
+					 	  else mapNew() 
+						  endif]
+[let notificationTypes : OclAny = if features->exists(requiresNotification()) then 
+								       mapNew().mapPut('ENotification' , getTypeImport('ENotification'))
+											   .mapPut('ENotificationChain' , getTypeImport('ENotificationChain'))
+			                                   .mapPut('EventType',getTypeImport('ENotification'))
+ 											   .mapPut('Notification' , getTypeImport('Notification'))
+											   .mapPut('EOPPOSITE_FEATURE_BASE', getTypeImport('Constants'))
+											   .mapPut(aPackage.getConstantsName(),getTypeImport(aPackage.getConstantsName())) 
+								  else mapNew() 
+								  endif]
+[let containerTypes : OclAny = if features->exists(isContainer()) then
+									mapNew().mapPut(aPackage.getConstantsName(),getTypeImport(aPackage.getConstantsName())) 
+							   else mapNew()
+							   endif]
+[let reflectiveTypes : OclAny = if aClass.hasReflectives() then
+									mapNew().mapPut('isEObjectList',getTypeImport('EObjectList'))
+											.mapPut('EObject',getTypeImport('EObject'))
+											.mapPut('EObjectInternal',getTypeImport('EObjectInternal'))
+											.mapPut('EList',getTypeImport('EList'))
+											.mapPut('ENotifyingList',getTypeImport('ENotifyingList'))
+										    .mapPut('ENotificationChain' , getTypeImport('ENotificationChain'))
+								else mapNew()
+							    endif]
+[let importTypes : OclAny = mapNew(className)
+							 .mapPut(classExtend,getTypeImport(classExtend))
+							 .mapPutAll(notificationTypes)
+							 .mapPutAll(implementsTypes)
+							 .mapPutAll(referencesTypes)
+							 .mapPutAll(listTypes)
+							 .mapPutAll(reflectiveTypes)	
+							 .mapPutAll(containerTypes)
+                             .mapPut('EClass',getTypeImport('EClass'))
+							 .mapPut('isEObjectInternal',getTypeImport('EObjectInternal'))
+                             .mapPut('get'+aPackage.getInterfaceName(),getTypeImport(aPackage.getInterfaceName()))
+							 ]
+[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
+import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
+[/for]
+[/let]
+[/let]
+[/let]
+[/let]
+[/let]
+[/let]
+[/let]
+
+
+export class [className/] extends [classExtend/] [for ( interface : String | classImplements) before(' implements ') separator (',')][interface/][/for]
+{
+	[features.generateVariableDeclaration()/]
+
+	constructor() {
+		super();
+		[variableFeatures.generateVariableInitialization(aClass)/]
+	}
+
+    eStaticClass() : EClass {
+        return get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]()
+    }
+
+	[features.generateImplementation(aClass)/]
+
+	[operations.generateImplementation(aClass)/]
+
+	[initializerFeatures.generateVariableInitializationMethodDefinition(aClass)/]
+
+	[aClass.generateReflectivesDefinition()/]
+}
+
+[/file]
+[/template]

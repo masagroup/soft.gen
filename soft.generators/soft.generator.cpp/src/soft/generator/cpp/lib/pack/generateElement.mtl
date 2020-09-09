@@ -18,7 +18,7 @@
 /**
  * The feature id for the [anEClass.name/] '[anStructFeature.name.toUpperFirst()/]' [anStructFeature.getFeatureKind()/].
  */
-static const int [anEClass.getFeatureIDName(anStructFeature)/] = [anEClass.getFeatureValue(anStructFeature)/];
+static const int [anEClass.getFeatureIDName(anStructFeature)/] = [anEClass.getFeatureIDValue(anStructFeature)/];
 
 [/template]
 
@@ -26,7 +26,7 @@ static const int [anEClass.getFeatureIDName(anStructFeature)/] = [anEClass.getFe
 /**
  * The number of structural features of the class [anEClass.name/].
  */
-static const int [anEClass.getFeatureCountID()/] = [anEClass.getFeatureCountValue()/];
+static const int [anEClass.getFeatureCountIDName()/] = [anEClass.getFeatureCountIDValue()/];
 
 [/template]
 
@@ -111,7 +111,7 @@ std::shared_ptr<[getMetaType(anENamedElement, anEPackage)/]> [anENamedElement.ge
 /**
  * The operation id for the '[aOperation.name/]' operation.
  */
-static const int [aClass.getOperationIDName(aOperation)/] = [aClass.getOperationValue(aOperation)/];
+static const int [aClass.getOperationIDName(aOperation)/] = [aClass.getOperationIDValue(aOperation)/];
 
 [/template]
 
@@ -119,7 +119,7 @@ static const int [aClass.getOperationIDName(aOperation)/] = [aClass.getOperation
 /**
  *  The number of operations of the class [anEClass.name/].
  */
-static const int [anEClass.getOperationCountID()/] = [anEClass.getOperationCountValue()/];
+static const int [anEClass.getOperationCountIDName()/] = [anEClass.getOperationCountIDValue()/];
 
 [/template]
 

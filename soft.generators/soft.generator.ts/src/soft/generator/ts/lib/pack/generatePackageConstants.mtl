@@ -1,0 +1,32 @@
+[comment encoding = UTF-8 /]
+[module generatePackageConstants('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateUtils/]
+[import soft::generator::ts::generateCommon /]
+[import soft::generator::ts::lib::pack::generateCommon/]
+
+[template public generatePackageConstants(anEPackage : EPackage) {className : String = anEPackage.getConstantsName();}]
+[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getConstantsFileName(className) , false, 'UTF-8')]
+[fileComment()/]
+
+export class [className/] {
+
+    public static readonly eNAME : string = "[anEPackage.name/]";
+
+    public static readonly eNS_URI : string = "[anEPackage.nsURI/]";
+
+    public static readonly eNS_PREFIX : string = "[anEPackage.nsPrefix/]";
+
+[for (aClass : EClass | anEPackage.getOrderedClasses())]
+    [aClass.generateStaticClassID()/]
+    [aClass.eAllStructuralFeatures.generateStaticFeatureID(aClass)/]
+    [aClass.generateStaticFeatureCountID()/]
+    [aClass.eAllOperations.generateStaticOperationID(aClass)/]
+    [aClass.generateStaticOperationCountID()/]
+[/for]
+    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateStaticDataTypeID()/]
+}
+
+[/file]
+[/template]
+

@@ -74,6 +74,7 @@
     <module>soft.generator.common</module>
     <module>soft.generator.cpp</module>
     <module>soft.generator.go</module>
+    <module>soft.generator.ts</module>
   </modules>
   
 </project>

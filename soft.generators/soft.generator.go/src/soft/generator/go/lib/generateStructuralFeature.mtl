@@ -2,76 +2,14 @@
 [module generateStructuralFeature('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateStructuralFeature/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 
-[**
- * lazy property can be defined as follow lazy = no|function|action
- **]
-[query public getLazy( aStructuralFeature : EStructuralFeature ) : String =
-if aStructuralFeature.hasKey('lazy') then 
-    aStructuralFeature.valueKey('lazy')
-else
-    let aPackage : EPackage = aStructuralFeature.eContainingClass.ePackage in
-    if aStructuralFeature.isListType() then
-        aPackage.getLazy('list')
-    else if aStructuralFeature.isProxy() then
-        aPackage.getLazy('proxy')
-    else 
-        aPackage.getLazy('')
-    endif
-    endif
-endif/]
-
-[**
- * lazy property can be defined as follow lazy = ((*|list|proxy):(no|function|action))+
- **]
-[query private getLazy( aPackage : EPackage , type : String ) : String =
-if aPackage.hasKey('lazy') then
-    let lazy : String = aPackage.valueKey('lazy') in
-    let value : String = lazy.tokenize()->iterate( s ; res: String = '' | (
-        if res = '' then 
-            let index : Integer = s.index( ':' ) in 
-            if index = -1 then
-                s
-            else
-                let t : String = s.substring(1 , index - 1 ) in
-                if t = type then
-                    s.substring( index + 1 )
-                else
-                    ''
-                endif
-            endif
-        else
-            res
-        endif
-    )) in
-    if value = '' then
-        'no'
-    else
-        value
-    endif
-else 
-    'no'
-endif
-/]
-
-[query public isLazy( aStructuralFeature : EStructuralFeature ) : Boolean = aStructuralFeature.getLazy() <> 'no'/] 
-
 [query public isInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
 
-[query public hasInitializationMethod( aStructuralFeature : EStructuralFeature ) : Boolean = 
-not isVolatile() and isLazy() and ( let lazyType : String = aStructuralFeature.getLazy() in lazyType = 'action' or lazyType = 'function')/]
-
 [query public getInitializersInterface( aClass : EClass ) : String = aClass.getImplementationName() + 'Initializers'/]
-
-[query private getMethodInitializationName(feature : EStructuralFeature) : String = 
-if hasKey('initializationName') then 
-    valueKey('initializationName') 
-else 
-    'init'.concat(name.toUpperFirst()) 
-endif/]
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature)]
 [if isGet()]
@@ -159,18 +97,18 @@ nil
 [/template]
 
 [template public generateVariableInitializationMethodDeclaration(aStructuralFeature : EStructuralFeature)]
-[aStructuralFeature.getMethodInitializationName()/]()[if aStructuralFeature.getLazy() = 'function'] [aStructuralFeature.generateType()/][/if]
+[aStructuralFeature.getInitializationMethodName()/]()[if aStructuralFeature.getLazy() = 'function'] [aStructuralFeature.generateType()/][/if]
 
 [/template]
 
 [template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'function' )]
-[aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getMethodInitializationName()/]() [aStructuralFeature.generateType()/] {
+[aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getInitializationMethodName()/]() [aStructuralFeature.generateType()/] {
 [if isListType()]
     return [getListConstructor(aClass)/];
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
     return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
 [else]
-    panic("[aStructuralFeature.getMethodInitializationName()/] not implemented")
+    panic("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
 }
 
@@ -178,7 +116,7 @@ nil
 [/template]
 
 [template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'action' )]
-[aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getMethodInitializationName()/]() {
+[aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getInitializationMethodName()/]() {
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let receiverName : String = aStructuralFeature.eContainingClass.getReceiverName()]
 [if isListType()]
@@ -187,7 +125,7 @@ nil
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
     [receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
 [else]
-    panic("[aStructuralFeature.getMethodInitializationName()/] not implemented")
+    panic("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
 }
 [/let]
@@ -367,10 +305,10 @@ func [testMethodName/](t *testing.T) {
                 [else]
     if [receiverName/].[varName/] == nil {
                 [/if]
-        [receiverName/].[varName/] = [receiverName/].getInitializers().[aStructuralFeature.getMethodInitializationName()/]()
+        [receiverName/].[varName/] = [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
     }
             [elseif lazy = 'action']
-    [receiverName/].getInitializers().[aStructuralFeature.getMethodInitializationName()/]()
+    [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
             [/if]
         [/if]
         [/let]
@@ -411,10 +349,10 @@ func [testMethodName/](t *testing.T) {
             [else]
     if [receiverName/].[varName/] == nil {
             [/if]
-        [receiverName/].[varName/] = [receiverName/].getInitializers().[aStructuralFeature.getMethodInitializationName()/]()
+        [receiverName/].[varName/] = [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
     }
         [elseif lazy = 'action']
-    [receiverName/].getInitializers().[aStructuralFeature.getMethodInitializationName()/]()
+    [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
         [/if]
     [/if]
     [/let]

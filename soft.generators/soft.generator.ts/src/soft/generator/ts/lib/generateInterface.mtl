@@ -1,0 +1,69 @@
+[comment encoding = UTF-8 /]
+[module generateInterface('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement]
+[import soft::generator::common::generateUtils]
+[import soft::generator::ts::generateCommon/]
+[import soft::generator::ts::generateType/]
+[import soft::generator::ts::lib::generateCommon/]
+[import soft::generator::ts::lib::generateOperation/]
+[import soft::generator::ts::lib::generateStructuralFeature/]
+
+[template public generateInterface(aClass : EClass) { 
+	interfaceName : String = aClass.getInterfaceName(); 
+	aPackage : EPackage = aClass.ePackage; 
+	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
+}]
+[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
+[fileComment()/]
+
+
+[let extendTypes : OclAny = interfaceExtends->iterate( interfaceExtend : String ; res : OclAny = mapNew() | res.mapPut(interfaceExtend,getTypeImport(interfaceExtend)) )]
+[let referencesTypes : OclAny = aClass.getReferencedTypes()->iterate( referenceType : EClassifier ; res : OclAny = mapNew() | (
+	let typeName : String = referenceType.getTypeName() in
+	let typeImport : String = referenceType.getTypeImport() in
+	if (typeName <> interfaceName and typeImport <> '') then
+		res.mapPut(typeName,typeImport)
+	else
+		res
+	endif
+))]
+[let listTypes : OclAny = if aClass.requiresList() then mapNew().mapPut('EList' , getTypeImport('EList')) else mapNew() endif]
+[let importTypes : OclAny = mapNew(interfaceName)
+							 .mapPutAll(extendTypes)
+							 .mapPutAll(referencesTypes)
+							 .mapPutAll(listTypes) 
+							 ]
+[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
+import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
+[/for]
+[/let]
+[/let]
+[/let]
+[/let]
+
+export interface [interfaceName/][for ( extend : String | interfaceExtends ) before (' extends ') separator (', ')][extend/][/for]
+{
+[let attributes : OrderedSet(EAttribute) = aClass.eAttributes->asOrderedSet()->select( isGet() or isSet() )]
+[if attributes->notEmpty()]
+    // Attributes
+    [attributes->asOrderedSet().generateDeclaration()/]
+[/if]
+[/let]
+[let references : OrderedSet(EReference) = aClass.eReferences->asOrderedSet()->select( isGet() or isSet() )]
+[if references->notEmpty()]
+    // References
+    [references.generateDeclaration()/]
+[/if]
+[/let]
+[let operations : OrderedSet(EOperation) = aClass.eOperations->asOrderedSet()]
+[if operations->notEmpty()]
+    // Operations
+    [operations.generateDeclaration()/]
+[/if]
+[/let]
+}
+
+[/file]
+[/template]

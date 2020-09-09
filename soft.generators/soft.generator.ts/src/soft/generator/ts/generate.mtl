@@ -1,0 +1,31 @@
+[comment encoding = UTF-8 /]
+[module generate('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::ts::lib::generateInterface/]
+[import soft::generator::ts::lib::generateImplementation/]
+[import soft::generator::ts::lib::factory::generateFactoryInterface/]
+[import soft::generator::ts::lib::factory::generateFactoryImplementation/]
+[import soft::generator::ts::lib::pack::generatePackageConstants/]
+[import soft::generator::ts::lib::pack::generatePackageImplementation/]
+[import soft::generator::ts::lib::pack::generatePackageInterface/]
+
+
+[template public generateModel(aPackage : EPackage)]
+[comment @main/]
+[for (aClass : EClass | aPackage.eAllContents(EClass))]
+    [aClass.generateInterface()/]
+	[if not aClass.interface]	
+    	[aClass.generateImplementation()/]
+	[/if]
+[/for]
+[aPackage.generateFactoryInterface()/]
+[aPackage.generateFactoryImplementation()/]
+[aPackage.generatePackageConstants()/]
+[aPackage.generatePackageInterface()/]
+[aPackage.generatePackageImplementation()/]
+[/template]
+
+[template public generateTests(aPackage : EPackage)]
+[comment @main/]
+
+[/template]

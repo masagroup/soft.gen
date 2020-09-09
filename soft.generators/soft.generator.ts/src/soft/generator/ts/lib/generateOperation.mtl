@@ -1,0 +1,25 @@
+[comment encoding = UTF-8 /]
+[module generateOperation('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon]
+[import soft::generator::ts::generateCommon/]
+[import soft::generator::ts::generateType/]
+
+[template public generateDeclaration(aOperation : EOperation)]
+[aOperation.getOperationName()/]([aOperation.generateParameterList()/]) : [aOperation.generateType()/];
+
+[/template]
+
+[query public isDefault(anEOperation : EOperation ) : Boolean = not anEOperation.hasKey('default') or ( anEOperation.hasKey('default') and anEOperation.valueKey('default') = 'true' )/]
+
+[template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? (not anEOperation.isDefault() )]
+[/template]
+
+[template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? ( anEOperation.isDefault() )]
+// [anEOperation.getOperationName()/] default implementation
+[anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) : [anEOperation.generateType()/] {
+    throw new Error("[anEOperation.getOperationName()/] not implemented");
+}
+
+
+[/template]
