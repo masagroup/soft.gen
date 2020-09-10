@@ -89,7 +89,9 @@ import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 
 export class [className/] extends [classExtend/] [for ( interface : String | classImplements) before(' implements ') separator (',')][interface/][/for]
 {
-	[features.generateVariableDeclaration()/]
+[let dataDeclarationFeatures : Set(EStructuralFeature) = features->select( isField() )]
+	[dataDeclarationFeatures.generateVariableDeclaration()/]
+[/let]
 
 	constructor() {
 		super();

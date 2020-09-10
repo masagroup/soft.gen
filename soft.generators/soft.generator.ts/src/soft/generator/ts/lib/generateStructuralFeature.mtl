@@ -29,7 +29,7 @@
 [/template]
 
 [template public generateVariableDeclaration(aStructuralFeature : EStructuralFeature)]
-[aStructuralFeature.getVariableName()/] : [aStructuralFeature.generateType()/];
+private [aStructuralFeature.getVariableName()/] : [aStructuralFeature.generateType()/];
 
 [/template]
 
