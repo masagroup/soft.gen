@@ -40,7 +40,14 @@ import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 
 export class [className/] extends EFactoryExt implements [anEPackage.getFactoryName()/] {
     
-	static readonly eInstance : [className/] = new [className/]();
+	private static _instance : [className/] = null;
+
+	public static getInstance() : [className/] {
+		if (this._instance == null) {
+			this._instance = new [className/]();
+		}
+		return this._instance;
+	}
 
 	protected constructor() {
 		super();

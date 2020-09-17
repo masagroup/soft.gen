@@ -52,7 +52,7 @@ export interface [className/] extends EFactory {
 }
 
 export function get[className/]() : [className/] {
-	return [factoryName/].eInstance;
+	return [factoryName/].getInstance();
 }
 
 [/file]

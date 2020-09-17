@@ -34,7 +34,7 @@ export interface [className/] extends EPackage {
 }
 
 export function get[className/]() : [className/] {
-    return require("./[anEPackage.getImplementationName()/]").[anEPackage.getImplementationName()/].eInstance;
+    return require("./[anEPackage.getImplementationName()/]").[anEPackage.getImplementationName()/].getInstance();
 }
 
 

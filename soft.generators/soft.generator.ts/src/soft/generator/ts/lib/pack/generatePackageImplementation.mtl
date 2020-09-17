@@ -52,7 +52,7 @@ import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
 
 export class [className/] extends EPackageExt implements [anEPackage.getInterfaceName()/] {
 
-	static readonly eInstance : [className/] = new [className/]();
+	private static _instance : [className/] = null;
 
 [for (aClass : EClass | classes)]
     [let data : Sequence(ENamedElement) = Sequence{ Sequence{ aClass } , aClass.eStructuralFeatures, aClass.eOperations}->flatten()]
@@ -60,6 +60,13 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
     [/let]
 [/for]
     [anEPackage.eAllContents(EDataType)->sortedBy(name).generateVariableDeclaration(anEPackage)/]
+
+	public static getInstance() : [className/] {
+		if (this._instance == null) {
+			this._instance = new [className/]();
+		}
+		return this._instance;
+	}
 
 	private constructor() {
 		super();
