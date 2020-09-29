@@ -75,9 +75,7 @@
 							 .mapPut('isEObjectInternal',getTypeImport('EObjectInternal'))
                              .mapPut('get'+aPackage.getInterfaceName(),getTypeImport(aPackage.getInterfaceName()))
 							 ]
-[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
-import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
-[/for]
+import {[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))separator (', ')][k.oclAsType(String)/][/for]} from "./internal";
 [/let]
 [/let]
 [/let]

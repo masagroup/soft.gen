@@ -15,13 +15,7 @@
 [file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
-import {EPackage} from "./EPackage"
-import {EAttribute} from "./EAttribute"
-import {EClass} from "./EClass"
-import {EDataType} from "./EDataType"
-import {EEnum} from "./EEnum"
-import {EOperation} from "./EOperation"
-import {EReference} from "./EReference"
+import {EAttribute,EReference,EClass,EEnum,EOperation,EDataType,EPackage,[anEPackage.getImplementationName()/]} from "./internal"
 
 export interface [className/] extends EPackage {
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
@@ -34,7 +28,7 @@ export interface [className/] extends EPackage {
 }
 
 export function get[className/]() : [className/] {
-    return require("./[anEPackage.getImplementationName()/]").[anEPackage.getImplementationName()/].getInstance();
+    return [anEPackage.getImplementationName()/].getInstance();
 }
 
 
