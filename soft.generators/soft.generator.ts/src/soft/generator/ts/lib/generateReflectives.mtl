@@ -160,6 +160,7 @@ eSetFromID(featureID : number, newValue : any) {
     [else]
         	this.[anStructFeature.getPropertyName()/] = newValue as [anStructFeature.generateType()/];
     [/if]
+            break;
 		}
 [/for]
 	    default: {
@@ -191,6 +192,7 @@ eUnsetFromID(featureID : number ) {
         [/let]
         [/let]
     [/if]
+            break;
 		}
 [/for]
     	default: {
