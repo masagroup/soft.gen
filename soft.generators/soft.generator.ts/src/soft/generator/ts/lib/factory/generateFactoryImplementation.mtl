@@ -41,7 +41,7 @@ export class [className/] extends EFactoryExt implements [anEPackage.getFactoryN
 	private static _instance : [className/] = null;
 
 	public static getInstance() : [className/] {
-		if (this._instance == null) {
+		if (!this._instance) {
 			this._instance = new [className/]();
 		}
 		return this._instance;

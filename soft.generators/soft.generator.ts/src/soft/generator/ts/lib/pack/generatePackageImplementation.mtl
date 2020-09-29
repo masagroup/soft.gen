@@ -60,7 +60,7 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
     [anEPackage.eAllContents(EDataType)->sortedBy(name).generateVariableDeclaration(anEPackage)/]
 
 	public static getInstance() : [className/] {
-		if (this._instance == null) {
+		if (!this._instance) {
 			this._instance = new [className/]();
 		}
 		return this._instance;
