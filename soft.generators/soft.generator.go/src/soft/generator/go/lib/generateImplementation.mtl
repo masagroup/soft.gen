@@ -39,7 +39,7 @@ import "[i/]"
 // [implementationName/] is the implementation of the model object '[aClass.name/]'
 type [implementationName/] struct {
     *[getShortQualifiedName( classExtend ,aPackage.name)/]
-[let dataDeclarationFeatures : Set(EStructuralFeature) = features->select( isField() )]
+[let dataDeclarationFeatures : OrderedSet(EStructuralFeature) = features->select( isField() )]
     [ dataDeclarationFeatures.generateVariableDeclaration()/]
 [/let]
 }
