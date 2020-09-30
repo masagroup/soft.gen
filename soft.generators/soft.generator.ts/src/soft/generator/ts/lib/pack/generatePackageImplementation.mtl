@@ -75,6 +75,7 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
         let factory = getEcoreFactory();
 	    this.createPackageContents(factory);
     	this.initializePackageContents(factory);
+        this.createResource();
 	}
 
 [for (aClass : EClass | classes)]
