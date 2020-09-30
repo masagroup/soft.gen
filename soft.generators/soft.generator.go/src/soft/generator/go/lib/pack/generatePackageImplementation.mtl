@@ -180,6 +180,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 	p.SetEFactoryInstance(GetFactory())
     p.createPackageContents()
     p.initializePackageContents()
+    p.CreateResource();
     return p
 }
 
