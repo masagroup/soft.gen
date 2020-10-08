@@ -242,21 +242,21 @@ eInvokeFromID(operationID : number , args : EList<any>) : any {
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
 [let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
+[let accessor : String = if isField() then aAttribute.getVariableName() else aAttribute.getPropertyName() endif]
 [if isListType()]
     [if isField()]
         this.[aAttribute.getPropertyName()/] != null && this.[aAttribute.getPropertyName()/].size() != 0;
     [else]
         this.[aAttribute.getPropertyName()/].size() != 0;
     [/if]
-[else]
-    [let accessor : String = if isField() then aAttribute.getVariableName() else aAttribute.getPropertyName() endif]
+[else] 
     [if eType.oclIsKindOf(EEnum)]
         this.[accessor/] != [aAttribute.generateDefaultValue()/]
     [else]
 		this.[accessor/] != [aAttribute.getDefaultValue()/]
-    [/if]
-    [/let]
+    [/if]    
 [/if]
+[/let]
 [/let]
 [/template]
 
