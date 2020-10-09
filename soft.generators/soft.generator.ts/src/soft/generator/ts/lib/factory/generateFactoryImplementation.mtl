@@ -31,16 +31,21 @@
 							 .mapPut(anEPackage.getFactoryName(), getTypeImport(anEPackage.getFactoryName()))
 							 .mapPutAll(referencesTypes)
 					         ]
-[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
-import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
-[/for]
+import {[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))separator (', ')][k.oclAsType(String)/][/for]} from "./internal";
 [/let]
 [/let]
 
 
 export class [className/] extends EFactoryExt implements [anEPackage.getFactoryName()/] {
     
-	static readonly eInstance : [className/] = new [className/]();
+	private static _instance : [className/] = null;
+
+	public static getInstance() : [className/] {
+		if (!this._instance) {
+			this._instance = new [className/]();
+		}
+		return this._instance;
+	}
 
 	protected constructor() {
 		super();

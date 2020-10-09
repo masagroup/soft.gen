@@ -180,6 +180,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 	p.SetEFactoryInstance(GetFactory())
     p.createPackageContents()
     p.initializePackageContents()
+    p.CreateResource()
     return p
 }
 
@@ -232,14 +233,6 @@ func (p *[className/])initialize[aClass.name.toUpperFirst()/]Content() {
 
 func (p *[className/])initializePackageEDataTypes() {
     [anEPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization()/]
-}
-
-func (p *[className/]) EResource() [if not anEPackage.isEcorePackage()]ecore.[/if]EResource {
-    resource := p.EPackageExt.EResource()
-    if resource == nil {
-		resource = [if not anEPackage.isEcorePackage()]ecore.[/if]GetPackageResourceRegistry().GetResource(p.GetInterfaces().([if not anEPackage.isEcorePackage()]ecore.[/if]EPackage))
-	}
-    return resource
 }
 
 [/file]

@@ -35,9 +35,7 @@
 							 .mapPutAll(referencesTypes)
 							 .mapPutAll(listTypes) 
 							 ]
-[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))]
-import {[k.oclAsType(String)/]} from [importTypes.mapGet(k).oclAsType(String)/]
-[/for]
+import {[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))separator (', ')][k.oclAsType(String)/][/for]} from "./internal";
 [/let]
 [/let]
 [/let]
