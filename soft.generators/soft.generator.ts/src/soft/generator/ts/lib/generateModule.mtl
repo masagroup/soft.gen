@@ -18,19 +18,31 @@
 
 [/template]
 
-[template public generateInternal(anEPackage : EPackage)]
-[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInternalFileName(),false, 'UTF-8')]
+[template public generateInternal(anEPackage : EPackage){
+    allClasses : Sequence(EClass) = anEPackage.getOrderedClasses();
+}]
+[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInternalFileName(),false, 'UTF-8') ]
 [fileComment()/]
 
-[for (aClass: EClass | anEPackage.getOrderedClasses())]
+// interfaces
+[for (aClass: EClass | allClasses)]
+export * from "./[removeFileExtension(aClass.getInterfaceFileName(aClass.name))/]"
+[/for]
+export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getPackageName()))/]"
+export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getFactoryName()))/]"
+export * from "./[removeFileExtension(anEPackage.getConstantsFileName(anEPackage.getConstantsName()))/]"
+
+// implementations
+[for (aClass: EClass | allClasses)]
+[if not aClass.interface]
 export * from "./[removeFileExtension(aClass.getImplementationFileName(aClass.name))/]"
 [if aClass.hasExtension()]
 export * from "./[removeFileExtension(aClass.getExtensionFileName(aClass.name))/]"
 [/if]
+[/if]
 [/for]
 export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getPackageName()))/]"
 export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getFactoryName()))/]"
-export * from "./[removeFileExtension(anEPackage.getConstantsFileName(anEPackage.getFactoryName()))/]"
 [if anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension']
 export * from "./[removeFileExtension(anEPackage.getExtensionFileName(anEPackage.getFactoryName()))/]"
 [/if]
