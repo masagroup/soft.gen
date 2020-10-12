@@ -115,7 +115,10 @@ endif endif endif
 [** FileNames **/]
 [query public getInterfaceFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceFileName', '$1.ts')/]
 [query public getImplementationFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationFileName', '$1Impl.ts')/]
+[query public getExtensionFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'extensionFileName', '$1Ext.ts')/]
 [query public getConstantsFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'constantsFileName', '$1.ts')/]
+[query public getInternalFileName( aPackage : EPackage ) : String = aPackage.getElementName( aPackage.getPackageName(), 'internalFileName', 'internal.ts')/]
+[query public getIndexFileName( aPackage : EPackage ) : String = aPackage.getElementName( aPackage.getPackageName(), 'indexFileName', 'index.ts')/]
 
 [query private getElementTypeName(anENamedElement : ENamedElement) : String =
 if anENamedElement.oclIsTypeOf(EClass) then 'Class'

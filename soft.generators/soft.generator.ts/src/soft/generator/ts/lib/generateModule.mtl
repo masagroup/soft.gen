@@ -1,0 +1,38 @@
+[comment encoding = UTF-8 /]
+[module generateModule('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils /]
+[import soft::generator::ts::generateCommon /]
+
+[query public removeFileExtension( aFileName : String ) : String = 
+    let index : Integer = aFileName.lastIndexOf( '.') in
+    if ( index = -1 ) then
+        aFileName
+    else
+        aFileName.substring(1,index-1)
+    endif
+/]
+
+[template public generateIndex(anEPackage : EPackage)]
+
+[/template]
+
+[template public generateInternal(anEPackage : EPackage)]
+[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInternalFileName(),false, 'UTF-8')]
+[fileComment()/]
+
+[for (aClass: EClass | anEPackage.getOrderedClasses())]
+export * from "./[removeFileExtension(aClass.getImplementationFileName(aClass.name))/]"
+[if aClass.hasExtension()]
+export * from "./[removeFileExtension(aClass.getExtensionFileName(aClass.name))/]"
+[/if]
+[/for]
+export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getPackageName()))/]"
+export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getFactoryName()))/]"
+export * from "./[removeFileExtension(anEPackage.getConstantsFileName(anEPackage.getFactoryName()))/]"
+[if anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension']
+export * from "./[removeFileExtension(anEPackage.getExtensionFileName(anEPackage.getFactoryName()))/]"
+[/if]
+[/file]
+[/template]
