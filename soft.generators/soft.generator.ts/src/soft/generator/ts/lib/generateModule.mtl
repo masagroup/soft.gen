@@ -15,7 +15,19 @@
 /]
 
 [template public generateIndex(anEPackage : EPackage)]
-
+[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getIndexFileName(),false, 'UTF-8') ]
+[fileComment()/]
+export {
+[for (aClass: EClass | anEPackage.getOrderedClasses())]
+    [aClass.getInterfaceName()/],
+[/for]    
+    [anEPackage.getInterfaceName()/],
+    [anEPackage.getFactoryName()/],
+    [anEPackage.getConstantsName()/],
+    get[anEPackage.getInterfaceName()/],
+    get[anEPackage.getFactoryName()/],
+} from "./internal"
+[/file]
 [/template]
 
 [template public generateInternal(anEPackage : EPackage){
