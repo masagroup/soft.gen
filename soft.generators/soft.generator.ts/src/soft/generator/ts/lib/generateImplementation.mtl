@@ -4,7 +4,7 @@
 [import soft::generator::common::generateCommon]
 [import soft::generator::common::generateElement]
 [import soft::generator::common::generateStructuralFeature]
-[import soft::generator::common::generateUtils]
+
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
@@ -33,28 +33,7 @@
                                         , Set {classExtend, 'ecore.EClass','ecore.isEObjectInternal', aPackage.name + '.' + 'get'+ aPackage.getInterfaceName()}
                                         , classImplements->asSet()
                                         }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[let moduleToTypes : OclAny = allTypes->iterate( type : String ; res : OclAny = mapNew(className) | (
-    let moduleName : String = getQualification(type) in
-    if (moduleName <> '') then
-        let typeName : String = getUnQualifiedName(type) in
-        let types : Sequence(OclAny) = res.mapGetOrDefault(moduleName, Sequence{}).asSequence() in
-        res.mapPut( moduleName , types->append(typeName) )
-    else
-        res
-    endif    
-))]
-[for (moduleName : OclAny | moduleToTypes.mapKeys()->sortedBy(oclAsType(String)))]
-[if (moduleName = aPackage.name)]
-import {
-[for ( type : OclAny | moduleToTypes.mapGet(moduleName).asSequence()->asOrderedSet())]
-    [type.oclAsType(String)/],
-[/for]    
-} from "./internal"
-[else]
-import * as [moduleName/] from "[moduleName/]"
-[/if]
-[/for]
-[/let]
+[generateImports(allTypes,className,aPackage)/]
 [/let]
 
 export class [className/] extends [getShortQualifiedName(classExtend, aPackage.name)/] [for ( interface : String | classImplements) before(' implements ') separator (',')][getShortQualifiedName(interface,aPackage.name)/][/for]

@@ -2,6 +2,7 @@
 [module generateType('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils]
 [import soft::generator::ts::generateCommon/]
 
 [query public isBackReference(aStructuralFeature:EStructuralFeature) : Boolean = aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).isBackReference()/]
@@ -129,3 +130,4 @@ void
     endif
  ) 
 /]
+

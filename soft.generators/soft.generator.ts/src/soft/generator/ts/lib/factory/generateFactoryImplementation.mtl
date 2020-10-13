@@ -14,29 +14,15 @@
 [file (anEPackage.getOutputDirectory() + '/' + anEPackage.getImplementationFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-[let referencesTypes : OclAny = classes->iterate( eClass : EClass ; res : OclAny = mapNew() | (
-	let typeName : String = if eClass.hasExtension() then eClass.getExtensionName() else eClass.getImplementationName() endif in
-	let typeImport : String = getTypeImport(typeName) in
-	if (typeName <> className and typeImport <> '') then
-		res.mapPut(typeName,typeImport)
-	else
-		res
-	endif
-))]
-[let importTypes : OclAny = mapNew(className)
-					         .mapPut('EDataType', getTypeImport('EDataType'))
-							 .mapPut('EFactoryExt', getTypeImport('EFactoryExt'))
-						     .mapPut('EObject', getTypeImport('EObject'))
-							 .mapPut(anEPackage.getConstantsName(), getTypeImport(anEPackage.getConstantsName()))
-							 .mapPut(anEPackage.getFactoryName(), getTypeImport(anEPackage.getFactoryName()))
-							 .mapPutAll(referencesTypes)
-					         ]
-import {[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))separator (', ')][k.oclAsType(String)/][/for]} from "./internal";
-[/let]
+[let allTypes : OrderedSet(String) = Set{ classes->collect(c | if c.hasExtension() then c.getQualifiedExtensionName() else c.getQualifiedImplementationName() endif)
+                                        , anEPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceName() )
+                                        , Set{'ecore.EObject' , 'ecore.EClass', 'ecore.EFactoryExt' , 'ecore.EDataType' }
+                                        , Set{anEPackage.name + '.' +  anEPackage.getConstantsName() , anEPackage.name + '.' + anEPackage.getFactoryName() }
+                                        }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
+[generateImports(allTypes,className,anEPackage)/]
 [/let]
 
-
-export class [className/] extends EFactoryExt implements [anEPackage.getFactoryName()/] {
+export class [className/] extends [getShortQualifiedName('ecore.EFactoryExt',anEPackage.name)/] implements [anEPackage.getFactoryName()/] {
     
 	private static _instance : [className/] = null;
 
@@ -51,7 +37,7 @@ export class [className/] extends EFactoryExt implements [anEPackage.getFactoryN
 		super();
 	} 
 
-	create(eClass: EClass): EObject {
+	create(eClass: [getShortQualifiedName('ecore.EClass',anEPackage.name)/]): [getShortQualifiedName('ecore.EObject',anEPackage.name)/] {
 		switch(eClass.classifierID){
 [for (aClass : EClass | classes)]
 	    case [aClass.getQualifiedIDName()/]:
@@ -83,7 +69,7 @@ export class [className/] extends EFactoryExt implements [anEPackage.getFactoryN
 [/for]
 [let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
 
-	createFromString(eDataType: EDataType,literalValue: string): any {
+	createFromString(eDataType: [getShortQualifiedName('ecore.EDataType',anEPackage.name)/],literalValue: string): any {
 		switch (eDataType.classifierID) {
 	    [for (aDataType : EDataType | dataTypes)]
 	    	case [aDataType.getQualifiedIDName()/]:
@@ -94,7 +80,7 @@ export class [className/] extends EFactoryExt implements [anEPackage.getFactoryN
 		}
 	}
 
-	convertToString(eDataType: EDataType, instanceValue: any): string {
+	convertToString(eDataType: [getShortQualifiedName('ecore.EDataType',anEPackage.name)/], instanceValue: any): string {
     	switch (eDataType.classifierID) {
 		[for (aDataType : EDataType | dataTypes)]
 	    case [aDataType.getQualifiedIDName()/]:
@@ -119,7 +105,7 @@ export class [className/] extends EFactoryExt implements [anEPackage.getFactoryN
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
 [let enumTypeName : String = aDataType.name ]
 [let varName : String = enumTypeName.toLowerFirst() ]
-create[enumTypeName/]FromString(eDataType: EDataType, literalValue: string): any {
+create[enumTypeName/]FromString(eDataType: [getShortQualifiedName('ecore.EDataType',aPackage.name)/], literalValue: string): any {
    throw new Error("NotImplementedException");
 }
 [/let]
@@ -127,7 +113,7 @@ create[enumTypeName/]FromString(eDataType: EDataType, literalValue: string): any
 [/template]
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType )]
-create[aDataType.name/]FromString(eDataType: EDataType, literalValue: string): any {
+create[aDataType.name/]FromString(eDataType: [getShortQualifiedName('ecore.EDataType',aPackage.name)/], literalValue: string): any {
    throw new Error("NotImplementedException");
 }
 [/template]
@@ -135,7 +121,7 @@ create[aDataType.name/]FromString(eDataType: EDataType, literalValue: string): a
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
 [let enumTypeName : String = aDataType.name ]
 [let varName : String = enumTypeName.toLowerFirst() ]
-convert[enumTypeName/]ToString(eDataType: EDataType, instanceValue: any): string { 
+convert[enumTypeName/]ToString(eDataType: [getShortQualifiedName('ecore.EDataType',aPackage.name)/], instanceValue: any): string { 
 	throw new Error("NotImplementedException");
 }
 [/let]
@@ -143,7 +129,7 @@ convert[enumTypeName/]ToString(eDataType: EDataType, instanceValue: any): string
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )]
-convert[aDataType.name/]ToString(eDataType: EDataType, instanceValue: any): string { 
+convert[aDataType.name/]ToString(eDataType: [getShortQualifiedName('ecore.EDataType',aPackage.name)/], instanceValue: any): string { 
 	throw new Error("NotImplementedException");
 }
 [/template]

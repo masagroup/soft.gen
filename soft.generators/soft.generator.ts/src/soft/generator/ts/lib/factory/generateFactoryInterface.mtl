@@ -15,24 +15,13 @@
 [file (anEPackage.getOutputDirectory() + '/' + anEPackage.getInterfaceFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-[let referencesTypes : OclAny = anEPackage.eClassifiers->selectByKind(EClass)->iterate( eClass : EClass ; res : OclAny = mapNew() | (
-	let typeName : String = eClass.getInterfaceName() in
-	let typeImport : String = eClass.getTypeImport() in
-	if ( typeImport <> '') then
-		res.mapPut(typeName,typeImport)
-	else
-		res
-	endif
-))]
-[let importTypes : OclAny = mapNew(className)
-							 		.mapPut('EFactory',getTypeImport('EFactory'))
-                                    .mapPut(factoryName,getTypeImport(factoryName))
-							     	.mapPutAll(referencesTypes)]
-import {[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))separator (', ')][k.oclAsType(String)/][/for]} from "./internal";
-[/let]
+[let allTypes : OrderedSet(String) = Set{ anEPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceName() )
+                                        , Set{'ecore.EFactory' , anEPackage.name + '.' + factoryName }
+                                        }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
+[generateImports(allTypes,className,anEPackage)/]
 [/let]
 
-export interface [className/] extends EFactory {
+export interface [className/] extends [getShortQualifiedName('ecore.EFactory', anEPackage.name)/] {
 [for (aEClass : EClass | anEPackage.eAllContents(EClass)->sortedBy(name))]
 [if (aEClass.abstract = false)]
 
