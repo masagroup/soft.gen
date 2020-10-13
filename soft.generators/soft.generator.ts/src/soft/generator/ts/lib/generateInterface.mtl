@@ -23,7 +23,7 @@
 [let listType : Set(String) = if ( aClass.requiresList() or isDiamond ) then Set{ 'ecore.EList' } else Set{} endif]
 [let allTypes : OrderedSet(String) = Set{ interfaceExtends
                                         , refTypes->collect( type | type.getTypeName())->asSet()
-                                        , listType }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
+                                        , listType }->flatten()->select(s | s <> '' and s <> aClass.getQualifiedInterfaceName() )->asOrderedSet()->sortedBy(s | s)]
 [generateImports(allTypes,interfaceName,aPackage)/]
 [/let]
 [/let]
