@@ -97,10 +97,15 @@ endif endif endif
 [query public getInterfaceName( aPackage : EPackage ) : String = aPackage.getInterfaceName( getPackageName() )/]
 [query private getInterfaceName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceName').toUpperFirst() /]
 
+[query public getQualifiedInterfaceName( aClass : EClass ) : String = aClass.ePackage.name + '.'  + aClass.getInterfaceName()/]
+[query public getQualifiedInterfaceName( aPackage : EPackage ) : String = aPackage.name + '.' + aPackage.getInterfaceName()/]
+
 [** Implementation Names **/]
 [query public getImplementationName( aClass : EClass ) : String = aClass.getImplementationName( aClass.name )/]
 [query public getImplementationName( aPackage : EPackage ) : String = aPackage.getImplementationName( getPackageName() ) /]
 [query private getImplementationName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationName', '$1Impl')/]
+
+[query public getQualifiedImplementationName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getImplementationName()/]
 
 [** Constants Names **/]
 [query public getConstantsName( aPackage : EPackage ) : String = aPackage.getConstantsName( aPackage.name.toUpperFirst() ) /]
@@ -111,6 +116,8 @@ endif endif endif
 [query public getExtensionName( aClass : EClass ) : String = aClass.getExtensionName(aClass.name )/]
 [query public getExtensionName( aPackage : EPackage ) : String = aPackage.getExtensionName( getPackageName() )/]
 [query private getExtensionName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'extensionName', '$1Ext')/]
+
+[query public getQualifiedExtensionName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getExtensionName()/]
 
 [** FileNames **/]
 [query public getInterfaceFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceFileName', '$1.ts')/]
@@ -165,4 +172,17 @@ methodName
 
 [query public getQualifiedIDName( aClass : EClass ) : String =
     aClass.ePackage.getConstantsName() + '.' + aClass.getClassifierIDName()
+/]
+
+[** Name Qualification **]
+[query public getShortQualifiedName( aQualifiedName : String , aNamespaceName : String ) : String =
+    aQualifiedName.getShortQualifiedNameSep(aNamespaceName, '.')
+/]
+
+[query public getUnQualifiedName( aQualifiedName : String ) : String =
+    aQualifiedName.getUnQualifiedNameSep('.')
+/]
+
+[query public getQualification( any : OclAny , aQualifiedName : String ) : String =
+    any.getQualificationSep(aQualifiedName, '.') 
 /]
