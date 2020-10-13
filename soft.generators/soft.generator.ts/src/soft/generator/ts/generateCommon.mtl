@@ -111,6 +111,8 @@ endif endif endif
 [query public getConstantsName( aPackage : EPackage ) : String = aPackage.getConstantsName( aPackage.name.toUpperFirst() ) /]
 [query private getConstantsName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'constantsName', '$1Constants')/]
 
+[query public getQualifiedConstantsName( aPackage : EPackage ) : String = aPackage.name + '.' + aPackage.getConstantsName()/]
+
 
 [** Extension Names **/]
 [query public getExtensionName( aClass : EClass ) : String = aClass.getExtensionName(aClass.name )/]
