@@ -18,37 +18,23 @@
 [file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getImplementationFileName(anEPackage.getPackageName()),false, 'UTF-8')]
 [fileComment()/]
 
-[let externalPackages : OclAny = OrderedSet{ classes.eAttributes.eType , classes.eReferences.eType, classes.eOperations.eType }
-                                ->flatten()
-                                ->select( c | not c.oclIsUndefined() )
-                                ->iterate( c ; res : OclAny = mapNew(className + 'external') |
-    if c.ePackage = anEPackage then
-        res
-    else 
-        res.mapPut('get' + c.ePackage.getInterfaceName(), getTypeImport(c.ePackage.getInterfaceName()))
-    endif
-)
-] 
-[let importTypes : OclAny = mapNew(className)
-                                    .mapPutAll(externalPackages)
-							 		.mapPut('EPackageExt',getTypeImport('EPackageExt'))
-									.mapPut(anEPackage.getInterfaceName(),getTypeImport(anEPackage.getInterfaceName()))
-									.mapPut(anEPackage.getConstantsName(),getTypeImport(anEPackage.getConstantsName()))
-									.mapPut('get' + anEPackage.getFactoryName(),getTypeImport(anEPackage.getFactoryName()))
-									.mapPut('getEcoreFactory',getTypeImport('EcoreFactory'))
-									.mapPut('EcoreFactory',getTypeImport('EcoreFactory'))
-									.mapPut('EAttribute',getTypeImport('EAttribute'))
-									.mapPut('EClass',getTypeImport('EClass'))
-									.mapPut('EDataType',getTypeImport('EDataType'))
-									.mapPut('EEnum',getTypeImport('EEnum'))
-									.mapPut('EOperation',getTypeImport('EOperation'))
-									.mapPut('EReference',getTypeImport('EReference'))
-]
-import {[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))separator (', ')][k.oclAsType(String)/][/for]} from "./internal";
-[/let]
+[let allTypes : OrderedSet(String) = OrderedSet{'ecore.EAttribute' 
+                                               ,'ecore.EReference'
+                                               ,'ecore.EClass'
+                                               ,'ecore.EEnum'
+                                               ,'ecore.EOperation' 
+                                               ,'ecore.EDataType'
+                                               ,'ecore.EcoreFactory'
+                                               ,'ecore.EPackageExt'
+                                               ,'ecore.getEcoreFactory' 
+                                               , anEPackage.name + '.' + anEPackage.getInterfaceName()
+                                               , anEPackage.name + '.' + anEPackage.getConstantsName()
+                                               , anEPackage.name + '.' + 'get' + anEPackage.getFactoryName()
+}->sortedBy(s | s)]
+[generateImports(allTypes,className,anEPackage)/]
 [/let]
 
-export class [className/] extends EPackageExt implements [anEPackage.getInterfaceName()/] {
+export class [className/] extends [getShortQualifiedName('ecore.EPackageExt', anEPackage.name)/] implements [anEPackage.getInterfaceName()/] {
 
 	private static _instance : [className/] = null;
 
@@ -72,7 +58,7 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
 		this.nsPrefix = [anEPackage.getConstantsName()/].eNS_PREFIX;
 		this.nsURI = [anEPackage.getConstantsName()/].eNS_URI;
 		this.eFactoryInstance = get[anEPackage.getFactoryName()/]();
-        let factory = getEcoreFactory();
+        let factory = [getShortQualifiedName('ecore.getEcoreFactory', anEPackage.name)/]();
 	    this.createPackageContents(factory);
     	this.initializePackageContents(factory);
         this.createResource();
@@ -87,7 +73,7 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
     [dataTypes.generateGetter(anEPackage)/]
 
 
-	private createPackageContents(factory : EcoreFactory) : void {		
+	private createPackageContents(factory : [getShortQualifiedName('ecore.EcoreFactory', anEPackage.name)/]) : void {		
 [for (aClass : EClass | classes)]
 		this.create[aClass.name.toUpperFirst()/]Content(factory);
 [/for]
@@ -95,18 +81,18 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
 	}
 [for (aClass : EClass | classes)]
 
-	private create[aClass.name.toUpperFirst()/]Content(factory : EcoreFactory) : void{
+	private create[aClass.name.toUpperFirst()/]Content(factory : [getShortQualifiedName('ecore.EcoreFactory', anEPackage.name)/]) : void {
 	    [aClass.generateCreation()/]
 	    [aClass.eStructuralFeatures.generateCreation()/]
 	    [aClass.eOperations.generateCreation()/]
 	}
 [/for]
 
-	private createPackageEDataTypes(factory : EcoreFactory) : void {
+	private createPackageEDataTypes(factory : [getShortQualifiedName('ecore.EcoreFactory', anEPackage.name)/]) : void {
     	[dataTypes.generateCreation()/]
 	}
 
-	private initializePackageContents(factory : EcoreFactory) : void {
+	private initializePackageContents(factory : [getShortQualifiedName('ecore.EcoreFactory', anEPackage.name)/]) : void {
         // Add supertypes to classes
         [classes.initSuperTypes()/]
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
@@ -116,7 +102,7 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
 	}
 	
 [for (aClass : EClass | classes)]
-    private initialize[aClass.name.toUpperFirst()/]Content(factory : EcoreFactory) : void {
+    private initialize[aClass.name.toUpperFirst()/]Content(factory : [getShortQualifiedName('ecore.EcoreFactory', anEPackage.name)/]) : void {
         [aClass.generateInitialization()/]
         [aClass.eAttributes->sortedBy(name).generateInitialization(anEPackage)/]
         [aClass.eReferences->sortedBy(name).generateInitialization(anEPackage)/]
@@ -124,7 +110,7 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
     }
 [/for]
 
-    private initializePackageEDataTypes(factory : EcoreFactory) : void {
+    private initializePackageEDataTypes(factory : [getShortQualifiedName('ecore.EcoreFactory', anEPackage.name)/]) : void {
         [anEPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization()/]
     }
 
@@ -157,12 +143,12 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
 
 
 [template private generateVariableDeclaration(anENamedElement : ENamedElement, anEPackage : EPackage)] 
-private [anENamedElement.getInstanceName()/] : [anENamedElement.eClass().getInterfaceName()/]; 
+private [anENamedElement.getInstanceName()/] : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),anEPackage.name)/]; 
 
 [/template]
 
 [template private generateGetter(anENamedElement : ENamedElement, anEPackage : EPackage)]
-[anENamedElement.getReflectiveGetterName()/]() : [anENamedElement.eClass().getInterfaceName()/] {
+[anENamedElement.getReflectiveGetterName()/]() : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),anEPackage.name)/] {
     return this.[anENamedElement.getInstanceName()/];
 }
 

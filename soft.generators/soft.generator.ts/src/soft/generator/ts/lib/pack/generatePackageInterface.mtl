@@ -8,16 +8,25 @@
 [template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage )]
 
 // Returns the meta object for the [anENamedElement.name.toUpperFirst()/]
-[anENamedElement.getReflectiveGetterName()/]() : [anENamedElement.eClass().getInterfaceName()/];
+[anENamedElement.getReflectiveGetterName()/]() : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/];
 [/template]
 
 [template public generatePackageInterface(anEPackage : EPackage) {className : String = anEPackage.getInterfaceName();}]
 [file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
-import {EAttribute,EReference,EClass,EEnum,EOperation,EDataType,EPackage,[anEPackage.getImplementationName()/]} from "./internal"
+[let allTypes : OrderedSet(String) = OrderedSet{'ecore.EAttribute' 
+                                               ,'ecore.EReference'
+                                               ,'ecore.EClass'
+                                               ,'ecore.EEnum'
+                                               ,'ecore.EOperation' 
+                                               ,'ecore.EDataType'
+                                               ,'ecore.EPackage' 
+                                               , anEPackage.name + '.' + anEPackage.getImplementationName()}->sortedBy(s | s)]
+[generateImports(allTypes,className,anEPackage)/]
+[/let]
 
-export interface [className/] extends EPackage {
+export interface [className/] extends [getShortQualifiedName('ecore.EPackage', anEPackage.name)/] {
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
     [aClass.generateGetter(anEPackage)/]
     [aClass.eAttributes->sortedBy(name).generateGetter(anEPackage)/]
