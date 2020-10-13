@@ -135,8 +135,20 @@ public class GenerateUtils {
         return map.get(key);
     }
 
+    public Object mapGetOrDefault(Map<Object, Object> map, Object key, Object defaultValue) {
+        return map.getOrDefault(key, defaultValue);
+    }
+
     public Set<Object> mapKeys(Map<Object, Object> map) {
         return map.keySet();
     }
 
+    public boolean mapContainsKey(Map<Object, Object> map, Object key) {
+        return map.containsKey(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Object> asSequence(Object obj) {
+        return (List<Object>) obj;
+    }
 }
