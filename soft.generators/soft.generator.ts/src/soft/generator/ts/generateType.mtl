@@ -14,9 +14,9 @@ void
 [else]
     [let aPackage : EPackage = aElement.getEPackage()]
     [if aElement.isListType()]
-        EList<[aElement.eGenericType.generateType(aPackage)/]>
+        [getShortQualifiedName('ecore.EList', aPackage.name )/]<[aElement.eGenericType.generateType(aPackage)/]>
     [else]
-        [aElement.eGenericType.generateType(aPackage)/][if aElement.eGenericType.eClassifier.name <> 'EJavaClass' and aElement.eGenericType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aElement.eGenericType.eTypeArguments) separator (',')][g.eClassifier.getTypeName()/][/for]>[/if]
+        [aElement.eGenericType.generateType(aPackage)/][if aElement.eGenericType.eClassifier.name <> 'EJavaClass' and aElement.eGenericType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aElement.eGenericType.eTypeArguments) separator (',')][getShortQualifiedName(g.eClassifier.getTypeName(),aPackage.name)/][/for]>[/if]
     [/if]
     [/let]
 [/if]
@@ -26,7 +26,7 @@ void
 [if (anEDataType.oclIsUndefined() or anEDataType.eClassifier.oclIsUndefined())]
 void
 [else]
-[anEDataType.eClassifier.getTypeName()/]
+[getShortQualifiedName(anEDataType.eClassifier.getTypeName(), aPackage.name )/]
 [/if]
 [/template]
 
@@ -36,22 +36,22 @@ void
 
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
     Sequence {
-        Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'boolean' , 'false' ,''},
-        Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'number' , '0' ,''},
-        Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'number' , '0.' ,''},
-        Sequence{ 'ELong' , 'ELongObject' , 'number' , '0' ,''},
-        Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'number' , '0', ''},
-        Sequence{ 'EByteArray' , 'string' , '' ,''},
-		Sequence{ 'EFeatureMapEntry' , 'EFeatureMapEntry' , 'null' ,'"./EFeatureMap"'},
-        Sequence{ 'EFloat' , 'EFloatObject', 'number' , '0.0',''},
-        Sequence{ 'EEList' , 'EList', '','"./EList"'},
-        Sequence{ 'EDate' , 'Date', 'null' , ''},
-        Sequence{ 'EMap' , 'Map', '' , ''},
-        Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'any', 'null' , ''},
-        Sequence{ 'EJavaClass' , 'any', 'null' , ''},
-        Sequence{ 'EString' , 'String', 'string', '""' , ''},
-        Sequence{ 'ETreeIterator' , 'IterableIterator', '' , ''},
-        Sequence{ 'EResource' , 'EResource', '' , '"./EResource"'}
+        Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'boolean' , 'false'},
+        Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'number' , '0'},
+        Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'number' , '0.'},
+        Sequence{ 'ELong' , 'ELongObject' , 'number' , '0' },
+        Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'number' , '0'},
+        Sequence{ 'EByteArray' , 'string' , ''},
+		Sequence{ 'EFeatureMapEntry' , 'ecore.EFeatureMapEntry' , 'null' },
+        Sequence{ 'EFloat' , 'EFloatObject', 'number' , '0.0'},
+        Sequence{ 'EEList' , 'ecore.EList', 'null'},
+        Sequence{ 'EDate' , 'Date', 'null'},
+        Sequence{ 'EMap' , 'Map', ''},
+        Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'any', 'null' },
+        Sequence{ 'EJavaClass' , 'any', 'null'},
+        Sequence{ 'EString' , 'String', 'string', '""' },
+        Sequence{ 'ETreeIterator' , 'IterableIterator', ''},
+        Sequence{ 'EResource' , 'ecore.EResource', ''}
     }
 /]
 
@@ -62,13 +62,13 @@ void
     else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTypeName()
     else '' endif endif endif endif
 /]
-[query private getTypeName( aClass : EClass ) : String = aClass.getInterfaceName()/]
-[query private getTypeName( aEnum : EEnum ) : String = aEnum.name/]
+[query private getTypeName( aClass : EClass ) : String = aClass.getQualifiedInterfaceName()/]
+[query private getTypeName( aEnum : EEnum ) : String = aEnum.ePackage.name + '.' + aEnum.name/]
 [query private getTypeName( aDataType : EDataType ) : String = 
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() - 2 )
+            s->at( s->size() - 1 )
         else
             res
         endif
@@ -120,7 +120,7 @@ void
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() - 1 )
+            s->at( s->size() )
         else
             res
         endif
