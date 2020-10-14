@@ -190,7 +190,9 @@ methodName
     any.getQualificationSep(aQualifiedName, '.') 
 /]
 
-[template public generateImports(allTypes : OrderedSet(String), aElementName : String,aPackage : EPackage)]
+
+
+[template public generateImports(aPackage : EPackage ,allTypes : OrderedSet(String), aElementName : String)]
 [let moduleToTypes : OclAny = allTypes->iterate( type : String ; res : OclAny = mapNew(aElementName) | (
    let moduleName : String = getQualification(type) in
     if (moduleName <> '') then

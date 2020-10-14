@@ -7,22 +7,22 @@
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
 
-[template public generateFactoryImplementation(anEPackage : EPackage) { 
-	className : String = anEPackage.getFactoryImplementationName();
-	classes : Sequence(EClass) = anEPackage.eAllContents(EClass)->select( not interface and not abstract );  
+[template public generateFactoryImplementation(aPackage : EPackage) { 
+	className : String = aPackage.getFactoryImplementationName();
+	classes : Sequence(EClass) = aPackage.eAllContents(EClass)->select( not interface and not abstract );  
 }]
-[file (anEPackage.getOutputDirectory() + '/' + anEPackage.getImplementationFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
+[file (aPackage.getOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
 [let allTypes : OrderedSet(String) = Set{ classes->collect(c | if c.hasExtension() then c.getQualifiedExtensionName() else c.getQualifiedImplementationName() endif)
-                                        , anEPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceName() )
+                                        , aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceName() )
                                         , Set{'ecore.EObject' , 'ecore.EClass', 'ecore.EFactoryExt' , 'ecore.EDataType' }
-                                        , Set{anEPackage.name + '.' +  anEPackage.getConstantsName() , anEPackage.name + '.' + anEPackage.getFactoryName() }
+                                        , Set{aPackage.name + '.' +  aPackage.getConstantsName() , aPackage.name + '.' + aPackage.getFactoryName() }
                                         }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[generateImports(allTypes,className,anEPackage)/]
+[aPackage.generateImports(allTypes,className)/]
 [/let]
 
-export class [className/] extends [getShortQualifiedName('ecore.EFactoryExt',anEPackage.name)/] implements [anEPackage.getFactoryName()/] {
+export class [className/] extends [getShortQualifiedName('ecore.EFactoryExt',aPackage.name)/] implements [aPackage.getFactoryName()/] {
     
 	private static _instance : [className/] = null;
 
@@ -37,7 +37,7 @@ export class [className/] extends [getShortQualifiedName('ecore.EFactoryExt',anE
 		super();
 	} 
 
-	create(eClass: [getShortQualifiedName('ecore.EClass',anEPackage.name)/]): [getShortQualifiedName('ecore.EObject',anEPackage.name)/] {
+	create(eClass: [getShortQualifiedName('ecore.EClass',aPackage.name)/]): [getShortQualifiedName('ecore.EObject',aPackage.name)/] {
 		switch(eClass.classifierID){
 [for (aClass : EClass | classes)]
 	    case [aClass.getQualifiedIDName()/]:
@@ -67,9 +67,9 @@ export class [className/] extends [getShortQualifiedName('ecore.EFactoryExt',anE
 	[/for]
 	[/let]
 [/for]
-[let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
+[let dataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
 
-	createFromString(eDataType: [getShortQualifiedName('ecore.EDataType',anEPackage.name)/],literalValue: string): any {
+	createFromString(eDataType: [getShortQualifiedName('ecore.EDataType',aPackage.name)/],literalValue: string): any {
 		switch (eDataType.classifierID) {
 	    [for (aDataType : EDataType | dataTypes)]
 	    	case [aDataType.getQualifiedIDName()/]:
@@ -80,7 +80,7 @@ export class [className/] extends [getShortQualifiedName('ecore.EFactoryExt',anE
 		}
 	}
 
-	convertToString(eDataType: [getShortQualifiedName('ecore.EDataType',anEPackage.name)/], instanceValue: any): string {
+	convertToString(eDataType: [getShortQualifiedName('ecore.EDataType',aPackage.name)/], instanceValue: any): string {
     	switch (eDataType.classifierID) {
 		[for (aDataType : EDataType | dataTypes)]
 	    case [aDataType.getQualifiedIDName()/]:
@@ -92,9 +92,9 @@ export class [className/] extends [getShortQualifiedName('ecore.EFactoryExt',anE
 	}
 	[for (aDataType : EDataType | dataTypes)]
 
-	[anEPackage.generateCreateFromString(aDataType)/]
+	[aPackage.generateCreateFromString(aDataType)/]
 
-	[anEPackage.generateConvertToString(aDataType)/]
+	[aPackage.generateConvertToString(aDataType)/]
 	[/for]
 [/let]
 }

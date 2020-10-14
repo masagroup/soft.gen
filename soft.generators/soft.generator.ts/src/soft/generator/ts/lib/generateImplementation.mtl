@@ -22,7 +22,7 @@
 	aPackage : EPackage = aClass.ePackage; 
 	classImplements : Sequence(String) = aClass.getClassImplements();
 }]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
 [let allTypes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getTypeName() )->asSet()
@@ -33,7 +33,7 @@
                                         , Set {classExtend, 'ecore.EClass','ecore.isEObjectInternal', aPackage.name + '.' + 'get'+ aPackage.getInterfaceName()}
                                         , classImplements->asSet()
                                         }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[generateImports(allTypes,className,aPackage)/]
+[aPackage.generateImports(allTypes,className)/]
 [/let]
 
 export class [className/] extends [getShortQualifiedName(classExtend, aPackage.name)/] [for ( interface : String | classImplements) before(' implements ') separator (',')][getShortQualifiedName(interface,aPackage.name)/][/for]

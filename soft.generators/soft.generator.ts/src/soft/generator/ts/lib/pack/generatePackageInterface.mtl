@@ -11,8 +11,8 @@
 [anENamedElement.getReflectiveGetterName()/]() : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/];
 [/template]
 
-[template public generatePackageInterface(anEPackage : EPackage) {className : String = anEPackage.getInterfaceName();}]
-[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
+[template public generatePackageInterface(aPackage : EPackage) {className : String = aPackage.getInterfaceName();}]
+[file (aPackage.getOutputDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
 [let allTypes : OrderedSet(String) = OrderedSet{'ecore.EAttribute' 
@@ -22,22 +22,22 @@
                                                ,'ecore.EOperation' 
                                                ,'ecore.EDataType'
                                                ,'ecore.EPackage' 
-                                               , anEPackage.name + '.' + anEPackage.getImplementationName()}->sortedBy(s | s)]
-[generateImports(allTypes,className,anEPackage)/]
+                                               , aPackage.name + '.' + aPackage.getImplementationName()}->sortedBy(s | s)]
+[aPackage.generateImports(allTypes,className)/]
 [/let]
 
-export interface [className/] extends [getShortQualifiedName('ecore.EPackage', anEPackage.name)/] {
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-    [aClass.generateGetter(anEPackage)/]
-    [aClass.eAttributes->sortedBy(name).generateGetter(anEPackage)/]
-    [aClass.eReferences->sortedBy(name).generateGetter(anEPackage)/]
-    [aClass.eOperations->sortedBy(name).generateGetter(anEPackage)/]
+export interface [className/] extends [getShortQualifiedName('ecore.EPackage', aPackage.name)/] {
+[for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
+    [aClass.generateGetter(aPackage)/]
+    [aClass.eAttributes->sortedBy(name).generateGetter(aPackage)/]
+    [aClass.eReferences->sortedBy(name).generateGetter(aPackage)/]
+    [aClass.eOperations->sortedBy(name).generateGetter(aPackage)/]
 [/for]
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(anEPackage)/]
+    [aPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(aPackage)/]
 }
 
 export function get[className/]() : [className/] {
-    return [anEPackage.getImplementationName()/].getInstance();
+    return [aPackage.getImplementationName()/].getInstance();
 }
 
 

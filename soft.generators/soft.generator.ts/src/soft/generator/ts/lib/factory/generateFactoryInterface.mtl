@@ -6,23 +6,23 @@
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::generateType /]
 
-[template public generateFactoryInterface(anEPackage : EPackage) { 
-    className : String = anEPackage.getFactoryName(); 
-    packageName : String = anEPackage.name;
-    extension : Boolean = anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension';
-    factoryName : String = if extension then anEPackage.getFactoryExtensionName() else anEPackage.getFactoryImplementationName() endif;
+[template public generateFactoryInterface(aPackage : EPackage) { 
+    className : String = aPackage.getFactoryName(); 
+    packageName : String = aPackage.name;
+    extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension';
+    factoryName : String = if extension then aPackage.getFactoryExtensionName() else aPackage.getFactoryImplementationName() endif;
 }]
-[file (anEPackage.getOutputDirectory() + '/' + anEPackage.getInterfaceFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
+[file (aPackage.getOutputDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-[let allTypes : OrderedSet(String) = Set{ anEPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceName() )
-                                        , Set{'ecore.EFactory' , anEPackage.name + '.' + factoryName }
+[let allTypes : OrderedSet(String) = Set{ aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceName() )
+                                        , Set{'ecore.EFactory' , aPackage.name + '.' + factoryName }
                                         }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[generateImports(allTypes,className,anEPackage)/]
+[aPackage.generateImports(allTypes,className)/]
 [/let]
 
-export interface [className/] extends [getShortQualifiedName('ecore.EFactory', anEPackage.name)/] {
-[for (aEClass : EClass | anEPackage.eAllContents(EClass)->sortedBy(name))]
+export interface [className/] extends [getShortQualifiedName('ecore.EFactory', aPackage.name)/] {
+[for (aEClass : EClass | aPackage.eAllContents(EClass)->sortedBy(name))]
 [if (aEClass.abstract = false)]
 
 	create[aEClass.name/]() : [aEClass.getInterfaceName()/];

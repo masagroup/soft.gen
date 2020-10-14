@@ -16,7 +16,7 @@
 	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
     isDiamond : Boolean = interfaceExtends->size() > 1;
 }]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
 [let refTypes : Set(EClassifier) = if isDiamond then aClass.eSuperTypes.getReferencedTypes()->asSet() else aClass.getReferencedTypes()->asSet() endif]
@@ -24,7 +24,7 @@
 [let allTypes : OrderedSet(String) = Set{ interfaceExtends
                                         , refTypes->collect( type | type.getTypeName())->asSet()
                                         , listType }->flatten()->select(s | s <> '' and s <> aClass.getQualifiedInterfaceName() )->asOrderedSet()->sortedBy(s | s)]
-[generateImports(allTypes,interfaceName,aPackage)/]
+[aPackage.generateImports(allTypes,interfaceName)/]
 [/let]
 [/let]
 [/let]
