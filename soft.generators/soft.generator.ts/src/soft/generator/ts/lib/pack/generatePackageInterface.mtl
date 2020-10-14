@@ -1,6 +1,7 @@
 [comment encoding = UTF-8 /]
 [module generatePackageInterface('http://www.eclipse.org/emf/2002/Ecore')/]
 
+[import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::lib::pack::generateCommon/]
@@ -26,7 +27,7 @@
 [aPackage.generateImports(allTypes,className)/]
 [/let]
 
-export interface [className/] extends [getShortQualifiedName('ecore.EPackage', aPackage.name)/] {
+export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EPackage {
 [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
     [aClass.generateGetter(aPackage)/]
     [aClass.eAttributes->sortedBy(name).generateGetter(aPackage)/]

@@ -21,7 +21,7 @@
 [aPackage.generateImports(allTypes,className)/]
 [/let]
 
-export interface [className/] extends [getShortQualifiedName('ecore.EFactory', aPackage.name)/] {
+export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EFactory {
 [for (aEClass : EClass | aPackage.eAllContents(EClass)->sortedBy(name))]
 [if (aEClass.abstract = false)]
 

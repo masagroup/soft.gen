@@ -47,7 +47,7 @@ export class [className/] extends [getShortQualifiedName(classExtend, aPackage.n
 		[variableFeatures.generateVariableInitialization(aClass)/]
 	}
 
-    eStaticClass() : EClass {
+    eStaticClass() : [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
         return get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]()
     }
 

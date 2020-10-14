@@ -29,7 +29,7 @@
 [/let]
 [/let]
 
-export interface [interfaceName/][for ( extend : String | interfaceExtends ) before (' extends ') separator (', ')][extend.getShortQualifiedName(aPackage.name)/][/for]
+export interface [interfaceName/][for ( extend : String | interfaceExtends ) before (' extends ') separator (', ')][getShortQualifiedName(extend,aPackage.name)/][/for]
 {
 [let attributes : OrderedSet(EAttribute) = aClass.eAttributes->asOrderedSet()->select( isGet() or isSet() )]
 [if attributes->notEmpty()]

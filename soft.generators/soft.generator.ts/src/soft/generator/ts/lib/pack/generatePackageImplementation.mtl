@@ -34,7 +34,7 @@
 [aPackage.generateImports(allTypes,className)/]
 [/let]
 
-export class [className/] extends [getShortQualifiedName('ecore.EPackageExt', aPackage.name)/] implements [aPackage.getInterfaceName()/] {
+export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EPackageExt implements [aPackage.getInterfaceName()/] {
 
 	private static _instance : [className/] = null;
 
@@ -73,7 +73,7 @@ export class [className/] extends [getShortQualifiedName('ecore.EPackageExt', aP
     [dataTypes.generateGetter(aPackage)/]
 
 
-	private createPackageContents(factory : [getShortQualifiedName('ecore.EcoreFactory', aPackage.name)/]) : void {		
+	private createPackageContents(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {		
 [for (aClass : EClass | classes)]
 		this.create[aClass.name.toUpperFirst()/]Content(factory);
 [/for]
@@ -81,18 +81,18 @@ export class [className/] extends [getShortQualifiedName('ecore.EPackageExt', aP
 	}
 [for (aClass : EClass | classes)]
 
-	private create[aClass.name.toUpperFirst()/]Content(factory : [getShortQualifiedName('ecore.EcoreFactory', aPackage.name)/]) : void {
+	private create[aClass.name.toUpperFirst()/]Content(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
 	    [aClass.generateCreation()/]
 	    [aClass.eStructuralFeatures.generateCreation()/]
 	    [aClass.eOperations.generateCreation()/]
 	}
 [/for]
 
-	private createPackageEDataTypes(factory : [getShortQualifiedName('ecore.EcoreFactory', aPackage.name)/]) : void {
+	private createPackageEDataTypes(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
     	[dataTypes.generateCreation()/]
 	}
 
-	private initializePackageContents(factory : [getShortQualifiedName('ecore.EcoreFactory', aPackage.name)/]) : void {
+	private initializePackageContents(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
         // Add supertypes to classes
         [classes.initSuperTypes()/]
 [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
@@ -102,7 +102,7 @@ export class [className/] extends [getShortQualifiedName('ecore.EPackageExt', aP
 	}
 	
 [for (aClass : EClass | classes)]
-    private initialize[aClass.name.toUpperFirst()/]Content(factory : [getShortQualifiedName('ecore.EcoreFactory', aPackage.name)/]) : void {
+    private initialize[aClass.name.toUpperFirst()/]Content(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
         [aClass.generateInitialization()/]
         [aClass.eAttributes->sortedBy(name).generateInitialization(aPackage)/]
         [aClass.eReferences->sortedBy(name).generateInitialization(aPackage)/]
@@ -110,7 +110,7 @@ export class [className/] extends [getShortQualifiedName('ecore.EPackageExt', aP
     }
 [/for]
 
-    private initializePackageEDataTypes(factory : [getShortQualifiedName('ecore.EcoreFactory', aPackage.name)/]) : void {
+    private initializePackageEDataTypes(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
         [aPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization()/]
     }
 

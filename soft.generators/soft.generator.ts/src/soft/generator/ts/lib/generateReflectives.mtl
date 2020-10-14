@@ -58,10 +58,10 @@
 [let aPackage : EPackage = aClass.ePackage]
 [let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
 [if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())] 
-eDerivedFeatureID(eContainer : EObject, featureID number) : number {
-	let eClass = eContainer as EClass;
+eDerivedFeatureID(eContainer : [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID : number) : number {
+	let eClass = eContainer as [if not aPackage.isEcorePackage()]ecore.[/if]EClass;
 [for (aMixinClass : EClass | mixinClasses)]
-    if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
+    if (eClass == get[aPackage.getInterfaceName()/]().get[aMixinClass.getElementAccessorName()/]()) {
         switch ( featureID ) {
 [for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
             case [aMixinClass.getQualifiedIDName(aFeature)/] : {
@@ -79,10 +79,10 @@ eDerivedFeatureID(eContainer : EObject, featureID number) : number {
 [/if]
 
 [if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
-eDerivedOperationID(eContainer : EObject, operationID number) number {
-	let eClass = eContainer as EClass;
+eDerivedOperationID(eContainer : [if not aPackage.isEcorePackage()]ecore.[/if]EObject, operationID : number) number {
+	let eClass = eContainer as [if not aPackage.isEcorePackage()]ecore.[/if]EClass;
 [for (aMixinClass : EClass | mixinClasses)]
-    if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
+    if (eClass == get[aPackage.getInterfaceName()/]().get[aMixinClass.getElementAccessorName()/]()) {
         switch (featureID) {
 [for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
             case [aMixinClass.getQualifiedIDName(aOperation)/] : {
@@ -103,6 +103,7 @@ eDerivedOperationID(eContainer : EObject, operationID number) number {
 [/template]
 
 [template private generateEGetDefinition(aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
 eGetFromID(featureID : number , resolve : boolean ) : any {
     switch ( featureID ) {
     [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
@@ -111,7 +112,7 @@ eGetFromID(featureID : number , resolve : boolean ) : any {
 		[if anStructFeature.isListType()]
 			let list = this.[anStructFeature.getPropertyName()/];
 			if (!resolve) {
-				if (isEObjectList(list))
+				if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectList(list))
 					return list.getUnResolvedList();
 			}
 			return list;
@@ -131,6 +132,7 @@ eGetFromID(featureID : number , resolve : boolean ) : any {
 		}
     }
 }
+[/let]
 [/template]
 
 
@@ -204,7 +206,7 @@ eUnsetFromID(featureID : number ) {
 
 [template private generateEInvokeDefinition(aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
-eInvokeFromID(operationID : number , args : EList<any>) : any {
+eInvokeFromID(operationID : number , args : [if not aPackage.isEcorePackage()]ecore.[/if]EList<any>) : any {
     switch (operationID) {
     [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy( getOperationName() ) )]
     	case [aClass.getQualifiedIDName(eOperation)/]: {
@@ -286,16 +288,16 @@ this.[anStructFeature.getPropertyName()/] != ""
 
 [template public generateEInverseAddDefinition(aClass : EClass) ]
 [let aPackage : EPackage = aClass.ePackage]
-eBasicInverseAdd(otherEnd : EObject, featureID : number, notifications : ENotificationChain) : ENotificationChain {
+eBasicInverseAdd(otherEnd : [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID : number, notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain) : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch (featureID) {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
     	case [aClass.getQualifiedIDName(aFeature)/]: {
     [if aFeature.isListType()]
 		[let type : String = aFeature.eGenericType.generateType(aPackage)]
-	        let list = this.[aFeature.getPropertyName()/] as ENotifyingList<[type/]>;
+	        let list = this.[aFeature.getPropertyName()/] as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>;
 			let end = otherEnd as [type/];
 		[/let]	    
-    		return list.addWithNotification(end, notifications);;
+    		return list.addWithNotification(end, notifications);
 	[elseif aFeature.isContainer()]
 	        let msgs = notifications;
 	        if (this.eContainer() != null) {
@@ -313,7 +315,7 @@ eBasicInverseAdd(otherEnd : EObject, featureID : number, notifications : ENotifi
 	        let msgs = notifications;
 	        if (isEObjectInternal(this.[aFeature.getPropertyName()/])) {
             [if aFeature.isContains()]
-            	msgs = this.[aFeature.getPropertyName()/].eInverseRemove(this, EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs);
+            	msgs = this.[aFeature.getPropertyName()/].eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs);
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
             	msgs = this.[aFeature.getPropertyName()/].eInverseRemove(this, [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/], msgs);
@@ -334,13 +336,13 @@ eBasicInverseAdd(otherEnd : EObject, featureID : number, notifications : ENotifi
 
 [template public generateEInverseRemoveDefinition(aClass : EClass) ? (aClass.getEInverseRemoveFeatures()->notEmpty()) ]
 [let aPackage : EPackage = aClass.ePackage]
-eBasicInverseRemove(otherEnd : EObject, featureID : number, notifications : ENotificationChain) : ENotificationChain {
+eBasicInverseRemove(otherEnd : [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID : number, notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain) : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch (featureID) {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
     	case [aClass.getQualifiedIDName(aFeature)/]: {
     [if aFeature.isListType()]
 		[let type : String = aFeature.eGenericType.generateType(aPackage)]
-	        let list = this.[aFeature.getPropertyName()/] as ENotifyingList<[type/]>;
+	        let list = this.[aFeature.getPropertyName()/] as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>;
 			let end = otherEnd as [type/];
 	        return list.removeWithNotification(end, notifications);
 		[/let]
