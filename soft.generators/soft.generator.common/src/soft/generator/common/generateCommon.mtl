@@ -14,8 +14,8 @@
 	aModelElement.getGenAnnotation().details->select(key = aKey)->first().value 
 /]
 
-[query private hasGenAnnotation(aModelElement : EModelElement) : Boolean = eAnnotations->select( source = getNSURI() )->notEmpty() /]
-[query private getGenAnnotation(aModelElement : EModelElement) : EAnnotation = eAnnotations->select( source = getNSURI() )->first() /]
+[query public hasGenAnnotation(aModelElement : EModelElement) : Boolean = eAnnotations->select( source = getNSURI() )->notEmpty() /]
+[query public getGenAnnotation(aModelElement : EModelElement) : EAnnotation = eAnnotations->select( source = getNSURI() )->first() /]
 
 [query public isAny(anEClassifier : EClassifier) : Boolean = 
 	if (oclIsUndefined()) then true else (name = 'EEnumerator' or name = 'EDiagnosticChain' or name = 'EJavaObject') endif
