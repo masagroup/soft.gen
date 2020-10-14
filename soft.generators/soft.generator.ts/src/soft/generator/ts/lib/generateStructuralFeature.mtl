@@ -411,7 +411,7 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
     }
     [else]
         if (this.eNotificationRequired) {
-            this.eNotify(new Notification(this,EventType.UNSET, [aClass.getQualifiedIDName(aStructuralFeature)/],null,null));
+            this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this,[if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getQualifiedIDName(aStructuralFeature)/],null,null));
         }
     [/if]
 [elseif hasKey('unsetterBody')]
