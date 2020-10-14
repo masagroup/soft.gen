@@ -17,7 +17,7 @@ void
     [if aElement.isListType()]
         [getShortQualifiedName('ecore.EList', aPackage.name )/]<[aElement.eGenericType.generateType(aPackage)/]>
     [else]
-        [aElement.eGenericType.generateType(aPackage)/][if aElement.eGenericType.eClassifier.name <> 'EJavaClass' and aElement.eGenericType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aElement.eGenericType.eTypeArguments) separator (',')][getShortQualifiedName(g.eClassifier.getTypeName(),aPackage.name)/][/for]>[/if]
+        [aElement.eGenericType.generateType(aPackage)/][if aElement.eGenericType.eClassifier.name <> 'EJavaClass' and aElement.eGenericType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aElement.eGenericType.eTypeArguments) separator (',')][getShortQualifiedName(g.eClassifier.getType(),aPackage.name)/][/for]>[/if]
     [/if]
     [/let]
 [/if]
@@ -27,7 +27,7 @@ void
 [if (anEDataType.oclIsUndefined() or anEDataType.eClassifier.oclIsUndefined())]
 void
 [else]
-[getShortQualifiedName(anEDataType.eClassifier.getTypeName(), aPackage.name )/]
+[getShortQualifiedName(anEDataType.eClassifier.getType(), aPackage.name )/]
 [/if]
 [/template]
 
@@ -56,16 +56,16 @@ void
     }
 /]
 
-[query public getTypeName(aClassifier : EClassifier ) : String = 
+[query public getType(aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then 'any'
-    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTypeName()
-    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTypeName()
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTypeName()
+    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getType()
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getType()
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getType()
     else '' endif endif endif endif
 /]
-[query private getTypeName( aClass : EClass ) : String = aClass.getQualifiedInterfaceName()/]
-[query private getTypeName( aEnum : EEnum ) : String = aEnum.ePackage.name + '.' + aEnum.name/]
-[query private getTypeName( aDataType : EDataType ) : String = 
+[query private getType( aClass : EClass ) : String = aClass.getQualifiedInterfaceName()/]
+[query private getType( aEnum : EEnum ) : String = aEnum.ePackage.name + '.' + aEnum.name/]
+[query private getType( aDataType : EDataType ) : String = 
     getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
         if s->exists(n : String | n = aDataType.name) then
@@ -78,32 +78,6 @@ void
     endif
  ) 
 /] 
-
-
-[query public getTypeImport( aClassifier : EClassifier ) : String = 
-    if aClassifier.oclIsUndefined() then ''
-    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTypeImport()
-    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTypeImport()
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTypeImport()
-    else '' endif endif endif endif
-/]
-[query public getTypeImport( aName : String ) : String = '"./' + aName + '"'/]
-
-[query private getTypeImport( aClass : EClass ) : String = getTypeImport(aClass.getInterfaceName()) /]
-[query private getTypeImport( aEnum : EEnum ) : String = getTypeImport(aEnum.name)/]
-[query private getTypeImport( aDataType : EDataType ) : String = 
-    getAllDataTypes()->iterate( s ; res : String = '' |
-    if res = '' then
-        if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() )
-        else
-            res
-        endif
-    else 
-        res 
-    endif
- ) 
-/]
 
 
 [query public getDefaultValue(anEAttribute : EAttribute) : String = if (defaultValueLiteral->notEmpty()) then defaultValueLiteral else eType.getDefaultValue() endif/]

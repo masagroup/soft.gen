@@ -25,7 +25,7 @@
 [file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-[let allTypes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getTypeName() )->asSet()
+[let allTypes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
                                         , if aClass.requiresList() then Set{ 'ecore.EList', 'ecore.BasicEList', 'ecore.BasicEObjectList', aPackage.getQualifiedConstantsName() } else Set{} endif
                                         , if aClass.hasReflectives() then Set{'ecore.EObject','ecore.EObjectInternal','ecore.EList','ecore.ENotifyingList','ecore.ENotificationChain','ecore.isEObjectList'} else Set{} endif
                                         , if features->exists(requiresNotification()) then Set{'ecore.ENotification','ecore.ENotificationChain','ecore.EventType','ecore.Notification','ecore.EOPPOSITE_FEATURE_BASE', aPackage.getQualifiedConstantsName() } else Set{} endif
