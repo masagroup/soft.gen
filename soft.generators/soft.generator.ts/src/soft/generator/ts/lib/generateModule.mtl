@@ -20,7 +20,10 @@
 export {
 [for (aClass: EClass | anEPackage.getOrderedClasses())]
     [aClass.getInterfaceName()/],
-[/for]    
+[/for] 
+[for (aEnum: EEnum | anEPackage.eAllContents(EEnum))]
+    [aEnum.name/],
+[/for]   
     [anEPackage.getInterfaceName()/],
     [anEPackage.getFactoryName()/],
     [anEPackage.getConstantsName()/],
@@ -40,6 +43,13 @@ export {
 [for (aClass: EClass | allClasses)]
 export * from "./[removeFileExtension(aClass.getInterfaceFileName(aClass.name))/]"
 [/for]
+
+// enums
+[for (aEnum: EEnum | anEPackage.eAllContents(EEnum))]
+export * from "./[removeFileExtension(aEnum.getInterfaceFileName(aEnum.name))/]"
+[/for]
+
+// package - factory- constants
 export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getPackageName()))/]"
 export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getFactoryName()))/]"
 export * from "./[removeFileExtension(anEPackage.getConstantsFileName(anEPackage.getConstantsName()))/]"

@@ -2,6 +2,7 @@
 [module generate('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::ts::lib::generateModule/]
+[import soft::generator::ts::lib::generateEnum/]
 [import soft::generator::ts::lib::generateInterface/]
 [import soft::generator::ts::lib::generateImplementation/]
 [import soft::generator::ts::lib::factory::generateFactoryInterface/]
@@ -18,6 +19,9 @@
 	[if not aClass.interface]	
     	[aClass.generateImplementation()/]
 	[/if]
+[/for]
+[for (anEEnum : EEnum | aPackage.eAllContents(EEnum))]
+    [anEEnum.generateEnum()/]
 [/for]
 [aPackage.generateFactoryInterface()/]
 [aPackage.generateFactoryImplementation()/]

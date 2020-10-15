@@ -89,7 +89,7 @@ void
     else 'null' endif endif
 /]
 
-[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.eLiterals->at(1).name.toUpperCase() else 0 endif/]
+[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.name + '.' + aEnum.eLiterals->at(1).name.toUpperCase() else 0 endif/]
 
 [query public getDefaultValue(aDataType : EDataType) : String =
     getAllDataTypes()->iterate( s ; res : String = '' |

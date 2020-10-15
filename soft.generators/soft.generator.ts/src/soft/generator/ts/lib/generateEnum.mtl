@@ -1,0 +1,41 @@
+[comment encoding = UTF-8 /]
+[module generateEnum('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::ts::generateCommon/]
+
+[template public generateEnum(aEEnum : EEnum) { 
+    enumName : String = aEEnum.name;
+    varName : String = enumName.toLowerFirst(); 
+    aPackage : EPackage = aEEnum.ePackage; 
+    literals : OrderedSet(EEnumLiteral) = aEEnum.eLiterals->asOrderedSet()->sortedBy(name);  }]
+[file (aPackage.getOutputDirectory() + '/' + aEEnum.getInterfaceFileName( enumName ), false, 'UTF-8')]
+[fileComment()/]
+
+export enum [enumName/] {
+[for (lit : EEnumLiteral | literals)]
+    [lit.name.toUpperCase()/] = [lit.value.toString()/],
+[/for]
+};
+
+export function [enumName.toLowerFirst()/]ToString([varName/]: [enumName/]) : string {
+    switch( [varName/] )
+    {
+[for (lit : EEnumLiteral | literals)]
+        case [enumName/].[lit.name.toUpperCase()/]:
+            return "[lit.name/]";
+[/for]
+    }
+}
+
+export function [enumName.toLowerFirst()/]FromString(literalValue: string) : [enumName/] {
+[for (lit : EEnumLiteral | literals)]
+    [if lit <> literals->first()]else [/if]if ( literalValue == "[lit.name/]" )
+        return [enumName/].[lit.name.toUpperCase()/];
+[/for]
+    throw new Error("Invalid value for enum [enumName/]: " + literalValue); 
+}
+
+[/file]
+[/template]
+
