@@ -18,6 +18,10 @@
                                         , aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceName() )
                                         , Set{'ecore.EObject' , 'ecore.EClass', 'ecore.EFactoryExt' , 'ecore.EDataType' }
                                         , Set{aPackage.name + '.' +  aPackage.getConstantsName() , aPackage.name + '.' + aPackage.getFactoryName() }
+                                        , aPackage.eAllContents(EEnum)->iterate( aEnum : EEnum ; res : Set(String) = Set{} | ( 
+                                                res->union(Set{ aPackage.name + '.' + aEnum.name
+                                                              , aPackage.name + '.' + aEnum.name.toLowerFirst() + 'ToString'
+                                                              , aPackage.name + '.' + aEnum.name.toLowerFirst() + 'FromString' })) )
                                         }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
 [aPackage.generateImports(allTypes,className)/]
 [/let]
@@ -104,11 +108,9 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
 [let enumTypeName : String = aDataType.name ]
-[let varName : String = enumTypeName.toLowerFirst() ]
 create[enumTypeName/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-   throw new Error("NotImplementedException");
+    return [enumTypeName.toLowerFirst()/]FromString(literalValue);
 }
-[/let]
 [/let]
 [/template]
 
@@ -120,11 +122,9 @@ create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]e
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
 [let enumTypeName : String = aDataType.name ]
-[let varName : String = enumTypeName.toLowerFirst() ]
 convert[enumTypeName/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-	throw new Error("NotImplementedException");
+	return [enumTypeName.toLowerFirst()/]ToString(instanceValue as [enumTypeName/]);
 }
-[/let]
 [/let]
 [/template]
 
