@@ -185,7 +185,7 @@ this.[anEDatatype.getInstanceName()/] = factory.create[if (anEDatatype.oclIsKind
 [query private getGetter(aClassifier : EClassifier , aPackage : EPackage ) : String =
     if aClassifier.oclIsUndefined() then 'null'
     else if ( aClassifier.ePackage = aPackage ) or ( aClassifier.ePackage.name = aPackage.name ) then 'this.' + aClassifier.getInstanceName()
-    else 'get' + aClassifier.ePackage.getInterfaceName() + '().' + aClassifier.getReflectiveGetterName() + '()'
+    else getShortQualifiedName(aClassifier.ePackage.name + '.get' + aClassifier.ePackage.getInterfaceName(),aPackage.name) + '().' + aClassifier.getReflectiveGetterName() + '()'
     endif endif
 /]
 
