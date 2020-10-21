@@ -19,4 +19,10 @@
 
 [query public mapGet( map : OclAny , key: OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapGet(java.util.Map,java.lang.Object)',Sequence{map,key}) /]
 
+[query public mapGetOrDefault( map : OclAny , key: OclAny, defaultValue : OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapGetOrDefault(java.util.Map,java.lang.Object,java.lang.Object)',Sequence{map,key,defaultValue}) /]
+
 [query public mapKeys( map : OclAny ) : Set(OclAny) = invoke('soft.generator.common.GenerateUtils','mapKeys(java.util.Map)',Sequence{map}) /]
+
+[query public mapContainsKey( map : OclAny , key: OclAny) : Boolean = invoke('soft.generator.common.GenerateUtils','mapContainsKey(java.util.Map,java.lang.Object)',Sequence{map,key}) /]
+
+[query public asSequence( o : OclAny ) : Sequence(OclAny) = invoke('soft.generator.common.GenerateUtils','asSequence(java.lang.Object)',Sequence{o}) /]

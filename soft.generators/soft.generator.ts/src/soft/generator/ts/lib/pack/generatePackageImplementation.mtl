@@ -10,54 +10,40 @@
 
 
 
-[template public generatePackageImplementation(anEPackage : EPackage){ 
-	className : String = anEPackage.getImplementationName();
-	classes :  OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
-	dataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
+[template public generatePackageImplementation(aPackage : EPackage){ 
+	className : String = aPackage.getImplementationName();
+	classes :  OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	dataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 }]
-[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getImplementationFileName(anEPackage.getPackageName()),false, 'UTF-8')]
+[file (aPackage.getOutputDirectory() + '/'+  aPackage.getImplementationFileName(aPackage.getPackageName()),false, 'UTF-8')]
 [fileComment()/]
 
-[let externalPackages : OclAny = OrderedSet{ classes.eAttributes.eType , classes.eReferences.eType, classes.eOperations.eType }
-                                ->flatten()
-                                ->select( c | not c.oclIsUndefined() )
-                                ->iterate( c ; res : OclAny = mapNew(className + 'external') |
-    if c.ePackage = anEPackage then
-        res
-    else 
-        res.mapPut('get' + c.ePackage.getInterfaceName(), getTypeImport(c.ePackage.getInterfaceName()))
-    endif
-)
-] 
-[let importTypes : OclAny = mapNew(className)
-                                    .mapPutAll(externalPackages)
-							 		.mapPut('EPackageExt',getTypeImport('EPackageExt'))
-									.mapPut(anEPackage.getInterfaceName(),getTypeImport(anEPackage.getInterfaceName()))
-									.mapPut(anEPackage.getConstantsName(),getTypeImport(anEPackage.getConstantsName()))
-									.mapPut('get' + anEPackage.getFactoryName(),getTypeImport(anEPackage.getFactoryName()))
-									.mapPut('getEcoreFactory',getTypeImport('EcoreFactory'))
-									.mapPut('EcoreFactory',getTypeImport('EcoreFactory'))
-									.mapPut('EAttribute',getTypeImport('EAttribute'))
-									.mapPut('EClass',getTypeImport('EClass'))
-									.mapPut('EDataType',getTypeImport('EDataType'))
-									.mapPut('EEnum',getTypeImport('EEnum'))
-									.mapPut('EOperation',getTypeImport('EOperation'))
-									.mapPut('EReference',getTypeImport('EReference'))
-]
-import {[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))separator (', ')][k.oclAsType(String)/][/for]} from "./internal";
-[/let]
+[let allTypes : OrderedSet(String) = OrderedSet{'ecore.EAttribute' 
+                                               ,'ecore.EReference'
+                                               ,'ecore.EClass'
+                                               ,'ecore.EEnum'
+                                               ,'ecore.EOperation' 
+                                               ,'ecore.EDataType'
+                                               ,'ecore.EcoreFactory'
+                                               ,'ecore.EPackageExt'
+                                               ,'ecore.getEcoreFactory' 
+                                               , aPackage.name + '.' + aPackage.getInterfaceName()
+                                               , aPackage.name + '.' + aPackage.getConstantsName()
+                                               , aPackage.name + '.' + 'get' + aPackage.getFactoryName()
+}->sortedBy(s | s)]
+[aPackage.generateImports(allTypes,className)/]
 [/let]
 
-export class [className/] extends EPackageExt implements [anEPackage.getInterfaceName()/] {
+export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EPackageExt implements [aPackage.getInterfaceName()/] {
 
 	private static _instance : [className/] = null;
 
 [for (aClass : EClass | classes)]
     [let data : Sequence(ENamedElement) = Sequence{ Sequence{ aClass } , aClass.eStructuralFeatures, aClass.eOperations}->flatten()]
-    [data.generateVariableDeclaration(anEPackage)/]
+    [data.generateVariableDeclaration(aPackage)/]
     [/let]
 [/for]
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateVariableDeclaration(anEPackage)/]
+    [aPackage.eAllContents(EDataType)->sortedBy(name).generateVariableDeclaration(aPackage)/]
 
 	public static getInstance() : [className/] {
 		if (!this._instance) {
@@ -68,26 +54,26 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
 
 	private constructor() {
 		super();
-		this.name = [anEPackage.getConstantsName()/].eNAME;
-		this.nsPrefix = [anEPackage.getConstantsName()/].eNS_PREFIX;
-		this.nsURI = [anEPackage.getConstantsName()/].eNS_URI;
-		this.eFactoryInstance = get[anEPackage.getFactoryName()/]();
-        let factory = getEcoreFactory();
+		this.name = [aPackage.getConstantsName()/].eNAME;
+		this.nsPrefix = [aPackage.getConstantsName()/].eNS_PREFIX;
+		this.nsURI = [aPackage.getConstantsName()/].eNS_URI;
+		this.eFactoryInstance = get[aPackage.getFactoryName()/]();
+        let factory = [getShortQualifiedName('ecore.getEcoreFactory', aPackage.name)/]();
 	    this.createPackageContents(factory);
     	this.initializePackageContents(factory);
         this.createResource();
 	}
 
 [for (aClass : EClass | classes)]
-    [aClass.generateGetter(anEPackage)/]
-    [aClass.eAttributes->sortedBy(name).generateGetter(anEPackage)/]
-    [aClass.eReferences->sortedBy(name).generateGetter(anEPackage)/]
-    [aClass.eOperations->sortedBy(name).generateGetter(anEPackage)/]
+    [aClass.generateGetter(aPackage)/]
+    [aClass.eAttributes->sortedBy(name).generateGetter(aPackage)/]
+    [aClass.eReferences->sortedBy(name).generateGetter(aPackage)/]
+    [aClass.eOperations->sortedBy(name).generateGetter(aPackage)/]
 [/for]
-    [dataTypes.generateGetter(anEPackage)/]
+    [dataTypes.generateGetter(aPackage)/]
 
 
-	private createPackageContents(factory : EcoreFactory) : void {		
+	private createPackageContents(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {		
 [for (aClass : EClass | classes)]
 		this.create[aClass.name.toUpperFirst()/]Content(factory);
 [/for]
@@ -95,37 +81,37 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
 	}
 [for (aClass : EClass | classes)]
 
-	private create[aClass.name.toUpperFirst()/]Content(factory : EcoreFactory) : void{
+	private create[aClass.name.toUpperFirst()/]Content(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
 	    [aClass.generateCreation()/]
 	    [aClass.eStructuralFeatures.generateCreation()/]
 	    [aClass.eOperations.generateCreation()/]
 	}
 [/for]
 
-	private createPackageEDataTypes(factory : EcoreFactory) : void {
+	private createPackageEDataTypes(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
     	[dataTypes.generateCreation()/]
 	}
 
-	private initializePackageContents(factory : EcoreFactory) : void {
+	private initializePackageContents(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
         // Add supertypes to classes
         [classes.initSuperTypes()/]
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
+[for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
         this.initialize[aClass.name.toUpperFirst()/]Content(factory);
 [/for]
         this.initializePackageEDataTypes(factory);
 	}
 	
 [for (aClass : EClass | classes)]
-    private initialize[aClass.name.toUpperFirst()/]Content(factory : EcoreFactory) : void {
+    private initialize[aClass.name.toUpperFirst()/]Content(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
         [aClass.generateInitialization()/]
-        [aClass.eAttributes->sortedBy(name).generateInitialization(anEPackage)/]
-        [aClass.eReferences->sortedBy(name).generateInitialization(anEPackage)/]
-        [aClass.eOperations->sortedBy(name).generateInitialization(anEPackage)/]
+        [aClass.eAttributes->sortedBy(name).generateInitialization(aPackage)/]
+        [aClass.eReferences->sortedBy(name).generateInitialization(aPackage)/]
+        [aClass.eOperations->sortedBy(name).generateInitialization(aPackage)/]
     }
 [/for]
 
-    private initializePackageEDataTypes(factory : EcoreFactory) : void {
-        [anEPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization()/]
+    private initializePackageEDataTypes(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
+        [aPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization()/]
     }
 
 }
@@ -156,13 +142,13 @@ export class [className/] extends EPackageExt implements [anEPackage.getInterfac
 [query private getParameterListDetailsName(aOperation : EOperation) : String = if aOperation.eParameters->size()>1 then aOperation.eParameters->first().eType.name + '_' + aOperation.eParameters->last().eType.name else aOperation.eParameters->first().eType.name endif /]
 
 
-[template private generateVariableDeclaration(anENamedElement : ENamedElement, anEPackage : EPackage)] 
-private [anENamedElement.getInstanceName()/] : [anENamedElement.eClass().getInterfaceName()/]; 
+[template private generateVariableDeclaration(anENamedElement : ENamedElement, aPackage : EPackage)] 
+private [anENamedElement.getInstanceName()/] : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/]; 
 
 [/template]
 
-[template private generateGetter(anENamedElement : ENamedElement, anEPackage : EPackage)]
-[anENamedElement.getReflectiveGetterName()/]() : [anENamedElement.eClass().getInterfaceName()/] {
+[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage)]
+[anENamedElement.getReflectiveGetterName()/]() : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/] {
     return this.[anENamedElement.getInstanceName()/];
 }
 
@@ -199,7 +185,7 @@ this.[anEDatatype.getInstanceName()/] = factory.create[if (anEDatatype.oclIsKind
 [query private getGetter(aClassifier : EClassifier , aPackage : EPackage ) : String =
     if aClassifier.oclIsUndefined() then 'null'
     else if ( aClassifier.ePackage = aPackage ) or ( aClassifier.ePackage.name = aPackage.name ) then 'this.' + aClassifier.getInstanceName()
-    else 'get' + aClassifier.ePackage.getInterfaceName() + '().' + aClassifier.getReflectiveGetterName() + '()'
+    else getShortQualifiedName(aClassifier.ePackage.name + '.get' + aClassifier.ePackage.getInterfaceName(),aPackage.name) + '().' + aClassifier.getReflectiveGetterName() + '()'
     endif endif
 /]
 

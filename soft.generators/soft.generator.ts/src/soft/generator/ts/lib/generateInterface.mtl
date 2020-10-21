@@ -14,34 +14,22 @@
 	interfaceName : String = aClass.getInterfaceName(); 
 	aPackage : EPackage = aClass.ePackage; 
 	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
+    isDiamond : Boolean = interfaceExtends->size() > 1;
 }]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-
-[let extendTypes : OclAny = interfaceExtends->iterate( interfaceExtend : String ; res : OclAny = mapNew() | res.mapPut(interfaceExtend,getTypeImport(interfaceExtend)) )]
-[let referencesTypes : OclAny = aClass.getReferencedTypes()->iterate( referenceType : EClassifier ; res : OclAny = mapNew() | (
-	let typeName : String = referenceType.getTypeName() in
-	let typeImport : String = referenceType.getTypeImport() in
-	if (typeName <> interfaceName and typeImport <> '') then
-		res.mapPut(typeName,typeImport)
-	else
-		res
-	endif
-))]
-[let listTypes : OclAny = if aClass.requiresList() then mapNew().mapPut('EList' , getTypeImport('EList')) else mapNew() endif]
-[let importTypes : OclAny = mapNew(interfaceName)
-							 .mapPutAll(extendTypes)
-							 .mapPutAll(referencesTypes)
-							 .mapPutAll(listTypes) 
-							 ]
-import {[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))separator (', ')][k.oclAsType(String)/][/for]} from "./internal";
-[/let]
+[let refTypes : Set(EClassifier) = if isDiamond then aClass.eSuperTypes.getReferencedTypes()->asSet() else aClass.getReferencedTypes()->asSet() endif]
+[let listType : Set(String) = if ( aClass.requiresList() or isDiamond ) then Set{ 'ecore.EList' } else Set{} endif]
+[let allTypes : OrderedSet(String) = Set{ interfaceExtends
+                                        , refTypes->collect( type | type.getType())->asSet()
+                                        , listType }->flatten()->select(s | s <> '' and s <> aClass.getQualifiedInterfaceName() )->asOrderedSet()->sortedBy(s | s)]
+[aPackage.generateImports(allTypes,interfaceName)/]
 [/let]
 [/let]
 [/let]
 
-export interface [interfaceName/][for ( extend : String | interfaceExtends ) before (' extends ') separator (', ')][extend/][/for]
+export interface [interfaceName/][for ( extend : String | interfaceExtends ) before (' extends ') separator (', ')][getShortQualifiedName(extend,aPackage.name)/][/for]
 {
 [let attributes : OrderedSet(EAttribute) = aClass.eAttributes->asOrderedSet()->select( isGet() or isSet() )]
 [if attributes->notEmpty()]

@@ -1,6 +1,8 @@
 [comment encoding = UTF-8 /]
 [module generate('http://www.eclipse.org/emf/2002/Ecore')/]
 
+[import soft::generator::ts::lib::generateModule/]
+[import soft::generator::ts::lib::generateEnum/]
 [import soft::generator::ts::lib::generateInterface/]
 [import soft::generator::ts::lib::generateImplementation/]
 [import soft::generator::ts::lib::factory::generateFactoryInterface/]
@@ -18,12 +20,22 @@
     	[aClass.generateImplementation()/]
 	[/if]
 [/for]
+[for (anEEnum : EEnum | aPackage.eAllContents(EEnum))]
+    [anEEnum.generateEnum()/]
+[/for]
 [aPackage.generateFactoryInterface()/]
 [aPackage.generateFactoryImplementation()/]
 [aPackage.generatePackageConstants()/]
 [aPackage.generatePackageInterface()/]
 [aPackage.generatePackageImplementation()/]
 [/template]
+
+[template public generateModule(aPackage : EPackage)]
+[comment @main/]
+[aPackage.generateInternal()/]
+[aPackage.generateIndex()/]
+[/template]
+
 
 [template public generateTests(aPackage : EPackage)]
 [comment @main/]

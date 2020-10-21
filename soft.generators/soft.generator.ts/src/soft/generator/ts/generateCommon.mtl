@@ -2,6 +2,7 @@
 [module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
 
 [query public getOutputDirectory( anPackage : EPackage ) : String = 
     let property : OclAny = getProperty('library.output.dir') in 
@@ -97,14 +98,21 @@ endif endif endif
 [query public getInterfaceName( aPackage : EPackage ) : String = aPackage.getInterfaceName( getPackageName() )/]
 [query private getInterfaceName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceName').toUpperFirst() /]
 
+[query public getQualifiedInterfaceName( aClass : EClass ) : String = aClass.ePackage.name + '.'  + aClass.getInterfaceName()/]
+[query public getQualifiedInterfaceName( aPackage : EPackage ) : String = aPackage.name + '.' + aPackage.getInterfaceName()/]
+
 [** Implementation Names **/]
 [query public getImplementationName( aClass : EClass ) : String = aClass.getImplementationName( aClass.name )/]
 [query public getImplementationName( aPackage : EPackage ) : String = aPackage.getImplementationName( getPackageName() ) /]
 [query private getImplementationName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationName', '$1Impl')/]
 
+[query public getQualifiedImplementationName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getImplementationName()/]
+
 [** Constants Names **/]
 [query public getConstantsName( aPackage : EPackage ) : String = aPackage.getConstantsName( aPackage.name.toUpperFirst() ) /]
 [query private getConstantsName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'constantsName', '$1Constants')/]
+
+[query public getQualifiedConstantsName( aPackage : EPackage ) : String = aPackage.name + '.' + aPackage.getConstantsName()/]
 
 
 [** Extension Names **/]
@@ -112,10 +120,15 @@ endif endif endif
 [query public getExtensionName( aPackage : EPackage ) : String = aPackage.getExtensionName( getPackageName() )/]
 [query private getExtensionName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'extensionName', '$1Ext')/]
 
+[query public getQualifiedExtensionName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getExtensionName()/]
+
 [** FileNames **/]
 [query public getInterfaceFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceFileName', '$1.ts')/]
 [query public getImplementationFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationFileName', '$1Impl.ts')/]
+[query public getExtensionFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'extensionFileName', '$1Ext.ts')/]
 [query public getConstantsFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'constantsFileName', '$1.ts')/]
+[query public getInternalFileName( aPackage : EPackage ) : String = aPackage.getElementName( aPackage.getPackageName(), 'internalFileName', 'internal.ts')/]
+[query public getIndexFileName( aPackage : EPackage ) : String = aPackage.getElementName( aPackage.getPackageName(), 'indexFileName', 'index.ts')/]
 
 [query private getElementTypeName(anENamedElement : ENamedElement) : String =
 if anENamedElement.oclIsTypeOf(EClass) then 'Class'
@@ -163,3 +176,66 @@ methodName
 [query public getQualifiedIDName( aClass : EClass ) : String =
     aClass.ePackage.getConstantsName() + '.' + aClass.getClassifierIDName()
 /]
+
+[** Name Qualification **]
+[query public getShortQualifiedName( aQualifiedName : String , aNamespaceName : String ) : String =
+    aQualifiedName.getShortQualifiedNameSep(aNamespaceName, '.')
+/]
+
+[query public getUnQualifiedName( aQualifiedName : String ) : String =
+    aQualifiedName.getUnQualifiedNameSep('.')
+/]
+
+[query public getQualification( any : OclAny , aQualifiedName : String ) : String =
+    any.getQualificationSep(aQualifiedName, '.') 
+/]
+
+
+[query private getAllImportModules(aPackage : EPackage) : OclAny =
+    let namespacesToPackages : OclAny = 
+    if (aPackage.hasGenAnnotation()) then
+        let annotations : Sequence(String) = aPackage.getGenAnnotation().details->select(key = 'importModule').value in
+        annotations->iterate( annotation : String ; res : OclAny = mapNew('getNamespaceToModule_' + aPackage.name) | (
+            let index : Integer = annotation.index(':') in 
+            if index = -1 then
+                res
+            else
+                res.mapPut(annotation.substring(1,index-1),annotation.substring(index+1)) 
+            endif
+        ))
+    else
+        mapNew('getNamespaceToModule_' + aPackage.name)
+    endif in
+    namespacesToPackages.mapPut('ecore','@masagroup/ecore')
+/]
+
+[query public getImportModule(aPackage : EPackage, namespace : String ) : String =
+    getAllImportModules().mapGetOrDefault(namespace, namespace)
+/]
+
+[template public generateImports(aPackage : EPackage ,allTypes : OrderedSet(String), aElementName : String)]
+[let namespaceToTypes : OclAny = allTypes->iterate( type : String ; res : OclAny = mapNew(aElementName) | (
+   let namespace : String = getQualification(type) in
+    if (namespace <> '') then
+        let typeName : String = getUnQualifiedName(type) in
+        let types : Sequence(OclAny) = res.mapGetOrDefault(namespace, Sequence{}).asSequence() in
+        res.mapPut( namespace , types->append(typeName) )
+    else
+        res
+    endif
+))]
+[for (namespace : OclAny | namespaceToTypes.mapKeys()->sortedBy(oclAsType(String)))]
+[if (namespace = aPackage.name)]
+import {
+[for ( type : OclAny | namespaceToTypes.mapGet(namespace).asSequence()->asOrderedSet())]
+    [type.oclAsType(String)/],
+[/for]    
+} from "./internal"
+[else]
+[let namespaceName : String = namespace.oclAsType(String)]
+import * as [namespaceName/] from "[aPackage.getImportModule(namespaceName)/]"
+[/let]
+[/if]
+[/for]
+[/let]
+[/template]

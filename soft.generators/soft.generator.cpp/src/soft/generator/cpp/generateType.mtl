@@ -177,9 +177,12 @@ std::shared_ptr
 
 
 [query public getDefaultValue(aClassifier : EClassifier) : String =
-    if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue()
-    else 'nullptr' endif
+    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue()
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue()
+    else 'nullptr' endif endif
 /]
+
+[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.name + '::' + aEnum.eLiterals->at(1).name.toUpperCase() else '' endif/]
 
 [query public getDefaultValue(aDataType : EDataType) : String =
     getAllDataTypes()->iterate( s ; res : String = '' |

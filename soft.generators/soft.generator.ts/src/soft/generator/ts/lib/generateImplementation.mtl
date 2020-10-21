@@ -4,7 +4,7 @@
 [import soft::generator::common::generateCommon]
 [import soft::generator::common::generateElement]
 [import soft::generator::common::generateStructuralFeature]
-[import soft::generator::common::generateUtils]
+
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
@@ -22,70 +22,21 @@
 	aPackage : EPackage = aClass.ePackage; 
 	classImplements : Sequence(String) = aClass.getClassImplements();
 }]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-[let implementsTypes : OclAny = classImplements->iterate( classImplement : String ; res : OclAny = mapNew() | res.mapPut(classImplement,getTypeImport(classImplement)) )]
-[let referencesTypes : OclAny = aClass.getReferencedTypes()->iterate( referenceType : EClassifier ; res : OclAny = mapNew() | (
-	let typeName : String = referenceType.getTypeName() in
-	let typeImport : String = referenceType.getTypeImport() in
-	if (typeName <> className and typeImport <> '') then
-		res.mapPut(typeName,typeImport)
-	else
-		res
-	endif
-))]
-[let listTypes : OclAny = if aClass.requiresList() then 
-							   mapNew().mapPut('BasicEObjectList' , getTypeImport('BasicEObjectList'))
-									   .mapPut('BasicEList', getTypeImport('BasicEList') )
-									   .mapPut(aPackage.getConstantsName(),getTypeImport(aPackage.getConstantsName())) 
-					 	  else mapNew() 
-						  endif]
-[let notificationTypes : OclAny = if features->exists(requiresNotification()) then 
-								       mapNew().mapPut('ENotification' , getTypeImport('ENotification'))
-											   .mapPut('ENotificationChain' , getTypeImport('ENotificationChain'))
-			                                   .mapPut('EventType',getTypeImport('ENotification'))
- 											   .mapPut('Notification' , getTypeImport('Notification'))
-											   .mapPut('EOPPOSITE_FEATURE_BASE', getTypeImport('Constants'))
-											   .mapPut(aPackage.getConstantsName(),getTypeImport(aPackage.getConstantsName())) 
-								  else mapNew() 
-								  endif]
-[let containerTypes : OclAny = if features->exists(isContainer()) then
-									mapNew().mapPut(aPackage.getConstantsName(),getTypeImport(aPackage.getConstantsName())) 
-							   else mapNew()
-							   endif]
-[let reflectiveTypes : OclAny = if aClass.hasReflectives() then
-									mapNew().mapPut('isEObjectList',getTypeImport('EObjectList'))
-											.mapPut('EObject',getTypeImport('EObject'))
-											.mapPut('EObjectInternal',getTypeImport('EObjectInternal'))
-											.mapPut('EList',getTypeImport('EList'))
-											.mapPut('ENotifyingList',getTypeImport('ENotifyingList'))
-										    .mapPut('ENotificationChain' , getTypeImport('ENotificationChain'))
-								else mapNew()
-							    endif]
-[let importTypes : OclAny = mapNew(className)
-							 .mapPut(classExtend,getTypeImport(classExtend))
-							 .mapPutAll(notificationTypes)
-							 .mapPutAll(implementsTypes)
-							 .mapPutAll(referencesTypes)
-							 .mapPutAll(listTypes)
-							 .mapPutAll(reflectiveTypes)	
-							 .mapPutAll(containerTypes)
-                             .mapPut('EClass',getTypeImport('EClass'))
-							 .mapPut('isEObjectInternal',getTypeImport('EObjectInternal'))
-                             .mapPut('get'+aPackage.getInterfaceName(),getTypeImport(aPackage.getInterfaceName()))
-							 ]
-import {[for (k : OclAny | importTypes.mapKeys()->sortedBy(oclAsType(String)))separator (', ')][k.oclAsType(String)/][/for]} from "./internal";
-[/let]
-[/let]
-[/let]
-[/let]
-[/let]
-[/let]
+[let allTypes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
+                                        , if aClass.requiresList() then Set{ 'ecore.EList', 'ecore.BasicEList', 'ecore.BasicEObjectList', aPackage.getQualifiedConstantsName() } else Set{} endif
+                                        , if aClass.hasReflectives() then Set{'ecore.EObject','ecore.EObjectInternal','ecore.EList','ecore.ENotifyingList','ecore.ENotificationChain','ecore.isEObjectList'} else Set{} endif
+                                        , if features->exists(requiresNotification()) then Set{'ecore.ENotification','ecore.ENotificationChain','ecore.EventType','ecore.Notification','ecore.EOPPOSITE_FEATURE_BASE', aPackage.getQualifiedConstantsName() } else Set{} endif
+                                        , if features->exists(isContainer()) then Set{aPackage.getQualifiedConstantsName()} else Set{} endif
+                                        , Set {classExtend, 'ecore.EClass','ecore.isEObjectInternal', aPackage.name + '.' + 'get'+ aPackage.getInterfaceName()}
+                                        , classImplements->asSet()
+                                        }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
+[aPackage.generateImports(allTypes,className)/]
 [/let]
 
-
-export class [className/] extends [classExtend/] [for ( interface : String | classImplements) before(' implements ') separator (',')][interface/][/for]
+export class [className/] extends [getShortQualifiedName(classExtend, aPackage.name)/] [for ( interface : String | classImplements) before(' implements ') separator (',')][getShortQualifiedName(interface,aPackage.name)/][/for]
 {
 [let dataDeclarationFeatures : Set(EStructuralFeature) = features->select( isField() )]
 	[dataDeclarationFeatures.generateVariableDeclaration()/]
@@ -96,7 +47,7 @@ export class [className/] extends [classExtend/] [for ( interface : String | cla
 		[variableFeatures.generateVariableInitialization(aClass)/]
 	}
 
-    eStaticClass() : EClass {
+    eStaticClass() : [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
         return get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]()
     }
 

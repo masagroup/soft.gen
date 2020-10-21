@@ -1,0 +1,72 @@
+[comment encoding = UTF-8 /]
+[module generateModule('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils /]
+[import soft::generator::ts::generateCommon /]
+
+[query public removeFileExtension( aFileName : String ) : String = 
+    let index : Integer = aFileName.lastIndexOf( '.') in
+    if ( index = -1 ) then
+        aFileName
+    else
+        aFileName.substring(1,index-1)
+    endif
+/]
+
+[template public generateIndex(anEPackage : EPackage)]
+[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getIndexFileName(),false, 'UTF-8') ]
+[fileComment()/]
+export {
+[for (aClass: EClass | anEPackage.getOrderedClasses())]
+    [aClass.getInterfaceName()/],
+[/for] 
+[for (aEnum: EEnum | anEPackage.eAllContents(EEnum))]
+    [aEnum.name/],
+[/for]   
+    [anEPackage.getInterfaceName()/],
+    [anEPackage.getFactoryName()/],
+    [anEPackage.getConstantsName()/],
+    get[anEPackage.getInterfaceName()/],
+    get[anEPackage.getFactoryName()/],
+} from "./internal"
+[/file]
+[/template]
+
+[template public generateInternal(anEPackage : EPackage){
+    allClasses : Sequence(EClass) = anEPackage.getOrderedClasses();
+}]
+[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInternalFileName(),false, 'UTF-8') ]
+[fileComment()/]
+
+// interfaces
+[for (aClass: EClass | allClasses)]
+export * from "./[removeFileExtension(aClass.getInterfaceFileName(aClass.name))/]"
+[/for]
+
+// enums
+[for (aEnum: EEnum | anEPackage.eAllContents(EEnum))]
+export * from "./[removeFileExtension(aEnum.getInterfaceFileName(aEnum.name))/]"
+[/for]
+
+// package - factory- constants
+export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getPackageName()))/]"
+export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getFactoryName()))/]"
+export * from "./[removeFileExtension(anEPackage.getConstantsFileName(anEPackage.getConstantsName()))/]"
+
+// implementations
+[for (aClass: EClass | allClasses)]
+[if not aClass.interface]
+export * from "./[removeFileExtension(aClass.getImplementationFileName(aClass.name))/]"
+[if aClass.hasExtension()]
+export * from "./[removeFileExtension(aClass.getExtensionFileName(aClass.name))/]"
+[/if]
+[/if]
+[/for]
+export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getPackageName()))/]"
+export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getFactoryName()))/]"
+[if anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension']
+export * from "./[removeFileExtension(anEPackage.getExtensionFileName(anEPackage.getFactoryName()))/]"
+[/if]
+[/file]
+[/template]

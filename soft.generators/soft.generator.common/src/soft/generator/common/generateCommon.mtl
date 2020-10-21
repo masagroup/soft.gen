@@ -14,8 +14,8 @@
 	aModelElement.getGenAnnotation().details->select(key = aKey)->first().value 
 /]
 
-[query private hasGenAnnotation(aModelElement : EModelElement) : Boolean = eAnnotations->select( source = getNSURI() )->notEmpty() /]
-[query private getGenAnnotation(aModelElement : EModelElement) : EAnnotation = eAnnotations->select( source = getNSURI() )->first() /]
+[query public hasGenAnnotation(aModelElement : EModelElement) : Boolean = eAnnotations->select( source = getNSURI() )->notEmpty() /]
+[query public getGenAnnotation(aModelElement : EModelElement) : EAnnotation = eAnnotations->select( source = getNSURI() )->first() /]
 
 [query public isAny(anEClassifier : EClassifier) : Boolean = 
 	if (oclIsUndefined()) then true else (name = 'EEnumerator' or name = 'EDiagnosticChain' or name = 'EJavaObject') endif
@@ -286,4 +286,40 @@
     if containingClass.oclIsUndefined() then null
     else containingClass.ePackage
     endif
-/] 
+/]
+
+
+[** Name Qualification **]
+[query public getShortQualifiedNameSep( aQualifiedName : String , aNamespaceName : String, aSep : String ) : String =
+    let aQualifiedNames : Sequence(String) = aQualifiedName.tokenize(aSep) in
+    let aNamespaceNames : Sequence(String) = aNamespaceName.tokenize(aSep) in
+    let shortQualifiedNames : Sequence(String) = Sequence{1..aQualifiedNames->size()}->iterate( index ; res : Sequence(String) = Sequence{} |
+        let n : String = aQualifiedNames->at(index) in
+        if ( res->isEmpty() and index <= aNamespaceNames->size() and (n = aNamespaceNames->at(index)) ) then
+            res
+        else
+            res->append(n)
+        endif
+    ) in
+    shortQualifiedNames->join(aSep)
+/]
+
+[query public getUnQualifiedNameSep( aQualifiedName : String , aSep : String) : String =
+    let index : Integer = aQualifiedName.lastIndex(aSep) in
+    if index = -1 then
+        aQualifiedName
+    else
+        aQualifiedName.substring(index+ aSep.size() )
+    endif
+/]
+
+
+[query public getQualificationSep( any : OclAny , aQualifiedName : String , aSep : String) : String = 
+    let index : Integer = aQualifiedName.lastIndex(aSep) in
+    if index = -1 then
+        ''
+    else
+        aQualifiedName.substring(1,index-1)
+    endif 
+/]
+ 

@@ -5,19 +5,18 @@
 [import soft::generator::ts::generateCommon/]
 
 
-
 [**
  * Classes Onthology
 */]
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
     if ( aClass.eSuperTypes->isEmpty() ) then
         if ( aClass.name = 'EObject' ) then
-            Sequence{'ENotifier'}
+            Sequence{'ecore.ENotifier'}
         else
-            Sequence{'EObject'}
+            Sequence{'ecore.EObject'}
         endif
     else
-        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getInterfaceName()))
+        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceName()))
     endif
 /]
 
@@ -26,22 +25,22 @@
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
-            'BasicEObject'
+            'ecore.BasicEObject'
         else if ( aPackage.hasKey('dynamic' ) and aPackage.valueKey('dynamic') = 'true' ) then
-            'DynamicEObjectImpl'
+            'ecore.DynamicEObjectImpl'
         else
-            'EObjectImpl'
+            'ecore.EObjectImpl'
         endif endif 
     else
         if ( extendsClass.hasExtension() ) then
-            extendsClass.getExtensionName()
+            extendsClass.getQualifiedExtensionName()
         else
-            extendsClass.getImplementationName()
+            extendsClass.getQualifiedImplementationName()
         endif
     endif
 /]
 
-[query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getInterfaceName() }/]
+[query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedInterfaceName() }/]
 
 [query public getPropertyName( aFeature : EStructuralFeature ) : String =
 if aFeature.eType.name = 'EBoolean' then 'is' + aFeature.name.toUpperFirst() else aFeature.name endif/]
