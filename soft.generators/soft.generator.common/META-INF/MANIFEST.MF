@@ -1,8 +1,11 @@
 Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.10.7
+Created-By: 13.0.2+8 (Oracle Corporation)
 Bundle-ManifestVersion: 2
 Bundle-Name: Soft Generator Common
 Bundle-SymbolicName: soft.generator.common
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.1.0
 Export-Package: soft.generator.common
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: soft.generator.common
+
