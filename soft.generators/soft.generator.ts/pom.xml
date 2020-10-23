@@ -1,16 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
     <parent>
         <groupId>soft.generators</groupId>
         <artifactId>soft.generators</artifactId>
         <version>1.1.0</version>
     </parent>
-    
     <artifactId>soft.generator.ts</artifactId>
-  
     <dependencies>
         <dependency>
             <groupId>soft.generators</groupId>
@@ -18,7 +13,6 @@
             <version>1.1.0</version>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -57,7 +51,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version><!--$NO-MVN-MAN-VER$-->
+                <version>3.1.2</version>
+                <!--$NO-MVN-MAN-VER$-->
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -75,13 +70,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0</version>
                 <configuration>
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>soft.generator.ts.Generate</mainClass>
+                            <mainClass>soft.generator.cpp.Generate</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <Build-TimeStamp>${maven.build.timestamp}</Build-TimeStamp>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
@@ -97,15 +95,9 @@
                         <phase>package</phase>
                         <configuration>
                             <tasks>
-                                <property name="final.name"
-                                    value="${project.build.directory}/${project.build.finalName}" />
-                                <property
-                                    name="archive.includes"
-                                    value="${project.build.finalName}.${project.packaging} *.jar" />
-                                <zip
-                                    basedir="${project.build.directory}"
-                                    destfile="${final.name}.zip"
-                                    includes="${archive.includes}" />
+                                <property name="final.name" value="${project.build.directory}/${project.build.finalName}"/>
+                                <property name="archive.includes" value="${project.build.finalName}.${project.packaging} *.jar"/>
+                                <zip basedir="${project.build.directory}" destfile="${final.name}.zip" includes="${archive.includes}"/>
                             </tasks>
                         </configuration>
                     </execution>
@@ -113,40 +105,39 @@
             </plugin>
         </plugins>
         <pluginManagement>
-        	<plugins>
-        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        		<plugin>
-        			<groupId>org.eclipse.m2e</groupId>
-        			<artifactId>lifecycle-mapping</artifactId>
-        			<version>1.0.0</version>
-        			<configuration>
-        				<lifecycleMappingMetadata>
-        					<pluginExecutions>
-        						<pluginExecution>
-        							<pluginExecutionFilter>
-        								<groupId>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
         									org.eclipse.acceleo
         								</groupId>
-        								<artifactId>
+                                        <artifactId>
         									org.eclipse.acceleo.maven
         								</artifactId>
-        								<versionRange>
+                                        <versionRange>
         									[3.6.4,)
         								</versionRange>
-        								<goals>
-        									<goal>acceleo-compile</goal>
-        								</goals>
-        							</pluginExecutionFilter>
-        							<action>
-        								<ignore></ignore>
-        							</action>
-        						</pluginExecution>
-        					</pluginExecutions>
-        				</lifecycleMappingMetadata>
-        			</configuration>
-        		</plugin>
-        	</plugins>
+                                        <goals>
+                                            <goal>acceleo-compile</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore/>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
         </pluginManagement>
     </build>
-
 </project>
