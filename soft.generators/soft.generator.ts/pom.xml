@@ -76,7 +76,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>soft.generator.cpp.Generate</mainClass>
+                            <mainClass>soft.generator.ts.Generate</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Build-TimeStamp>${maven.build.timestamp}</Build-TimeStamp>
