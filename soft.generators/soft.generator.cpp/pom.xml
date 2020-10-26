@@ -3,15 +3,15 @@
     <parent>
         <groupId>soft.generators</groupId>
         <artifactId>soft.generators</artifactId>
-        <version>1.1.0</version>
+        <version>1.2.0</version>
     </parent>
     <artifactId>soft.generator.cpp</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <dependencies>
         <dependency>
             <groupId>soft.generators</groupId>
             <artifactId>soft.generator.common</artifactId>
-            <version>1.1.0</version>
+            <version>1.2.0</version>
         </dependency>
     </dependencies>
     <build>
