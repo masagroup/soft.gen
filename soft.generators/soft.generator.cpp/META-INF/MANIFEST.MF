@@ -1,13 +1,13 @@
 Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.10.7
+Created-By: 13.0.2+8 (Oracle Corporation)
 Bundle-ManifestVersion: 2
 Bundle-Name: Soft Generator Cpp
 Bundle-SymbolicName: soft.generator.cpp
-Bundle-Version: 1.0.0.qualifier
-Export-Package: soft.generator.cpp,
- soft.generator.cpp.lib,
- soft.generator.cpp.lib.cls,
- soft.generator.cpp.lib.factory,
- soft.generator.cpp.lib.pack,
- soft.generator.cpp.tests
+Bundle-Version: 1.2.0
+Export-Package: soft.generator.cpp,soft.generator.cpp.lib,soft.generat
+ or.cpp.lib.cls,soft.generator.cpp.lib.factory,soft.generator.cpp.lib.
+ pack,soft.generator.cpp.tests
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: soft.generator.cpp
+
