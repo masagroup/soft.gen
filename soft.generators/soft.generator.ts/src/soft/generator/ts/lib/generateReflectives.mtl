@@ -309,10 +309,7 @@ eBasicInverseAdd(otherEnd : [if not aPackage.isEcorePackage()]ecore.[/if]EObject
         	return this.eBasicSetContainer(otherEnd, [aClass.getQualifiedIDName(aFeature)/], msgs);
         [/if]
     [else]
-        [if aFeature.isVolatile() or aFeature.isBackReference()]
-        	let [aFeature.getPropertyName()/] = [if aFeature.isProxy()]this.basicGet[aFeature.getPropertyName().toUpperFirst()/]()[else]this.[aFeature.getPropertyName()/][/if];
-        [/if]
-	        let msgs = notifications;
+            let msgs = notifications;
 	        if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal(this.[aFeature.getPropertyName()/])) {
             [if aFeature.isContains()]
             	msgs = this.[aFeature.getPropertyName()/].eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs);

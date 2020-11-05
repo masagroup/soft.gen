@@ -295,9 +295,6 @@
         return [aClass.getReceiverName()/].EBasicSetContainer(otherEnd, [aClass.getQualifiedIDName(aFeature)/], msgs)
         [/if]
     [else]
-        [if aFeature.isVolatile() or aFeature.isBackReference()]
-        [aFeature.name/] := [if aFeature.isProxy()][aClass.getReceiverName()/].Basic[aFeature.getGetterName().toUpperFirst()/][else][aFeature.getGetterName()/][/if]()
-        [/if]
         msgs := notifications
         if [aClass.getReceiverName()/].[aFeature.name/] != nil {
             [if aFeature.isContains()]
