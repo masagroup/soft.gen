@@ -73,6 +73,10 @@ type [aClass.getInitializersInterface()/] interface {
     return GetPackage().[aClass.getReflectiveGetterName()/]()
 }
 
+[aClass.generateFunctionImplementationReceiver()/] EStaticFeatureCount() int {
+    return [aClass.getFeatureCountIDName()/]
+}
+
 [operations.generateImplementation(aClass)/]
 [features.generateImplementation(aClass)/]
 [initializerFeatures.generateVariableInitializationMethodDefinition(aClass)/]
