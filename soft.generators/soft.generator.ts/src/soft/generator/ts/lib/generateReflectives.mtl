@@ -106,7 +106,7 @@ eDerivedOperationID(eContainer : [if not aPackage.isEcorePackage()]ecore.[/if]EO
 [let aPackage : EPackage = aClass.ePackage]
 eGetFromID(featureID : number , resolve : boolean ) : any {
     switch ( featureID ) {
-    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
+    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name))]
     	case [aClass.getQualifiedIDName(anStructFeature)/]: {
 	[if anStructFeature.isProxy()]
 		[if anStructFeature.isListType()]
