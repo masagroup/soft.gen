@@ -59,7 +59,6 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 	assert.Equal(t, [aClass.getFeatureCountIDName()/] , o.EStaticFeatureCount())
 }
 
-
 [aClass.eStructuralFeatures->select(isField()).generateTestImplementation(aClass)/]
 [aClass.eOperations->select(isDefault()).generateTestOperation(aClass)/]
 [aClass.generateEGetTestImplementation()/]
@@ -142,7 +141,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 [let varName : String = aStructuralFeature.getVariableName() ]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]GetList(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	[if aStructuralFeature.eType.name = 'EFeatureMapEntry' or aStructuralFeature.volatile]
+	[if aStructuralFeature.eType.name = 'EFeatureMapEntry' or aStructuralFeature.isVolatile()]
 	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
 	[else]
 	assert.NotNil(t, o.[aStructuralFeature.getGetterName()/]())
@@ -152,34 +151,53 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 [/template]
 
 [template private generateEGetTestImplementation(aClass : EClass)]
-[let features : Collection(EStructuralFeature) = aClass.getEGetFeatures()]
+[let features : Set(EStructuralFeature) = aClass.getEGetFeatures()]
 [if features->notEmpty()]
-func Test[aClass.name.toUpperFirst()/]EGet(t *testing.T) {
+func Test[aClass.name.toUpperFirst()/]EGetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	[for (anStructFeature : EStructuralFeature | features )]
-    {
-    [let lazy : String = anStructFeature.getLazy()]
-		[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.volatile]
-		_ = o
-		[elseif not anStructFeature.isContainer() and anStructFeature.isVolatile() and not anStructFeature.hasKey('getterBody')]
-		assert.Panics(t, func() { o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], true) })
-		[elseif not anStructFeature.isContainer() and not anStructFeature.isVolatile() and lazy <> 'no' and lazy = 'action']
-		_ = o
-		[else]
-		assert.Equal(t, o.[anStructFeature.getGetterName()/](), o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], true))
-		[/if]
-	[/let]
-	}
+	[if anStructFeature.isVolatile() or ( anStructFeature.hasInitializationMethod() and anStructFeature.oclIsKindOf(EReference) and not anStructFeature.isListType() and not anStructFeature.isProxy() )  ]
+	assert.Panics(t, func() { o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false) })
+	[else]
+	assert.Equal(t, o.[anStructFeature.getGetterName()/](), o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], true))
+	[if (anStructFeature.isListType() and anStructFeature.oclIsKindOf(EReference))]
+	assert.Equal(t, o.[anStructFeature.getGetterName()/]().([if not aClass.ePackage.isEcorePackage()]ecore.[/if]EObjectList).GetUnResolvedList(), o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false))
+	[/if]
+	[/if]
     [/for]
 }
 [/if]
 [/let]
 [/template]
 
+[template private generateESetTestImplementation(aClass : EClass)]
+[let features : Set(EStructuralFeature) = aClass.getESetFeatures()]
+[if features->notEmpty()]
+func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+    [for (anStructFeature : EStructuralFeature | features)]
+	{
+	[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.isVolatile()]
+		_ = o
+	[elseif anStructFeature.isListType()]
+		l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{})
+		o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], l)
+		assert.Equal(t, 0, o.[anStructFeature.getGetterName()/]().Size())
+		// assert.Equal(t, elem, o.[anStructFeature.getGetterName()/]().Get(0))
+	[else]
+		_ = o
+    [/if]
+	}
+	[/for]
+}
+[/if]
+[/let]
+[/template]
+
 [template private generateEInvokeTestImplementation(aClass : EClass)]
-[let operations : Collection(EOperation) = aClass.getEInvokeOperations()]
+[let operations : Set(EOperation) = aClass.getEInvokeOperations()]
 [if aClass.name <> 'EObject' and operations->notEmpty()]
-func Test[aClass.name.toUpperFirst()/]EInvoke(t *testing.T) {
+func Test[aClass.name.toUpperFirst()/]EInvokeFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
     [for ( eOperation : EOperation | operations )]
     assert.Panics(t, func() { o.EInvokeFromID([eOperation.eContainingClass.getOperationIDName(eOperation)/], nil) })
@@ -190,13 +208,13 @@ func Test[aClass.name.toUpperFirst()/]EInvoke(t *testing.T) {
 [/template]
 
 [template private generateEIsSetTestImplementation(aClass : EClass)]
-[let features : Collection(EStructuralFeature) = aClass.getEIsSetFeatures()]
+[let features : Set(EStructuralFeature) = aClass.getEIsSetFeatures()]
 [if features->notEmpty()]
-func Test[aClass.name.toUpperFirst()/]EIsSet(t *testing.T) {
+func Test[aClass.name.toUpperFirst()/]EIsSetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	[for (anStructFeature : EStructuralFeature | features)]
 	{
-		[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.volatile]
+		[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.isVolatile()]
 		_ = o
 		[elseif anStructFeature.isListType()]
 		    [if anStructFeature.isField()]
@@ -221,13 +239,13 @@ func Test[aClass.name.toUpperFirst()/]EIsSet(t *testing.T) {
 [/template]
 
 [template private generateEUnSetTestImplementation(aClass : EClass)]
-[let features : Collection(EStructuralFeature) = aClass.getEUnSetFeatures()]
+[let features : Set(EStructuralFeature) = aClass.getEUnSetFeatures()]
 [if features->notEmpty()]
-func Test[aClass.name.toUpperFirst()/]EUnset(t *testing.T) {
+func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
     [for (anStructFeature : EStructuralFeature | features)]
 	{
-    [if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.volatile]
+    [if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.isVolatile()]
 		_ = o
 	[elseif anStructFeature.isListType() and not anStructFeature.isUnSettable()]
 		o.EUnsetFromID([aClass.getQualifiedIDName(anStructFeature)/])
@@ -242,37 +260,15 @@ func Test[aClass.name.toUpperFirst()/]EUnset(t *testing.T) {
 [/let]
 [/template]
 
-[template private generateESetTestImplementation(aClass : EClass)]
-[let features : Collection(EStructuralFeature) = aClass.getESetFeatures()]
-[if features->notEmpty()]
-func Test[aClass.name.toUpperFirst()/]ESet(t *testing.T) {
-	o := [aClass.getConstructorName()/]()
-    [for (anStructFeature : EStructuralFeature | features)]
-	{
-	[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.volatile]
-		_ = o
-	[elseif anStructFeature.isListType()]
-		l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{})
-		o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], l)
-		assert.Equal(t, 0, o.[anStructFeature.getGetterName()/]().Size())
-		// assert.Equal(t, elem, o.[anStructFeature.getGetterName()/]().Get(0))
-	[else]
-		_ = o
-    [/if]
-	}
-	[/for]
-}
-[/if]
-[/let]
-[/template]
+
 
 [template private generateEInverseAddTestImplementation(aClass : EClass)]
-[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseAddFeatures()->sortedBy(name)]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseAddFeatures()->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
-func Test[aClass.name.toUpperFirst()/]EInverseAdd(t *testing.T) {
+func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 	[for ( aFeature : EStructuralFeature | features )]
 	{
-		[if aFeature.eType.name = 'EFeatureMapEntry' or aFeature.volatile]
+		[if aFeature.eType.name = 'EFeatureMapEntry' or aFeature.isVolatile()]
 		_ = o
 		[elseif aFeature.isListType()]
 		o := [aClass.getConstructorName()/]()
@@ -287,12 +283,12 @@ func Test[aClass.name.toUpperFirst()/]EInverseAdd(t *testing.T) {
 [/template]
 
 [template private generateEInverseRemoveTestImplementation(aClass : EClass)]
-[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseRemoveFeatures()->sortedBy(name)]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseRemoveFeatures()->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
-func Test[aClass.name.toUpperFirst()/]EInverseRemove(t *testing.T) {
+func Test[aClass.name.toUpperFirst()/]EBasicInverseRemove(t *testing.T) {
 	[for ( aFeature : EStructuralFeature | features )]
 	{
-		[if aFeature.eType.name = 'EFeatureMapEntry' or aFeature.volatile]
+		[if aFeature.eType.name = 'EFeatureMapEntry' or aFeature.isVolatile()]
 		_ = o
 		[elseif aFeature.isListType()]
 		o := [aClass.getConstructorName()/]()
