@@ -49,6 +49,17 @@ func discard[name.toUpperFirst()/]() {
 [/if]
 }
 
+func Test[aClass.name.toUpperFirst()/]As[aClass.name.toUpperFirst()/](t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	assert.Equal(t, o , o.as[aClass.getInterfaceName()/]())
+}
+
+func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	assert.Equal(t, [aClass.getFeatureCountIDName()/] , o.EStaticFeatureCount())
+}
+
+
 [aClass.eStructuralFeatures->select(isField()).generateTestImplementation(aClass)/]
 [aClass.eOperations->select(isDefault()).generateTestOperation(aClass)/]
 [aClass.generateEGetTestImplementation()/]
