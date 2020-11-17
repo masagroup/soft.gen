@@ -64,7 +64,7 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 	assert.Equal(t, [aClass.getFeatureCountIDName()/] , o.EStaticFeatureCount())
 }
 
-[aClass.eStructuralFeatures->select(isField()).generateTestImplementation(aClass)/]
+[aClass.eStructuralFeatures->select(isField()).generateTestFeature(aClass)/]
 [aClass.eOperations->select(isDefault()).generateTestOperation(aClass)/]
 [aClass.generateEGetTestImplementation()/]
 [aClass.generateESetTestImplementation()/]
@@ -74,17 +74,12 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 [/file]
 [/template]
 
-
-
-[template private generateTestImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass )]
-[if isGet() and isSet() and not isBidirectional() and not isContains()]
-[aStructuralFeature.generateGetSetTestImplementation(aClass)/]
+[template private generateTestFeature(aStructuralFeature : EStructuralFeature, aClass : EClass )]
+[if isGet()]
+[aStructuralFeature.generateGetTestImplementation(aClass)/]
 [/if]
 [if isSet()]
 [aStructuralFeature.generateSetTestImplementation(aClass)/]
-[/if]
-[if isGet() and isListType()]
-[aStructuralFeature.generateGetListTestImplementation(aClass)/]
 [/if]
 [/template]
 
@@ -97,19 +92,40 @@ func Test[aClass.name.toUpperFirst()/][anEOperation.getOperationName()/]Operatio
 [/let]
 [/template]
 
-[template private generateGetSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
-[let aPackage : EPackage = aClass.ePackage ]
-func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
-	v := [aStructuralFeature.eType.getTestValue(aPackage)/]
-	[if not isListType() and isProxy()]
-	v.On("EIsProxy").Return(false)
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isListType())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {	
+[if aStructuralFeature.isListType()]
+	o := [aClass.getConstructorName()/]()
+	[if aStructuralFeature.eType.name = 'EFeatureMapEntry' or aStructuralFeature.isVolatile()]
+	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
+	[else]
+	assert.NotNil(t, o.[aStructuralFeature.getGetterName()/]())
 	[/if]
+[elseif aStructuralFeature.isLazy()]
+	o := [aClass.getConstructorName()/]()
+	assert.Panics(t, func() { [aStructuralFeature.getGetterName()/] })
+[elseif aStructuralFeature.oclIsKindOf(EReference)]
+	o := [aClass.getConstructorName()/]()
+	// get default value
+	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
+	// get initialized value
+	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]	
+	o.[aStructuralFeature.getVariableName()/] = v
+	assert.Equal(t,v,o.[aStructuralFeature.getGetterName()/]())
+[elseif aStructuralFeature.oclIsKindOf(EAttribute) and aStructuralFeature.oclAsType(EAttribute).getDefaultValue() <> '']
 	obj := [aClass.getConstructorName()/]()
-	obj.[aStructuralFeature.getSetterName()/](v)
-	assert.Equal(t, v, obj.[aStructuralFeature.getGetterName()/]())
+	// get default value
+	[let aAttribute : EAttribute = aStructuralFeature.oclAsType(EAttribute)]
+	assert.Equal(t, [aAttribute.getDefaultValue()/], o.[aAttribute.getGetterName()/]())
+	[/let]
+	// get initialized value
+	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]	
+	o.[aStructuralFeature.getVariableName()/] = v
+	assert.Equal(t,v,o.[aStructuralFeature.getGetterName()/]())
+[/if]
 }
-[/let]
 [/template]
+
 
 [template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage ]
@@ -127,6 +143,8 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 [/let]
 [/let]
 [/template]
+
+
 
 [template private generateUnsetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
 [let varName : String = aStructuralFeature.getVariableName() ]
