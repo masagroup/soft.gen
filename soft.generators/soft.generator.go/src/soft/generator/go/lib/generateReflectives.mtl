@@ -145,7 +145,7 @@
         list.Clear()
         list.AddAll(newValue.([anStructFeature.generateType()/]))
     [else]
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue.([anStructFeature.generateType()/]))
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue[if anStructFeature.eType.getType() <> 'interface{}'].([anStructFeature.generateType()/])[/if])
     [/if]    
 [/for]
     default:

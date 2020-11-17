@@ -112,7 +112,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
 	obj := [aClass.getConstructorName()/]()
 	v := [aStructuralFeature.eType.getTestValue(aPackage)/]	
-	mockAdapter := &[getShortQualifiedName('ecore.MockEAdapter',aPackage.name)/]{}
+	mockAdapter := new([getShortQualifiedName('ecore.MockEAdapter',aPackage.name)/])
 	mockAdapter.On("SetTarget",obj).Once()		
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()
 	obj.EAdapters().Add(mockAdapter)
@@ -171,19 +171,21 @@ func Test[aClass.name.toUpperFirst()/]EGetFromID(t *testing.T) {
 [/template]
 
 [template private generateESetTestImplementation(aClass : EClass)]
-[let features : Set(EStructuralFeature) = aClass.getESetFeatures()]
+[let aPackage : EPackage = aClass.ePackage ]
+[let features : Set(EStructuralFeature) = aClass.getESetFeatures()->select(not(isListType() and eType.name = 'EFeatureMapEntry'))]
 [if features->notEmpty()]
 [let isMockGenerated : Boolean = isTemplateGenerated('generateMocks')]
 func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
     [for (anStructFeature : EStructuralFeature | features)]
 	{
-	[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.isVolatile()]
-		_ = o
-	[elseif anStructFeature.isListType()]
+	[if anStructFeature.isListType()]
+		[if anStructFeature.isVolatile()]
+		assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], nil) })
+		[else]
 		[let isElement : Boolean = isMockGenerated and anStructFeature.eType.oclIsKindOf(EClass)] 
 		[if (isElement)]
-		e := new([anStructFeature.eType.oclAsType(EClass).getMockName()/])
+		e := [anStructFeature.eType.getTestValue(aPackage)/]
 		e.On("EIsProxy").Return(false)
 		[/if]		
 		l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{[if (isElement)]e[/if]})
@@ -193,14 +195,28 @@ func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
 		assert.Equal(t, e, o.[anStructFeature.getGetterName()/]().Get(0))
 		[/if]
 		[/let]
+		[/if]
 	[else]
-		_ = o
+		[if anStructFeature.isVolatile()]
+		assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], nil) })
+		[else]
+		v := [anStructFeature.eType.getTestValue(aPackage)/]
+		[if anStructFeature.eType.oclIsKindOf(EClass)]
+		v.On("EIsProxy").Return(false)
+		[/if]
+		[if anStructFeature.isContainer()]
+		v.On("EResource").Return(nil)
+		[/if]		
+		o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], v)
+		assert.Equal(t,v,o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false))
+		[/if]
     [/if]
 	}
 	[/for]
 }
 [/let]
 [/if]
+[/let]
 [/let]
 [/template]
 

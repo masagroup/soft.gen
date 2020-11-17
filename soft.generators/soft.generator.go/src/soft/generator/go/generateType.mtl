@@ -64,7 +64,7 @@
         Sequence{ 'EFeatureMap', 'interface{}', 'nil', 'nil', ''},
         Sequence{ 'EFeatureMapEntry' , 'interface{}' , 'nil', 'nil', ''},
         Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'interface{}', 'nil', 'nil', ''},
-        Sequence{ 'EJavaClass' , 'reflect.Type', 'nil', 'nil', ''},
+        Sequence{ 'EJavaClass' , 'reflect.Type', 'nil', 'reflect.TypeOf("")', ''},
         Sequence{ 'EString' , 'String', 'string', '""' , '"Test String"', ''},
         Sequence{ 'ETreeIterator' , 'ecore.EIterator', 'nil' , 'nil', ''},
         Sequence{ 'EResource' , 'ecore.EResource', 'nil' , 'nil', ''}
@@ -81,7 +81,7 @@
     else '' endif endif endif endif	
 /]
 
-[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = '&' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name ) +'{}'/]
+[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = 'new(' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name ) +')'/]
 [query private getTestValue( aEnum : EEnum ) : String = 
 	if aEnum.eLiterals->size() > 1 then aEnum.eLiterals->at(2).name.toUpperCase() 
 	else if aEnum.eLiterals->size() = 1 then aEnum.eLiterals->at(1).name.toUpperCase() 
