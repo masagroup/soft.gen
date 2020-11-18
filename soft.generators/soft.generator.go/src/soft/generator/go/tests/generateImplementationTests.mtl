@@ -178,8 +178,10 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EGetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
+	assert.Panics(t, func() { o.EGetFromID(-1, true) })
 	[for (anStructFeature : EStructuralFeature | features )]
 	[if anStructFeature.isVolatile() or ( anStructFeature.hasInitializationMethod() and anStructFeature.oclIsKindOf(EReference) and not anStructFeature.isListType() and not anStructFeature.isProxy() )  ]
+	assert.Panics(t, func() { o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], true) })
 	assert.Panics(t, func() { o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false) })
 	[else]
 	assert.Equal(t, o.[anStructFeature.getGetterName()/](), o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], true))
@@ -200,6 +202,7 @@ func Test[aClass.name.toUpperFirst()/]EGetFromID(t *testing.T) {
 [let isMockGenerated : Boolean = isTemplateGenerated('generateMocks')]
 func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
+	assert.Panics(t, func() { o.ESetFromID(-1, nil) })
     [for (anStructFeature : EStructuralFeature | features)]
 	{
 	[if anStructFeature.isListType()]
@@ -248,6 +251,7 @@ func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
 [if aClass.name <> 'EObject' and operations->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EInvokeFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
+	assert.Panics(t, func() { o.EInvokeFromID(-1, nil) })
     [for ( eOperation : EOperation | operations )]
     assert.Panics(t, func() { o.EInvokeFromID([eOperation.eContainingClass.getOperationIDName(eOperation)/], nil) })
 	[/for]
@@ -261,6 +265,7 @@ func Test[aClass.name.toUpperFirst()/]EInvokeFromID(t *testing.T) {
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EIsSetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
+	assert.Panics(t, func() { o.EIsSetFromID(-1) })
 	[for (anStructFeature : EStructuralFeature | features)]
 	{
 		[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.isVolatile()]
@@ -292,6 +297,7 @@ func Test[aClass.name.toUpperFirst()/]EIsSetFromID(t *testing.T) {
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
+	assert.Panics(t, func() { o.EUnsetFromID(-1) })
     [for (anStructFeature : EStructuralFeature | features)]
 	{
     [if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.isVolatile()]
