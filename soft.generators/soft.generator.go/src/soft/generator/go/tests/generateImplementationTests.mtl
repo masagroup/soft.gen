@@ -14,6 +14,8 @@
 [import soft::generator::go::lib::generateOperation/]
 [import soft::generator::go::lib::generateStructuralFeature/]
 
+[query private isFeatureMap(aStructuralFeature : EStructuralFeature) : Boolean = isListType() and eType.name = 'EFeatureMapEntry'/]
+
 [template public generateImplementationTests(aClass : EClass) { 
 	implementationName : String = aClass.getImplementationName(); 
 	aPackage : EPackage = aClass.ePackage;
@@ -197,7 +199,7 @@ func Test[aClass.name.toUpperFirst()/]EGetFromID(t *testing.T) {
 
 [template private generateESetTestImplementation(aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage ]
-[let features : Set(EStructuralFeature) = aClass.getESetFeatures()->select(not(isListType() and eType.name = 'EFeatureMapEntry'))]
+[let features : Set(EStructuralFeature) = aClass.getESetFeatures()->select(not isFeatureMap())]
 [if features->notEmpty()]
 [let isMockGenerated : Boolean = isTemplateGenerated('generateMocks')]
 func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
@@ -205,38 +207,34 @@ func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
 	assert.Panics(t, func() { o.ESetFromID(-1, nil) })
     [for (anStructFeature : EStructuralFeature | features)]
 	{
-	[if anStructFeature.isListType()]
-		[if anStructFeature.isVolatile()]
+	[if anStructFeature.isVolatile()]
 		assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], nil) })
-		[else]
-		[let isElement : Boolean = isMockGenerated and anStructFeature.eType.oclIsKindOf(EClass)] 
-		[if (isElement)]
+	[else]
+		[if anStructFeature.isListType()]
+			[let isElement : Boolean = isMockGenerated and anStructFeature.eType.oclIsKindOf(EClass)] 
+			[if (isElement)]
 		e := [anStructFeature.eType.getTestValue(aPackage)/]
 		e.On("EIsProxy").Return(false)
-		[/if]		
+			[/if]		
 		l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{[if (isElement)]e[/if]})
 		o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], l)
 		assert.Equal(t, [if (isElement)]1[else]0[/if], o.[anStructFeature.getGetterName()/]().Size())
-		[if (isElement)]
+			[if (isElement)]
 		assert.Equal(t, e, o.[anStructFeature.getGetterName()/]().Get(0))
-		[/if]
-		[/let]
-		[/if]
-	[else]
-		[if anStructFeature.isVolatile()]
-		assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], nil) })
+			[/if]
+			[/let]
 		[else]
 		v := [anStructFeature.eType.getTestValue(aPackage)/]
-		[if anStructFeature.eType.oclIsKindOf(EClass)]
+			[if anStructFeature.eType.oclIsKindOf(EClass)]
 		v.On("EIsProxy").Return(false)
-		[/if]
-		[if anStructFeature.isContainer()]
+			[/if]
+			[if anStructFeature.isContainer()]
 		v.On("EResource").Return(nil)
-		[/if]		
+			[/if]		
 		o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], v)
 		assert.Equal(t,v,o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false))
 		[/if]
-    [/if]
+	[/if]
 	}
 	[/for]
 }
