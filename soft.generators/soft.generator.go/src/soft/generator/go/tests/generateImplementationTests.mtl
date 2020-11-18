@@ -66,7 +66,7 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 	assert.Equal(t, [aClass.getFeatureCountIDName()/] , o.EStaticFeatureCount())
 }
 
-[aClass.eStructuralFeatures->select(isField()).generateTestFeature(aClass)/]
+[aClass.eStructuralFeatures.generateTestFeature(aClass)/]
 [aClass.eOperations->select(isDefault()).generateTestOperation(aClass)/]
 [aClass.generateEGetTestImplementation()/]
 [aClass.generateESetTestImplementation()/]
@@ -78,9 +78,11 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 
 [template private generateTestFeature(aStructuralFeature : EStructuralFeature, aClass : EClass )]
 [if isGet()]
+
 [aStructuralFeature.generateGetTestImplementation(aClass)/]
 [/if]
 [if isSet()]
+
 [aStructuralFeature.generateSetTestImplementation(aClass)/]
 [/if]
 [/template]
@@ -94,28 +96,78 @@ func Test[aClass.name.toUpperFirst()/][anEOperation.getOperationName()/]Operatio
 [/let]
 [/template]
 
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isVolatile())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	assert.Panics(t, func() { o.[aStructuralFeature.getGetterName()/]() })
+}
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isContainer())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
+	// default
+	o := [aClass.getConstructorName()/]()
+	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
+
+	// set a mock container
+	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	o.EInternalSetContainer(v,[aClass.getFeatureIDName(aStructuralFeature)/])
+	
+	// no proxy
+	v.On("EIsProxy").Return(false)
+	assert.Equal(t,v,o.[aStructuralFeature.getGetterName()/]())
+}
+[/template]
+
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isListType())]
-func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {	
-[if aStructuralFeature.isListType()]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	[if aStructuralFeature.eType.name = 'EFeatureMapEntry' or aStructuralFeature.isVolatile()]
 	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
 	[else]
 	assert.NotNil(t, o.[aStructuralFeature.getGetterName()/]())
 	[/if]
-[elseif aStructuralFeature.isLazy()]
+}
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EReference) and isLazy())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	assert.Panics(t, func() { [aStructuralFeature.getGetterName()/] })
-[elseif aStructuralFeature.oclIsKindOf(EReference)]
+	assert.Panics(t, func() { o.[aStructuralFeature.getGetterName()/]() })	
+}
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EReference) and isProxy())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	// get default value
 	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
-	// get initialized value
-	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]	
+	
+	// get non proxy value
+	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	v.On("EIsProxy").Return(false)
 	o.[aStructuralFeature.getVariableName()/] = v
 	assert.Equal(t,v,o.[aStructuralFeature.getGetterName()/]())
-[elseif aStructuralFeature.oclIsKindOf(EAttribute) and aStructuralFeature.oclAsType(EAttribute).getDefaultValue() <> '']
-	obj := [aClass.getConstructorName()/]()
+	v.AssertExpectations(t)
+}
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EReference))]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	// get default value
+	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
+
+	// get initialized value
+	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	o.[aStructuralFeature.getVariableName()/] = v
+	assert.Equal(t,v,o.[aStructuralFeature.getGetterName()/]())
+}
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EAttribute) and oclAsType(EAttribute).getDefaultValue() <> '')]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
 	// get default value
 	[let aAttribute : EAttribute = aStructuralFeature.oclAsType(EAttribute)]
 	assert.Equal(t, [aAttribute.getDefaultValue()/], o.[aAttribute.getGetterName()/]())
@@ -124,25 +176,68 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]	
 	o.[aStructuralFeature.getVariableName()/] = v
 	assert.Equal(t,v,o.[aStructuralFeature.getGetterName()/]())
-[/if]
 }
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
+[/template]
+
+[template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isVolatile())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]	
+	assert.Panics(t, func() { o.[aStructuralFeature.getSetterName()/](v) })
+}
+[/template]
+
+[template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isContainer())]
+[let aPackage : EPackage = aClass.ePackage ]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
+	// object
+	o := [aClass.getConstructorName()/]()
+
+	// add listener
+	mockAdapter := new([getShortQualifiedName('ecore.MockEAdapter',aPackage.name)/])
+	mockAdapter.On("SetTarget", o).Once()
+	o.EAdapters().Add(mockAdapter)
+	mock.AssertExpectationsForObjects(t, mockAdapter)
+
+	// set with the mock value
+	mockValue := [aStructuralFeature.eType.getTestValue(aPackage)/]	
+	mockResource := new([getShortQualifiedName('ecore.MockEResource',aPackage.name)/])
+	mockValue.On("EResource").Return(mockResource).Once()
+	mockResource.On("Attached", o).Once()
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+	o.[aStructuralFeature.getSetterName()/](mockValue)
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResource)
+
+	// another value - in a different resource
+	mockValue2 := [aStructuralFeature.eType.getTestValue(aPackage)/]	
+	mockResource2 := new([getShortQualifiedName('ecore.MockEResource',aPackage.name)/])
+	mockValue.On("EResource").Return(mockResource).Once()
+	mockValue2.On("EResource").Return(mockResource2).Once()
+	mockResource.On("Detached", o).Once()
+	mockResource2.On("Attached", o).Once()
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+	o.[aStructuralFeature.getSetterName()/](mockValue2)
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResource, mockValue2, mockResource2)
+}
+[/let]
 [/template]
 
 
 [template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage ]
-[let varName : String = aStructuralFeature.getVariableName() ]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
-	obj := [aClass.getConstructorName()/]()
+	o := [aClass.getConstructorName()/]()
 	v := [aStructuralFeature.eType.getTestValue(aPackage)/]	
 	mockAdapter := new([getShortQualifiedName('ecore.MockEAdapter',aPackage.name)/])
-	mockAdapter.On("SetTarget",obj).Once()		
+	mockAdapter.On("SetTarget",o).Once()		
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()
-	obj.EAdapters().Add(mockAdapter)
-	obj.[aStructuralFeature.getSetterName()/](v)
+	o.EAdapters().Add(mockAdapter)
+	o.[aStructuralFeature.getSetterName()/](v)
 	mockAdapter.AssertExpectations(t)
 }
-[/let]
 [/let]
 [/template]
 
@@ -252,13 +347,11 @@ func Test[aClass.name.toUpperFirst()/]EIsSetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	assert.Panics(t, func() { o.EIsSetFromID(-1) })
 	[for (anStructFeature : EStructuralFeature | features)]
-	{
 		[if anStructFeature.isVolatile()]
 		assert.Panics(t, func() { o.EIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/]) })
 		[else]
 		assert.False(t,o.EIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/]))
 		[/if]		
-	}
 	[/for]
 }
 [/if]
