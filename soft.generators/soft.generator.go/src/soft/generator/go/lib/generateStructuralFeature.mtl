@@ -337,7 +337,7 @@ func [testMethodName/](t *testing.T) {
 [let receiverName : String = aClass.getReceiverName()]
 [if isContainer()]
     if [receiverName/].EContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] {
-        return [receiverName/].EContainer().([aStructuralFeature.generateType()/]);
+        return [receiverName/].EInternalContainer().([aStructuralFeature.generateType()/]);
     } 
     return nil
 [elseif not isVolatile()]
@@ -413,9 +413,9 @@ func [testMethodName/](t *testing.T) {
 [aClass.generateFunctionImplementationReceiver()/] [methodName/]( [newVarName/] [aStructuralFeature.generateType()/] ) {
 [if not isVolatile()]
     [if isContainer()]
-    if ( [newVarName/] != [receiverName/].EContainer() || ([newVarName/] != nil && [receiverName/].EContainerFeatureID() !=  [aClass.getFeatureIDName(aStructuralFeature)/])) {
+    if ( [newVarName/] != [receiverName/].EInternalContainer() || ([newVarName/] != nil && [receiverName/].EContainerFeatureID() !=  [aClass.getFeatureIDName(aStructuralFeature)/])) {
         var notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain
-        if ( [receiverName/].EContainer() != nil) {
+        if ( [receiverName/].EInternalContainer() != nil) {
             notifications = [receiverName/].EBasicRemoveFromContainer(notifications)
         }
         if [newVarName/]Internal , _ := [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal); [newVarName/]Internal != nil {
