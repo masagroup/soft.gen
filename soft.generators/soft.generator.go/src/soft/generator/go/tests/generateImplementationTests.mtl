@@ -246,30 +246,18 @@ func Test[aClass.name.toUpperFirst()/]EInvokeFromID(t *testing.T) {
 [/template]
 
 [template private generateEIsSetTestImplementation(aClass : EClass)]
-[let features : Set(EStructuralFeature) = aClass.getEIsSetFeatures()]
+[let features : Set(EStructuralFeature) = aClass.getEIsSetFeatures()->select(not isFeatureMap())]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EIsSetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	assert.Panics(t, func() { o.EIsSetFromID(-1) })
 	[for (anStructFeature : EStructuralFeature | features)]
 	{
-		[if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.isVolatile()]
-		_ = o
-		[elseif anStructFeature.isListType()]
-		    [if anStructFeature.isField()]
-		assert.Equal(t, o.[anStructFeature.name/] != nil && o.[anStructFeature.name/].Size() != 0, o.EIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/]))
-		    [else]
-		assert.Equal(t, o.[anStructFeature.getGetterName()/]().Size() != 0, o.EIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/]))
-		    [/if]
+		[if anStructFeature.isVolatile()]
+		assert.Panics(t, func() { o.EIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/]) })
 		[else]
-		    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getGetterName()+'()' endif]
-		    [if eType.oclIsKindOf(EEnum)]
-		assert.Equal(t, o.[accessor/] != [anStructFeature.oclAsType(EAttribute).generateDefaultValue()/], o.EIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/]))
-		    [else]
-		_ = o
-		    [/if]
-		    [/let]
-		[/if]
+		assert.False(t,o.EIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/]))
+		[/if]		
 	}
 	[/for]
 }

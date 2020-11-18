@@ -272,7 +272,7 @@
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (eType.isAny()) post (trim())]
-[aClass.getReceiverName()/].[anStructFeature.getGetterName()/]() != ""
+[aClass.getReceiverName()/].[anStructFeature.getGetterName()/]() != [anStructFeature.eType.getDefaultValue()/]
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass) ]
