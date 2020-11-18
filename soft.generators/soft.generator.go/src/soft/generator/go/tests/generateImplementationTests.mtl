@@ -291,21 +291,36 @@ func Test[aClass.name.toUpperFirst()/]EIsSetFromID(t *testing.T) {
 [/template]
 
 [template private generateEUnSetTestImplementation(aClass : EClass)]
-[let features : Set(EStructuralFeature) = aClass.getEUnSetFeatures()]
+[let features : Set(EStructuralFeature) = aClass.getEUnSetFeatures()->select(not isFeatureMap())]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	assert.Panics(t, func() { o.EUnsetFromID(-1) })
     [for (anStructFeature : EStructuralFeature | features)]
 	{
-    [if anStructFeature.eType.name = 'EFeatureMapEntry' or anStructFeature.isVolatile()]
-		_ = o
-	[elseif anStructFeature.isListType() and not anStructFeature.isUnSettable()]
-		o.EUnsetFromID([aClass.getQualifiedIDName(anStructFeature)/])
-        assert.Equal(t, 0, o.[anStructFeature.getGetterName()/]().Size())
+	[if anStructFeature.isVolatile()]
+		assert.Panics(t, func() { o.EUnsetFromID([aClass.getQualifiedIDName(anStructFeature)/]) })
 	[else]
-		_ = o
-    [/if]
+		o.EUnsetFromID([aClass.getQualifiedIDName(anStructFeature)/])
+		[if anStructFeature.isListType()]
+		v := o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false)
+		assert.NotNil(t,v)
+		l := v.([if not aClass.ePackage.isEcorePackage()]ecore.[/if]EList)
+		assert.True(t,l.Empty())
+		[elseif anStructFeature.oclIsKindOf(EReference)]
+		assert.Nil(t,o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false))
+		[else]
+			[let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
+			[let defaultValue : String = aAttribute.getDefaultValue()]
+			[if defaultValue <> '']
+		v := o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false)
+		assert.Equal(t,[defaultValue/],v)	
+			[else]
+			[/if]
+			[/let]
+			[/let]
+		[/if]
+	[/if]
 	}
 	[/for]
 }
