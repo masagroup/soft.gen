@@ -191,7 +191,7 @@ basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/]() : [aStructuralF
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
     if (this.EContainerFeatureID() == [aClass.getQualifiedIDName(aStructuralFeature)/]) {
-        return this.eContainer() as [aStructuralFeature.generateType()/];
+        return this.eInternalContainer() as [aStructuralFeature.generateType()/];
     } 
     return null;
 [elseif not isVolatile()]
@@ -230,9 +230,9 @@ basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/]() : [aStructuralF
 set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType()/] ) {
 [if not isVolatile()]
     [if isContainer()]
-    if ( [newVarName/] != this.eContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getQualifiedIDName(aStructuralFeature)/])) {
+    if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getQualifiedIDName(aStructuralFeature)/])) {
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null;
-        if ( this.eContainer() != null) {
+        if ( this.eInternalContainer() != null) {
             notifications = this.eBasicRemoveFromContainer(notifications);
         }
         if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([newVarName/])) {
