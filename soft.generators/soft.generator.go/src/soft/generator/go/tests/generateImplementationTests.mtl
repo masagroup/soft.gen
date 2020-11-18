@@ -162,19 +162,6 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 [/let]
 [/template]
 
-[template private generateGetListTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
-[let varName : String = aStructuralFeature.getVariableName() ]
-func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]GetList(t *testing.T) {
-	o := [aClass.getConstructorName()/]()
-	[if aStructuralFeature.eType.name = 'EFeatureMapEntry' or aStructuralFeature.isVolatile()]
-	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
-	[else]
-	assert.NotNil(t, o.[aStructuralFeature.getGetterName()/]())
-	[/if]
-}
-[/let]
-[/template]
-
 [template private generateEGetTestImplementation(aClass : EClass)]
 [let features : Set(EStructuralFeature) = aClass.getEGetFeatures()]
 [if features->notEmpty()]
