@@ -15,7 +15,7 @@
         if ( aClass.name = 'EObject' ) then
             'ecore.MockENotifier'
         else
-            'ecore.MockEObject'
+            'ecore.MockEObjectInternal'
         endif
     else
         extendsClass.getQualifiedMockName()
