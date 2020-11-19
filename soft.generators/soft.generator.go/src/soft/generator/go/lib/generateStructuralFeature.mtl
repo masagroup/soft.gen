@@ -419,7 +419,11 @@ func [testMethodName/](t *testing.T) {
             notifications = [receiverName/].EBasicRemoveFromContainer(notifications)
         }
         if [newVarName/]Internal , _ := [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal); [newVarName/]Internal != nil {
-            notifications = [newVarName/]Internal.EInverseAdd( [receiverName/].AsEObject() , [aClass.getFeatureIDName(aStructuralFeature)/], notifications )
+		[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+        [let reverseClass : EClass = reverseFeature.eContainingClass]
+            notifications = [newVarName/]Internal.EInverseAdd( [receiverName/].AsEObject() , [reverseClass.getFeatureIDName(reverseFeature)/], notifications )
+		[/let]
+		[/let]
         }
         notifications = [receiverName/].basic[methodName.toUpperFirst()/]( [newVarName/], notifications )
         if ( notifications != nil ) {
