@@ -68,11 +68,11 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 
 [aClass.eStructuralFeatures.generateTestFeature(aClass)/]
 [aClass.eOperations->select(isDefault()).generateTestOperation(aClass)/]
-[aClass.generateEGetTestImplementation()/]
-[aClass.generateESetTestImplementation()/]
-[aClass.generateEIsSetTestImplementation()/]
-[aClass.generateEUnSetTestImplementation()/]
-[aClass.generateEInvokeTestImplementation()/]
+[aClass.generateEGetFromIDTestImplementation()/]
+[aClass.generateESetFromIDTestImplementation()/]
+[aClass.generateEIsSetFromIDTestImplementation()/]
+[aClass.generateEUnSetFromIDTestImplementation()/]
+[aClass.generateEInvokeFromIDTestImplementation()/]
 [/file]
 [/template]
 
@@ -111,7 +111,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 
 	// set a mock container
 	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
-	o.EInternalSetContainer(v,[aClass.getFeatureIDName(aStructuralFeature)/])
+	o.ESetInternalContainer(v,[aClass.getFeatureIDName(aStructuralFeature)/])
 	
 	// no proxy
 	v.On("EIsProxy").Return(false)
@@ -143,12 +143,25 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	// get default value
 	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
 	
+	// initialze object with a mock value
+	mockValue := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	o.[aStructuralFeature.getVariableName()/] = mockValue
+
 	// get non proxy value
-	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
-	v.On("EIsProxy").Return(false)
-	o.[aStructuralFeature.getVariableName()/] = v
-	assert.Equal(t,v,o.[aStructuralFeature.getGetterName()/]())
-	v.AssertExpectations(t)
+	mockValue.On("EIsProxy").Return(false).Once()
+	assert.Equal(t,mockValue,o.[aStructuralFeature.getGetterName()/]())
+	mock.AssertExpectationsForObjects(t, mockValue)
+
+	// get a proxy value
+	mockAdapter := new([getShortQualifiedName('ecore.MockEAdapter',aClass.ePackage.name)/])
+	mockAdapter.On("SetTarget", o).Once()
+	o.EAdapters().Add(mockAdapter)
+	mock.AssertExpectationsForObjects(t, mockAdapter)
+	
+	mockValue.On("EIsProxy").Return(true).Once()
+	mockValue.On("EProxyURI").Return(nil).Once()
+	assert.Equal(t,mockValue,o.[aStructuralFeature.getGetterName()/]())
+	mock.AssertExpectationsForObjects(t, mockAdapter,mockValue)
 }
 [/template]
 
@@ -192,6 +205,8 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 
 [template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isContainer())]
 [let aPackage : EPackage = aClass.ePackage ]
+[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+[let reverseClass : EClass = reverseFeature.eContainingClass]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
 	// object
 	o := [aClass.getConstructorName()/]()
@@ -205,17 +220,21 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	// set with the mock value
 	mockValue := [aStructuralFeature.eType.getTestValue(aPackage)/]	
 	mockResource := new([getShortQualifiedName('ecore.MockEResource',aPackage.name)/])
-	mockValue.On("EResource").Return(mockResource).Once()
+	mockValue.On("EInverseAdd", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
+	mockValue.On("EInternalResource").Return(mockResource).Once()
 	mockResource.On("Attached", o).Once()
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()
 	o.[aStructuralFeature.getSetterName()/](mockValue)
 	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResource)
 
 	// another value - in a different resource
+	//mockNotifications := new([getShortQualifiedName('ecore.MockENotificationChain',aPackage.name)/])
 	mockValue2 := [aStructuralFeature.eType.getTestValue(aPackage)/]	
 	mockResource2 := new([getShortQualifiedName('ecore.MockEResource',aPackage.name)/])
-	mockValue.On("EResource").Return(mockResource).Once()
-	mockValue2.On("EResource").Return(mockResource2).Once()
+	mockValue.On("EInverseRemove", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
+	mockValue.On("EInternalResource").Return(mockResource).Once()
+	mockValue2.On("EInverseAdd", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
+	mockValue2.On("EInternalResource").Return(mockResource2).Once()
 	mockResource.On("Detached", o).Once()
 	mockResource2.On("Attached", o).Once()
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()
@@ -223,8 +242,45 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResource, mockValue2, mockResource2)
 }
 [/let]
+[/let]
+[/let]
 [/template]
 
+[template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isBidirectional())]
+[let aPackage : EPackage = aClass.ePackage ]
+[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+[let reverseClass : EClass = reverseFeature.eContainingClass]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	mockValue := [aStructuralFeature.eType.getTestValue(aPackage)/]
+	mockValue.On("EInverseAdd",o,[reverseClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once()	
+	mockAdapter := new([getShortQualifiedName('ecore.MockEAdapter',aPackage.name)/])
+	mockAdapter.On("SetTarget",o).Once()		
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+	o.EAdapters().Add(mockAdapter)
+	o.[aStructuralFeature.getSetterName()/](mockValue)
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue)
+}
+[/let]
+[/let]
+[/let]
+[/template]
+
+[template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isContains())]
+[let aPackage : EPackage = aClass.ePackage ]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	mockValue := [aStructuralFeature.eType.getTestValue(aPackage)/]
+	mockValue.On("EInverseAdd",o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],mock.Anything).Return(nil).Once()
+	mockAdapter := new([getShortQualifiedName('ecore.MockEAdapter',aPackage.name)/])
+	mockAdapter.On("SetTarget",o).Once()		
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+	o.EAdapters().Add(mockAdapter)
+	o.[aStructuralFeature.getSetterName()/](mockValue)
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue)
+}
+[/let]
+[/template]
 
 [template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage ]
@@ -257,7 +313,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 [/let]
 [/template]
 
-[template private generateEGetTestImplementation(aClass : EClass)]
+[template private generateEGetFromIDTestImplementation(aClass : EClass)]
 [let features : Set(EStructuralFeature) = aClass.getEGetFeatures()]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EGetFromID(t *testing.T) {
@@ -279,46 +335,127 @@ func Test[aClass.name.toUpperFirst()/]EGetFromID(t *testing.T) {
 [/let]
 [/template]
 
-[template private generateESetTestImplementation(aClass : EClass)]
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isVolatile())]
+assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], nil) })
+
+[/template]
+
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isContainer())]
+{
+[let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
+[let reverseClass : EClass = reverseFeature.eContainingClass]
+	mockValue := [anStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	mockValue.On("EIsProxy").Return(false).Once()
+	mockValue.On("EInternalResource").Return(nil).Once()
+	mockValue.On("EInverseAdd",o,[reverseClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once() 
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], mockValue)
+	assert.Equal(t,mockValue,o.EGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false))
+	mock.AssertExpectationsForObjects(t, mockValue)
+[/let]
+[/let]	
+}
+
+[/template]
+
+
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isListType() and oclIsKindOf(EReference))]
+{
+	// list with a value
+	mockValue := [anStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{mockValue})
+	// expectations
+[if anStructuralFeature.isProxy()]
+	mockValue.On("EIsProxy").Return(false).Once()
+[/if]
+[if anStructuralFeature.eType.name <> 'EObject']
+[if anStructuralFeature.isContains()]
+	[let anEReference : EReference = anStructuralFeature.oclAsType(EReference)]
+	[if anEReference.eOpposite.oclIsUndefined()]
+	mockValue.On("EInverseAdd",o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],mock.Anything).Return(nil).Once()
+	[else]
+	[let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
+	[let reverseClass : EClass = reverseFeature.eContainingClass]
+	mockValue.On("EInverseAdd",o,[reverseClass.getQualifiedIDName(reverseFeature)/],mock.Anything).Return(nil).Once() 
+	[/let]
+	[/let]
+	[/if]
+	[/let]
+[elseif anStructuralFeature.oclIsKindOf(EReference)]
+	[let anEReference : EReference = anStructuralFeature.oclAsType(EReference)]
+	[if anEReference.eOpposite.oclIsUndefined()]
+	[else]
+	[let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
+	[let reverseClass : EClass = reverseFeature.eContainingClass]
+	mockValue.On("EInverseAdd",o,[reverseClass.getQualifiedIDName(reverseFeature)/],mock.Anything).Return(nil).Once() 
+	[/let]
+	[/let]
+	[/if]
+	[/let]
+[/if]
+[/if]
+	// set list with new contents
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], l)
+	// checks
+	assert.Equal(t, 1, o.[anStructuralFeature.getGetterName()/]().Size())
+	assert.Equal(t, mockValue, o.[anStructuralFeature.getGetterName()/]().Get(0))
+	mock.AssertExpectationsForObjects(t, mockValue)	
+}
+
+[/template]
+
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isListType())]
+{
+	l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{})
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], l)
+	assert.True(t, o.[anStructuralFeature.getGetterName()/]().Empty())
+}
+
+[/template]
+
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isBidirectional())]
+{
+[let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
+[let reverseClass : EClass = reverseFeature.eContainingClass]
+	mockValue := [anStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	mockValue.On("EInverseAdd",o,[reverseClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once()	
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], mockValue)
+	assert.Equal(t,mockValue,o.EGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false))
+	mock.AssertExpectationsForObjects(t, mockValue)
+[/let]
+[/let]
+}
+
+[/template]
+
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isContains())]
+{
+	mockValue := [anStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	mockValue.On("EInverseAdd",o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],mock.Anything).Return(nil).Once()
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], mockValue)
+	assert.Equal(t,mockValue,o.EGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false))
+	mock.AssertExpectationsForObjects(t, mockValue)
+}
+
+[/template]
+
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass)]
+{
+	v := [anStructuralFeature.eType.getTestValue(aClass.ePackage)/]	
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], v)
+	assert.Equal(t,v,o.EGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false))
+}
+
+[/template]
+
+[template private generateESetFromIDTestImplementation(aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage ]
-[let features : Set(EStructuralFeature) = aClass.getESetFeatures()->select(not isFeatureMap())]
+[let features : OrderedSet(EStructuralFeature) = aClass.getESetFeatures()->select(not isFeatureMap())->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
-[let isMockGenerated : Boolean = isTemplateGenerated('generateMocks')]
+[let isMockGenerated : Boolean = ]
 func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	assert.Panics(t, func() { o.ESetFromID(-1, nil) })
-    [for (anStructFeature : EStructuralFeature | features)]
-	{
-	[if anStructFeature.isVolatile()]
-		assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], nil) })
-	[else]
-		[if anStructFeature.isListType()]
-			[let isElement : Boolean = isMockGenerated and anStructFeature.eType.oclIsKindOf(EClass)] 
-			[if (isElement)]
-		e := [anStructFeature.eType.getTestValue(aPackage)/]
-		e.On("EIsProxy").Return(false)
-			[/if]		
-		l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{[if (isElement)]e[/if]})
-		o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], l)
-		assert.Equal(t, [if (isElement)]1[else]0[/if], o.[anStructFeature.getGetterName()/]().Size())
-			[if (isElement)]
-		assert.Equal(t, e, o.[anStructFeature.getGetterName()/]().Get(0))
-			[/if]
-			[/let]
-		[else]
-		v := [anStructFeature.eType.getTestValue(aPackage)/]
-			[if anStructFeature.eType.oclIsKindOf(EClass)]
-		v.On("EIsProxy").Return(false)
-			[/if]
-			[if anStructFeature.isContainer()]
-		v.On("EResource").Return(nil)
-			[/if]		
-		o.ESetFromID([aClass.getQualifiedIDName(anStructFeature)/], v)
-		assert.Equal(t,v,o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false))
-		[/if]
-	[/if]
-	}
-	[/for]
+	[features.generateFeatureESetFromIDTestImplementation(aClass)/]
 }
 [/let]
 [/if]
@@ -326,7 +463,7 @@ func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
 [/let]
 [/template]
 
-[template private generateEInvokeTestImplementation(aClass : EClass)]
+[template private generateEInvokeFromIDTestImplementation(aClass : EClass)]
 [let operations : Set(EOperation) = aClass.getEInvokeOperations()]
 [if aClass.name <> 'EObject' and operations->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EInvokeFromID(t *testing.T) {
@@ -340,7 +477,7 @@ func Test[aClass.name.toUpperFirst()/]EInvokeFromID(t *testing.T) {
 [/let]
 [/template]
 
-[template private generateEIsSetTestImplementation(aClass : EClass)]
+[template private generateEIsSetFromIDTestImplementation(aClass : EClass)]
 [let features : Set(EStructuralFeature) = aClass.getEIsSetFeatures()->select(not isFeatureMap())]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EIsSetFromID(t *testing.T) {
@@ -358,7 +495,7 @@ func Test[aClass.name.toUpperFirst()/]EIsSetFromID(t *testing.T) {
 [/let]
 [/template]
 
-[template private generateEUnSetTestImplementation(aClass : EClass)]
+[template private generateEUnSetFromIDTestImplementation(aClass : EClass)]
 [let features : Set(EStructuralFeature) = aClass.getEUnSetFeatures()->select(not isFeatureMap())]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
@@ -399,7 +536,7 @@ func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 
 
 [template private generateEInverseAddTestImplementation(aClass : EClass)]
-[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseAddFeatures()->asOrderedSet()->sortedBy(name)]
+[let features : Set(EStructuralFeature) = aClass.getEInverseAddFeatures()]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 	[for ( aFeature : EStructuralFeature | features )]
@@ -419,7 +556,7 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 [/template]
 
 [template private generateEInverseRemoveTestImplementation(aClass : EClass)]
-[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseRemoveFeatures()->asOrderedSet()->sortedBy(name)]
+[let features : Set(EStructuralFeature) = aClass.getEInverseRemoveFeatures()]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EBasicInverseRemove(t *testing.T) {
 	[for ( aFeature : EStructuralFeature | features )]
