@@ -73,6 +73,7 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 [aClass.generateEIsSetFromIDTestImplementation()/]
 [aClass.generateEUnSetFromIDTestImplementation()/]
 [aClass.generateEInvokeFromIDTestImplementation()/]
+[aClass.generateEInverseAddTestImplementation()/]
 [/file]
 [/template]
 
@@ -539,20 +540,67 @@ func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 [let features : Set(EStructuralFeature) = aClass.getEInverseAddFeatures()]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
-	[for ( aFeature : EStructuralFeature | features )]
+	o := [aClass.getConstructorName()/]()
 	{
-		[if aFeature.eType.name = 'EFeatureMapEntry' or aFeature.isVolatile()]
-		_ = o
-		[elseif aFeature.isListType()]
-		o := [aClass.getConstructorName()/]()
-		o.EBasicInverseAdd(&[if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockEObject{}, [aClass.getQualifiedIDName(aFeature)/], &[if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockENotificationChain{})
-		assert.Equal(t, 1, o.[aFeature.getGetterName()/]().Size())
-		[/if]
+		mockObject := new([if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockEObject)
+		mockNotifications := new([if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockENotificationChain)
+		assert.Equal(t,mockNotifications,o.EBasicInverseAdd(mockObject,-1,mockNotifications))
 	}
-	[/for]
+	[features.generateFeatureEInverseAddTestImplementation(aClass)/]
 }
 [/if]
 [/let]
+[/template]
+
+[template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isListType())]
+{
+	mockObject := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	o.EBasicInverseAdd(mockObject,[aClass.getQualifiedIDName(aStructuralFeature)/],nil)
+	l := o.[aStructuralFeature.getGetterName()/]()
+	assert.True(t, l.Contains(mockObject))
+	mock.AssertExpectationsForObjects(t, mockObject)
+}
+
+[/template]
+
+[template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isContainer())]
+{
+	mockObject := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	mockObject.On("EInternalResource").Return(nil).Once()
+	mockObject.On("EIsProxy").Return(false).Once()
+	o.EBasicInverseAdd(mockObject,[aClass.getQualifiedIDName(aStructuralFeature)/],nil)
+	assert.Equal(t, mockObject, o.[aStructuralFeature.getGetterName()/]())
+	mock.AssertExpectationsForObjects(t, mockObject)
+}
+
+[/template]
+
+[template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass )]
+{
+	mockObject := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+[if aStructuralFeature.isProxy()]
+	mockObject.On("EIsProxy").Return(false)
+[/if]
+	o.EBasicInverseAdd(mockObject,[aClass.getQualifiedIDName(aStructuralFeature)/],nil)
+	assert.Equal(t, mockObject, o.[aStructuralFeature.getGetterName()/]())
+	mock.AssertExpectationsForObjects(t, mockObject)
+
+	mockObject2 := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+[if aStructuralFeature.isProxy()]
+	mockObject2.On("EIsProxy").Return(false)
+[/if]
+[if aStructuralFeature.isContains()]
+	mockObject.On("EInverseRemove",o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],nil).Return(nil).Once()
+[else]
+	[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+	mockObject.On("EInverseRemove",o,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once()
+	[/let]
+[/if]
+	o.EBasicInverseAdd(mockObject2,[aClass.getQualifiedIDName(aStructuralFeature)/],nil)
+	assert.Equal(t, mockObject2, o.[aStructuralFeature.getGetterName()/]())
+	mock.AssertExpectationsForObjects(t, mockObject2)
+}
+
 [/template]
 
 [template private generateEInverseRemoveTestImplementation(aClass : EClass)]
