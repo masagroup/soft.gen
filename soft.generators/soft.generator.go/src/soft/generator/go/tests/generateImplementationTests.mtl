@@ -315,7 +315,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 [/template]
 
 [template private generateEGetFromIDTestImplementation(aClass : EClass)]
-[let features : Set(EStructuralFeature) = aClass.getEGetFeatures()]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EGetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
@@ -465,7 +465,7 @@ func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
 [/template]
 
 [template private generateEInvokeFromIDTestImplementation(aClass : EClass)]
-[let operations : Set(EOperation) = aClass.getEInvokeOperations()]
+[let operations : OrderedSet(EOperation) = aClass.getEInvokeOperations()->asOrderedSet()->sortedBy(name)]
 [if aClass.name <> 'EObject' and operations->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EInvokeFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
@@ -479,7 +479,7 @@ func Test[aClass.name.toUpperFirst()/]EInvokeFromID(t *testing.T) {
 [/template]
 
 [template private generateEIsSetFromIDTestImplementation(aClass : EClass)]
-[let features : Set(EStructuralFeature) = aClass.getEIsSetFeatures()->select(not isFeatureMap())]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEIsSetFeatures()->select(not isFeatureMap())->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EIsSetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
@@ -497,7 +497,7 @@ func Test[aClass.name.toUpperFirst()/]EIsSetFromID(t *testing.T) {
 [/template]
 
 [template private generateEUnSetFromIDTestImplementation(aClass : EClass)]
-[let features : Set(EStructuralFeature) = aClass.getEUnSetFeatures()->select(not isFeatureMap())]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEUnSetFeatures()->select(not isFeatureMap())->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
@@ -537,7 +537,7 @@ func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 
 
 [template private generateEInverseAddTestImplementation(aClass : EClass)]
-[let features : Set(EStructuralFeature) = aClass.getEInverseAddFeatures()]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseAddFeatures()->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
@@ -604,7 +604,7 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 [/template]
 
 [template private generateEInverseRemoveTestImplementation(aClass : EClass)]
-[let features : Set(EStructuralFeature) = aClass.getEInverseRemoveFeatures()]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseRemoveFeatures()->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EBasicInverseRemove(t *testing.T) {
 	[for ( aFeature : EStructuralFeature | features )]
