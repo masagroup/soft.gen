@@ -286,7 +286,7 @@
         return list.AddWithNotification(otherEnd, notifications)
     [elseif aFeature.isContainer()]
         msgs := notifications
-        if [aClass.getReceiverName()/].EContainer() != nil {
+        if [aClass.getReceiverName()/].EInternalContainer() != nil {
             msgs = [aClass.getReceiverName()/].EBasicRemoveFromContainer(msgs)
         }
         [if aFeature.isBasicSet()]
@@ -296,12 +296,17 @@
         [/if]
     [else]
         msgs := notifications
-        if [aClass.getReceiverName()/].[aFeature.name/] != nil {
+		[if aFeature.isVolatile()]
+		[aFeature.name/] := [aClass.getReceiverName()/].[if aFeature.isProxy()]basic[aFeature.getGetterName().toUpperFirst()/][else][aFeature.getGetterName()/][/if]()
+		[else]
+		[aFeature.name/] := [aClass.getReceiverName()/].[aFeature.name/]
+		[/if]
+        if [aFeature.name/] != nil {
             [if aFeature.isContains()]
-            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs)
+            msgs = [aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs)
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/], msgs)
+            msgs = [aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/], msgs)
                 [/let]
             [/if]
         }
