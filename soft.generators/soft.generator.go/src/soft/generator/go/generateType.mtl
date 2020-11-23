@@ -59,7 +59,7 @@
         Sequence{ 'EByteArray' , '[]byte' , 'nil', 'nil' , ''},
         Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '0.0', '1.2', ''},
         Sequence{ 'EEList' , 'ecore.EList', 'nil', 'ecore.NewEmptyBasicEList()', ''},
-        Sequence{ 'EDate' , 'time.Time', '', 'time.Now()' , '!IsZero'},
+        Sequence{ 'EDate' , 'time.Time', 'time.Time{}', 'time.Now()' , '!IsZero'},
         Sequence{ 'EMap' , 'map[interface{}]interface{}', 'nil', 'nil' , ''},
         Sequence{ 'EFeatureMap', 'interface{}', 'nil', 'nil', ''},
         Sequence{ 'EFeatureMapEntry' , 'interface{}' , 'nil', 'nil', ''},
