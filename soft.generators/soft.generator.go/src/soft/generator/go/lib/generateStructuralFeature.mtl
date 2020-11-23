@@ -582,8 +582,14 @@ func [testMethodName/](t *testing.T) {
         [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],nil,nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
     }
     [else]
-        if [receiverName/].ENotificationRequired() {
-            [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],nil,nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
+		[oldVarName/] := [receiverName/].[varName/]
+		[if aStructuralFeature.oclIsKindOf(EReference)]
+		[receiverName/].[varName/] = nil
+		[else]
+		[receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]
+		[/if]
+		if [receiverName/].ENotificationRequired() {
+            [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],[oldVarName/],nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
         }
     [/if]
 [elseif hasKey('unsetterBody')]
