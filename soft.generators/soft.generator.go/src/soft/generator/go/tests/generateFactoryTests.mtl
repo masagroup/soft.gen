@@ -29,6 +29,11 @@ import (
 [if allClasses->notEmpty()]
 func TestFactoryCreate(t *testing.T) {
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	{
+		mockEClass := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEClass{}
+		mockEClass.On("GetClassifierID").Return([ePackage.eClassifiers->size() + 1/])
+		assert.Panics(t, func() { factory.Create(mockEClass) })
+	}
     [for (aClass : EClass | allClasses) ? (aClass.abstract=false)]
 	{
 		mockEClass := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEClass{}
