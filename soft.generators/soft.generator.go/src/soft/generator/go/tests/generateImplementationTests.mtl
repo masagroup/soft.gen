@@ -351,11 +351,21 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 [/template]
 
 [template private generateUnSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]UnSet(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
+	mockAdapter := new([ecorePrefix/]MockEAdapter)
+	mockAdapter.On("SetTarget",o).Once()		
+	o.EAdapters().Add(mockAdapter)
+
+	mockAdapter.On("NotifyChanged", mock.MatchedBy(func(notification [ecorePrefix/]ENotification) bool {
+		return notification.GetEventType() == [ecorePrefix/]UNSET && notification.GetFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]
+	})).Once()
 	o.[aStructuralFeature.getUnSetterName()/]()
 	assert.Equal(t, [aStructuralFeature.eType.getDefaultValue()/], o.[aStructuralFeature.getGetterName()/]())
+	mock.AssertExpectationsForObjects(t, mockAdapter)
 }
+[/let]
 [/template]
 
 [template private generateEGetFromIDTestImplementation(aClass : EClass)]
