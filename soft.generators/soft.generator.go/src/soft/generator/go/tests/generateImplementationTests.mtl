@@ -68,8 +68,8 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 	assert.Equal(t, [aClass.getFeatureCountIDName()/] , o.EStaticFeatureCount())
 }
 
-[aClass.eStructuralFeatures.generateTestFeature(aClass)/]
-[aClass.eOperations->select(isDefault()).generateTestOperation(aClass)/]
+[aClass.getImplementedFeatures()->sortedBy( getVariableName() ).generateTestFeature(aClass)/]
+[ aClass.getImplementedOperations()->sortedBy( getOperationName() )->select(isDefault()).generateTestOperation(aClass)/]
 [aClass.generateEGetFromIDTestImplementation()/]
 [aClass.generateESetFromIDTestImplementation()/]
 [aClass.generateEIsSetFromIDTestImplementation()/]
@@ -199,7 +199,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 }
 [/template]
 
-[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EAttribute) and oclAsType(EAttribute).getDefaultValue() <> '')]
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EAttribute))]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	// get default value
