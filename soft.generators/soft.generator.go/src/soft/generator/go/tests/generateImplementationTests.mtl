@@ -30,6 +30,7 @@ package [aPackage.name/]
 
 import (
 	"testing"
+	"net/url"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 [let imports : OrderedSet(String) = Set { if requiresEcore then Set{ getImportForPackage('ecore') } else Set{} endif
@@ -46,6 +47,7 @@ func discard[name.toUpperFirst()/]() {
 	_ = assert.Equal
 	_ = mock.Anything
 	_ = testing.Coverage
+	_ = url.Parse
 [if requiresEcore]
 	_ = ecore.ADD
 [/if]
@@ -140,31 +142,48 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 [/template]
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EReference) and isProxy())]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	// get default value
-	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
-	
-	// initialze object with a mock value
-	mockValue := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
-	o.[aStructuralFeature.getVariableName()/] = mockValue
 
-	// get non proxy value
-	mockValue.On("EIsProxy").Return(false).Once()
-	assert.Equal(t,mockValue,o.[aStructuralFeature.getGetterName()/]())
-	mock.AssertExpectationsForObjects(t, mockValue)
-
-	// get a proxy value
-	mockAdapter := new([getShortQualifiedName('ecore.MockEAdapter',aClass.ePackage.name)/])
+	// events
+	mockAdapter := new([ecorePrefix/]MockEAdapter)
 	mockAdapter.On("SetTarget", o).Once()
 	o.EAdapters().Add(mockAdapter)
 	mock.AssertExpectationsForObjects(t, mockAdapter)
+
+	// set object resource
+	mockResourceSet := new([ecorePrefix/]MockEResourceSet)
+	mockResource := new([ecorePrefix/]MockEResource)
+	o.ESetInternalResource(mockResource)
+
+	// get default value
+	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
 	
-	mockValue.On("EIsProxy").Return(true).Once()
-	mockValue.On("EProxyURI").Return(nil).Once()
+	// initialize object with a mock value
+	mockValue := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	o.[aStructuralFeature.getVariableName()/] = mockValue
+
+	// get non resolved value
+	mockValue.On("EIsProxy").Return(false).Once()
 	assert.Equal(t,mockValue,o.[aStructuralFeature.getGetterName()/]())
-	mock.AssertExpectationsForObjects(t, mockAdapter,mockValue)
+	mock.AssertExpectationsForObjects(t, mockValue,mockAdapter,mockResource,mockResourceSet)
+
+	// get a resolved value
+	mockURI, _ := url.Parse("test://file.t")
+	mockResolved := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	mockResolved.On("EProxyURI").Return(nil).Once()
+	mockResource.On("GetResourceSet").Return(mockResourceSet).Once()
+	mockResourceSet.On("GetEObject",mockURI,true).Return(mockResolved).Once()
+	mockValue.On("EIsProxy").Return(true).Once()
+	mockValue.On("EProxyURI").Return(mockURI).Twice()
+	mockAdapter.On("NotifyChanged", mock.MatchedBy(func(notification [ecorePrefix/]ENotification) bool {
+		return notification.GetEventType() == [ecorePrefix/]RESOLVE && notification.GetFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] && notification.GetOldValue() == mockValue && notification.GetNewValue() == mockResolved
+	})).Once()
+	assert.Equal(t,mockResolved,o.[aStructuralFeature.getGetterName()/]())
+	mock.AssertExpectationsForObjects(t, mockAdapter,mockValue,mockResolved,mockAdapter,mockResource,mockResourceSet)
 }
+[/let]
 [/template]
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EReference))]
@@ -230,7 +249,6 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResource)
 
 	// another value - in a different resource
-	//mockNotifications := new([getShortQualifiedName('ecore.MockENotificationChain',aPackage.name)/])
 	mockValue2 := [aStructuralFeature.eType.getTestValue(aPackage)/]	
 	mockResource2 := new([getShortQualifiedName('ecore.MockEResource',aPackage.name)/])
 	mockValue.On("EInverseRemove", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
@@ -254,14 +272,27 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 [let reverseClass : EClass = reverseFeature.eContainingClass]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	mockValue := [aStructuralFeature.eType.getTestValue(aPackage)/]
-	mockValue.On("EInverseAdd",o,[reverseClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once()	
+	
+	// add listener
 	mockAdapter := new([getShortQualifiedName('ecore.MockEAdapter',aPackage.name)/])
-	mockAdapter.On("SetTarget",o).Once()		
-	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+	mockAdapter.On("SetTarget", o).Once()
 	o.EAdapters().Add(mockAdapter)
-	o.[aStructuralFeature.getSetterName()/](mockValue)
-	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue)
+	mock.AssertExpectationsForObjects(t, mockAdapter)
+
+	// first value
+	mockValue1 := [aStructuralFeature.eType.getTestValue(aPackage)/]
+	mockValue1.On("EInverseAdd",o,[reverseClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once()	
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+	o.[aStructuralFeature.getSetterName()/](mockValue1)
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue1)
+
+	// second value
+	mockValue2 := [aStructuralFeature.eType.getTestValue(aPackage)/]
+	mockValue1.On("EInverseRemove",o,[reverseClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once()
+	mockValue2.On("EInverseAdd",o,[reverseClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once()	
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+	o.[aStructuralFeature.getSetterName()/](mockValue2)
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue1,mockValue2)
 }
 [/let]
 [/let]
@@ -365,7 +396,6 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 	// list with a value
 	mockValue := [anStructuralFeature.eType.getTestValue(aClass.ePackage)/]
 	l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{mockValue})
-	// expectations
 [if anStructuralFeature.isProxy()]
 	mockValue.On("EIsProxy").Return(false).Once()
 [/if]
