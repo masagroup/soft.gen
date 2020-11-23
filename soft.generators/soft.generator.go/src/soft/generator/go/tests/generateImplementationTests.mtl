@@ -69,7 +69,7 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 }
 
 [aClass.getImplementedFeatures()->sortedBy( getVariableName() ).generateTestFeature(aClass)/]
-[ aClass.getImplementedOperations()->sortedBy( getOperationName() )->select(isDefault()).generateTestOperation(aClass)/]
+[aClass.getImplementedOperations()->sortedBy( getOperationName() )->select(isDefault()).generateTestOperation(aClass)/]
 [aClass.generateEGetFromIDTestImplementation()/]
 [aClass.generateESetFromIDTestImplementation()/]
 [aClass.generateEIsSetFromIDTestImplementation()/]
@@ -88,6 +88,10 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 [if isSet()]
 
 [aStructuralFeature.generateSetTestImplementation(aClass)/]
+[/if]
+[if isUnSet()]
+
+[aStructuralFeature.generateUnSetTestImplementation(aClass)/]
 [/if]
 [/template]
 
@@ -126,7 +130,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isListType())]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	[if aStructuralFeature.eType.name = 'EFeatureMapEntry' or aStructuralFeature.isVolatile()]
+	[if aStructuralFeature.eType.name = 'EFeatureMapEntry']
 	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
 	[else]
 	assert.NotNil(t, o.[aStructuralFeature.getGetterName()/]())
@@ -330,20 +334,28 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 [/let]
 [/template]
 
+[template private generateUnSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isVolatile())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]UnSet(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	assert.Panics(t, func() { o.[aStructuralFeature.getUnSetterName()/]() })
+}
+[/template]
 
-
-[template private generateUnsetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
-[let varName : String = aStructuralFeature.getVariableName() ]
-func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Unset(t *testing.T) {
+[template private generateUnSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isListType())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]UnSet(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	o.[aStructuralFeature.getUnSetterName()/]()
-[if aStructuralFeature.isListType()]
-	assert.Equal(t, 0, o.[varName/].Size())
-[else]
-	assert.Equal(t, [aStructuralFeature.eType.getDefaultValue()/], o.[varName/])
-[/if]
+	l := o.[aStructuralFeature.getGetterName()/]()
+	assert.True(t,l.Empty())
 }
-[/let]
+[/template]
+
+[template private generateUnSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]UnSet(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	o.[aStructuralFeature.getUnSetterName()/]()
+	assert.Equal(t, [aStructuralFeature.eType.getDefaultValue()/], o.[aStructuralFeature.getGetterName()/]())
+}
 [/template]
 
 [template private generateEGetFromIDTestImplementation(aClass : EClass)]
