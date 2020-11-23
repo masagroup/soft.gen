@@ -31,7 +31,7 @@ func TestFactoryCreate(t *testing.T) {
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
 	{
 		mockEClass := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEClass{}
-		mockEClass.On("GetClassifierID").Return([ePackage.eClassifiers->size() + 1/])
+		mockEClass.On("GetClassifierID").Return(-1)
 		assert.Panics(t, func() { factory.Create(mockEClass) })
 	}
     [for (aClass : EClass | allClasses) ? (aClass.abstract=false)]
@@ -48,10 +48,22 @@ func TestFactoryCreate(t *testing.T) {
 [if allDataTypes->notEmpty()]
 func TestFactoryConvert(t *testing.T) {
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
-	[for (aDataType : EDataType | allDataTypes)]
-    	[ePackage.generateCreateFrom(aDataType)/]
-		[ePackage.generateConvertTo(aDataType)/]
-	[/for]	
+	{
+		mockEDataType := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEDataType{}
+		mockEDataType.On("GetClassifierID").Return(-1)
+		assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
+		mockEDataType.AssertExpectations(t)
+	}
+	{
+		mockEDataType := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEDataType{}
+		mockEDataType.On("GetClassifierID").Return(-1)
+		assert.Panics(t, func() { factory.ConvertToString(mockEDataType, nil) })
+		mockEDataType.AssertExpectations(t)
+	}
+[for (aDataType : EDataType | allDataTypes)]
+	[ePackage.generateCreateFrom(aDataType)/]
+	[ePackage.generateConvertTo(aDataType)/]
+[/for]	
 }
 [/if]
 [/file]
@@ -63,8 +75,9 @@ func TestFactoryConvert(t *testing.T) {
 	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
 	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
 [for (lit : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
-	assert.Equal(t, [lit.name.toUpperCase()/], factory.CreateFromString(mockEDataType, "[lit.name/]") )
+	assert.Equal(t, [lit.name.toUpperCase()/], factory.CreateFromString(mockEDataType, "[lit.name/]") )	
 [/for]
+	mockEDataType.AssertExpectations(t)
 }
 [/template]
 
@@ -73,6 +86,7 @@ func TestFactoryConvert(t *testing.T) {
 	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
 	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
 	assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
+	mockEDataType.AssertExpectations(t)
 }
 [/template]
 
@@ -80,9 +94,11 @@ func TestFactoryConvert(t *testing.T) {
 {
 	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
 	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
+	assert.Equal(t, "", factory.ConvertToString(mockEDataType, nil) )
 [for (lit : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
 	assert.Equal(t, "[lit.name/]", factory.ConvertToString(mockEDataType, [lit.name.toUpperCase()/]) )
 [/for]
+	mockEDataType.AssertExpectations(t)
 }
 [/template]
 
@@ -90,6 +106,7 @@ func TestFactoryConvert(t *testing.T) {
 {
 	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
 	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
-	assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })	
+	assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
+	mockEDataType.AssertExpectations(t)
 }
 [/template]
