@@ -628,6 +628,21 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 	o.EBasicInverseAdd(mockObject,[aClass.getQualifiedIDName(aStructuralFeature)/],nil)
 	assert.Equal(t, mockObject, o.[aStructuralFeature.getGetterName()/]())
 	mock.AssertExpectationsForObjects(t, mockObject)
+
+	mockOther := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	mockOther.On("EInternalResource").Return(nil).Once()
+	mockOther.On("EIsProxy").Return(false).Once()
+	mockObject.On("EInternalResource").Return(nil).Once()
+[if aStructuralFeature.isContains()]
+	mockObject.On("EInverseRemove",o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],nil).Return(nil).Once()
+[else]
+	[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+	mockObject.On("EInverseRemove",o,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once()
+	[/let]
+[/if]
+	o.EBasicInverseAdd(mockOther,[aClass.getQualifiedIDName(aStructuralFeature)/],nil)
+	assert.Equal(t, mockOther, o.[aStructuralFeature.getGetterName()/]())
+	mock.AssertExpectationsForObjects(t, mockObject,mockOther)
 }
 
 [/template]
