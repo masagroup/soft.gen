@@ -65,6 +65,22 @@ func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]Contain
 	o := factory.Create[aClass.name/]FromContainer(mockContainer)
 	assert.NotNil(t,o)	
 }
+
+[if(aClass.getElementIDAccessorName().size() > 0)]
+func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]ContainerAndClassID(t *testing.T) {
+		factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	mockContainer := [aReference.eType.getTestValue(aClass.ePackage)/]
+[if(aReference.eOpposite.upperBound <> 1)]
+	mockList := new([if not ePackage.isEcorePackage()]ecore.[/if]MockEList)
+	mockList.On("Add",mock.Anything).Return(true).Once()
+    mockContainer.On("Get[aReference.eOpposite.name.toUpperFirst()/]").Return(mockList).Once()
+[else]
+	mockContainer.On("Set[aReference.eOpposite.name.toUpperFirst()/]",mock.Anything).Once()    
+[/if]
+	o := factory.Create[aClass.name/]FromContainerAndClassID(mockContainer,0)
+	assert.NotNil(t,o)	
+}
+[/if]
 [/for]
 [/let]
 
