@@ -145,7 +145,7 @@ func TestFactoryConvert(t *testing.T) {
 {
 	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
 	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
-	assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
+	assert.Panics(t, func() { factory.ConvertToString(mockEDataType, "") })
 	mockEDataType.AssertExpectations(t)
 }
 [/template]
