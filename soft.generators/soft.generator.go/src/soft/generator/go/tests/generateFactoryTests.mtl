@@ -20,14 +20,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 [if not ePackage.isEcorePackage()]
 	"[getImportForPackage('ecore')/]"
 [/if]
 )
 
 
-[if allClasses->notEmpty()]
-func TestFactoryCreate(t *testing.T) {
+func TestFactoryCreateFromEClass(t *testing.T) {
+	_ = mock.Anything
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
 	{
 		mockEClass := &[if not ePackage.isEcorePackage()]ecore.[/if]MockEClass{}
@@ -42,10 +43,33 @@ func TestFactoryCreate(t *testing.T) {
 	}
     [/for]
 }
+
+[for (aClass : EClass | allClasses) ? (aClass.abstract=false)]
+func TestFactoryCreate[aClass.name/](t *testing.T) {
+	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	assert.NotNil(t, factory.Create[aClass.name/]())
+}
+
+[let ref : OrderedSet(EReference) = aClass.getAllContainers()]
+[for(aReference:EReference | ref->sortedBy(name))]
+func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]Container(t *testing.T) {
+	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	mockContainer := [aReference.eType.getTestValue(aClass.ePackage)/]
+[if(aReference.eOpposite.upperBound <> 1)]
+	mockList := new([if not ePackage.isEcorePackage()]ecore.[/if]MockEList)
+	mockList.On("Add",mock.Anything).Return(true).Once()
+    mockContainer.On("Get[aReference.eOpposite.name.toUpperFirst()/]").Return(mockList).Once()
+[else]
+	mockContainer.On("Set[aReference.eOpposite.name.toUpperFirst()/]",mock.Anything).Once()    
 [/if]
+	o := factory.Create[aClass.name/]FromContainer(mockContainer)
+	assert.NotNil(t,o)	
+}
+[/for]
+[/let]
 
+[/for]
 
-[if allDataTypes->notEmpty()]
 func TestFactoryConvert(t *testing.T) {
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
 	{
@@ -65,7 +89,6 @@ func TestFactoryConvert(t *testing.T) {
 	[ePackage.generateConvertTo(aDataType)/]
 [/for]	
 }
-[/if]
 [/file]
 [/if]
 [/template]
