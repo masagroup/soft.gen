@@ -56,7 +56,7 @@
 [let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
 [if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())] 
 [aClass.generateFunctionImplementationReceiver()/] EDerivedFeatureID(eContainer [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int) int {
-	eClass := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
+	eClass , _ := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
 [for (aMixinClass : EClass | mixinClasses)]
     if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
         switch featureID {
@@ -73,7 +73,7 @@
 
 [if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
 [aClass.generateFunctionImplementationReceiver()/] EDerivedOperationID(eContainer [if not aPackage.isEcorePackage()]ecore.[/if]EObject, operationID int) int {
-	eClass := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
+	eClass , _ := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
 [for (aMixinClass : EClass | mixinClasses)]
     if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
         switch featureID {
