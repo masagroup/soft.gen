@@ -70,6 +70,7 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 
 [aClass.getImplementedFeatures()->sortedBy( getVariableName() ).generateTestFeature(aClass)/]
 [aClass.getImplementedOperations()->sortedBy( getOperationName() )->select(isDefault()).generateTestOperation(aClass)/]
+[aClass.generateElementIDTestImplementation()/]
 [aClass.generateEGetFromIDTestImplementation()/]
 [aClass.generateESetFromIDTestImplementation()/]
 [aClass.generateEIsSetFromIDTestImplementation()/]
@@ -365,6 +366,50 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 	assert.Equal(t, [aStructuralFeature.eType.getDefaultValue()/], o.[aStructuralFeature.getGetterName()/]())
 	mock.AssertExpectationsForObjects(t, mockAdapter)
 }
+[/let]
+[/template]
+
+[template private generateElementIDTestImplementation(aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
+[let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
+[if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())] 
+func Test[aClass.name.toUpperFirst()/]EDerivedFeatureID(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	{
+		eClass := new([if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockEClass)
+		assert.Equal(t,1, o.EDerivedFeatureID(eClass,1) )
+	}
+[for (aMixinClass : EClass | mixinClasses)]
+	{
+		eClass := GetPackage().Get[aMixinClass.getElementAccessorName()/]()
+		assert.Equal(t,-1, o.EDerivedFeatureID(eClass, -1))
+	[for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
+		assert.Equal(t,[aClass.getQualifiedIDName(aFeature)/], o.EDerivedFeatureID(eClass, [aMixinClass.getQualifiedIDName(aFeature)/]))
+	[/for]
+	}
+[/for]
+}
+[/if]
+
+[if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
+func Test[aClass.name.toUpperFirst()/]EDerivedOperationID(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	{
+		eClass := new([if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockEClass)
+		assert.Equal(t,1, o.EDerivedOperationID(eClass,1) )
+	}
+[for (aMixinClass : EClass | mixinClasses)]
+	{
+		eClass := GetPackage().Get[aMixinClass.getElementAccessorName()/]()
+		assert.Equal(t,-1, o.EDerivedOperationID(eClass, -1))
+	[for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
+		assert.Equal(t,[aClass.getQualifiedIDName(aOperation)/], o.EDerivedOperationID(eClass, [aMixinClass.getQualifiedIDName(aOperation)/]))
+	[/for]
+	}
+[/for]
+}
+[/if]
+[/let]
 [/let]
 [/template]
 

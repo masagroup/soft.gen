@@ -76,7 +76,7 @@
 	eClass , _ := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
 [for (aMixinClass : EClass | mixinClasses)]
     if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
-        switch featureID {
+        switch operationID {
 [for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
             case [aMixinClass.getQualifiedIDName(aOperation)/] : return [aClass.getQualifiedIDName(aOperation)/]
 [/for]
@@ -84,7 +84,7 @@
         }
     }
 [/for]  
-    return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EDerivedOperationID(eContainer, featureID)
+    return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EDerivedOperationID(eContainer, operationID)
 }
 [/if]
 [/let]
