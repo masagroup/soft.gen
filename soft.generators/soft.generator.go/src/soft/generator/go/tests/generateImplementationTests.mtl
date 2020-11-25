@@ -253,6 +253,11 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	o.[aStructuralFeature.getSetterName()/](mockValue)
 	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResource)
 
+	// set with the same mock value
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+	o.[aStructuralFeature.getSetterName()/](mockValue)
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResource)
+
 	// another value - in a different resource
 	mockValue2 := [aStructuralFeature.eType.getTestValue(aPackage)/]	
 	mockResource2 := new([getShortQualifiedName('ecore.MockEResource',aPackage.name)/])
