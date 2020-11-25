@@ -90,6 +90,10 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 
 [aStructuralFeature.generateSetTestImplementation(aClass)/]
 [/if]
+[if isBasicSet()]
+
+[aStructuralFeature.generateBasicSetTestImplementation(aClass)/]
+[/if]
 [if isUnSet()]
 
 [aStructuralFeature.generateUnSetTestImplementation(aClass)/]
@@ -337,6 +341,33 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	o.[aStructuralFeature.getSetterName()/](v)
 	mockAdapter.AssertExpectations(t)
 }
+[/let]
+[/template]
+
+[template private generateBasicSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ]
+[let aPackage : EPackage = aClass.ePackage ]
+[let ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.' else '' endif]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]BasicSet(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	
+	// add listener
+	mockAdapter := new([ecorePrefix/]MockEAdapter)
+	mockAdapter.On("SetTarget", o).Once()
+	o.EAdapters().Add(mockAdapter)
+	mock.AssertExpectationsForObjects(t, mockAdapter)
+
+	mockValue := [aStructuralFeature.eType.getTestValue(aPackage)/]	
+	mockNotifications := new([ecorePrefix/]MockENotificationChain)
+[if isContainer()]
+	mockValue.On("EInternalResource").Return(nil).Once()
+[/if]
+	mockNotifications.On("Add", mock.MatchedBy(func(notification [ecorePrefix/]ENotification) bool {
+		return notification.GetEventType() == [ecorePrefix/]SET && notification.GetFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]
+	})).Return(true).Once()
+	o.basic[aStructuralFeature.getSetterName().toUpperFirst()/](mockValue,mockNotifications)
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockNotifications)
+}
+[/let]
 [/let]
 [/template]
 
