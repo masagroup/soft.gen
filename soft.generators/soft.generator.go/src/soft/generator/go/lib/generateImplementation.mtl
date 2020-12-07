@@ -74,7 +74,7 @@ type [aClass.getInitializersInterface()/] interface {
 }
 
 [aClass.generateFunctionImplementationReceiver()/] EStaticFeatureCount() int {
-    return [aClass.getFeatureCountIDName()/]
+    return [if aClass.isReflectiveDelegation()]0[else][aClass.getFeatureCountIDName()/][/if]
 }
 
 [operations.generateImplementation(aClass)/]
