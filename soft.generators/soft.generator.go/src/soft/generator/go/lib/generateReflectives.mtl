@@ -9,6 +9,7 @@
 [import soft::generator::go::generateType/]
 
 [template public generateReflectivesDefinition(aClass : EClass)]
+[if not aClass.isReflectiveDelegation()]
 [if aClass.hasElementID() or
 	aClass.getEGetFeatures()->notEmpty() or
     aClass.getESetFeatures()->notEmpty() or
@@ -47,6 +48,7 @@
 [/if]
 [if aClass.getEInverseRemoveFeatures()->notEmpty()]
 [aClass.generateEInverseRemoveDefinition()/]
+[/if]
 [/if]
 [/if]
 [/template]
