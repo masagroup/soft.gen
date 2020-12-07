@@ -4,6 +4,13 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::go::generateCommon/]
 
+[query public isReflectiveDelegation(anPackage : EPackage ) : Boolean = anPackage.hasKey('featureDelegation') and anPackage.valueKey('featureDelegation') = 'Reflective'/]
+
+[query public isReflectiveDelegation(aClass : EClass) : Boolean = aClass.ePackage.isReflectiveDelegation()/]
+
+[query public isReflectiveDelegation(anFeature : EStructuralFeature ) : Boolean = anFeature.eContainingClass.isReflectiveDelegation()/]
+
+
 [query public getOutputDirectory( anPackage : EPackage ) : String = 
     let property : OclAny = getProperty('library.output.dir') in 
     if property.oclIsUndefined() or property = '' then 
