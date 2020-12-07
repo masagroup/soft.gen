@@ -65,11 +65,12 @@ func Test[aClass.name.toUpperFirst()/]StaticClass(t *testing.T) {
 
 func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	assert.Equal(t, [aClass.getFeatureCountIDName()/] , o.EStaticFeatureCount())
+	assert.Equal(t, [if aClass.isReflectiveDelegation()]0[else][aClass.getFeatureCountIDName()/][/if] , o.EStaticFeatureCount())
 }
 
 [aClass.getImplementedFeatures()->sortedBy( getVariableName() ).generateTestFeature(aClass)/]
 [aClass.getImplementedOperations()->sortedBy( getOperationName() )->select(isDefault()).generateTestOperation(aClass)/]
+[if not aClass.isReflectiveDelegation()]
 [aClass.generateElementIDTestImplementation()/]
 [aClass.generateEGetFromIDTestImplementation()/]
 [aClass.generateESetFromIDTestImplementation()/]
@@ -78,6 +79,7 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 [aClass.generateEInvokeFromIDTestImplementation()/]
 [aClass.generateEInverseAddTestImplementation()/]
 [aClass.generateEInverseRemoveTestImplementation()/]
+[/if]
 [/file]
 [/template]
 
