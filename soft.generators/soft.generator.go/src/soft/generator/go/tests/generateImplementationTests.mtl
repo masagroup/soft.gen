@@ -33,7 +33,7 @@ import (
 	"net/url"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-[let imports : OrderedSet(String) = Set { if requiresEcore then Set{ getImportForPackage('ecore') } else Set{} endif
+[let imports : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
 										, OrderedSet{aClass.eSuperTypes
               									    ,aClass.getImplementedFeatures().eType}->flatten()->select( cls | not cls.oclIsUndefined() )->collect( cls | aPackage.getImport(cls) )->asSet()
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
