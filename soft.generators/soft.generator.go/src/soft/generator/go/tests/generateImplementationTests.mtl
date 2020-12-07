@@ -781,9 +781,6 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseRemove(t *testing.T) {
 	l.Add(mockObject)
 
 	// basic inverse remove
-[if isProxy()]
-	mockObject.On("EIsProxy").Return(false).Once()
-[/if]
 	o.EBasicInverseRemove(mockObject,[aClass.getQualifiedIDName(aStructuralFeature)/],nil)
 
 	// check it was removed
