@@ -90,7 +90,7 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 
 [aStructuralFeature.generateSetTestImplementation(aClass)/]
 [/if]
-[if isBasicSet()]
+[if isBasicSet() and not isReflectiveDelegation()]
 
 [aStructuralFeature.generateBasicSetTestImplementation(aClass)/]
 [/if]
@@ -171,8 +171,11 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	
 	// initialize object with a mock value
 	mockValue := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+[if aStructuralFeature.isReflectiveDelegation()]
+	o.[aStructuralFeature.getSetterName()/](mockValue)
+[else]
 	o.[aStructuralFeature.getVariableName()/] = mockValue
-
+[/if]
 	// get non resolved value
 	mockValue.On("EIsProxy").Return(false).Once()
 	assert.Equal(t,mockValue,o.[aStructuralFeature.getGetterName()/]())
@@ -203,7 +206,11 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 
 	// get initialized value
 	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+[if aStructuralFeature.isReflectiveDelegation()]
+	o.[aStructuralFeature.getSetterName()/](v)
+[else]
 	o.[aStructuralFeature.getVariableName()/] = v
+[/if]
 	assert.Equal(t,v,o.[aStructuralFeature.getGetterName()/]())
 }
 [/template]
@@ -217,7 +224,11 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	[/let]
 	// get initialized value
 	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]	
+[if aStructuralFeature.isReflectiveDelegation()]
+	o.[aStructuralFeature.getSetterName()/](v)
+[else]
 	o.[aStructuralFeature.getVariableName()/] = v
+[/if]
 	assert.Equal(t,v,o.[aStructuralFeature.getGetterName()/]())
 }
 [/template]
