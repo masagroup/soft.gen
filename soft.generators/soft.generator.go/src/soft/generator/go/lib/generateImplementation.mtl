@@ -39,17 +39,21 @@ import "[i/]"
 // [implementationName/] is the implementation of the model object '[aClass.name/]'
 type [implementationName/] struct {
     *[getShortQualifiedName( classExtend ,aPackage.name)/]
+[if not aClass.isReflectiveDelegation()]
 [let dataDeclarationFeatures : OrderedSet(EStructuralFeature) = features->select( isField() )]
     [ dataDeclarationFeatures.generateVariableDeclaration()/]
 [/let]
+[/if]
 }
 
 // [aClass.getConstructorName()/] is the constructor of a [aClass.getImplementationName()/]
 func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
     [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
     [aClass.getReceiverName()/].[getUnQualifiedName(classExtend)/] = [getShortQualifiedName(getConstructorName(classExtend), aPackage.name)/]()
-    [aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/]) 
+    [aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/])
+[if not aClass.isReflectiveDelegation()] 
     [variableFeatures.generateVariableInitialization(aClass)/]
+[/if]
     return [aClass.getReceiverName()/]
 }
 [if initializerFeatures->notEmpty()]
