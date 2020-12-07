@@ -28,12 +28,15 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
  * Classes Onthology
 */]
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
+	let aPackage : EPackage = aClass.ePackage in 
     if ( aClass.eSuperTypes->isEmpty() ) then
         if ( aClass.name = 'EObject' ) then
             Sequence{'ecore.ENotifier'}
-        else
+        else if ( aPackage.hasKey('rootExtendsInterface') ) then
+			Sequence{aPackage.valueKey('rootExtendsInterface')}
+		else
             Sequence{'ecore.EObject'}
-        endif
+        endif endif
     else
         aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceName()))
     endif
@@ -45,9 +48,9 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
             'ecore.BasicEObject'
-        else if ( aPackage.hasKey('dynamic' ) and aPackage.valueKey('dynamic') = 'true' ) then
-            'ecore.DynamicEObjectImpl'
-        else
+		else if ( aPackage.hasKey('rootExtendsClass') ) then
+			aPackage.valueKey('rootExtendsClass')
+		else
             'ecore.EObjectImpl'
         endif endif 
     else
