@@ -57,9 +57,11 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
             'ecore.BasicEObject'
 		else if ( aPackage.hasKey('rootExtendsClass') ) then
 			aPackage.valueKey('rootExtendsClass')
+		else if ( aPackage.isReflectiveDelegation() ) then
+			'ecore.ReflectiveEObjectImpl'
 		else
             'ecore.EObjectImpl'
-        endif endif 
+        endif endif endif 
     else
         if ( extendsClass.hasExtension() ) then
             extendsClass.getQualifiedExtensionName()
