@@ -60,7 +60,7 @@
         Sequence{ 'EByteArray' , '[]byte' , 'nil', 'nil' , ''},
         Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '0.0', '1.2', ''},
         Sequence{ 'EEList' , 'ecore.EList', 'nil', 'ecore.NewEmptyBasicEList()', ''},
-        Sequence{ 'EDate' , 'time.Time', 'time.Time{}', 'time.Now()' , '!IsZero'},
+        Sequence{ 'EDate' , '*time.Time', 'nil', 'func() *time.Time { t := time.Now(); return &t }()' , ''},
         Sequence{ 'EMap' , 'map[interface{}]interface{}', 'nil', 'nil' , ''},
         Sequence{ 'EFeatureMap', 'interface{}', 'nil', 'nil', ''},
         Sequence{ 'EFeatureMapEntry' , 'interface{}' , 'nil', 'nil', ''},
@@ -216,6 +216,11 @@
     if aClassifier.oclIsUndefined() then 
         ''
     else
-        aPackage.getImportForType(aClassifier.getType())
+		let type : String = aClassifier.getType() in
+		if type.size() > 0 and type.first(1) = '*' then
+        	aPackage.getImportForType(type.substring(2))
+		else
+			aPackage.getImportForType(type)
+		endif
     endif
 /]

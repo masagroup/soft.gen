@@ -223,7 +223,13 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	o := [aClass.getConstructorName()/]()
 	// get default value
 	[let aAttribute : EAttribute = aStructuralFeature.oclAsType(EAttribute)]
+	[let aDefaultValue : String = aAttribute.getDefaultValue()]
+	[if aDefaultValue = 'nil']
+	assert.Nil(t, o.[aAttribute.getGetterName()/]())
+	[else]
 	assert.Equal(t, [aAttribute.getDefaultValue()/], o.[aAttribute.getGetterName()/]())
+	[/if]
+	[/let]
 	[/let]
 	// get initialized value
 	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]	
@@ -413,7 +419,13 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 		return notification.GetEventType() == [ecorePrefix/]UNSET && notification.GetFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]
 	})).Once()
 	o.[aStructuralFeature.getUnSetterName()/]()
-	assert.Equal(t, [aStructuralFeature.eType.getDefaultValue()/], o.[aStructuralFeature.getGetterName()/]())
+[let defaultValue : String = aStructuralFeature.eType.getDefaultValue()]
+[if defaultValue = 'nil']
+	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
+[else]
+	assert.Equal(t, [defaultValue/], o.[aStructuralFeature.getGetterName()/]())
+[/if]
+[/let]
 	mock.AssertExpectationsForObjects(t, mockAdapter)
 }
 [/let]
@@ -672,7 +684,11 @@ func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 			[let defaultValue : String = aAttribute.getDefaultValue()]
 			[if defaultValue <> '']
 		v := o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false)
-		assert.Equal(t,[defaultValue/],v)	
+			[if defaultValue = 'nil']
+		assert.Nil(t,v)
+			[else]
+		assert.Equal(t,[defaultValue/],v)
+			[/if]	
 			[else]
 			[/if]
 			[/let]
