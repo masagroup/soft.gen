@@ -178,6 +178,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 [else]
 	o.[aStructuralFeature.getVariableName()/] = mockValue
 [/if]
+
 	// get non resolved value
 	mockValue.On("EIsProxy").Return(false).Once()
 	assert.Equal(t,mockValue,o.[aStructuralFeature.getGetterName()/]())
