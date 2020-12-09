@@ -138,7 +138,7 @@ p.[anEOperation.getElementInstanceName()/].SetOrdered([anEOperation.ordered.toSt
 
 [/template]
 
-[template private generateInitialization(aDataType : EDataType)]
+[template private generateInitialization(aDataType : EDataType,anEPackage : EPackage)]
 p.[aDataType.getElementInstanceName()/].SetName("[aDataType.name/]")
 [if not aDataType.instanceTypeName.oclIsUndefined() and not (aDataType.instanceTypeName = '')] 
 //p.[aDataType.getElementInstanceName()/].SetInstanceClass( reflect.TypeOf([aDataType.instanceTypeName/]))
@@ -147,7 +147,7 @@ p.[aDataType.getElementInstanceName()/].SetName("[aDataType.name/]")
 p.[aDataType.getElementInstanceName()/].SetSerializable([aDataType.serializable.toString()/])
 [/if]
 [if aDataType.name <> 'EChar' and not aDataType.defaultValue.oclIsUndefined() and aDataType.defaultValue <> '']
-p.[aDataType.getElementInstanceName()/].(EDataTypeInternal).SetDefaultValue( p.eFactoryInstance.CreateFromString(p.[aDataType.getElementInstanceName()/],"[aDataType.defaultValue/]"))
+p.[aDataType.getElementInstanceName()/].([if not anEPackage.isEcorePackage()]ecore.[/if]EDataTypeInternal).SetDefaultValue( p.GetEFactoryInstance().CreateFromString(p.[aDataType.getElementInstanceName()/],"[aDataType.defaultValue/]"))
 [/if]
 
 [/template]
@@ -235,7 +235,7 @@ func (p *[className/])initialize[aClass.name.toUpperFirst()/]Content() {
 [/for]
 
 func (p *[className/])initializePackageEDataTypes() {
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization()/]
+    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization(anEPackage)/]
 }
 
 [/file]
