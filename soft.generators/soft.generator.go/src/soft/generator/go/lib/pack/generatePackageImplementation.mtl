@@ -146,6 +146,9 @@ p.[aDataType.getElementInstanceName()/].SetName("[aDataType.name/]")
 [if (not aDataType.oclIsKindOf(EEnum))]
 p.[aDataType.getElementInstanceName()/].SetSerializable([aDataType.serializable.toString()/])
 [/if]
+[if aDataType.name <> 'EChar' and not aDataType.defaultValue.oclIsUndefined() and aDataType.defaultValue <> '']
+p.[aDataType.getElementInstanceName()/].(EDataTypeInternal).SetDefaultValue( p.eFactoryInstance.CreateFromString(p.[aDataType.getElementInstanceName()/],"[aDataType.defaultValue/]"))
+[/if]
 
 [/template]
 
