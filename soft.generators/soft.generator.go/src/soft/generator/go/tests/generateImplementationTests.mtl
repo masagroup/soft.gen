@@ -752,7 +752,7 @@ func Test[aClass.name.toUpperFirst()/]ESetFromID(t *testing.T) {
 [/template]
 
 [template private generateEInvokeFromIDTestImplementation(aClass : EClass)]
-[let operations : OrderedSet(EOperation) = aClass.getEInvokeOperations()->asOrderedSet()->sortedBy(name)]
+[let operations : OrderedSet(EOperation) = aClass.getEInvokeOperations()->asOrderedSet()->sortedBy( o | o.eContainingClass.getOperationIDName(o))]
 [if aClass.name <> 'EObject' and operations->notEmpty()]
 func Test[aClass.name.toUpperFirst()/]EInvokeFromID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
