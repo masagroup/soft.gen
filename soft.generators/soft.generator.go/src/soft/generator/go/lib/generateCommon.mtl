@@ -54,7 +54,7 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
-            'ecore.BasicEObject'
+            'ecore.BasicEObjectImpl'
 		else if ( aPackage.hasKey('rootExtendsClass') ) then
 			aPackage.valueKey('rootExtendsClass')
 		else if ( aPackage.isReflectiveDelegation() ) then
