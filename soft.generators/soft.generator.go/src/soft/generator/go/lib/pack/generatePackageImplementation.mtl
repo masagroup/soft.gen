@@ -164,7 +164,7 @@ import "[getImportForPackage('ecore')/]"
 
 // [className/] is the [anEPackage.getInterfaceName()/] implementation
 type [className/] struct {
-    *[if not anEPackage.isEcorePackage()]ecore.[/if]EPackageExt
+    [if not anEPackage.isEcorePackage()]ecore.[/if]EPackageExt
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
     [let dataMembers : Sequence(ENamedElement) = Sequence{ Sequence{ aClass } , aClass.eStructuralFeatures, aClass.eOperations}->flatten()]
     [dataMembers.generateDataMember(anEPackage)/]
@@ -175,8 +175,13 @@ type [className/] struct {
 
 func new[className.toUpperFirst()/]() *[className/] {
     p := new([className/])
-    p.EPackageExt = [if not anEPackage.isEcorePackage()]ecore.[/if]NewEPackageExt()
-	p.SetInterfaces(p)
+    p.SetInterfaces(p)
+	p.Initialize()
+    return p
+}
+
+func (p *[className/])Initialize() {
+	p.EPackageExt.Initialize()
 	p.SetName(NAME)
     p.SetNsPrefix(NS_PREFIX)
     p.SetNsURI(NS_URI)
@@ -184,7 +189,6 @@ func new[className.toUpperFirst()/]() *[className/] {
     p.createPackageContents()
     p.initializePackageContents()
     p.CreateResource()
-    return p
 }
 
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]

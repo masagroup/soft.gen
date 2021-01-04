@@ -38,32 +38,33 @@ import "[i/]"
 
 // [implementationName/] is the implementation of the model object '[aClass.name/]'
 type [implementationName/] struct {
-    *[getShortQualifiedName( classExtend ,aPackage.name)/]
+    [getShortQualifiedName( classExtend ,aPackage.name)/]
 [if not aClass.isReflectiveDelegation()]
 [let dataDeclarationFeatures : OrderedSet(EStructuralFeature) = features->select( isField() )]
     [ dataDeclarationFeatures.generateVariableDeclaration()/]
 [/let]
 [/if]
 }
+[if initializerFeatures->notEmpty()]
+type [aClass.getInitializersInterface()/] interface {
+    [initializerFeatures.generateVariableInitializationMethodDeclaration()/]
+}
+[/if]
 
 // [aClass.getConstructorName()/] is the constructor of a [aClass.getImplementationName()/]
 func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
     [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
-    [aClass.getReceiverName()/].[getUnQualifiedName(classExtend)/] = [getShortQualifiedName(getConstructorName(classExtend), aPackage.name)/]()
-    [aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/])
+	[aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/])
 [if not aClass.isReflectiveDelegation()] 
-    [variableFeatures.generateVariableInitialization(aClass)/]
+    [aClass.getReceiverName()/].Initialize()
 [/if]
     return [aClass.getReceiverName()/]
 }
-[if initializerFeatures->notEmpty()]
 
-type [aClass.getInitializersInterface()/] interface {
-    [initializerFeatures.generateVariableInitializationMethodDeclaration()/]
-}
-
-[aClass.generateFunctionImplementationReceiver()/] getInitializers() [aClass.getInitializersInterface()/] {
-    return [aClass.getReceiverName()/].AsEObject().([aClass.getInitializersInterface()/])
+[if variableFeatures->notEmpty() and not aClass.isReflectiveDelegation()]
+[aClass.generateFunctionImplementationReceiver()/] Initialize() {
+	[aClass.getReceiverName()/].[getUnQualifiedName(classExtend)/].Initialize()
+	[variableFeatures.generateVariableInitialization(aClass)/]
 }
 [/if]
 
@@ -72,6 +73,12 @@ type [aClass.getInitializersInterface()/] interface {
 	return [aClass.getReceiverName()/].GetInterfaces().([interfaceName/])
 }
 [/let]
+
+[if initializerFeatures->notEmpty()]
+[aClass.generateFunctionImplementationReceiver()/] asInitializers() [aClass.getInitializersInterface()/] {
+    return [aClass.getReceiverName()/].AsEObject().([aClass.getInitializersInterface()/])
+}
+[/if]
 
 [aClass.generateFunctionImplementationReceiver()/] EStaticClass() [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
     return GetPackage().[aClass.getReflectiveGetterName()/]()

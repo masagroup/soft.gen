@@ -308,10 +308,10 @@ func [testMethodName/](t *testing.T) {
                 [else]
     if [receiverName/].[varName/] == nil {
                 [/if]
-        [receiverName/].[varName/] = [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
+        [receiverName/].[varName/] = [receiverName/].asInitializers().[aStructuralFeature.getInitializationMethodName()/]()
     }
             [elseif lazy = 'action']
-    [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
+    [receiverName/].asInitializers().[aStructuralFeature.getInitializationMethodName()/]()
             [/if]
         [/if]
         [/let]
@@ -352,10 +352,10 @@ func [testMethodName/](t *testing.T) {
             [else]
     if [receiverName/].[varName/] == nil {
             [/if]
-        [receiverName/].[varName/] = [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
+        [receiverName/].[varName/] = [receiverName/].asInitializers().[aStructuralFeature.getInitializationMethodName()/]()
     }
         [elseif lazy = 'action']
-    [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
+    [receiverName/].asInitializers().[aStructuralFeature.getInitializationMethodName()/]()
         [/if]
     [/if]
     [/let]
