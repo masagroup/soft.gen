@@ -55,9 +55,7 @@ type [aClass.getInitializersInterface()/] interface {
 func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
     [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
 	[aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/])
-[if not aClass.isReflectiveDelegation()] 
-    [aClass.getReceiverName()/].Initialize()
-[/if]
+	[aClass.getReceiverName()/].Initialize()
     return [aClass.getReceiverName()/]
 }
 
