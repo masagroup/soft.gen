@@ -4,7 +4,7 @@ Created-By: 13.0.2+8 (Oracle Corporation)
 Bundle-ManifestVersion: 2
 Bundle-Name: Soft Generator TypeScript
 Bundle-SymbolicName: soft.generator.ts
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.1
 Export-Package: soft.generator.ts
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: soft.generator.ts
