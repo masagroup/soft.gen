@@ -25,9 +25,9 @@
 
 package [aPackage.name/]
 
-[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() ) then Set{ getImportForPackage('ecore') } else Set{} endif
-										, Set { aPackage.getImport(classExtend) }
-									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImport( extend ) )->asSet()
+[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() ) then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
+										, Set { aPackage.getImportForType(classExtend) }
+									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
@@ -38,28 +38,31 @@ import "[i/]"
 
 // [implementationName/] is the implementation of the model object '[aClass.name/]'
 type [implementationName/] struct {
-    *[getShortQualifiedName( classExtend ,aPackage.name)/]
+    [getShortQualifiedName( classExtend ,aPackage.name)/]
+[if not aClass.isReflectiveDelegation()]
 [let dataDeclarationFeatures : OrderedSet(EStructuralFeature) = features->select( isField() )]
     [ dataDeclarationFeatures.generateVariableDeclaration()/]
 [/let]
+[/if]
 }
+[if initializerFeatures->notEmpty()]
+type [aClass.getInitializersInterface()/] interface {
+    [initializerFeatures.generateVariableInitializationMethodDeclaration()/]
+}
+[/if]
 
 // [aClass.getConstructorName()/] is the constructor of a [aClass.getImplementationName()/]
 func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
     [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
-    [aClass.getReceiverName()/].[getUnQualifiedName(classExtend)/] = [getShortQualifiedName(getConstructorName(classExtend), aPackage.name)/]()
-    [aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/]) 
-    [variableFeatures.generateVariableInitialization(aClass)/]
+	[aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/])
+	[aClass.getReceiverName()/].Initialize()
     return [aClass.getReceiverName()/]
 }
-[if initializerFeatures->notEmpty()]
 
-type [aClass.getInitializersInterface()/] interface {
-    [initializerFeatures.generateVariableInitializationMethodDeclaration()/]
-}
-
-[aClass.generateFunctionImplementationReceiver()/] getInitializers() [aClass.getInitializersInterface()/] {
-    return [aClass.getReceiverName()/].AsEObject().([aClass.getInitializersInterface()/])
+[if variableFeatures->notEmpty() and not aClass.isReflectiveDelegation()]
+[aClass.generateFunctionImplementationReceiver()/] Initialize() {
+	[aClass.getReceiverName()/].[getUnQualifiedName(classExtend)/].Initialize()
+	[variableFeatures.generateVariableInitialization(aClass)/]
 }
 [/if]
 
@@ -69,8 +72,18 @@ type [aClass.getInitializersInterface()/] interface {
 }
 [/let]
 
+[if initializerFeatures->notEmpty()]
+[aClass.generateFunctionImplementationReceiver()/] asInitializers() [aClass.getInitializersInterface()/] {
+    return [aClass.getReceiverName()/].AsEObject().([aClass.getInitializersInterface()/])
+}
+[/if]
+
 [aClass.generateFunctionImplementationReceiver()/] EStaticClass() [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
     return GetPackage().[aClass.getReflectiveGetterName()/]()
+}
+
+[aClass.generateFunctionImplementationReceiver()/] EStaticFeatureCount() int {
+    return [if aClass.isReflectiveDelegation()]0[else][aClass.getFeatureCountIDName()/][/if]
 }
 
 [operations.generateImplementation(aClass)/]

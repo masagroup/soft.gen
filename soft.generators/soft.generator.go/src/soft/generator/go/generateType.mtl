@@ -2,6 +2,7 @@
 [module generateType('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
 
 [query public isBackReference(aStructuralFeature:EStructuralFeature) : Boolean = aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).isBackReference()/]
@@ -59,12 +60,12 @@
         Sequence{ 'EByteArray' , '[]byte' , 'nil', 'nil' , ''},
         Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '0.0', '1.2', ''},
         Sequence{ 'EEList' , 'ecore.EList', 'nil', 'ecore.NewEmptyBasicEList()', ''},
-        Sequence{ 'EDate' , 'time.Time', '', 'time.Now()' , '!IsZero'},
+        Sequence{ 'EDate' , '*time.Time', 'nil', 'func() *time.Time { t := time.Now(); return &t }()' , ''},
         Sequence{ 'EMap' , 'map[interface{}]interface{}', 'nil', 'nil' , ''},
         Sequence{ 'EFeatureMap', 'interface{}', 'nil', 'nil', ''},
         Sequence{ 'EFeatureMapEntry' , 'interface{}' , 'nil', 'nil', ''},
         Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'interface{}', 'nil', 'nil', ''},
-        Sequence{ 'EJavaClass' , 'reflect.Type', 'nil', 'nil', ''},
+        Sequence{ 'EJavaClass' , 'reflect.Type', 'nil', 'reflect.TypeOf("")', ''},
         Sequence{ 'EString' , 'String', 'string', '""' , '"Test String"', ''},
         Sequence{ 'ETreeIterator' , 'ecore.EIterator', 'nil' , 'nil', ''},
         Sequence{ 'EResource' , 'ecore.EResource', 'nil' , 'nil', ''}
@@ -81,7 +82,7 @@
     else '' endif endif endif endif	
 /]
 
-[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = '&' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name ) +'{}'/]
+[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = 'new(' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name ) +')'/]
 [query private getTestValue( aEnum : EEnum ) : String = 
 	if aEnum.eLiterals->size() > 1 then aEnum.eLiterals->at(2).name.toUpperCase() 
 	else if aEnum.eLiterals->size() = 1 then aEnum.eLiterals->at(1).name.toUpperCase() 
@@ -162,23 +163,37 @@
 	)
 /] 
 
-[query public getAllImports(any : OclAny) : Sequence( String ) = 
-    Sequence {
-        'ecore' , 'github.com/masagroup/soft.go/ecore'
-    }
-/]
-
-[query public getImportForPackage(aPackageName : String ) : String = 
-    let index : Integer = getAllImports()->indexOf( aPackageName ) in
-    if index.oclIsUndefined() or index = -1 then
-        ''
+[query public getAllImports(aPackage : EPackage) : OclAny =
+	let namespacesToPackages : OclAny = 
+    if (aPackage.hasGenAnnotation()) then
+        let annotations : Sequence(String) = aPackage.getGenAnnotation().details->select(key = 'import').value in
+        annotations->iterate( annotation : String ; res : OclAny = mapNew('getNamespaceToPackages_' + aPackage.name) | (
+            let index : Integer = annotation.index('=') in 
+            if index = -1 then
+				let namespaceIndex : Integer = annotation.lastIndexOf('/') in
+				if namespaceIndex = -1 then
+					res
+				else
+					res.mapPut(annotation.substring(namespaceIndex+1),annotation)
+				endif
+            else
+                res.mapPut(annotation.substring(1,index-1),annotation.substring(index+1)) 
+            endif
+        ))
     else
-        getAllImports()->at( index + 1)
-    endif
+        mapNew('getNamespaceToPackages_' + aPackage.name)
+    endif in
+    namespacesToPackages.mapPut('ecore','github.com/masagroup/soft.go/ecore')
 /]
 
 
-[query public getImport( aPackage : EPackage , qualifiedName : String ) : String =
+
+[query public getImportForPackage(aPackage : EPackage, aPackageName : String ) : String =
+	aPackage.getAllImports().mapGetOrDefault(aPackageName, '')
+/]
+
+
+[query public getImportForType( aPackage : EPackage , qualifiedName : String ) : String =
     let q : String = getQualification( qualifiedName ) in
     if q = '' then 
         ''
@@ -186,7 +201,7 @@
         if aPackage.name = q then 
             ''
         else
-            let import : String = getImportForPackage( q ) in
+            let import : String = aPackage.getImportForPackage( q ) in
             if import = '' then
                 q
             else
@@ -201,6 +216,11 @@
     if aClassifier.oclIsUndefined() then 
         ''
     else
-        aPackage.getImport(aClassifier.getType())
+		let type : String = aClassifier.getType() in
+		if type.size() > 0 and type.first(1) = '*' then
+        	aPackage.getImportForType(type.substring(2))
+		else
+			aPackage.getImportForType(type)
+		endif
     endif
 /]

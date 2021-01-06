@@ -322,4 +322,10 @@
         aQualifiedName.substring(1,index-1)
     endif 
 /]
+
+[query public isTemplateGenerated( any : OclAny , aTemplateName : String ) : Boolean =
+	let templatesProperty : String =  getProperty('templates') in
+	let templates : Sequence(String) = templatesProperty.tokenize(',') in
+	templates->includes(aTemplateName)
+/]
  

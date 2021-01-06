@@ -30,13 +30,13 @@ type [anEPackage.getFactoryInternalName()/] interface {
 }
 
 type [className/] struct {
-    *[if not anEPackage.isEcorePackage()]ecore.[/if]EFactoryExt
+    [if not anEPackage.isEcorePackage()]ecore.[/if]EFactoryExt
 }
 
 func new[className.toUpperFirst()/]() *[className/] {
     factory := new([className/])
-    factory.EFactoryExt = [if not anEPackage.isEcorePackage()]ecore.[/if]NewEFactoryExt()
     factory.SetInterfaces(factory)
+	factory.Initialize()
     return factory 
 }
 

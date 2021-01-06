@@ -1,0 +1,58 @@
+[comment encoding = UTF-8 /]
+[module generatePackageTests('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateType/]
+[import soft::generator::go::lib::generateCommon/]
+[import soft::generator::common::generateCommon/]
+
+[template public generatePackageTests(ePackage : EPackage){
+	allClasses : OrderedSet(EClass) = ePackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	allDataTypes : Sequence(EDataType) = ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+}]
+[file (ePackage.getOutputDirectory() + '/' + ePackage.getPackageTestFileName(ePackage.name), false, 'UTF-8') ]
+[fileComment()/]
+
+package [ePackage.name/]
+
+import (
+	"testing"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestPackageInstance(t *testing.T) {
+	p := GetPackage()
+	assert.NotNil(t , p )
+	assert.Equal(t, NAME , p.GetName() )
+	assert.Equal(t, NS_URI, p.GetNsURI() )
+	assert.Equal(t, NS_PREFIX, p.GetNsPrefix() )
+
+}
+
+[if allClasses->notEmpty()]
+func TestPackageClasses(t *testing.T) {
+	p := GetPackage()
+[for (aClass : EClass | allClasses)]
+	assert.NotNil(t, p.[aClass.getReflectiveGetterName()/]())
+	[for (aFeature : EStructuralFeature | aClass.eStructuralFeatures)]
+	assert.NotNil(t, p.[aFeature.getReflectiveGetterName()/]())
+	[/for]
+	[for (aOperation : EOperation | aClass.eOperations)]
+	assert.NotNil(t, p.[aOperation.getReflectiveGetterName()/]())
+	[/for]
+[/for]	
+}
+[/if]
+
+[if allDataTypes->notEmpty()]
+func TestPackageDataTypes(t *testing.T) {
+	p := GetPackage()
+[for (aDataType : EDataType | allDataTypes)]
+	assert.NotNil(t, p.[aDataType.getReflectiveGetterName()/]())
+[/for]	
+}
+[/if]
+
+[/file]
+[/template]
+

@@ -2,7 +2,7 @@
 
 [import soft::generator::common::generateCommon/]
 
-[query public getImplementedOperations( aClass : EClass ) : Collection(EOperation) = 
+[query public getImplementedOperations( aClass : EClass ) : Set(EOperation) = 
 	let classExtend : EClass = aClass.getClassExtendsClass() in
 	if classExtend.oclIsUndefined() then 
 		aClass.eAllOperations 
@@ -11,7 +11,7 @@
 	endif
 /]
 
-[query public getImplementedFeatures( aClass : EClass ) : Collection(EStructuralFeature) =
+[query public getImplementedFeatures( aClass : EClass ) : Set(EStructuralFeature) =
 	let classExtend : EClass = aClass.getClassExtendsClass() in
 	if classExtend.oclIsUndefined() then 
 		aClass.eAllStructuralFeatures 

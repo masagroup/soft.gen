@@ -214,7 +214,7 @@ template <typename... I>
     if ( eContainerFeatureID() != [aClass.getQualifiedIDName(aStructuralFeature)/] )
         return [aStructuralFeature.generateEffectiveType()/]();
     else
-        return std::static_pointer_cast<[aStructuralFeature.generateElementType()/]>(eContainer());
+        return std::static_pointer_cast<[aStructuralFeature.generateElementType()/]>(eInternalContainer());
 [elseif not isVolatile()]
     return [aStructuralFeature.name/]_[if aStructuralFeature.isProxy() and not aStructuralFeature.isListType()].get()[elseif aStructuralFeature.isLazy()].value()[elseif aStructuralFeature.isBackReference()].lock()[/if];
 [elseif (hasKey('getterBody'))]
@@ -380,10 +380,10 @@ void [className/]<I...>::[methodName/]([aStructuralFeature.generateParameterType
     // [protected (className + '::' + methodName)]
 [if not isVolatile()]
     [if isContainer()]
-    if ( [newVarName/] != eContainer() || ([newVarName/] && eContainerFeatureID() !=  [aClass.getQualifiedIDName(aStructuralFeature)/])) 
+    if ( [newVarName/] != eInternalContainer() || ([newVarName/] && eContainerFeatureID() !=  [aClass.getQualifiedIDName(aStructuralFeature)/])) 
     {
         std::shared_ptr<ecore::ENotificationChain> notifications;
-        if ( eContainer() )
+        if ( eInternalContainer() )
             notifications = eBasicRemoveFromContainer(notifications);
         if ( [newVarName/] )
             notifications = [newVarName/]->getInternal().eInverseAdd( getThisPtr() , [aClass.getQualifiedIDName(aStructuralFeature)/], notifications );

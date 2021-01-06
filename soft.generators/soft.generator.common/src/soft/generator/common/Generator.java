@@ -162,6 +162,7 @@ public class Generator extends AbstractAcceleoGenerator {
             if (line.hasOption("p"))
                 properties = line.getOptionProperties("p");
             properties.put("nsURI", nsURI);
+            properties.put("templates", templates.stream().collect(Collectors.joining(",")));
 
             // silent mode
             silentMode = false;

@@ -15,7 +15,7 @@
         if ( aClass.name = 'EObject' ) then
             'ecore.MockENotifier'
         else
-            'ecore.MockEObject'
+            'ecore.MockEObjectInternal'
         endif
     else
         extendsClass.getQualifiedMockName()
@@ -33,9 +33,9 @@
 
 package [aPackage.name/]
 
-[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ getImportForPackage('ecore') } else Set{} endif
-										, Set { aPackage.getImport(mockExtends) }
-									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImport( extend ) )->asSet()
+[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
+										, Set { aPackage.getImportForType(mockExtends) }
+									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]

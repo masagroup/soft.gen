@@ -182,7 +182,7 @@ template <typename... I>
 {
     switch(featureID)
     {
-    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
+    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name))]
         case [aClass.getQualifiedIDName(anStructFeature)/]:
 	[if anStructFeature.isProxy()]
 		[if anStructFeature.isListType()]
@@ -393,9 +393,6 @@ std::shared_ptr<[getShortQualifiedName('ecore::ENotificationChain', aClass.ePack
             return eBasicSetContainer( otherEnd , [aClass.getQualifiedIDName(aFeature)/], msgs );
         [/if]
     [else]
-        [if aFeature.isVolatile() or aFeature.isBackReference()]
-            auto [aFeature.name/] = [if aFeature.isProxy()]basic[aFeature.getGetterName().toUpperFirst()/][else][aFeature.getGetterName()/][/if]();
-        [/if]
         [let varName : String = aFeature.name + (if aFeature.isVolatile() or aFeature.isBackReference() then '' else '_' endif)]
             auto msgs = notifications;
             if ( [varName/] )

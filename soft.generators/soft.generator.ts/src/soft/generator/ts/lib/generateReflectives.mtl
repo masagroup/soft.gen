@@ -106,7 +106,7 @@ eDerivedOperationID(eContainer : [if not aPackage.isEcorePackage()]ecore.[/if]EO
 [let aPackage : EPackage = aClass.ePackage]
 eGetFromID(featureID : number , resolve : boolean ) : any {
     switch ( featureID ) {
-    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
+    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name))]
     	case [aClass.getQualifiedIDName(anStructFeature)/]: {
 	[if anStructFeature.isProxy()]
 		[if anStructFeature.isListType()]
@@ -309,10 +309,7 @@ eBasicInverseAdd(otherEnd : [if not aPackage.isEcorePackage()]ecore.[/if]EObject
         	return this.eBasicSetContainer(otherEnd, [aClass.getQualifiedIDName(aFeature)/], msgs);
         [/if]
     [else]
-        [if aFeature.isVolatile() or aFeature.isBackReference()]
-        	let [aFeature.getPropertyName()/] = [if aFeature.isProxy()]this.basicGet[aFeature.getPropertyName().toUpperFirst()/]()[else]this.[aFeature.getPropertyName()/][/if];
-        [/if]
-	        let msgs = notifications;
+            let msgs = notifications;
 	        if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal(this.[aFeature.getPropertyName()/])) {
             [if aFeature.isContains()]
             	msgs = this.[aFeature.getPropertyName()/].eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs);

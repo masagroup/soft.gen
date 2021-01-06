@@ -12,10 +12,10 @@
 [**
  * Reflectives eGet/eSet//eUnSet/eIsSet/eInverseAdd/eInverseRemove
 */]
-[query public getEGetFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getImplementedFeatures()/]
-[query public getESetFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->select(isChangeable())/]
-[query public getEIsSetFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getEGetFeatures()/]
-[query public getEUnSetFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getESetFeatures()/]
-[query public getEInverseAddFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->select( isBidirectional() and not isVolatile())/]
-[query public getEInverseRemoveFeatures(aClass : EClass) : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->select( isContains() or isBidirectional() and not isVolatile())/]
-[query public getEInvokeOperations(aClass : EClass) : Collection(EOperation) = aClass.getImplementedOperations()/]
+[query public getEGetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.getImplementedFeatures()/]
+[query public getESetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.getImplementedFeatures()->select(isChangeable())/]
+[query public getEIsSetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.getEGetFeatures()/]
+[query public getEUnSetFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.getESetFeatures()/]
+[query public getEInverseAddFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.getImplementedFeatures()->select( isBidirectional() and not isVolatile())/]
+[query public getEInverseRemoveFeatures(aClass : EClass) : Set(EStructuralFeature) = aClass.getImplementedFeatures()->select( isContains() or isBidirectional() and not isVolatile())/]
+[query public getEInvokeOperations(aClass : EClass) : Set(EOperation) = aClass.getImplementedOperations()/]

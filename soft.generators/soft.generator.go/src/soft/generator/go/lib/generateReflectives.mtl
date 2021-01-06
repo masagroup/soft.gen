@@ -9,6 +9,7 @@
 [import soft::generator::go::generateType/]
 
 [template public generateReflectivesDefinition(aClass : EClass)]
+[if not aClass.isReflectiveDelegation()]
 [if aClass.hasElementID() or
 	aClass.getEGetFeatures()->notEmpty() or
     aClass.getESetFeatures()->notEmpty() or
@@ -49,6 +50,7 @@
 [aClass.generateEInverseRemoveDefinition()/]
 [/if]
 [/if]
+[/if]
 [/template]
 
 [template private generateElementIDDefinition(aClass : EClass)]
@@ -56,7 +58,7 @@
 [let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
 [if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())] 
 [aClass.generateFunctionImplementationReceiver()/] EDerivedFeatureID(eContainer [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int) int {
-	eClass := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
+	eClass , _ := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
 [for (aMixinClass : EClass | mixinClasses)]
     if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
         switch featureID {
@@ -73,10 +75,10 @@
 
 [if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
 [aClass.generateFunctionImplementationReceiver()/] EDerivedOperationID(eContainer [if not aPackage.isEcorePackage()]ecore.[/if]EObject, operationID int) int {
-	eClass := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
+	eClass , _ := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
 [for (aMixinClass : EClass | mixinClasses)]
     if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
-        switch featureID {
+        switch operationID {
 [for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
             case [aMixinClass.getQualifiedIDName(aOperation)/] : return [aClass.getQualifiedIDName(aOperation)/]
 [/for]
@@ -84,7 +86,7 @@
         }
     }
 [/for]  
-    return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EDerivedOperationID(eContainer, featureID)
+    return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EDerivedOperationID(eContainer, operationID)
 }
 [/if]
 [/let]
@@ -94,7 +96,7 @@
 [template private generateEGetDefinition(aClass : EClass)]
 [aClass.generateFunctionImplementationReceiver()/] EGetFromID(featureID int, resolve bool) interface{} {
     switch featureID {
-    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->sortedBy(name))]
+    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name))]
     case [aClass.getQualifiedIDName(anStructFeature)/]:
 	[if anStructFeature.isProxy()]
 		[if anStructFeature.isListType()]
@@ -145,7 +147,7 @@
         list.Clear()
         list.AddAll(newValue.([anStructFeature.generateType()/]))
     [else]
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue.([anStructFeature.generateType()/]))
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue[if anStructFeature.eType.getType() <> 'interface{}'].([anStructFeature.generateType()/])[/if])
     [/if]    
 [/for]
     default:
@@ -272,7 +274,7 @@
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (eType.isAny()) post (trim())]
-[aClass.getReceiverName()/].[anStructFeature.getGetterName()/]() != ""
+[aClass.getReceiverName()/].[anStructFeature.getGetterName()/]() != [anStructFeature.eType.getDefaultValue()/]
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass) ]
@@ -286,7 +288,7 @@
         return list.AddWithNotification(otherEnd, notifications)
     [elseif aFeature.isContainer()]
         msgs := notifications
-        if [aClass.getReceiverName()/].EContainer() != nil {
+        if [aClass.getReceiverName()/].EInternalContainer() != nil {
             msgs = [aClass.getReceiverName()/].EBasicRemoveFromContainer(msgs)
         }
         [if aFeature.isBasicSet()]
@@ -295,16 +297,18 @@
         return [aClass.getReceiverName()/].EBasicSetContainer(otherEnd, [aClass.getQualifiedIDName(aFeature)/], msgs)
         [/if]
     [else]
-        [if aFeature.isVolatile() or aFeature.isBackReference()]
-        [aFeature.name/] := [if aFeature.isProxy()][aClass.getReceiverName()/].Basic[aFeature.getGetterName().toUpperFirst()/][else][aFeature.getGetterName()/][/if]()
-        [/if]
         msgs := notifications
-        if [aClass.getReceiverName()/].[aFeature.name/] != nil {
+		[if aFeature.isVolatile()]
+		[aFeature.name/] := [aClass.getReceiverName()/].[if aFeature.isProxy()]basic[aFeature.getGetterName().toUpperFirst()/][else][aFeature.getGetterName()/][/if]()
+		[else]
+		[aFeature.name/] := [aClass.getReceiverName()/].[aFeature.name/]
+		[/if]
+        if [aFeature.name/] != nil {
             [if aFeature.isContains()]
-            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs)
+            msgs = [aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs)
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-            msgs = [aClass.getReceiverName()/].[aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/], msgs)
+            msgs = [aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/], msgs)
                 [/let]
             [/if]
         }

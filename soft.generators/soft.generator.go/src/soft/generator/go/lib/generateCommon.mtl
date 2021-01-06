@@ -4,6 +4,13 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::go::generateCommon/]
 
+[query public isReflectiveDelegation(anPackage : EPackage ) : Boolean = anPackage.hasKey('featureDelegation') and anPackage.valueKey('featureDelegation') = 'Reflective'/]
+
+[query public isReflectiveDelegation(aClass : EClass) : Boolean = aClass.ePackage.isReflectiveDelegation()/]
+
+[query public isReflectiveDelegation(anFeature : EStructuralFeature ) : Boolean = anFeature.eContainingClass.isReflectiveDelegation()/]
+
+
 [query public getOutputDirectory( anPackage : EPackage ) : String = 
     let property : OclAny = getProperty('library.output.dir') in 
     if property.oclIsUndefined() or property = '' then 
@@ -28,12 +35,15 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
  * Classes Onthology
 */]
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
+	let aPackage : EPackage = aClass.ePackage in 
     if ( aClass.eSuperTypes->isEmpty() ) then
         if ( aClass.name = 'EObject' ) then
             Sequence{'ecore.ENotifier'}
-        else
+        else if ( aPackage.hasKey('rootExtendsInterface') ) then
+			Sequence{aPackage.valueKey('rootExtendsInterface')}
+		else
             Sequence{'ecore.EObject'}
-        endif
+        endif endif
     else
         aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceName()))
     endif
@@ -44,12 +54,14 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
-            'ecore.BasicEObject'
-        else if ( aPackage.hasKey('dynamic' ) and aPackage.valueKey('dynamic') = 'true' ) then
-            'ecore.DynamicEObjectImpl'
-        else
+            'ecore.BasicEObjectImpl'
+		else if ( aPackage.hasKey('rootExtendsClass') ) then
+			aPackage.valueKey('rootExtendsClass')
+		else if ( aPackage.isReflectiveDelegation() ) then
+			'ecore.ReflectiveEObjectImpl'
+		else
             'ecore.EObjectImpl'
-        endif endif 
+        endif endif endif 
     else
         if ( extendsClass.hasExtension() ) then
             extendsClass.getQualifiedExtensionName()

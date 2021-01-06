@@ -139,19 +139,19 @@ nil
 [if isGet()]
 [aStructuralFeature.generateGetImplementation(aClass)/]
 [/if]
-[if isBasicGet()]
+[if isBasicGet() and not isReflectiveDelegation()]
 [aStructuralFeature.generateBasicGetImplementation(aClass)/]
 [/if]
 [if isSet()]
 [aStructuralFeature.generateSetImplementation(aClass)/]
 [/if]
-[if isBasicSet()]
+[if isBasicSet() and not isReflectiveDelegation()]
 [aStructuralFeature.generateBasicSetImplementation(aClass)/]
 [/if]
 [if isUnSet()]
 [aStructuralFeature.generateUnSetImplementation(aClass)/]
 [/if]
-[if isBasicUnSet()]
+[if isBasicUnSet() and not isReflectiveDelegation()]
 [aStructuralFeature.generateBasicUnSetImplementation(aClass)/]
 [/if]
 [/template]
@@ -249,7 +249,10 @@ func [testMethodName/](t *testing.T) {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let receiverName : String = aClass.getReceiverName()]
-[if isContainer()]
+[if isReflectiveDelegation()]
+	result, _ := [receiverName/].EGetFromID([aClass.getFeatureIDName(aStructuralFeature)/] , true)[if aStructuralFeature.eType.getType() <> 'interface{}'].([aStructuralFeature.generateType()/])[/if]
+	return result 
+[elseif isContainer()]
     if [receiverName/].EContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] {
         return [receiverName/].EContainer().([aStructuralFeature.generateType()/]);
     } 
@@ -305,10 +308,10 @@ func [testMethodName/](t *testing.T) {
                 [else]
     if [receiverName/].[varName/] == nil {
                 [/if]
-        [receiverName/].[varName/] = [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
+        [receiverName/].[varName/] = [receiverName/].asInitializers().[aStructuralFeature.getInitializationMethodName()/]()
     }
             [elseif lazy = 'action']
-    [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
+    [receiverName/].asInitializers().[aStructuralFeature.getInitializationMethodName()/]()
             [/if]
         [/if]
         [/let]
@@ -337,7 +340,7 @@ func [testMethodName/](t *testing.T) {
 [let receiverName : String = aClass.getReceiverName()]
 [if isContainer()]
     if [receiverName/].EContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] {
-        return [receiverName/].EContainer().([aStructuralFeature.generateType()/]);
+        return [receiverName/].EInternalContainer().([aStructuralFeature.generateType()/]);
     } 
     return nil
 [elseif not isVolatile()]
@@ -349,10 +352,10 @@ func [testMethodName/](t *testing.T) {
             [else]
     if [receiverName/].[varName/] == nil {
             [/if]
-        [receiverName/].[varName/] = [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
+        [receiverName/].[varName/] = [receiverName/].asInitializers().[aStructuralFeature.getInitializationMethodName()/]()
     }
         [elseif lazy = 'action']
-    [receiverName/].getInitializers().[aStructuralFeature.getInitializationMethodName()/]()
+    [receiverName/].asInitializers().[aStructuralFeature.getInitializationMethodName()/]()
         [/if]
     [/if]
     [/let]
@@ -411,15 +414,21 @@ func [testMethodName/](t *testing.T) {
 [let oldVarName : String = 'old' + varName.toUpperFirst() ]
 // [methodName/] set the value of [varName/]
 [aClass.generateFunctionImplementationReceiver()/] [methodName/]( [newVarName/] [aStructuralFeature.generateType()/] ) {
-[if not isVolatile()]
+[if isReflectiveDelegation()]
+	[receiverName/].ESetFromID([aClass.getFeatureIDName(aStructuralFeature)/],[newVarName/])
+[elseif not isVolatile()]
     [if isContainer()]
-    if ( [newVarName/] != [receiverName/].EContainer() || ([newVarName/] != nil && [receiverName/].EContainerFeatureID() !=  [aClass.getFeatureIDName(aStructuralFeature)/])) {
+    if ( [newVarName/] != [receiverName/].EInternalContainer() || ([newVarName/] != nil && [receiverName/].EContainerFeatureID() !=  [aClass.getFeatureIDName(aStructuralFeature)/])) {
         var notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain
-        if ( [receiverName/].EContainer() != nil) {
+        if ( [receiverName/].EInternalContainer() != nil) {
             notifications = [receiverName/].EBasicRemoveFromContainer(notifications)
         }
         if [newVarName/]Internal , _ := [newVarName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal); [newVarName/]Internal != nil {
-            notifications = [newVarName/]Internal.EInverseAdd( [receiverName/].AsEObject() , [aClass.getFeatureIDName(aStructuralFeature)/], notifications )
+		[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+        [let reverseClass : EClass = reverseFeature.eContainingClass]
+            notifications = [newVarName/]Internal.EInverseAdd( [receiverName/].AsEObject() , [reverseClass.getFeatureIDName(reverseFeature)/], notifications )
+		[/let]
+		[/let]
         }
         notifications = [receiverName/].basic[methodName.toUpperFirst()/]( [newVarName/], notifications )
         if ( notifications != nil ) {
@@ -545,7 +554,9 @@ func [testMethodName/](t *testing.T) {
 [let oldVarName : String = 'old' + aStructuralFeature.getVariableName().toUpperFirst() ]
 // [aStructuralFeature.getUnSetterName()/] unset the value of [varName/]
 [aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getUnSetterName()/]() {
-[if not isVolatile()]
+[if isReflectiveDelegation()]
+	[receiverName/].EUnsetFromID([aClass.getFeatureIDName(aStructuralFeature)/])
+[elseif not isVolatile()]
     [if isListType()]
 		[let lazy : String = aStructuralFeature.getLazy()]
 	    [if lazy = 'function']
@@ -578,8 +589,14 @@ func [testMethodName/](t *testing.T) {
         [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],nil,nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
     }
     [else]
-        if [receiverName/].ENotificationRequired() {
-            [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],nil,nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
+		[oldVarName/] := [receiverName/].[varName/]
+		[if aStructuralFeature.oclIsKindOf(EReference)]
+		[receiverName/].[varName/] = nil
+		[else]
+		[receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]
+		[/if]
+		if [receiverName/].ENotificationRequired() {
+            [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],[oldVarName/],nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
         }
     [/if]
 [elseif hasKey('unsetterBody')]
