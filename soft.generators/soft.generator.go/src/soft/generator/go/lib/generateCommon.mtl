@@ -10,7 +10,6 @@
 
 [query public isReflectiveDelegation(anFeature : EStructuralFeature ) : Boolean = anFeature.eContainingClass.isReflectiveDelegation()/]
 
-
 [query public getOutputDirectory( anPackage : EPackage ) : String = 
     let property : OclAny = getProperty('library.output.dir') in 
     if property.oclIsUndefined() or property = '' then 
@@ -36,7 +35,9 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
 */]
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
 	let aPackage : EPackage = aClass.ePackage in 
-    if ( aClass.eSuperTypes->isEmpty() ) then
+	if ( aClass.isMapEntry() ) then
+		Sequence{'ecore.EObject', 'ecore.EMapEntry'}
+    else if ( aClass.eSuperTypes->isEmpty() ) then
         if ( aClass.name = 'EObject' ) then
             Sequence{'ecore.ENotifier'}
         else if ( aPackage.hasKey('rootExtendsInterface') ) then
@@ -46,7 +47,7 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
         endif endif
     else
         aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceName()))
-    endif
+    endif endif
 /]
 
 [query public getClassExtends(aClass : EClass ) : String =

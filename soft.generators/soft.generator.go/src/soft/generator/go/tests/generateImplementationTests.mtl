@@ -67,6 +67,18 @@ func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	assert.Equal(t, [if aClass.isReflectiveDelegation()]0[else][aClass.getFeatureCountIDName()/][/if] , o.EStaticFeatureCount())
 }
+[if aClass.isMapEntry()]
+
+func Test[aClass.name.toUpperFirst()/]GetKey(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	assert.Equal(t, o.[aClass.getEStructuralFeature('key').getGetterName()/]() , o.GetKey())
+}
+
+func Test[aClass.name.toUpperFirst()/]GetValue(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	assert.Equal(t, o.[aClass.getEStructuralFeature('value').getGetterName()/]() , o.GetValue())
+}
+[/if]
 
 [aClass.getImplementedFeatures()->sortedBy( getVariableName() ).generateTestFeature(aClass)/]
 [aClass.getImplementedOperations()->sortedBy( getOperationName() )->select(isDefault()).generateTestOperation(aClass)/]
@@ -131,6 +143,13 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	// no proxy
 	v.On("EIsProxy").Return(false)
 	assert.Equal(t,v,o.[aStructuralFeature.getGetterName()/]())
+}
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isMapType())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Get(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	assert.NotNil(t, o.[aStructuralFeature.getGetterName()/]())
 }
 [/template]
 
@@ -610,7 +629,7 @@ func Test[aClass.name.toUpperFirst()/]EGetFromID(t *testing.T) {
 	assert.Panics(t, func() { o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false) })
 	[else]
 	assert.Equal(t, o.[anStructFeature.getGetterName()/](), o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], true))
-	[if (anStructFeature.isListType() and anStructFeature.oclIsKindOf(EReference))]
+	[if (not anStructFeature.isMapType() and anStructFeature.isListType() and anStructFeature.oclIsKindOf(EReference))]
 	assert.Equal(t, o.[anStructFeature.getGetterName()/]().([if not aClass.ePackage.isEcorePackage()]ecore.[/if]EObjectList).GetUnResolvedList(), o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false))
 	[/if]
 	[/if]
@@ -642,6 +661,19 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 
 [/template]
 
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isMapType())]
+{
+	// list with a value
+	m := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewBasicEMap()
+	m.Put("key","value")
+	// set list with new contents
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], m)
+	// checks
+	assert.Equal(t, 1, o.[anStructuralFeature.getGetterName()/]().Size())
+	assert.Equal(t, [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewMapEntry("key","value"), o.[anStructuralFeature.getGetterName()/]().Get(0))	
+}
+
+[/template]
 
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isListType() and oclIsKindOf(EReference))]
 {
@@ -843,6 +875,9 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 [/let]
 [/template]
 
+[template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isMapType())]
+[/template]
+
 [template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isListType())]
 {
 	mockObject := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
@@ -923,6 +958,9 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseRemove(t *testing.T) {
 }
 [/if]
 [/let]
+[/template]
+
+[template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isMapType())]
 [/template]
 
 [template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isListType())]

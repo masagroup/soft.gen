@@ -36,6 +36,12 @@
 [aStructuralFeature.getUnSetterName()/]()
 [/template]
 
+[template private getMapConstructor( aStructuralFeature : EStructuralFeature, aClass : EClass) post(trim())]
+[let aPackage : EPackage = aClass.ePackage]
+[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEMap()
+[/let]
+[/template]
+
 [template private getListConstructor( anEAttribute : EStructuralFeature , aClass : EClass) post(trim())]
 [/template]
 
@@ -103,7 +109,9 @@ nil
 
 [template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'function' )]
 [aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getInitializationMethodName()/]() [aStructuralFeature.generateType()/] {
-[if isListType()]
+[if isMapType()]
+	return [getMapConstructor(aClass)/];
+[elseif isListType()]
     return [getListConstructor(aClass)/];
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
     return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
@@ -119,7 +127,9 @@ nil
 [aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getInitializationMethodName()/]() {
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let receiverName : String = aStructuralFeature.eContainingClass.getReceiverName()]
-[if isListType()]
+[if isMapType()]
+	[receiverName/].[varName/] = [getMapConstructor(aClass)/];
+[elseif isListType()]
     [receiverName/].[varName/] = [getListConstructor(aClass)/];
 [elseif isProxy()]
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
@@ -228,7 +238,7 @@ func [testMethodName/](t *testing.T) {
 // [testMethodName/] tests method [getterMethodName/]
 func [testMethodName/](t *testing.T) {
 	o := &[mockName/]{}
-	l := &[if not isEcorePackage(aClass.ePackage)]ecore.[/if]MockEList{}
+	l := &[if not isEcorePackage(aClass.ePackage)]ecore.[/if][if isMapType()]MockEMap[else]MockEList[/if]{}
 	// return a value
 	o.On("[getterMethodName/]").Once().Return(l)
 	o.On("[getterMethodName/]").Once().Return( func () [aStructuralFeature.generateType()/] {

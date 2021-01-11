@@ -85,6 +85,16 @@ func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
 [aClass.generateFunctionImplementationReceiver()/] EStaticFeatureCount() int {
     return [if aClass.isReflectiveDelegation()]0[else][aClass.getFeatureCountIDName()/][/if]
 }
+[if aClass.isMapEntry()]
+
+[aClass.generateFunctionImplementationReceiver()/] GetKey() interface{} {
+    return [aClass.getReceiverName()/].[aClass.getEStructuralFeature('key').getGetterName()/]()
+}
+
+[aClass.generateFunctionImplementationReceiver()/] GetValue() interface{} {
+    return [aClass.getReceiverName()/].[aClass.getEStructuralFeature('value').getGetterName()/]()
+}
+[/if]
 
 [operations.generateImplementation(aClass)/]
 [features.generateImplementation(aClass)/]

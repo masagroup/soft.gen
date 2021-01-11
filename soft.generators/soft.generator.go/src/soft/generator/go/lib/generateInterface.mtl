@@ -14,7 +14,7 @@
 	interfaceName : String = aClass.getInterfaceName(); 
 	aPackage : EPackage = aClass.ePackage; 
 	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
-	isDiamond : Boolean = interfaceExtends->size() > 1;
+	isDiamond : Boolean = aClass.eSuperTypes->size() > 1;
 }]
 [file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
