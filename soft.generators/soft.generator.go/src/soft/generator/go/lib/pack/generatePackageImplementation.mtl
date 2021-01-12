@@ -8,15 +8,35 @@
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::pack::generateCommon/]
 
-[query private getPackageGetter(aFeature : EStructuralFeature) : String = if oclIsUndefined() then 'nil' else 'p.' + aFeature.getReflectiveGetterName() + '()' endif/]
-[query private getPackageGetter(aOperation : EOperation) : String = if oclIsUndefined() then 'nil' else 'p.' + aOperation.getReflectiveGetterName() + '()' endif/]
+[query private getPackageGetter(aModelElement : EModelElement) : String =
+	if aModelElement.oclIsKindOf(EPackage) then  'p' 
+	else if aModelElement.oclIsKindOf(ENamedElement) then aModelElement.oclAsType(ENamedElement).getPackageGetter()
+	else 'nil' endif endif/]
+[query private getPackageGetter(aNamedElement : ENamedElement) : String = if oclIsUndefined() then 'nil' else 'p.' + aNamedElement.getReflectiveGetterName() + '()' endif/]
 
 [query private getPackageGetter(aEClassifier : EClassifier, aStruct : EStructuralFeature) : String = getPackageGetter(aEClassifier,aStruct.eContainingClass) /]
 [query private getPackageGetter(aEClass : EClass, supertype : EClass) : String = getPackageGetter(supertype.oclAsType(EClassifier),aEClass.oclAsType(EClassifier)) /]
 [query private getPackageGetter(aEClassifier1 : EClassifier, aEClassifier2 : EClassifier) : String = getPackageInstance(aEClassifier1, aEClassifier2) + aEClassifier1.getReflectiveGetterName() + '()' /]
 [query private getPackageInstance(aClassifier1 : EClassifier ,aClassifier2 : EClassifier ) : String = if(aClassifier1.ePackage.name = aClassifier2.ePackage.name ) then 'p.' else  aClassifier1.ePackage.name + '.GetPackage().'  endif /]
-
 [query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'nil' else getPackageInstance(anEClassifier, anOperation.eContainingClass) + anEClassifier.getReflectiveGetterName() + '()' endif/]
+
+[query private getAnnotionSourceIdentifierLastIndex(aAnnotationSource : String) : Integer = 
+	let index : Integer = aAnnotationSource.lastIndexOf('/') in
+	if ( index = aAnnotationSource.size() - 1 ) then
+		aAnnotationSource.first(index).lastIndexOf('/')
+	else
+		index
+	endif
+/]
+[query private getAnnotationSourceIdentifier(aAnnotationSource : String) : String = 
+	let index : Integer = getAnnotionSourceIdentifierLastIndex(aAnnotationSource) in
+	if ( index = -1 ) then
+		aAnnotationSource
+    else
+        aAnnotationSource.substring(index + 1 )
+    endif
+/]
+
 
 [template private generateDataMember(anENamedElement : ENamedElement, anEPackage : EPackage)] 
 [anENamedElement.getElementInstanceName()/] [anEPackage.getMetaType(anENamedElement)/] 
@@ -149,9 +169,7 @@ p.[aEClass.getElementInstanceName()/].SetInterface([aEClass.interface.toString()
 [localVar/].SetOrdered([anEOperation.ordered.toString()/])
 [for (anEParameter : EParameter | anEOperation.eParameters)]
 {
-[let factoryName : String = if anEOperation.eContainingClass.ePackage.name = 'ecore' then '' else 'ecore.' endif + 'GetFactory']
-    parameter := [factoryName/]().CreateEParameterFromContainer([localVar/])
-[/let]
+    parameter := [if not anEOperation.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]GetFactory().CreateEParameterFromContainer([localVar/])
     parameter.SetName("[anEParameter.name/]")
     parameter.SetEType([anEParameter.eType.getPackageGetter(anEParameter.eOperation)/])
     parameter.SetLowerBound(0)
@@ -249,6 +267,11 @@ func (p *[className/])initializePackageContents() {
     p.initialize[aClass.name.toUpperFirst()/]Content()
 [/for]
     p.initializePackageEDataTypes()
+[if not anEPackage.isEcorePackage()]
+[for (aAnnotationSource : String | anEPackage.eAllContents(EAnnotation)->collect( a | a.source )->asOrderedSet()->sortedBy(name))]
+	p.initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations()
+[/for]
+[/if]
 }
 
 [for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
@@ -264,5 +287,25 @@ func (p *[className/])initializePackageEDataTypes() {
     [anEPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization(anEPackage)/]
 }
 
+[if not anEPackage.isEcorePackage()]
+[for (aAnnotationSource : String | anEPackage.eAllContents(EAnnotation)->collect( a | a.source )->asOrderedSet()->sortedBy(name))]
+func (p *[className/])initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations() {
+	source := "[aAnnotationSource/]"
+	[for (eAnnotation : EAnnotation | anEPackage.eAllContents(EAnnotation)->select( a | a.source = aAnnotationSource))]
+	{
+		eAnnotation := [if not anEPackage.isEcorePackage()]ecore.[/if]GetFactory().CreateEAnnotationFromContainer([eAnnotation.eModelElement.getPackageGetter()/])
+		eAnnotation.SetSource(source)
+		[for (eEntry : EStringToStringMapEntry | eAnnotation.details)]
+		[let value : String = if eEntry.value.oclIsUndefined() then '' else eEntry.value endif]
+		eAnnotation.GetDetails().Put("[eEntry.key/]","[value.replaceAll('"', '\\\\"')/]")
+		[/let]
+		[/for]
+	}
+	[/for]	    
+}
+
+[/for]
+[/if]
+	
 [/file]
 [/template]
