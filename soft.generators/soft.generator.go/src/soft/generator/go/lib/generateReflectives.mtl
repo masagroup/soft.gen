@@ -142,7 +142,11 @@
     switch featureID {
 [for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
     case [aClass.getQualifiedIDName(anStructFeature)/]:
-    [if anStructFeature.isListType()]
+	[if anStructFeature.isMapType()]
+		m := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
+		m.Clear()
+		m.AddAll(newValue.([if not aClass.ePackage.isEcorePackage()]ecore.[/if]EList))
+    [elseif anStructFeature.isListType()]
 		list := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
         list.Clear()
         list.AddAll(newValue.([anStructFeature.generateType()/]))
