@@ -661,18 +661,38 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 
 [/template]
 
-[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isMapType())]
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isMapType() and anStructuralFeature.eType.oclIsKindOf(EClass) and anStructuralFeature.eType.oclAsType(EClass).isMapEntry())]
 {
+[let aPackage : EPackage = aClass.ePackage]
+[let aMapClass : EClass = anStructuralFeature.eType.oclAsType(EClass)]
+[let keyFeature : EStructuralFeature = aMapClass.getEStructuralFeature('key')]
+[let valueFeature : EStructuralFeature = aMapClass.getEStructuralFeature('value')]
 	// list with a value
-	m := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewBasicEMap()
-	m.Put("key","value")
+	mockMap := &MockEMap{}
+	mockEntry := &MockEMapEntry{}
+	mockIterator := &MockEIterator{}
+	mockKey := [keyFeature.eType.getTestValue(aPackage)/]
+	mockValue := [valueFeature.eType.getTestValue(aPackage)/]		
+	mockMap.On("Iterator").Return(mockIterator).Once()
+	mockIterator.On("HasNext").Return(true).Once()
+	mockIterator.On("Next").Return(mockEntry).Once()
+	mockIterator.On("HasNext").Return(false).Once()
+	mockEntry.On("GetKey").Return(mockKey).Once()
+	mockEntry.On("GetValue").Return(mockValue).Once()
+	
 	// set list with new contents
-	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], m)
-	// checks
-	assert.Equal(t, 1, o.[anStructuralFeature.getGetterName()/]().Size())
-	assert.Equal(t, [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewMapEntry("key","value"), o.[anStructuralFeature.getGetterName()/]().Get(0))	
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], mockMap)
+	assert.Equal(t, map['['/]interface{}[']'/]interface{}{mockKey : mockValue},o.[anStructuralFeature.getGetterName()/]().ToMap())
+	mock.AssertExpectationsForObjects(t, mockMap, mockEntry)
+[/let]
+[/let]
+[/let]
+[/let]
 }
 
+[/template]
+
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isMapType())]
 [/template]
 
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isListType() and oclIsKindOf(EReference))]
