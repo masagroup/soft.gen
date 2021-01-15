@@ -325,6 +325,10 @@ func [testMethodName/](t *testing.T) {
             [/if]
         [/if]
         [/let]
+	[elseif aStructuralFeature.isMapType()]
+	if [receiverName/].[varName/] == nil {
+		[receiverName/].[varName/] = [aStructuralFeature.getMapConstructor(aClass)/];
+	}
 	[elseif aStructuralFeature.isListType()]
 	if [receiverName/].[varName/] == nil {
 		[receiverName/].[varName/] = [aStructuralFeature.getListConstructor(aClass)/]
