@@ -664,13 +664,14 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isMapType() and anStructuralFeature.eType.oclIsKindOf(EClass) and anStructuralFeature.eType.oclAsType(EClass).isMapEntry())]
 {
 [let aPackage : EPackage = aClass.ePackage]
+[let ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.' else '' endif]
 [let aMapClass : EClass = anStructuralFeature.eType.oclAsType(EClass)]
 [let keyFeature : EStructuralFeature = aMapClass.getEStructuralFeature('key')]
 [let valueFeature : EStructuralFeature = aMapClass.getEStructuralFeature('value')]
 	// list with a value
-	mockMap := &MockEMap{}
-	mockEntry := &MockEMapEntry{}
-	mockIterator := &MockEIterator{}
+	mockMap := &[ecorePrefix/]MockEMap{}
+	mockEntry := &[ecorePrefix/]MockEMapEntry{}
+	mockIterator := &[ecorePrefix/]MockEIterator{}
 	mockKey := [keyFeature.eType.getTestValue(aPackage)/]
 	mockValue := [valueFeature.eType.getTestValue(aPackage)/]		
 	mockMap.On("Iterator").Return(mockIterator).Once()
@@ -684,6 +685,7 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], mockMap)
 	assert.Equal(t, map['['/]interface{}[']'/]interface{}{mockKey : mockValue},o.[anStructuralFeature.getGetterName()/]().ToMap())
 	mock.AssertExpectationsForObjects(t, mockMap, mockEntry)
+[/let]
 [/let]
 [/let]
 [/let]
