@@ -38,7 +38,7 @@
 
 [template private getMapConstructor( aStructuralFeature : EStructuralFeature, aClass : EClass) post(trim())]
 [let aPackage : EPackage = aClass.ePackage]
-[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEMap([if aStructuralFeature.eType.ePackage.name <> aPackage.name][aStructuralFeature.eType.ePackage.name/].[/if]GetPackage().[aStructuralFeature.eType.getReflectiveGetterName()/]())
+[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEObjectMap([if aStructuralFeature.eType.ePackage.name <> aPackage.name][aStructuralFeature.eType.ePackage.name/].[/if]GetPackage().[aStructuralFeature.eType.getReflectiveGetterName()/]())
 [/let]
 [/template]
 
