@@ -62,7 +62,7 @@
 /] 
 [query public isFeatureMapType( aEFeature : EStructuralFeature ) : Boolean = isFeatureMap(aEFeature.eType.instanceClassName)/]
 [query public isListType(aTypedElement : ETypedElement ) : Boolean = (not aTypedElement.oclIsUndefined() ) and ( aTypedElement.many or aTypedElement.upperBound <> 1 )/]
-[query public isMapType(aTypedElement : ETypedElement ) : Boolean = isListType() and isMap(aTypedElement.eType.instanceClassName)/]
+[query public isMapType(aTypedElement : ETypedElement ) : Boolean = aTypedElement.isListType() and not aTypedElement.eType.oclIsUndefined() and isMap(aTypedElement.eType.instanceClassName)/]
 [query public isProxy(aStructuralFeature : EStructuralFeature) : Boolean = (not isContainer() and not isContains()) and aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).resolveProxies/]  
 [query public isField(aStructuralFeature : EStructuralFeature) : Boolean = not isContainer() and not isVolatile()/]
 [query public isMap( n : String  ) : Boolean = let entries : Sequence(String) = Sequence{'java.util.Map.Entry','java.util.Map$Entry'} in entries->includes(n)/]
@@ -332,5 +332,13 @@ and (not aClass.getEStructuralFeature('value').oclIsUndefined())/]
 	let templatesProperty : String =  getProperty('templates') in
 	let templates : Sequence(String) = templatesProperty.tokenize(',') in
 	templates->includes(aTemplateName)
+/]
+
+[query public getInstanceTypeName( aType : EDataType ) : String =
+	if hasKey(aType, 'instanceTypeName') then
+		aType.valueKey('instanceTypeName')
+	else
+		aType.instanceTypeName
+	endif
 /]
  

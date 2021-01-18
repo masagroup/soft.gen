@@ -184,9 +184,11 @@ p.[aEClass.getElementInstanceName()/].SetInterface([aEClass.interface.toString()
 
 [template private generateInitialization(aDataType : EDataType,anEPackage : EPackage)]
 p.[aDataType.getElementInstanceName()/].SetName("[aDataType.name/]")
-[if not aDataType.instanceTypeName.oclIsUndefined() and not (aDataType.instanceTypeName = '')] 
-//p.[aDataType.getElementInstanceName()/].SetInstanceClass( reflect.TypeOf([aDataType.instanceTypeName/]))
+[let instanceTypeName : String = aDataType.getInstanceTypeName()]
+[if not aDataType.instanceTypeName.oclIsUndefined() and not (aDataType.instanceTypeName = '')]
+p.[aDataType.getElementInstanceName()/].SetInstanceTypeName("[instanceTypeName/]")
 [/if]
+[/let]
 [if (not aDataType.oclIsKindOf(EEnum))]
 p.[aDataType.getElementInstanceName()/].SetSerializable([aDataType.serializable.toString()/])
 [/if]
