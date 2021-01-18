@@ -998,6 +998,13 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseRemove(t *testing.T) {
 [/template]
 
 [template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isMapType())]
+{
+	mockObject := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	o.EBasicInverseRemove(mockObject,[aClass.getQualifiedIDName(aStructuralFeature)/],nil)
+	mock.AssertExpectationsForObjects(t, mockObject)
+	assert.True(t,o.[aStructuralFeature.getGetterName()/]().Empty())
+}
+
 [/template]
 
 [template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isListType())]
@@ -1020,14 +1027,9 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseRemove(t *testing.T) {
 
 [template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass )]
 {
-[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
-[let reverseClass : EClass = reverseFeature.eContainingClass]
 	mockObject := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
 	o.EBasicInverseRemove(mockObject,[aClass.getQualifiedIDName(aStructuralFeature)/],nil)
 	mock.AssertExpectationsForObjects(t, mockObject)
-[/let]
-[/let]	
-
 }
 
 [/template]
