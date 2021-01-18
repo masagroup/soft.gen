@@ -477,17 +477,32 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 
 [template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isContains())]
 [let aPackage : EPackage = aClass.ePackage ]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	mockValue := [aStructuralFeature.eType.getTestValue(aPackage)/]
-	mockValue.On("EInverseAdd",o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],mock.Anything).Return(nil).Once()
-	mockAdapter := new([getShortQualifiedName('ecore.MockEAdapter',aPackage.name)/])
-	mockAdapter.On("SetTarget",o).Once()		
-	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+
+	// add listener
+	mockAdapter := new([ecorePrefix/]MockEAdapter)
+	mockAdapter.On("SetTarget", o).Once()
 	o.EAdapters().Add(mockAdapter)
-	o.[aStructuralFeature.getSetterName()/](mockValue)
-	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue)
+	mock.AssertExpectationsForObjects(t, mockAdapter)	
+
+	mockValue1 := [aStructuralFeature.eType.getTestValue(aPackage)/]
+	mockValue1.On("EInverseAdd",o,[ecorePrefix/]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],mock.Anything).Return(nil).Once()
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()	
+	o.[aStructuralFeature.getSetterName()/](mockValue1)
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue1)
+
+	// second value
+	mockValue2 := [aStructuralFeature.eType.getTestValue(aPackage)/]
+	mockValue1.On("EInverseRemove",o,[ecorePrefix/]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],nil).Return(nil).Once()
+	mockValue2.On("EInverseAdd",o,[ecorePrefix/]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],nil).Return(nil).Once()	
+	mockAdapter.On("NotifyChanged", mock.Anything).Once()
+	o.[aStructuralFeature.getSetterName()/](mockValue2)
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue1,mockValue2)
+	
 }
+[/let]
 [/let]
 [/template]
 
