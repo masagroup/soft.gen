@@ -107,7 +107,9 @@ p.[aEClass.getElementInstanceName()/].GetESuperTypes().Add([aEClass.getPackageGe
 p.[aEClass.getElementInstanceName()/].SetName("[aEClass.name/]")
 p.[aEClass.getElementInstanceName()/].SetAbstract([aEClass.abstract.toString()/])
 p.[aEClass.getElementInstanceName()/].SetInterface([aEClass.interface.toString()/])
-
+[let instanceTypeName : String = aEClass.getInstanceTypeName()]
+p.[aEClass.getElementInstanceName()/].SetInstanceTypeName("[if instanceTypeName = ''][aEClass.getQualifiedInterfaceName()/][else][instanceTypeName/][/if]")
+[/let]
 [/template]
 
 [template private generateInitialization(anEAttribute : EAttribute)]
@@ -184,11 +186,7 @@ p.[aEClass.getElementInstanceName()/].SetInterface([aEClass.interface.toString()
 
 [template private generateInitialization(aDataType : EDataType,anEPackage : EPackage)]
 p.[aDataType.getElementInstanceName()/].SetName("[aDataType.name/]")
-[let instanceTypeName : String = aDataType.getInstanceTypeName()]
-[if not aDataType.instanceTypeName.oclIsUndefined() and not (aDataType.instanceTypeName = '')]
-p.[aDataType.getElementInstanceName()/].SetInstanceTypeName("[instanceTypeName/]")
-[/if]
-[/let]
+p.[aDataType.getElementInstanceName()/].SetInstanceTypeName("[aDataType.getInstanceTypeName()/]")
 [if (not aDataType.oclIsKindOf(EEnum))]
 p.[aDataType.getElementInstanceName()/].SetSerializable([aDataType.serializable.toString()/])
 [/if]
@@ -276,13 +274,14 @@ func (p *[className/])initializePackageContents() {
 [/if]
 }
 
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
+[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
 func (p *[className/])initialize[aClass.name.toUpperFirst()/]Content() {
     [aClass.generateInitialization()/]
     [aClass.eAttributes->sortedBy(name).generateInitialization()/]
     [aClass.eReferences->sortedBy(name).generateInitialization()/]
     [aClass.eOperations->sortedBy(name).generateInitialization()/]
 }
+
 [/for]
 
 func (p *[className/])initializePackageEDataTypes() {
