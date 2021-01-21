@@ -107,9 +107,8 @@ p.[aEClass.getElementInstanceName()/].GetESuperTypes().Add([aEClass.getPackageGe
 p.[aEClass.getElementInstanceName()/].SetName("[aEClass.name/]")
 p.[aEClass.getElementInstanceName()/].SetAbstract([aEClass.abstract.toString()/])
 p.[aEClass.getElementInstanceName()/].SetInterface([aEClass.interface.toString()/])
-[let instanceTypeName : String = aEClass.getInstanceTypeName()]
-p.[aEClass.getElementInstanceName()/].SetInstanceTypeName("[if instanceTypeName = ''][aEClass.getQualifiedInterfaceName()/][else][instanceTypeName/][/if]")
-[/let]
+p.[aEClass.getElementInstanceName()/].SetInstanceTypeName("[aEClass.getInstanceTypeName()/]")
+
 [/template]
 
 [template private generateInitialization(anEAttribute : EAttribute)]

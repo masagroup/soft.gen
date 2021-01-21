@@ -334,13 +334,4 @@ and (not aClass.getEStructuralFeature('value').oclIsUndefined())/]
 	templates->includes(aTemplateName)
 /]
 
-[query public getInstanceTypeName( aClassifier : EClassifier ) : String =
-	if hasKey(aClassifier, 'instanceTypeName') then
-		aClassifier.valueKey('instanceTypeName')
-	else if not aClassifier.instanceTypeName.oclIsUndefined() then
-		aClassifier.instanceTypeName
-	else
-		''
-	endif endif
-/]
  
