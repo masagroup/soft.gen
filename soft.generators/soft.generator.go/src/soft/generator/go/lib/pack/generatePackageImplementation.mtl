@@ -189,9 +189,13 @@ p.[aDataType.getElementInstanceName()/].SetInstanceTypeName("[aDataType.getInsta
 [if (not aDataType.oclIsKindOf(EEnum))]
 p.[aDataType.getElementInstanceName()/].SetSerializable([aDataType.serializable.toString()/])
 [/if]
-[if aDataType.name <> 'EChar' and not aDataType.defaultValue.oclIsUndefined() and aDataType.defaultValue <> '']
-p.[aDataType.getElementInstanceName()/].([if not anEPackage.isEcorePackage()]ecore.[/if]EDataTypeInternal).SetDefaultValue( p.GetEFactoryInstance().CreateFromString(p.[aDataType.getElementInstanceName()/],"[aDataType.defaultValue/]"))
+[let defaultValue : String = aDataType.getDefaultValue()]
+[if defaultValue <> '' and defaultValue <> 'nil']
+[let unquotedDefaultValue : String = defaultValue.replaceAll('\'|"', '')]
+p.[aDataType.getElementInstanceName()/].([if not anEPackage.isEcorePackage()]ecore.[/if]EDataTypeInternal).SetDefaultValue( p.GetEFactoryInstance().CreateFromString(p.[aDataType.getElementInstanceName()/],"[unquotedDefaultValue/]"))
+[/let]
 [/if]
+[/let]
 
 [/template]
 

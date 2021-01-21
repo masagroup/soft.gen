@@ -56,7 +56,7 @@
 [comment {ecore types..., go type, default value, test value, comparison operator}/]
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
     Sequence {
-        Sequence{ 'java.lang.Boolean', 'boolean' , 'bool' , 'false' , 'true', ''},
+        Sequence{ 'java.lang.Boolean', 'boolean', 'bool', 'false' , 'true', ''},
         Sequence{ 'java.lang.Integer', 'int' , '0', '45' , ''},
 		Sequence{ 'java.lang.Byte','java.lang.Character', 'char', 'byte' ,'\'\'', '\'a\'', ''},
 		Sequence{ 'java.lang.Byte','byte[]','[]byte' , 'nil', 'nil' , ''},
@@ -172,6 +172,8 @@
 [query public getDefaultValue(aDataType : EDataType) : String =
 	if hasKey(aDataType, 'defaultValue') then
 		aDataType.valueKey('defaultValue')
+	else if aDataType.name <> 'EChar' and not aDataType.defaultValue.oclIsUndefined() then
+		aDataType.defaultValue.toString()
 	else
 		let typeName : String = aDataType.getInstanceTypeName() in
 	    getAllDataTypes()->iterate( s ; res : String = '' |
@@ -183,10 +185,9 @@
 	        endif
 	    else 
 	        res 
-	    endif
-	
+	    endif	
  		) 
-	endif
+	endif endif
 /]
 
 [query public getComparisonFunction( aDataType : EDataType) : String =
