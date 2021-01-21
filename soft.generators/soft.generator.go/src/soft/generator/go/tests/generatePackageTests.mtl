@@ -8,7 +8,7 @@
 
 [template public generatePackageTests(ePackage : EPackage){
 	allClasses : OrderedSet(EClass) = ePackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
-	allDataTypes : Sequence(EDataType) = ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+	allDataTypes : OrderedSet(EDataType) = ePackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 }]
 [file (ePackage.getOutputDirectory() + '/' + ePackage.getPackageTestFileName(ePackage.name), false, 'UTF-8') ]
 [fileComment()/]
