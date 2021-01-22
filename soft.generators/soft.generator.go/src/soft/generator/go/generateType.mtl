@@ -125,8 +125,8 @@
 
 [query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = 'new(' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name ) +')'/]
 [query private getTestValue( aEnum : EEnum ) : String = 
-	if aEnum.eLiterals->size() > 1 then aEnum.eLiterals->at(2).name.toUpperCase() 
-	else if aEnum.eLiterals->size() = 1 then aEnum.eLiterals->at(1).name.toUpperCase() 
+	if aEnum.eLiterals->size() > 1 then aEnum.eLiterals->at(2).getConstantsName()
+	else if aEnum.eLiterals->size() = 1 then aEnum.eLiterals->at(1).getConstantsName() 
 	else 0 endif endif/]
 [query private getTestValue( aDataType : EDataType ) : String = 
 	if hasKey(aDataType, 'testValue') then
@@ -167,7 +167,7 @@
     else 'nil' endif endif
 /]
 
-[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.eLiterals->at(1).name.toUpperCase() else 0 endif/]
+[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.eLiterals->at(1).getConstantsName() else 0 endif/]
 
 [query public getDefaultValue(aDataType : EDataType) : String =
 	if hasKey(aDataType, 'defaultValue') then

@@ -114,7 +114,7 @@ func TestFactoryConvert(t *testing.T) {
 	mockEDataType := &[if not aPackage.isEcorePackage()]ecore.[/if]MockEDataType{}
 	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
 [for (lit : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
-	assert.Equal(t, [lit.name.toUpperCase()/], factory.CreateFromString(mockEDataType, "[lit.name/]") )	
+	assert.Equal(t, [lit.getConstantsName()/], factory.CreateFromString(mockEDataType, "[lit.getValueName()/]") )	
 [/for]
 	mockEDataType.AssertExpectations(t)
 }
@@ -144,7 +144,7 @@ func TestFactoryConvert(t *testing.T) {
 	mockEDataType.On("GetClassifierID").Return([aDataType.getClassifierIDName()/])
 	assert.Equal(t, "", factory.ConvertToString(mockEDataType, nil) )
 [for (lit : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
-	assert.Equal(t, "[lit.name/]", factory.ConvertToString(mockEDataType, [lit.name.toUpperCase()/]) )
+	assert.Equal(t, "[lit.getValueName()/]", factory.ConvertToString(mockEDataType, [lit.getConstantsName()/]) )
 [/for]
 	mockEDataType.AssertExpectations(t)
 }

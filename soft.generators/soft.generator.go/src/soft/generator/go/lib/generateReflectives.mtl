@@ -218,7 +218,7 @@
     [if (anEAttribute.defaultValueLiteral->notEmpty())]
         [anEAttribute.defaultValueLiteral.toUpperCase()/]
     [else]
-        [anEAttribute.eType.oclAsType(EEnum).eLiterals->first().name.toUpperCase()/] 
+        [anEAttribute.eType.oclAsType(EEnum).eLiterals->first().getConstantsName()/] 
     [/if]
 [else]
     [anEAttribute.getDefaultValue()/]

@@ -183,3 +183,14 @@ methodName.toUpperFirst()
     aClass.getOperationIDName( aOperation )
 /]
 
+[query public isConstantsQualified( aEEnum  : EEnum ) : Boolean = 
+	let aPackage : EPackage = aEEnum.ePackage in
+	let aEnumNames : OrderedSet(String) = aEEnum.eLiterals.name->asOrderedSet() in
+	aPackage.eAllContents(EEnum)->exists( e | e <> aEEnum and aEEnum.eLiterals.name->asOrderedSet()->intersection(aEnumNames)->notEmpty() ) 
+/]
+
+[query public getConstantsName(eLiteral : EEnumLiteral) : String = 
+	if eLiteral.eEnum.isConstantsQualified() then eLiteral.eEnum.name.toUpperCase() + '_' + eLiteral.name.toUpperCase() else eLiteral.name.toUpperCase() endif/]
+
+[query public getValueName(eLiteral : EEnumLiteral) : String = eLiteral.name/]
+
