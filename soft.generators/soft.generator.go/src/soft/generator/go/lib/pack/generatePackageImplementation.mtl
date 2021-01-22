@@ -301,7 +301,7 @@ func (p *[className/])initialize[getAnnotationSourceIdentifier(aAnnotationSource
 		eAnnotation.SetSource(source)
 		[for (eEntry : EStringToStringMapEntry | eAnnotation.details)]
 		[let value : String = if eEntry.value.oclIsUndefined() then '' else eEntry.value endif]
-		eAnnotation.GetDetails().Put("[eEntry.key/]","[value.replaceAll('\\\\','\\\\\\\\').replaceAll('"', '\\\\"')/]")
+		eAnnotation.GetDetails().Put("[eEntry.key/]","[value.replaceAll('\\\\','\\\\\\\\').replaceAll('"', '\\\\"').replaceAll('\\n','\\\\n').replaceAll('\\r','\\\\r')/]")
 		[/let]
 		[/for]
 	}
