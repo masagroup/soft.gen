@@ -194,3 +194,10 @@ methodName.toUpperFirst()
 
 [query public getValueName(eLiteral : EEnumLiteral) : String = eLiteral.name/]
 
+[query public getReservedKeywords(oclAny : OclAny) : Sequence(String) = 
+	Sequence{ 'break' ,'case' ,'chan' ,'const' ,'continue','default' ,'defer' ,'else' ,'fallthrough' ,'for'
+			, 'func' ,'go' ,'goto' ,'if' ,'import' ,'interface' ,'map' ,'package' ,'range' ,'return' ,'select' 
+			, 'struct' ,'switch' ,'type' ,'var'
+	}
+/]
+
