@@ -119,6 +119,12 @@ func new[className.toUpperFirst()/]() *[className/] {
 [/let]
 [/template]
 
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'string')]
+[aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
+   return literalValue
+}
+[/template]
+
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType )]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
    panic("NotImplementedException")
@@ -137,6 +143,13 @@ func new[className.toUpperFirst()/]() *[className/] {
 }
 [/let]
 [/let]
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'string')]
+[aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue interface{}) string {
+   	v , _ := instanceValue.(string) 
+	return v
+}
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )]
