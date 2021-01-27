@@ -189,7 +189,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	mockClass.On("GetFeatureID",GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([reverseClass.getFeatureIDName(reverseFeature)/]).Once()
 	mockValue.On("EClass").Return(mockClass).Once()
 	mockValue.On("EInverseAdd", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
-	mockValue.On("EInternalResource").Return(nil).Once()
+	mockValue.On("EResource").Return(nil).Once()
 	[/let]
 	[/let]
 	[elseif isContains()]
@@ -318,7 +318,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	mockValue.On("EClass").Return(mockClass).Once()
 	mockClass.On("GetFeatureID",GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([reverseClass.getFeatureIDName(reverseFeature)/]).Once()	
 	mockValue.On("EInverseAdd", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
-	mockValue.On("EInternalResource").Return(mockResource).Once()
+	mockValue.On("EResource").Return(mockResource).Once()
 	mockResource.On("Attached", o).Once()
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()
 	o.[aStructuralFeature.getSetterName()/](mockValue)
@@ -335,11 +335,11 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	mockValue.On("EClass").Return(mockClass).Once()
 	mockClass.On("GetFeatureID",GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([reverseClass.getFeatureIDName(reverseFeature)/]).Once()	
 	mockValue.On("EInverseRemove", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
-	mockValue.On("EInternalResource").Return(mockResource).Once()
+	mockValue.On("EResource").Return(mockResource).Once()
 	mockValue2.On("EClass").Return(mockClass).Once()
 	mockClass.On("GetFeatureID",GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([reverseClass.getFeatureIDName(reverseFeature)/]).Once()
 	mockValue2.On("EInverseAdd", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
-	mockValue2.On("EInternalResource").Return(mockResource2).Once()
+	mockValue2.On("EResource").Return(mockResource2).Once()
 	mockResource.On("Detached", o).Once()
 	mockResource2.On("Attached", o).Once()
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()
@@ -369,7 +369,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	mockValue := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]	
 	mockResource := new([ecorePrefix/]MockEResource)
 	mockValue.On("EInverseAdd", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
-	mockValue.On("EInternalResource").Return(mockResource).Once()
+	mockValue.On("EResource").Return(mockResource).Once()
 	mockResource.On("Attached", o).Once()
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()
 	o.[aStructuralFeature.getSetterName()/](mockValue)
@@ -384,9 +384,9 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	mockValue2 := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]	
 	mockResource2 := new([ecorePrefix/]MockEResource)
 	mockValue.On("EInverseRemove", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
-	mockValue.On("EInternalResource").Return(mockResource).Once()
+	mockValue.On("EResource").Return(mockResource).Once()
 	mockValue2.On("EInverseAdd", o, [reverseClass.getFeatureIDName(reverseFeature)/], nil).Return(nil).Once()
-	mockValue2.On("EInternalResource").Return(mockResource2).Once()
+	mockValue2.On("EResource").Return(mockResource2).Once()
 	mockResource.On("Detached", o).Once()
 	mockResource2.On("Attached", o).Once()
 	mockAdapter.On("NotifyChanged", mock.Anything).Once()
@@ -536,7 +536,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]B
 	mockValue := [aStructuralFeature.eType.getTestValue(aPackage)/]	
 	mockNotifications := new([ecorePrefix/]MockENotificationChain)
 [if isContainer()]
-	mockValue.On("EInternalResource").Return(nil).Once()
+	mockValue.On("EResource").Return(nil).Once()
 [/if]
 	mockNotifications.On("Add", mock.MatchedBy(func(notification [ecorePrefix/]ENotification) bool {
 		return notification.GetEventType() == [ecorePrefix/]SET && notification.GetFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]
@@ -665,7 +665,7 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 [let reverseClass : EClass = reverseFeature.eContainingClass]
 	mockValue := [anStructuralFeature.eType.getTestValue(aClass.ePackage)/]
 	mockValue.On("EIsProxy").Return(false).Once()
-	mockValue.On("EInternalResource").Return(nil).Once()
+	mockValue.On("EResource").Return(nil).Once()
 	mockValue.On("EInverseAdd",o,[reverseClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once() 
 	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], mockValue)
 	assert.Equal(t,mockValue,o.EGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false))
@@ -929,16 +929,16 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 [template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isContainer())]
 {
 	mockObject := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
-	mockObject.On("EInternalResource").Return(nil).Once()
+	mockObject.On("EResource").Return(nil).Once()
 	mockObject.On("EIsProxy").Return(false).Once()
 	o.EBasicInverseAdd(mockObject,[aClass.getQualifiedIDName(aStructuralFeature)/],nil)
 	assert.Equal(t, mockObject, o.[aStructuralFeature.getGetterName()/]())
 	mock.AssertExpectationsForObjects(t, mockObject)
 
 	mockOther := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
-	mockOther.On("EInternalResource").Return(nil).Once()
+	mockOther.On("EResource").Return(nil).Once()
 	mockOther.On("EIsProxy").Return(false).Once()
-	mockObject.On("EInternalResource").Return(nil).Once()
+	mockObject.On("EResource").Return(nil).Once()
 [if aStructuralFeature.isContains()]
 	mockObject.On("EInverseRemove",o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],nil).Return(nil).Once()
 [else]
