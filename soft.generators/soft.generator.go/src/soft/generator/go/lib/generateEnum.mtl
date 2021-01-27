@@ -7,6 +7,7 @@
 [import soft::generator::go::lib::generateCommon/]
 
 [template public generateEnum(aEEnum : EEnum) { 
+	literalQualification : String =  if aEEnum.isConstantsQualified() then aEEnum.name.toUpperCase() + '__' else '' endif; 
 	enumName : String = aEEnum.name;
 	varName : String = enumName.toLowerFirst(); 
 	aPackage : EPackage = aEEnum.ePackage; 
@@ -19,20 +20,20 @@ package [aPackage.name/]
 type [enumName/] int32
 
 const (
-[for (lit : EEnumLiteral | literals)]
-    [lit.name.toUpperCase()/] [enumName/] = [lit.value.toString()/]
+[for (literal : EEnumLiteral | literals)]
+    [literalQualification/][literal.name.toUpperCase()/] [enumName/] = [literal.value.toString()/]
 [/for]    
 )
 
 var [varName/]ToString = map['['/][enumName/][']'/]string{
-[for (lit : EEnumLiteral | literals)]
-	[lit.name.toUpperCase()/]:"[lit.name/]",
+[for (literal : EEnumLiteral | literals)]
+	[literalQualification/][literal.name.toUpperCase()/]:"[literal.name/]",
 [/for]	
 }
 
 var [varName/]ToID = map['['/]string[']'/][enumName/]{
-[for (lit : EEnumLiteral | literals)]
-	"[lit.name/]" : [lit.name.toUpperCase()/],
+[for (literal : EEnumLiteral | literals)]
+	"[literal.name/]" : [literalQualification/][literal.name.toUpperCase()/],
 [/for]	
 }
 

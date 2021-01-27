@@ -3,13 +3,13 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateType/]
 
 [query public isReflectiveDelegation(anPackage : EPackage ) : Boolean = anPackage.hasKey('featureDelegation') and anPackage.valueKey('featureDelegation') = 'Reflective'/]
 
 [query public isReflectiveDelegation(aClass : EClass) : Boolean = aClass.ePackage.isReflectiveDelegation()/]
 
 [query public isReflectiveDelegation(anFeature : EStructuralFeature ) : Boolean = anFeature.eContainingClass.isReflectiveDelegation()/]
-
 
 [query public getOutputDirectory( anPackage : EPackage ) : String = 
     let property : OclAny = getProperty('library.output.dir') in 
@@ -36,7 +36,9 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
 */]
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
 	let aPackage : EPackage = aClass.ePackage in 
-    if ( aClass.eSuperTypes->isEmpty() ) then
+	if ( aClass.isMapEntry() ) then
+		Sequence{'ecore.EObject', 'ecore.EMapEntry'}
+    else if ( aClass.eSuperTypes->isEmpty() ) then
         if ( aClass.name = 'EObject' ) then
             Sequence{'ecore.ENotifier'}
         else if ( aPackage.hasKey('rootExtendsInterface') ) then
@@ -46,7 +48,7 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
         endif endif
     else
         aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceName()))
-    endif
+    endif endif
 /]
 
 [query public getClassExtends(aClass : EClass ) : String =
@@ -83,4 +85,6 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
 [query public getConstructorExtensionName( aClass : EClass ) : String = getConstructorName(aClass.getExtensionName())/]
 
 [query public getVariableName( aFeature : EStructuralFeature ) : String = 
-if aFeature.eType.name = 'EBoolean' then 'is' + aFeature.name.toUpperFirst() else aFeature.name endif/]
+if aFeature.eType.getType() = 'bool' then 'is' + aFeature.name.toUpperFirst() 
+else if getReservedKeywords()->exists(s  | s = aFeature.name) then aFeature.name + '_' 
+else aFeature.name endif endif/]

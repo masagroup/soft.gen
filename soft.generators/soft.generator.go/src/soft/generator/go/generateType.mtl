@@ -11,7 +11,9 @@
 
 [template public generateEffectiveType(aElement : ETypedElement) post(trim())]
 [let aPackage : EPackage = aElement.getEPackage()]
-[if (aElement.isListType())]
+[if (aElement.isMapType())]
+[getShortQualifiedName('ecore.EMap', aPackage.name )/]
+[elseif (aElement.isListType())]
 [getShortQualifiedName('ecore.EList', aPackage.name )/]
 [else]
 [aElement.eGenericType.generateType(aPackage)/]
@@ -23,7 +25,9 @@
 [if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
 [else]
     [let aPackage : EPackage = aElement.getEPackage()]
-    [if aElement.isListType()]
+	[if (aElement.isMapType())]
+		[getShortQualifiedName('ecore.EMap', aPackage.name )/]
+    [elseif aElement.isListType()]
         [getShortQualifiedName('ecore.EList', aPackage.name )/]
     [else]
         [aElement.eGenericType.generateType(aPackage)/]
@@ -52,25 +56,62 @@
 [comment {ecore types..., go type, default value, test value, comparison operator}/]
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
     Sequence {
-        Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'bool' , 'false' , 'true', ''},
-        Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'int' , '0', '45' , ''},
-        Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'float64' , '0.0', '3.5' , ''},
-        Sequence{ 'ELong' , 'ELongObject' , 'int64' , '0', '45' , ''},
-        Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'byte' , '\'\'', '\'a\'', ''},
-        Sequence{ 'EByteArray' , '[]byte' , 'nil', 'nil' , ''},
-        Sequence{ 'EFloat' , 'EFloatObject', 'float32' , '0.0', '1.2', ''},
-        Sequence{ 'EEList' , 'ecore.EList', 'nil', 'ecore.NewEmptyBasicEList()', ''},
-        Sequence{ 'EDate' , '*time.Time', 'nil', 'func() *time.Time { t := time.Now(); return &t }()' , ''},
-        Sequence{ 'EMap' , 'map[interface{}]interface{}', 'nil', 'nil' , ''},
-        Sequence{ 'EFeatureMap', 'interface{}', 'nil', 'nil', ''},
-        Sequence{ 'EFeatureMapEntry' , 'interface{}' , 'nil', 'nil', ''},
-        Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'interface{}', 'nil', 'nil', ''},
-        Sequence{ 'EJavaClass' , 'reflect.Type', 'nil', 'reflect.TypeOf("")', ''},
-        Sequence{ 'EString' , 'String', 'string', '""' , '"Test String"', ''},
-        Sequence{ 'ETreeIterator' , 'ecore.EIterator', 'nil' , 'nil', ''},
-        Sequence{ 'EResource' , 'ecore.EResource', 'nil' , 'nil', ''}
+        Sequence{ 'java.lang.Boolean', 'boolean', 'bool', 'false' , 'true', ''},
+        Sequence{ 'java.lang.Integer', 'int' , '0', '45' , ''},
+		Sequence{ 'java.lang.Byte','java.lang.Character', 'char', 'byte' ,'\'\'', '\'a\'', ''},
+		Sequence{ 'byte[]','[]byte' , 'nil', 'nil' , ''},
+		Sequence{ 'java.util.Date', '*time.Time', 'nil', 'func() *time.Time { t := time.Now(); return &t }()' , ''},
+		Sequence{ 'java.lang.Double', 'java.math.BigDecimal', 'double', 'float64' , '0.0' , '3.5' , ''},
+		Sequence{ 'java.lang.Float' , 'float' , 'float32' , '0.0', '1.2', ''},
+		Sequence{ 'java.lang.Class' , 'reflect.Type', 'nil', 'reflect.TypeOf("")', ''},
+		Sequence{ 'java.lang.Object', 'interface{}', 'nil', 'nil', ''},
+		Sequence{ 'java.lang.Long' , 'java.math.BigInteger', 'long' , 'int64' , '0', '45' , ''},
+        Sequence{ 'java.util.Map' , 'ecore.EMap', 'nil', 'nil' , ''},
+        Sequence{ 'java.util.Map$Entry' , 'ecore.EMapEntry', 'nil' , 'nil', ''},
+		Sequence{ 'java.lang.Short' , 'short' , 'int16' , '0', '2' , ''},
+        Sequence{ 'java.lang.String' , 'string', '""' , '"Test String"', ''},
+		
+
+		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', 'ecore.EDiagnosticChain', 'nil', 'nil', '' },
+		Sequence{ 'org.eclipse.emf.common.util.EList', 'ecore.EList', 'nil', 'ecore.NewEmptyBasicEList()', '' },
+		Sequence{ 'org.eclipse.emf.common.util.Enumerator', 'interface{}', 'nil', 'nil', ''},		        
+		Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap', 'interface{}', 'nil', 'nil', ''},
+        Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap$Entry', 'interface{}', 'nil', 'nil', ''},
+        Sequence{ 'org.eclipse.emf.ecore.resource.Resource', 'ecore.EResource', 'nil' , 'nil', '' },
+        Sequence{ 'org.eclipse.emf.ecore.resource.ResourceSet', 'ecore.EResourceSet', 'nil' , 'nil', '' },
+		Sequence{ 'org.eclipse.emf.common.util.TreeIterator', 'ecore.EIterator', 'nil' , 'nil', '' }
     }
 /]
+
+
+[query public getInstanceTypeName( aClassifier : EClassifier ) : String =
+	let instanceTypeName : String = 
+	if hasKey(aClassifier, 'instanceTypeName') then
+		aClassifier.valueKey('instanceTypeName')
+	else if not aClassifier.instanceTypeName.oclIsUndefined() then
+		aClassifier.instanceTypeName
+	else if aClassifier.oclIsKindOf(EClass) then
+		aClassifier.oclAsType(EClass).getQualifiedInterfaceName()
+	else
+		''
+	endif endif endif in
+	let goTypeName : String = getAllDataTypes()->iterate( s ; res : String = '' |
+    if res = '' then
+        if s->exists(n : String | n = instanceTypeName) then
+            s->at( s->size() - 3 )
+        else
+            res
+        endif
+    else 
+        res 
+    endif
+	) in
+	if goTypeName = '' then
+		instanceTypeName
+	else
+		goTypeName
+	endif
+/] 
 
 [query public getTestValue(aClassifier : EClassifier,aPackage : EPackage) : String =
 	if aClassifier.oclIsUndefined() then 'nil'
@@ -84,21 +125,26 @@
 
 [query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = 'new(' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name ) +')'/]
 [query private getTestValue( aEnum : EEnum ) : String = 
-	if aEnum.eLiterals->size() > 1 then aEnum.eLiterals->at(2).name.toUpperCase() 
-	else if aEnum.eLiterals->size() = 1 then aEnum.eLiterals->at(1).name.toUpperCase() 
+	if aEnum.eLiterals->size() > 1 then aEnum.eLiterals->at(2).getConstantsName()
+	else if aEnum.eLiterals->size() = 1 then aEnum.eLiterals->at(1).getConstantsName() 
 	else 0 endif endif/]
 [query private getTestValue( aDataType : EDataType ) : String = 
-    getAllDataTypes()->iterate( s ; res : String = '' |
-    if res = '' then
-        if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() -1 )
-        else
-			res
-        endif
-    else 
-        res 
-    endif
- ) 
+	if hasKey(aDataType, 'testValue') then
+		aDataType.valueKey('testValue')
+	else
+		let typeName : String = aDataType.getInstanceTypeName() in
+	    getAllDataTypes()->iterate( s ; res : String = '' |
+	    if res = '' then
+	        if s->exists(n : String | n = typeName) then
+	            s->at( s->size() -1 )
+	        else
+				res
+	        endif
+	    else 
+	        res 
+	    endif
+	 	) 
+	endif
 /]
 
 [query public getType( aClassifier : EClassifier ) : String = 
@@ -110,19 +156,7 @@
 /]
 [query private getType( aClass : EClass ) : String = aClass.getQualifiedInterfaceName()/]
 [query private getType( aEnum : EEnum ) : String = aEnum.ePackage.name + '.' + aEnum.name/]
-[query private getType( aDataType : EDataType ) : String = 
-    getAllDataTypes()->iterate( s ; res : String = '' |
-    if res = '' then
-        if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() - 3 )
-        else
-            res
-        endif
-    else 
-        res 
-    endif
- ) 
-/] 
+[query private getType( aDataType : EDataType ) : String = aDataType.getInstanceTypeName()/]
 
 [query public getDefaultValue(anEAttribute : EAttribute) : String = if (defaultValueLiteral->notEmpty()) then defaultValueLiteral else eType.getDefaultValue() endif/]
 
@@ -133,26 +167,34 @@
     else 'nil' endif endif
 /]
 
-[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.eLiterals->at(1).name.toUpperCase() else 0 endif/]
+[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.eLiterals->at(1).getConstantsName() else 0 endif/]
 
 [query public getDefaultValue(aDataType : EDataType) : String =
-    getAllDataTypes()->iterate( s ; res : String = '' |
-    if res = '' then
-        if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() - 2 )
-        else
-            res
-        endif
-    else 
-        res 
-    endif
- ) 
+	if hasKey(aDataType, 'defaultValue') then
+		aDataType.valueKey('defaultValue')
+	else if aDataType.name <> 'EChar' and not aDataType.defaultValue.oclIsUndefined() then
+		aDataType.defaultValue.toString()
+	else
+		let typeName : String = aDataType.getInstanceTypeName() in
+	    getAllDataTypes()->iterate( s ; res : String = '' |
+	    if res = '' then
+	        if s->exists(n : String | n = typeName) then
+	            s->at( s->size() - 2 )
+	        else
+	            res
+	        endif
+	    else 
+	        res 
+	    endif	
+ 		) 
+	endif endif
 /]
 
-[query public getComparisonFunction( aDataType : EDataType) : String = 
+[query public getComparisonFunction( aDataType : EDataType) : String =
+	let typeName : String = aDataType.getInstanceTypeName() in 
 	getAllDataTypes()->iterate( s ; res : String = '' |
     if res = '' then
-        if s->exists(n : String | n = aDataType.name) then
+        if s->exists(n : String | n = typeName) then
             s->at( s->size() )
         else
             res
