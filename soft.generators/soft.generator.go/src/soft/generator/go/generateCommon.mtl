@@ -190,7 +190,7 @@ methodName.toUpperFirst()
 /]
 
 [query public getConstantsName(eLiteral : EEnumLiteral) : String = 
-	if eLiteral.eEnum.isConstantsQualified() then eLiteral.eEnum.name.toUpperCase() + '_' + eLiteral.name.toUpperCase() else eLiteral.name.toUpperCase() endif/]
+	if eLiteral.eEnum.isConstantsQualified() then eLiteral.eEnum.name.toUpperCase() + '__' + eLiteral.name.toUpperCase() else eLiteral.name.toUpperCase() endif/]
 
 [query public getValueName(eLiteral : EEnumLiteral) : String = eLiteral.name/]
 

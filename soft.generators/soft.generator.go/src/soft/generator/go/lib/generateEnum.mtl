@@ -7,7 +7,7 @@
 [import soft::generator::go::lib::generateCommon/]
 
 [template public generateEnum(aEEnum : EEnum) { 
-	literalQualification : String =  if aEEnum.isConstantsQualified() then aEEnum.name.toUpperCase() + '_' else '' endif; 
+	literalQualification : String =  if aEEnum.isConstantsQualified() then aEEnum.name.toUpperCase() + '__' else '' endif; 
 	enumName : String = aEEnum.name;
 	varName : String = enumName.toLowerFirst(); 
 	aPackage : EPackage = aEEnum.ePackage; 
