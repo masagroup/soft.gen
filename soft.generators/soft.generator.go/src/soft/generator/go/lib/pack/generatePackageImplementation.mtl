@@ -9,9 +9,16 @@
 [import soft::generator::go::lib::pack::generateCommon/]
 
 [query private getPackageGetter(aModelElement : EModelElement) : String =
-	if aModelElement.oclIsKindOf(EPackage) then  'p' 
-	else if aModelElement.oclIsKindOf(ENamedElement) then aModelElement.oclAsType(ENamedElement).getPackageGetter()
-	else 'nil' endif endif/]
+	if aModelElement.oclIsKindOf(EPackage) then  
+		'p'
+	else if aModelElement.oclIsKindOf(EEnumLiteral) then 
+		let aEnumLiteral : EEnumLiteral = aModelElement.oclAsType(EEnumLiteral) in 
+		aEnumLiteral.eEnum.getPackageGetter() + '.GetEEnumLiteralByName("' + aEnumLiteral.name +'")' 
+	else if aModelElement.oclIsKindOf(ENamedElement) then 
+		aModelElement.oclAsType(ENamedElement).getPackageGetter()
+	else 
+		'nil' 
+	endif endif endif/]
 [query private getPackageGetter(aNamedElement : ENamedElement) : String = if oclIsUndefined() then 'nil' else 'p.' + aNamedElement.getReflectiveGetterName() + '()' endif/]
 
 [query private getPackageGetter(aEClassifier : EClassifier, aStruct : EStructuralFeature) : String = getPackageGetter(aEClassifier,aStruct.eContainingClass) /]
