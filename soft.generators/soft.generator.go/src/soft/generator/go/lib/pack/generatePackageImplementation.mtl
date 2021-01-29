@@ -43,7 +43,14 @@
         aAnnotationSource.substring(index + 1 )
     endif
 /]
-
+[query private getSuppressedAnnotations(aPackage : EPackage ) : Sequence(String) =
+	if aPackage.hasKey('supressAnnotations') then
+		let supressAnnotations : String = aPackage.valueKey('supressAnnotations') in
+		supressAnnotations.tokenize(' ')
+	else
+		Sequence{}
+	endif
+/]
 
 [template private generateDataMember(anENamedElement : ENamedElement, anEPackage : EPackage)] 
 [anENamedElement.getElementInstanceName()/] [anEPackage.getMetaType(anENamedElement)/] 
@@ -299,7 +306,10 @@ func (p *[className/])initializePackageEDataTypes() {
 }
 
 [if not anEPackage.isEcorePackage()]
-[for (aAnnotationSource : String | anEPackage.eAllContents(EAnnotation)->collect( a | a.source )->asOrderedSet()->sortedBy(name))]
+[let allAnnotationsSources : Set(String) = anEPackage.eAllContents(EAnnotation)->collect( a | a.source )->asSet()]
+[let supressedAnnotationsSources : Set(String) = anEPackage.getSuppressedAnnotations()->asSet()]
+[let annotationsSources : OrderedSet(String) = (allAnnotationsSources - supressedAnnotationsSources)->asOrderedSet()->sortedBy(s | s)]
+[for (aAnnotationSource : String | annotationsSources)]
 func (p *[className/])initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations() {
 	source := "[aAnnotationSource/]"
 	[for (eAnnotation : EAnnotation | anEPackage.eAllContents(EAnnotation)->select( a | a.source = aAnnotationSource))]
@@ -316,6 +326,9 @@ func (p *[className/])initialize[getAnnotationSourceIdentifier(aAnnotationSource
 }
 
 [/for]
+[/let]
+[/let]
+[/let]
 [/if]
 	
 [/file]
