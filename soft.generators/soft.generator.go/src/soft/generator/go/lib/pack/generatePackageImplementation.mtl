@@ -77,6 +77,7 @@ func (p *[anEPackage.getImplementationName()/]) [aFeature.getReflectiveGetterNam
     return p.[aClass.getElementInstanceName()/].GetEStructuralFeatures().Get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]).([anEPackage.getMetaType(aFeature)/])
 }
 [/let]
+
 [/template]
 
 [template private generateGetter(aOperation : EOperation, anEPackage : EPackage)]
@@ -86,11 +87,11 @@ func (p *[anEPackage.getImplementationName()/]) [aOperation.getReflectiveGetterN
     return p.[aClass.getElementInstanceName()/].GetEOperations().Get([aClass.eOperations->indexOf(aOperation)-1/]).([anEPackage.getMetaType(aOperation)/])
 }
 [/let]
+
 [/template]
 
 [template private generateCreation(aEClass : EClass)]
 p.[aEClass.getElementInstanceName()/] = factory.CreateEClassFromContainerAndClassID(p, [aEClass.getClassifierIDName()/])
-
 [/template]
 
 [template private generateCreation(aAttribute : EAttribute)]
@@ -103,16 +104,21 @@ factory.CreateEReferenceFromContainerAndClassID(p.[aReference.eContainingClass.g
 
 [/template]
 
-[template private generateCreation(aFeature : EStructuralFeature)]
-[/template]
-
 [template private generateCreation(anEOperation : EOperation)]
 factory.CreateEOperationFromContainerAndClassID(p.[anEOperation.eContainingClass.getElementInstanceName()/], [anEOperation.eContainingClass.getOperationIDName(anEOperation)/])
 
 [/template]
 
+[template private generateCreation(aTypedElement : ETypedElement)]
+[/template]
+
+[template private generateCreation(aEnum : EEnum)]
+p.[aEnum.getElementInstanceName()/] = factory.CreateEEnumFromContainerAndClassID(p, [aEnum.getClassifierIDName()/])
+
+[/template]
+
 [template private generateCreation(anEDatatype : EDataType)]
-p.[anEDatatype.getElementInstanceName()/] = factory.Create[if (anEDatatype.oclIsKindOf(EEnum))]EEnum[else]EDataType[/if]FromContainerAndClassID(p, [anEDatatype.getClassifierIDName()/])
+p.[anEDatatype.getElementInstanceName()/] = factory.CreateEDataTypeFromContainerAndClassID(p, [anEDatatype.getClassifierIDName()/])
 
 [/template]
 
@@ -123,98 +129,49 @@ p.[aEClass.getElementInstanceName()/].GetESuperTypes().Add([aEClass.getPackageGe
 [/template]
 
 [template private generateInitialization(aEClass : EClass)]
-p.[aEClass.getElementInstanceName()/].SetName("[aEClass.name/]")
-p.[aEClass.getElementInstanceName()/].SetAbstract([aEClass.abstract.toString()/])
-p.[aEClass.getElementInstanceName()/].SetInterface([aEClass.interface.toString()/])
-p.[aEClass.getElementInstanceName()/].SetInstanceTypeName("[aEClass.getInstanceTypeName()/]")
-
+p.InitEClass(p.[aEClass.getElementInstanceName()/],"[aEClass.name/]","[aEClass.getInstanceTypeName()/]",[aEClass.abstract.toString()/],[aEClass.interface.toString()/])
 [/template]
 
 [template private generateInitialization(anEAttribute : EAttribute)]
-[let localVar : String = anEAttribute.getElementInstanceName()]
-[localVar/] := [anEAttribute.getPackageGetter()/]
-[localVar/].SetName("[anEAttribute.name/]")
-[localVar/].SetEType([anEAttribute.eType.oclAsType(EDataType).getPackageGetter(anEAttribute)/])
-[localVar/].SetLowerBound([anEAttribute.lowerBound/])
-[localVar/].SetUpperBound([anEAttribute.upperBound/])
-[localVar/].SetTransient([anEAttribute.transient.toString()/])
-[localVar/].SetVolatile([anEAttribute.volatile.toString()/])
-[localVar/].SetChangeable([anEAttribute.changeable.toString()/])
-[localVar/].SetUnsettable([anEAttribute.unsettable.toString()/])
-[localVar/].SetUnique([anEAttribute.unique.toString()/])
-[localVar/].SetDerived([anEAttribute.derived.toString()/])
-[localVar/].SetOrdered([anEAttribute.ordered.toString()/])
-[localVar/].SetID([anEAttribute.iD.toString()/])
-[if ( anEAttribute.defaultValueLiteral <> '' )]
-[localVar/].SetDefaultValueLiteral("[anEAttribute.defaultValueLiteral/]")
-[/if]
-[/let]
+p.InitEAttribute([anEAttribute.getPackageGetter()/],[anEAttribute.eType.oclAsType(EDataType).getPackageGetter(anEAttribute)/],"[anEAttribute.name/]","[anEAttribute.defaultValueLiteral/]",[anEAttribute.lowerBound/],[anEAttribute.upperBound/],[anEAttribute.transient.toString()/],[anEAttribute.volatile.toString()/],[anEAttribute.changeable.toString()/],[anEAttribute.unsettable.toString()/],[anEAttribute.unique.toString()/],[anEAttribute.derived.toString()/],[anEAttribute.ordered.toString()/],[anEAttribute.iD.toString()/])
 
 [/template]
 
 [template private generateInitialization(anEReference : EReference)]
-[let localVar : String = anEReference.getElementInstanceName()]
-[localVar/] := [anEReference.getPackageGetter()/]
-[localVar/].SetName("[anEReference.name/]")
-[localVar/].SetEType([anEReference.eGenericType.eClassifier.getPackageGetter(anEReference)/])
-[localVar/].SetLowerBound([anEReference.lowerBound/])
-[localVar/].SetUpperBound([anEReference.upperBound/])
-[localVar/].SetTransient([anEReference.transient.toString()/])
-[localVar/].SetVolatile([anEReference.volatile.toString()/])
-[localVar/].SetChangeable([anEReference.changeable.toString()/])
-[localVar/].SetUnsettable([anEReference.unsettable.toString()/])
-[localVar/].SetUnique([anEReference.unique.toString()/])
-[localVar/].SetDerived([anEReference.derived.toString()/])
-[localVar/].SetOrdered([anEReference.ordered.toString()/])
-[localVar/].SetContainment([anEReference.containment.toString()/])
-[localVar/].SetResolveProxies([anEReference.resolveProxies.toString()/])
-[if ( anEReference.defaultValueLiteral <> '' )]
-[localVar/].SetDefaultValueLiteral("[anEReference.defaultValueLiteral/]")
-[/if]
-[if not anEReference.eOpposite.oclIsUndefined()]
-[localVar/].SetEOpposite([anEReference.eOpposite.getPackageGetter()/])
-[/if]
-[/let]
+p.InitEReference([anEReference.getPackageGetter()/],[anEReference.eGenericType.eClassifier.getPackageGetter(anEReference)/],[if anEReference.eOpposite.oclIsUndefined()]nil[else][anEReference.eOpposite.getPackageGetter()/][/if],"[anEReference.name/]","[anEReference.defaultValueLiteral/]",[anEReference.lowerBound/],[anEReference.upperBound/],[anEReference.transient.toString()/],[anEReference.volatile.toString()/],[anEReference.changeable.toString()/],[anEReference.containment.toString()/],[anEReference.resolveProxies.toString()/],[anEReference.unsettable.toString()/],[anEReference.unique.toString()/],[anEReference.derived.toString()/],[anEReference.ordered.toString()/])
 
 [/template]
 
-[template private generateInitialization(anEOperation : EOperation)]
-[let localVar : String = anEOperation.getElementInstanceName()]
-[localVar/] := [anEOperation.getPackageGetter()/]
-[localVar/].SetEType([anEOperation.eType.getPackageGetter(anEOperation)/])
-[localVar/].SetName("[anEOperation.name.toString()/]")
-[localVar/].SetLowerBound([anEOperation.lowerBound/])
-[localVar/].SetUpperBound([anEOperation.upperBound/])
-[localVar/].SetUnique([anEOperation.unique.toString()/])
-[localVar/].SetOrdered([anEOperation.ordered.toString()/])
-[for (anEParameter : EParameter | anEOperation.eParameters)]
+[template private generateInitialization(anEOperation : EOperation) ? (anEOperation.eParameters->isEmpty())]
+p.InitEOperation([anEOperation.getPackageGetter()/],[anEOperation.eType.getPackageGetter(anEOperation)/],"[anEOperation.name.toString()/]",[anEOperation.lowerBound/],[anEOperation.upperBound/],[anEOperation.unique.toString()/],[anEOperation.ordered.toString()/])
+
+[/template]
+
+[template private generateInitialization(anEOperation : EOperation) ? (anEOperation.eParameters->notEmpty())]
 {
-    parameter := [if not anEOperation.eContainingClass.ePackage.isEcorePackage()]ecore.[/if]GetFactory().CreateEParameterFromContainer([localVar/])
-    parameter.SetName("[anEParameter.name/]")
-    parameter.SetEType([anEParameter.eType.getPackageGetter(anEParameter.eOperation)/])
-    parameter.SetLowerBound(0)
-    parameter.SetUpperBound(1)
-    parameter.SetUnique(true)
-    parameter.SetOrdered(true)
+	operation := [anEOperation.getPackageGetter()/]
+	p.InitEOperation(operation,[anEOperation.eType.getPackageGetter(anEOperation)/],"[anEOperation.name.toString()/]",[anEOperation.lowerBound/],[anEOperation.upperBound/],[anEOperation.unique.toString()/],[anEOperation.ordered.toString()/])
+	[for (anEParameter : EParameter | anEOperation.eParameters)]
+	p.AddEParameter(operation,[anEParameter.eType.getPackageGetter(anEParameter.eOperation)/],"[anEParameter.name/]",0,1,[anEParameter.unique.toString()/],[anEParameter.ordered.toString()/])
+	[/for]
 }
+
+[/template]
+
+
+[template private generateInitialization(aTypedElement : ETypedElement)]
+[/template]
+
+[template private generateInitialization(aEnum : EEnum,anEPackage : EPackage)]
+p.InitEEnum([aEnum.getPackageGetter()/], "[aEnum.name/]", "[aEnum.getInstanceTypeName()/]")
+[for (anEEnumLiteral : EEnumLiteral | aEnum.eLiterals)]
+p.AddEEnumLiteral([aEnum.getPackageGetter()/], "[anEEnumLiteral.name/]", "[anEEnumLiteral.literal/]", [anEEnumLiteral.value.toString()/])
 [/for]
-[/let]
 
 [/template]
 
 [template private generateInitialization(aDataType : EDataType,anEPackage : EPackage)]
-p.[aDataType.getElementInstanceName()/].SetName("[aDataType.name/]")
-p.[aDataType.getElementInstanceName()/].SetInstanceTypeName("[aDataType.getInstanceTypeName()/]")
-[if (not aDataType.oclIsKindOf(EEnum))]
-p.[aDataType.getElementInstanceName()/].SetSerializable([aDataType.serializable.toString()/])
-[/if]
-[let defaultValue : String = aDataType.getDefaultValue()]
-[if defaultValue <> '' and defaultValue <> 'nil']
-[let unquotedDefaultValue : String = defaultValue.replaceAll('\'|"', '')]
-p.[aDataType.getElementInstanceName()/].([if not anEPackage.isEcorePackage()]ecore.[/if]EDataTypeInternal).SetDefaultValue( p.GetEFactoryInstance().CreateFromString(p.[aDataType.getElementInstanceName()/],"[unquotedDefaultValue/]"))
-[/let]
-[/if]
-[/let]
+p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataType.getInstanceTypeName()/]",[let defaultValue : String = aDataType.getDefaultValue().replaceAll('\'|"', '')][if defaultValue = '' or defaultValue = 'nil']""[else]"[defaultValue/]"[/if][/let],[aDataType.serializable.toString()/])
 
 [/template]
 
@@ -266,51 +223,45 @@ func (p *[className/])Initialize() {
 
 func (p *[className/])createPackageContents() {
     factory := [if not anEPackage.isEcorePackage()]ecore.[/if]GetFactory()
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-    p.create[aClass.name.toUpperFirst()/]Content(factory)
+[let allClasses : OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)]
+[if allClasses->notEmpty()]
+[for (aClass : EClass | allClasses)]
+	
+	[aClass.generateCreation()/]
+	[Sequence{ aClass.eStructuralFeatures, aClass.eOperations}->flatten().generateCreation()/]		
 [/for]
-    p.createPackageEDataTypes(factory)
-}
-
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) separator ('\r\n')]
-func (p *[className/])create[aClass.name.toUpperFirst()/]Content(factory [if not anEPackage.isEcorePackage()]ecore.[/if]EcoreFactory) {
-    [aClass.generateCreation()/]
-    [aClass.eStructuralFeatures.generateCreation()/]
-    [aClass.eOperations.generateCreation()/]
-}
-[/for]
-
-func (p *[className/])createPackageEDataTypes(factory [if not anEPackage.isEcorePackage()]ecore.[/if]EcoreFactory) {
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateCreation()/]
+[/if]
+[/let]
+[let allDataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name)]
+[if allDataTypes->notEmpty()]
+	[allDataTypes.generateCreation()/]
+[/if]
+[/let]    
 }
 
 func (p *[className/])initializePackageContents() {
-    // Add supertypes to classes
-    [anEPackage.eAllContents(EClass)->sortedBy(name).initSuperTypes()/]
 
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-    p.initialize[aClass.name.toUpperFirst()/]Content()
-[/for]
-    p.initializePackageEDataTypes()
+[let allClasses : OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)]
+[if allClasses->notEmpty()]
+	[allClasses.initSuperTypes()/]
+
+	[for (aClass : EClass | allClasses)]
+	[aClass.generateInitialization()/]
+	[Sequence{ aClass.eAttributes, aClass.eReferences, aClass.eOperations}->flatten().generateInitialization()/]	   
+	[/for]
+[/if]
+[/let]
+[let allDataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name)]
+[if allDataTypes->notEmpty()]
+	[allDataTypes.generateInitialization(anEPackage)/]
+[/if]
+[/let]    
 [if not anEPackage.isEcorePackage()]
+
 [for (aAnnotationSource : String | annotationSources)]
 	p.initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations()
 [/for]
 [/if]
-}
-
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-func (p *[className/])initialize[aClass.name.toUpperFirst()/]Content() {
-    [aClass.generateInitialization()/]
-    [aClass.eAttributes->sortedBy(name).generateInitialization()/]
-    [aClass.eReferences->sortedBy(name).generateInitialization()/]
-    [aClass.eOperations->sortedBy(name).generateInitialization()/]
-}
-
-[/for]
-
-func (p *[className/])initializePackageEDataTypes() {
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization(anEPackage)/]
 }
 
 [if not anEPackage.isEcorePackage()]
