@@ -19,7 +19,7 @@
 [template public generateImplementationTests(aClass : EClass) { 
 	implementationName : String = aClass.getImplementationName(); 
 	aPackage : EPackage = aClass.ePackage;
-	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() );
+	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.getImplementedFeatures()->notEmpty() or aClass.requiresList() );
 }]
 [file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationTestFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]

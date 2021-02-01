@@ -25,7 +25,7 @@
 
 package [aPackage.name/]
 
-[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() ) then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
+[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
 										, Set { aPackage.getImportForType(classExtend) }
 									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
