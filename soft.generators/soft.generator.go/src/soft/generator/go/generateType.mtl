@@ -118,8 +118,10 @@
     else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(aPackage)
     else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue()
     else if aClassifier.oclIsKindOf( EDataType ) then 
-		let v : String = aClassifier.oclAsType(EDataType).getTestValue() in 
-		if v = 'nil' then getShortQualifiedName(aClassifier.getType(),aPackage.name) + '(' + v + ')' else getShortQualifiedName(v,aPackage.name)  endif
+		let t : String = aClassifier.getType() in
+		let v : String = aClassifier.oclAsType(EDataType).getTestValue() in
+		let isPtr : Boolean = t.size() > 0 and t.first(1) = '*' in
+		(if isPtr then '(' else '' endif) + getShortQualifiedName(aClassifier.getType(),aPackage.name) + (if isPtr then ')' else '' endif) + '(' + getShortQualifiedName(v,aPackage.name) + ')'
     else '' endif endif endif endif	
 /]
 
@@ -188,6 +190,18 @@
 	    endif	
  		) 
 	endif endif
+/]
+
+[query public getDefaultValueWithType(aFeature : EStructuralFeature, aClass : EClass ) : String =
+	if aFeature.oclIsKindOf(EAttribute) then
+		let defaultValue : String = aFeature.oclAsType(EAttribute).getDefaultValue() in
+		if defaultValue = '' then ''
+		else if defaultValue = 'nil' then 'nil'
+		else '(' + getShortQualifiedName(aFeature.eType.getType(),aClass.ePackage.name) +')(' + defaultValue + ')'
+		endif endif
+	else
+		'nil'
+	endif
 /]
 
 [query public getComparisonFunction( aDataType : EDataType) : String =

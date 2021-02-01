@@ -267,11 +267,11 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	o := [aClass.getConstructorName()/]()
 	// get default value
 	[let aAttribute : EAttribute = aStructuralFeature.oclAsType(EAttribute)]
-	[let aDefaultValue : String = aAttribute.getDefaultValue()]
+	[let aDefaultValue : String = aAttribute.getDefaultValueWithType(aClass)]
 	[if aDefaultValue = 'nil']
 	assert.Nil(t, o.[aAttribute.getGetterName()/]())
 	[else]
-	assert.Equal(t, [aAttribute.getDefaultValue()/], o.[aAttribute.getGetterName()/]())
+	assert.Equal(t, [aDefaultValue/], o.[aAttribute.getGetterName()/]())
 	[/if]
 	[/let]
 	[/let]
@@ -576,7 +576,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 		return notification.GetEventType() == [ecorePrefix/]UNSET && notification.GetFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]
 	})).Once()
 	o.[aStructuralFeature.getUnSetterName()/]()
-[let defaultValue : String = aStructuralFeature.eType.getDefaultValue()]
+[let defaultValue : String = aStructuralFeature.getDefaultValueWithType(aClass)]
 [if defaultValue = 'nil']
 	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
 [else]
@@ -873,7 +873,7 @@ func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 		assert.Nil(t,o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false))
 		[else]
 			[let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
-			[let defaultValue : String = aAttribute.getDefaultValue()]
+			[let defaultValue : String = aAttribute.getDefaultValueWithType(aClass)]
 			[if defaultValue <> '']
 		v := o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false)
 			[if defaultValue = 'nil']
