@@ -197,7 +197,10 @@
 		let defaultValue : String = aFeature.oclAsType(EAttribute).getDefaultValue() in
 		if defaultValue = '' then ''
 		else if defaultValue = 'nil' then 'nil'
-		else '(' + getShortQualifiedName(aFeature.eType.getType(),aClass.ePackage.name) +')(' + defaultValue + ')'
+		else
+			let t : String = aFeature.eType.getType() in
+			let isPtr : Boolean = t.size() > 0 and t.first(1) = '*' in
+			(if isPtr then '(' else '' endif) + getShortQualifiedName(aFeature.eType.getType(),aClass.ePackage.name) +(if isPtr then ')' else '' endif) + '(' + defaultValue + ')'
 		endif endif
 	else
 		'nil'
