@@ -116,21 +116,24 @@
 [query public getTestValue(aClassifier : EClassifier,aPackage : EPackage) : String =
 	if aClassifier.oclIsUndefined() then 'nil'
     else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(aPackage)
-    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue()
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue(aPackage)
     else if aClassifier.oclIsKindOf( EDataType ) then 
 		let t : String = aClassifier.getType() in
-		let v : String = aClassifier.oclAsType(EDataType).getTestValue() in
+		let v : String = aClassifier.oclAsType(EDataType).getTestValue(aPackage) in
 		let isPtr : Boolean = t.size() > 0 and t.first(1) = '*' in
 		(if isPtr then '(' else '' endif) + getShortQualifiedName(aClassifier.getType(),aPackage.name) + (if isPtr then ')' else '' endif) + '(' + getShortQualifiedName(v,aPackage.name) + ')'
     else '' endif endif endif endif	
 /]
 
 [query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = 'new(' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name ) +')'/]
-[query private getTestValue( aEnum : EEnum ) : String = 
-	if aEnum.eLiterals->size() > 1 then aEnum.eLiterals->at(2).getConstantsName()
-	else if aEnum.eLiterals->size() = 1 then aEnum.eLiterals->at(1).getConstantsName() 
-	else 0 endif endif/]
-[query private getTestValue( aDataType : EDataType ) : String = 
+
+[query private getTestValue( aEnum : EEnum ,aPackage : EPackage ) : String =
+	if aEnum.eLiterals->size() >= 1 then
+		let constant : String = aEnum.eLiterals->at(if aEnum.eLiterals->size() > 1 then 2 else 1 endif).getConstantsName() in
+		getShortQualifiedName(aEnum.ePackage.name + '.' + constant, aPackage.name)  
+	else 0 endif/]
+
+[query private getTestValue( aDataType : EDataType ,aPackage : EPackage) : String = 
 	if hasKey(aDataType, 'testValue') then
 		aDataType.valueKey('testValue')
 	else
@@ -138,7 +141,7 @@
 	    getAllDataTypes()->iterate( s ; res : String = '' |
 	    if res = '' then
 	        if s->exists(n : String | n = typeName) then
-	            s->at( s->size() -1 )
+				getShortQualifiedName(s->at( s->size() - 1 ) , aPackage.name)
 	        else
 				res
 	        endif
