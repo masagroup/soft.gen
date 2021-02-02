@@ -229,7 +229,7 @@
 [let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
 [if isListType()]
     [if isField()]
-        [aClass.getReceiverName()/].[aAttribute.name/] != nil && [aClass.getReceiverName()/].[aAttribute.name/].Size() != 0
+        [aClass.getReceiverName()/].[aAttribute.getVariableName()/] != nil && [aClass.getReceiverName()/].[aAttribute.getVariableName()/].Size() != 0
     [else]
         [aClass.getReceiverName()/].[aAttribute.getGetterName()/]().Size() != 0
     [/if]
@@ -260,7 +260,7 @@
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
 [if isListType()]
     [if isField()]
-        [aClass.getReceiverName()/].[anStructFeature.name/] != nil && [aClass.getReceiverName()/].[anStructFeature.name/].Size() != 0
+        [aClass.getReceiverName()/].[anStructFeature.getVariableName()/] != nil && [aClass.getReceiverName()/].[anStructFeature.getVariableName()/].Size() != 0
     [else]
         [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Size() != 0
     [/if]
