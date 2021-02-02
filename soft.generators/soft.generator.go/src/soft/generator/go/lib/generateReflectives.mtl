@@ -173,7 +173,7 @@
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/](nil)
     [else]
 		[let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
-		[let defaultValue : String = aAttribute.getDefaultValue()]
+		[let defaultValue : String = aAttribute.getDefaultValue(aClass.ePackage)]
 		[if defaultValue <> '']
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/]([defaultValue/])
         [else]
@@ -213,18 +213,6 @@
 [eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]arguments.Get([i-1/])[if needCast].([eParameter.generateEffectiveType()/])[/if][/let][/for])
 [/template]
 
-[template public generateDefaultValue(anEAttribute : EAttribute) post (trim())]
-[if (anEAttribute.eType.oclIsTypeOf(EEnum))]
-    [if (anEAttribute.defaultValueLiteral->notEmpty())]
-        [anEAttribute.defaultValueLiteral.toUpperCase()/]
-    [else]
-        [anEAttribute.eType.oclAsType(EEnum).eLiterals->first().getConstantsName()/] 
-    [/if]
-[else]
-    [anEAttribute.getDefaultValue()/]
-[/if]
-[/template]
-
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
 [let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
 [if isListType()]
@@ -236,7 +224,7 @@
 [else]
     [let accessor : String = if isField() then aAttribute.getVariableName() else 'as'+ aClass.getInterfaceName()+ '().' + aAttribute.getGetterName()+'()' endif]
     [if eType.oclIsKindOf(EEnum)]
-        [aClass.getReceiverName()/].[accessor/] != [aAttribute.generateDefaultValue()/]
+        [aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue(aClass)/]
     [elseif eType.oclIsKindOf(EDataType)]
 		[let comparisonFunction : String = eType.oclAsType(EDataType).getComparisonFunction()]
 		[if comparisonFunction <> '']
@@ -246,11 +234,11 @@
 		[aClass.getReceiverName()/].[accessor/].[comparisonFunction/]()
 		[/if]		
 		[else]
-        [aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue()/]
+        [aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue(aClass)/]
         [/if]
         [/let]
 	[else]
-		[aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue()/]
+		[aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue(aClass)/]
     [/if]
     [/let]
 [/if]
@@ -272,13 +260,13 @@
     [/if]
 [else]
     [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getGetterName()+'()' endif]
-        [aClass.getReceiverName()/].[accessor/] != [anStructFeature.eType.getDefaultValue()/]
+        [aClass.getReceiverName()/].[accessor/] != [anStructFeature.eType.getDefaultValue(aClass)/]
     [/let]
 [/if]
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (eType.isAny()) post (trim())]
-[aClass.getReceiverName()/].[anStructFeature.getGetterName()/]() != [anStructFeature.eType.getDefaultValue()/]
+[aClass.getReceiverName()/].[anStructFeature.getGetterName()/]() != [anStructFeature.eType.getDefaultValue(aClass)/]
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass) ]

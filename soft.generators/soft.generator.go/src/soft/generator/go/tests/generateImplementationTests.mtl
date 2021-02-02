@@ -118,7 +118,7 @@ func Test[aClass.name.toUpperFirst()/]GetValue(t *testing.T) {
 [let aPackage : EPackage = aClass.ePackage ]
 func Test[aClass.name.toUpperFirst()/][anEOperation.getOperationName()/]Operation(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	assert.Panics(t, func() { o.[anEOperation.getOperationName()/]([for (eClassifier : EClassifier | anEOperation.eParameters.eType) separator(',')][eClassifier.getDefaultValue()/][/for]) })
+	assert.Panics(t, func() { o.[anEOperation.getOperationName()/]([for (eClassifier : EClassifier | anEOperation.eParameters.eType) separator(',')][eClassifier.getDefaultValue(aClass)/][/for]) })
 }
 [/let]
 [/template]
