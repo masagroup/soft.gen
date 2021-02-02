@@ -236,8 +236,8 @@
 
 [query public getAllImports(aPackage : EPackage) : OclAny =
 	let namespacesToPackages : OclAny = 
-    if (aPackage.hasGenAnnotation()) then
-        let annotations : Sequence(String) = aPackage.getGenAnnotation().details->select(key = 'import').value in
+    if aPackage.hasKey('imports') then
+		let annotations : Sequence(String) = aPackage.valueKey('imports').tokenize(' ') in
         annotations->iterate( annotation : String ; res : OclAny = mapNew('getNamespaceToPackages_' + aPackage.name) | (
             let index : Integer = annotation.index('=') in 
             if index = -1 then
