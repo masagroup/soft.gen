@@ -189,6 +189,7 @@ package [anEPackage.name/]
                                         }->flatten()
 										 ->select( s | s <> anEPackage.name)
 										 ->collect( i | anEPackage.getImportForPackage(i) )
+										 ->select( s | s <> '')
 									     ->asOrderedSet()->sortedBy( s | s) ]
 
 [for ( i : String | imports )]
