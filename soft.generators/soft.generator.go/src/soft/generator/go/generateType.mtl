@@ -237,9 +237,9 @@
 [query public getAllImports(aPackage : EPackage) : OclAny =
 	let namespacesToPackages : OclAny = 
     if aPackage.hasKey('imports') then
-		let annotations : Sequence(String) = aPackage.valueKey('imports').tokenize(' ') in
+		let annotations : Sequence(String) = aPackage.valueKey('imports').tokenize(' \r\n') in
         annotations->iterate( annotation : String ; res : OclAny = mapNew('getNamespaceToPackages_' + aPackage.name) | (
-            let index : Integer = annotation.index('=') in 
+        	let index : Integer = annotation.index('=') in 
             if index = -1 then
 				let namespaceIndex : Integer = annotation.lastIndexOf('/') in
 				if namespaceIndex = -1 then
@@ -250,7 +250,7 @@
             else
                 res.mapPut(annotation.substring(1,index-1),annotation.substring(index+1)) 
             endif
-        ))
+		))
     else
         mapNew('getNamespaceToPackages_' + aPackage.name)
     endif in
