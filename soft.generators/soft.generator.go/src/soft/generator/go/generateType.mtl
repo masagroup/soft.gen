@@ -125,7 +125,10 @@
     else '' endif endif endif endif	
 /]
 
-[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = 'new(' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name ) +')'/]
+[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = 
+	let qualifiedMockName : String = if aClass.name='EObject' then 'ecore.MockEObjectInternal' else aClass.getQualifiedMockName() endif in 
+	'new(' + getShortQualifiedName( qualifiedMockName , aPackage.name ) +')'
+/]
 
 [query private getTestValue( aEnum : EEnum ,aPackage : EPackage ) : String =
 	if aEnum.eLiterals->size() >= 1 then

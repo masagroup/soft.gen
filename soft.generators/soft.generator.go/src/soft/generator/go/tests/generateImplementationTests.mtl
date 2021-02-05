@@ -732,7 +732,6 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 [/template]
 
 [template private generateFeatureMockAddedExpectations(anStructuralFeature : EStructuralFeature , mockName : String , aClass : EClass)]
-[if anStructuralFeature.eType.name <> 'EObject']
 [if anStructuralFeature.isContains()]
 	[let anEReference : EReference = anStructuralFeature.oclAsType(EReference)]
 	[if anEReference.eOpposite.oclIsUndefined()]
@@ -756,7 +755,6 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 	[/let]
 	[/if]
 	[/let]
-[/if]
 [/if]
 [/template]
 
