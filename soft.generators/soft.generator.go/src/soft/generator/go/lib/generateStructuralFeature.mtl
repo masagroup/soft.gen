@@ -95,7 +95,7 @@ nil
 [/template]
 
 [template public generateVariableInitialization(aAttribute : EAttribute, aClass : EClass ) ]
-[let defaultValue : String = aAttribute.getDefaultValue()]
+[let defaultValue : String = aAttribute.getDefaultValue(aClass)]
 [if defaultValue <> '']
 [aClass.getReceiverName()/].[aAttribute.getVariableName()/] = [defaultValue/]
 [/if]
@@ -114,7 +114,7 @@ nil
 [elseif isListType()]
     return [getListConstructor(aClass)/];
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
-    return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
+    return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/];
 [else]
     panic("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
@@ -133,7 +133,7 @@ nil
     [receiverName/].[varName/] = [getListConstructor(aClass)/];
 [elseif isProxy()]
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
-    [receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
+    [receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/];
 [else]
     panic("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
@@ -314,7 +314,7 @@ func [testMethodName/](t *testing.T) {
         [if lazy <> 'no']
             [if  lazy = 'function']
                 [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/] {
+    if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/] {
                 [else]
     if [receiverName/].[varName/] == nil {
                 [/if]
@@ -362,7 +362,7 @@ func [testMethodName/](t *testing.T) {
     [if lazy <> 'no']
         [if  lazy = 'function']
             [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/] {
+    if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/] {
             [else]
     if [receiverName/].[varName/] == nil {
             [/if]
@@ -575,7 +575,7 @@ func [testMethodName/](t *testing.T) {
 		[let lazy : String = aStructuralFeature.getLazy()]
 	    [if lazy = 'function']
 	        [if aStructuralFeature.oclIsKindOf(EAttribute)]
-	if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/] {
+	if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/] {
 		[else]
 	if [receiverName/].[varName/] != nil {
 		[/if]
@@ -607,7 +607,7 @@ func [testMethodName/](t *testing.T) {
 		[if aStructuralFeature.oclIsKindOf(EReference)]
 		[receiverName/].[varName/] = nil
 		[else]
-		[receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]
+		[receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/]
 		[/if]
 		if [receiverName/].ENotificationRequired() {
             [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],[oldVarName/],nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))

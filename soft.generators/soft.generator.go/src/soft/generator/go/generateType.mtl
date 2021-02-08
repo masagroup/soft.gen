@@ -116,19 +116,27 @@
 [query public getTestValue(aClassifier : EClassifier,aPackage : EPackage) : String =
 	if aClassifier.oclIsUndefined() then 'nil'
     else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(aPackage)
-    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue()
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue(aPackage)
     else if aClassifier.oclIsKindOf( EDataType ) then 
-		let v : String = aClassifier.oclAsType(EDataType).getTestValue() in 
-		if v = 'nil' then getShortQualifiedName(aClassifier.getType(),aPackage.name) + '(' + v + ')' else getShortQualifiedName(v,aPackage.name)  endif
+		let t : String = aClassifier.getType() in
+		let v : String = aClassifier.oclAsType(EDataType).getTestValue(aPackage) in
+		let isPtr : Boolean = t.size() > 0 and t.first(1) = '*' in
+		(if isPtr then '(' else '' endif) + getShortQualifiedName(aClassifier.getType(),aPackage.name) + (if isPtr then ')' else '' endif) + '(' + getShortQualifiedName(v,aPackage.name) + ')'
     else '' endif endif endif endif	
 /]
 
-[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = 'new(' + getShortQualifiedName( aClass.ePackage.name + '.' + aClass.getMockName() , aPackage.name ) +')'/]
-[query private getTestValue( aEnum : EEnum ) : String = 
-	if aEnum.eLiterals->size() > 1 then aEnum.eLiterals->at(2).getConstantsName()
-	else if aEnum.eLiterals->size() = 1 then aEnum.eLiterals->at(1).getConstantsName() 
-	else 0 endif endif/]
-[query private getTestValue( aDataType : EDataType ) : String = 
+[query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = 
+	let qualifiedMockName : String = if aClass.name='EObject' then 'ecore.MockEObjectInternal' else aClass.getQualifiedMockName() endif in 
+	'new(' + getShortQualifiedName( qualifiedMockName , aPackage.name ) +')'
+/]
+
+[query private getTestValue( aEnum : EEnum ,aPackage : EPackage ) : String =
+	if aEnum.eLiterals->size() >= 1 then
+		let constant : String = aEnum.eLiterals->at(if aEnum.eLiterals->size() > 1 then 2 else 1 endif).getConstantsName() in
+		getShortQualifiedName(aEnum.ePackage.name + '.' + constant, aPackage.name)  
+	else 0 endif/]
+
+[query private getTestValue( aDataType : EDataType ,aPackage : EPackage) : String = 
 	if hasKey(aDataType, 'testValue') then
 		aDataType.valueKey('testValue')
 	else
@@ -136,7 +144,7 @@
 	    getAllDataTypes()->iterate( s ; res : String = '' |
 	    if res = '' then
 	        if s->exists(n : String | n = typeName) then
-	            s->at( s->size() -1 )
+				getShortQualifiedName(s->at( s->size() - 1 ) , aPackage.name)
 	        else
 				res
 	        endif
@@ -158,18 +166,25 @@
 [query private getType( aEnum : EEnum ) : String = aEnum.ePackage.name + '.' + aEnum.name/]
 [query private getType( aDataType : EDataType ) : String = aDataType.getInstanceTypeName()/]
 
-[query public getDefaultValue(anEAttribute : EAttribute) : String = if (defaultValueLiteral->notEmpty()) then defaultValueLiteral else eType.getDefaultValue() endif/]
+[query public getDefaultValue(anEAttribute : EAttribute, aContext : EClass) : String = anEAttribute.getDefaultValue(aContext.ePackage)/]
 
+[query public getDefaultValue(anEAttribute : EAttribute, aContext : EPackage) : String = if (defaultValueLiteral->notEmpty()) then defaultValueLiteral else eType.getDefaultValue(aContext) endif/]
 
-[query public getDefaultValue(aClassifier : EClassifier) : String =
-    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue()
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue()
+[query public getDefaultValue(aClassifier : EClassifier, aContext : EClass) : String = aClassifier.getDefaultValue(aContext.ePackage)/]
+
+[query public getDefaultValue(aClassifier : EClassifier, aContext : EPackage) : String =
+    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue(aContext)
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue(aContext)
     else 'nil' endif endif
 /]
 
-[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.eLiterals->at(1).getConstantsName() else 0 endif/]
+[query public getDefaultValue(aEnum : EEnum, aContext : EClass) : String = aEnum.getDefaultValue(aContext.ePackage)/]
 
-[query public getDefaultValue(aDataType : EDataType) : String =
+[query public getDefaultValue(aEnum : EEnum, aContext : EPackage) : String = if aEnum.eLiterals->notEmpty() then getShortQualifiedName(aEnum.ePackage.name + '.' + aEnum.eLiterals->at(1).getConstantsName(), aContext.name) else 0 endif/]
+
+[query public getDefaultValue(aDataType : EDataType, aContext : EClass) : String = aDataType.getDefaultValue(aContext.ePackage)/]
+
+[query public getDefaultValue(aDataType : EDataType, aContext : EPackage) : String =
 	if hasKey(aDataType, 'defaultValue') then
 		aDataType.valueKey('defaultValue')
 	else if aDataType.name <> 'EChar' and not aDataType.defaultValue.oclIsUndefined() then
@@ -179,7 +194,7 @@
 	    getAllDataTypes()->iterate( s ; res : String = '' |
 	    if res = '' then
 	        if s->exists(n : String | n = typeName) then
-	            s->at( s->size() - 2 )
+	            getShortQualifiedName(s->at( s->size() - 2 ) , aContext.name)
 	        else
 	            res
 	        endif
@@ -188,6 +203,23 @@
 	    endif	
  		) 
 	endif endif
+/]
+
+[query public getDefaultValueWithType(aFeature : EStructuralFeature, aContext : EClass ) : String = aFeature.getDefaultValueWithType(aContext.ePackage)/]
+
+[query public getDefaultValueWithType(aFeature : EStructuralFeature, aContext : EPackage ) : String =
+	if aFeature.oclIsKindOf(EAttribute) then
+		let defaultValue : String = aFeature.oclAsType(EAttribute).getDefaultValue(aContext) in
+		if defaultValue = '' then ''
+		else if defaultValue = 'nil' then 'nil'
+		else
+			let t : String = aFeature.eType.getType() in
+			let isPtr : Boolean = t.size() > 0 and t.first(1) = '*' in
+			(if isPtr then '(' else '' endif) + getShortQualifiedName(aFeature.eType.getType(),aContext.name) +(if isPtr then ')' else '' endif) + '(' + defaultValue + ')'
+		endif endif
+	else
+		'nil'
+	endif
 /]
 
 [query public getComparisonFunction( aDataType : EDataType) : String =
@@ -207,10 +239,10 @@
 
 [query public getAllImports(aPackage : EPackage) : OclAny =
 	let namespacesToPackages : OclAny = 
-    if (aPackage.hasGenAnnotation()) then
-        let annotations : Sequence(String) = aPackage.getGenAnnotation().details->select(key = 'import').value in
+    if aPackage.hasKey('imports') then
+		let annotations : Sequence(String) = aPackage.valueKey('imports').tokenize(' \r\n') in
         annotations->iterate( annotation : String ; res : OclAny = mapNew('getNamespaceToPackages_' + aPackage.name) | (
-            let index : Integer = annotation.index('=') in 
+        	let index : Integer = annotation.index('=') in 
             if index = -1 then
 				let namespaceIndex : Integer = annotation.lastIndexOf('/') in
 				if namespaceIndex = -1 then
@@ -221,7 +253,7 @@
             else
                 res.mapPut(annotation.substring(1,index-1),annotation.substring(index+1)) 
             endif
-        ))
+		))
     else
         mapNew('getNamespaceToPackages_' + aPackage.name)
     endif in

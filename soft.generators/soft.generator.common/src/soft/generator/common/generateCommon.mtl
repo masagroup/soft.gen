@@ -22,8 +22,8 @@
 /]
 [query public isVoid(aOperation : EOperation) : Boolean = aOperation.eType.oclIsUndefined() /]
 
-[query public join( aSequence : Sequence(String) , aDelimiter : String ) : String = 
-    aSequence->iterate(s ; res: String ='' | ( res + ( if ( aSequence->first() = s ) then '' else aDelimiter endif ) +  s ))
+[query public join( aSequence : Sequence(String) , aDelimiter : String ) : String =
+	Sequence{1..aSequence->size()}->iterate( index ; res: String ='' | res + ( if index = 1 then '' else aDelimiter endif ) +  aSequence->at(index))
 /]
 
 [query public format( aString : String , aArguments : Sequence(String) ) : String =

@@ -171,7 +171,7 @@ p.AddEEnumLiteral([aEnum.getPackageGetter()/], "[anEEnumLiteral.name/]", "[anEEn
 [/template]
 
 [template private generateInitialization(aDataType : EDataType,anEPackage : EPackage)]
-p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataType.getInstanceTypeName()/]",[let defaultValue : String = aDataType.getDefaultValue().replaceAll('\'|"', '')][if defaultValue = '' or defaultValue = 'nil']""[else]"[defaultValue/]"[/if][/let],[aDataType.serializable.toString()/])
+p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataType.getInstanceTypeName()/]",[let defaultValue : String = aDataType.getDefaultValue(anEPackage).replaceAll('\'|"', '')][if defaultValue = '' or defaultValue = 'nil']""[else]"[defaultValue/]"[/if][/let],[aDataType.serializable.toString()/])
 
 [/template]
 
@@ -184,9 +184,19 @@ p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataTyp
 
 package [anEPackage.name/]
 
-[if not anEPackage.isEcorePackage()]
-import "[getImportForPackage('ecore')/]"
-[/if]
+[let imports : OrderedSet(String) = Set { if not anEPackage.isEcorePackage() then Set{ 'ecore' } else Set{} endif
+										, anEPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.name->asSet()
+                                        }->flatten()
+										 ->select( s | s <> anEPackage.name)
+										 ->collect( i | anEPackage.getImportForPackage(i) )
+										 ->select( s | s <> '')
+									     ->asOrderedSet()->sortedBy( s | s) ]
+
+[for ( i : String | imports )]
+import "[i/]"
+[/for]
+[/let]
+
 
 // [className/] is the [anEPackage.getInterfaceName()/] implementation
 type [className/] struct {

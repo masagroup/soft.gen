@@ -118,7 +118,7 @@ func Test[aClass.name.toUpperFirst()/]GetValue(t *testing.T) {
 [let aPackage : EPackage = aClass.ePackage ]
 func Test[aClass.name.toUpperFirst()/][anEOperation.getOperationName()/]Operation(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	assert.Panics(t, func() { o.[anEOperation.getOperationName()/]([for (eClassifier : EClassifier | anEOperation.eParameters.eType) separator(',')][eClassifier.getDefaultValue()/][/for]) })
+	assert.Panics(t, func() { o.[anEOperation.getOperationName()/]([for (eClassifier : EClassifier | anEOperation.eParameters.eType) separator(',')][eClassifier.getDefaultValue(aClass)/][/for]) })
 }
 [/let]
 [/template]
@@ -267,11 +267,11 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	o := [aClass.getConstructorName()/]()
 	// get default value
 	[let aAttribute : EAttribute = aStructuralFeature.oclAsType(EAttribute)]
-	[let aDefaultValue : String = aAttribute.getDefaultValue()]
+	[let aDefaultValue : String = aAttribute.getDefaultValueWithType(aClass)]
 	[if aDefaultValue = 'nil']
 	assert.Nil(t, o.[aAttribute.getGetterName()/]())
 	[else]
-	assert.Equal(t, [aAttribute.getDefaultValue()/], o.[aAttribute.getGetterName()/]())
+	assert.Equal(t, [aDefaultValue/], o.[aAttribute.getGetterName()/]())
 	[/if]
 	[/let]
 	[/let]
@@ -576,7 +576,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 		return notification.GetEventType() == [ecorePrefix/]UNSET && notification.GetFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/]
 	})).Once()
 	o.[aStructuralFeature.getUnSetterName()/]()
-[let defaultValue : String = aStructuralFeature.eType.getDefaultValue()]
+[let defaultValue : String = aStructuralFeature.getDefaultValueWithType(aClass)]
 [if defaultValue = 'nil']
 	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
 [else]
@@ -732,7 +732,6 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 [/template]
 
 [template private generateFeatureMockAddedExpectations(anStructuralFeature : EStructuralFeature , mockName : String , aClass : EClass)]
-[if anStructuralFeature.eType.name <> 'EObject']
 [if anStructuralFeature.isContains()]
 	[let anEReference : EReference = anStructuralFeature.oclAsType(EReference)]
 	[if anEReference.eOpposite.oclIsUndefined()]
@@ -756,7 +755,6 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 	[/let]
 	[/if]
 	[/let]
-[/if]
 [/if]
 [/template]
 
@@ -873,7 +871,7 @@ func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 		assert.Nil(t,o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false))
 		[else]
 			[let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
-			[let defaultValue : String = aAttribute.getDefaultValue()]
+			[let defaultValue : String = aAttribute.getDefaultValueWithType(aClass)]
 			[if defaultValue <> '']
 		v := o.EGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false)
 			[if defaultValue = 'nil']
