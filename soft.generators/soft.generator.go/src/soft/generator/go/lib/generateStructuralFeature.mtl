@@ -47,7 +47,7 @@
 
 [template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
 [let aPackage : EPackage = aClass.ePackage]
-[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEList([anEAttribute.unique/])
+[if not aPackage.isEcorePackage()]ecore.[/if]New[if anEAttribute.unique]Unique[/if]BasicEList(['['/][']'/]interface{}{})
 [/let]
 [/template]
 

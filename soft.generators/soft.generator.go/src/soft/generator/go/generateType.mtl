@@ -168,7 +168,11 @@
 
 [query public getDefaultValue(anEAttribute : EAttribute, aContext : EClass) : String = anEAttribute.getDefaultValue(aContext.ePackage)/]
 
-[query public getDefaultValue(anEAttribute : EAttribute, aContext : EPackage) : String = if (defaultValueLiteral->notEmpty()) then defaultValueLiteral else eType.getDefaultValue(aContext) endif/]
+[query public getDefaultValue(anEAttribute : EAttribute, aContext : EPackage) : String = 
+	if anEAttribute.many then '' 
+	else if (defaultValueLiteral->notEmpty()) then defaultValueLiteral else eType.getDefaultValue(aContext) 
+	endif endif
+/]
 
 [query public getDefaultValue(aClassifier : EClassifier, aContext : EClass) : String = aClassifier.getDefaultValue(aContext.ePackage)/]
 
