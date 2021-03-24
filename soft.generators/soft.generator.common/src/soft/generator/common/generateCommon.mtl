@@ -1,7 +1,20 @@
+[**
+ * This file is part of soft.generators, a project for code 
+ * generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
 [comment encoding = UTF-8 /]
 [module generateCommon('http://www.eclipse.org/emf/2002/Ecore')]
 
 [query public getNSURI(o : OclAny) : String = getProperty('nsURI') /]
+
+[query public getFileNotes(o : OclAny) : String = getProperty('fileNotes') /]
 
 [query public hasKey(aModelElement : EModelElement, aKey:String) : Boolean = 
 	if aModelElement.hasGenAnnotation() then 

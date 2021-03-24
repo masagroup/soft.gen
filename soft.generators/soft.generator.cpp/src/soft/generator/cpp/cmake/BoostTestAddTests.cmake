@@ -1,3 +1,12 @@
+# This file is part of soft.generators.cpp, a project for cpp code 
+# generation of an ecore model
+#
+# Copyright (c) 2021 MASA Group
+#
+# This Source Code Form is subject to the terms of the Mozilla
+# Public License v. 2.0. If a copy of the MPL was not distributed
+# with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 set(prefix "${TEST_PREFIX}")
 set(suffix "${TEST_SUFFIX}")
 set(extra_args ${TEST_EXTRA_ARGS})

@@ -1,3 +1,14 @@
+[**
+ * This file is part of soft.generator.go, a project for go code 
+ * generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
 [comment encoding = UTF-8 /]
 [module generateInterface('http://www.eclipse.org/emf/2002/Ecore')/]
 
@@ -5,6 +16,7 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateElement/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::generateOperation/]

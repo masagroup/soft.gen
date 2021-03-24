@@ -1,3 +1,15 @@
+[**
+ * This file is part of soft.generators, a project for code 
+ * generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
+[comment encoding = UTF-8 /]
 [module generateElement('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
@@ -33,11 +45,6 @@
         }->flatten()
     endif  
 /]
-
-[query public getReferencedTypes(aClass : EClass) : Set(EClassifier) = 
-	OrderedSet{aClass.eSuperTypes
-              ,aClass.getImplementedFeatures()->select(feature : EStructuralFeature | not feature.many ).eType
-              ,aClass.getImplementedOperations().getReferencedTypes()}->flatten()->select( cls | not cls.oclIsUndefined() ) /]
 
 [query public requiresList(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EEList' endif/]
 [query public requiresList(aClass : EClass) : Boolean = aClass.getImplementedFeatures()->exists(isListType()) or aClass.getImplementedOperations()->exists((eType.requiresList()  or isListType())) /]
