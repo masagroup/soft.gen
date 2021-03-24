@@ -17,6 +17,7 @@
 [import soft::generator::common::generateStructuralFeature]
 
 [import soft::generator::ts::generateCommon/]
+[import soft::generator::ts::generateElement/]
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
 [import soft::generator::ts::lib::generateOperation/]

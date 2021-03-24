@@ -46,11 +46,6 @@
     endif  
 /]
 
-[query public getReferencedTypes(aClass : EClass) : Set(EClassifier) = 
-	OrderedSet{aClass.eSuperTypes
-              ,aClass.getImplementedFeatures()->select(feature : EStructuralFeature | not feature.many ).eType
-              ,aClass.getImplementedOperations().getReferencedTypes()}->flatten()->select( cls | not cls.oclIsUndefined() ) /]
-
 [query public requiresList(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EEList' endif/]
 [query public requiresList(aClass : EClass) : Boolean = aClass.getImplementedFeatures()->exists(isListType()) or aClass.getImplementedOperations()->exists((eType.requiresList()  or isListType())) /]
 [query public requiresCollectionView(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'ETreeIterator' endif/]

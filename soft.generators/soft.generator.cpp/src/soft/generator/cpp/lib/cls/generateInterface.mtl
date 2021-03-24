@@ -14,6 +14,7 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
+[import soft::generator::cpp::generateElement /]
 [import soft::generator::cpp::generateOperation/]
 [import soft::generator::cpp::generateType/]
 [import soft::generator::cpp::generateCommon/]
