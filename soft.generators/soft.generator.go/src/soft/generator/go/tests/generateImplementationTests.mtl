@@ -41,7 +41,6 @@ package [aPackage.name/]
 
 import (
 	"testing"
-	"net/url"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 [let imports : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
@@ -58,7 +57,6 @@ func discard[name.toUpperFirst()/]() {
 	_ = assert.Equal
 	_ = mock.Anything
 	_ = testing.Coverage
-	_ = url.Parse
 [if requiresEcore]
 	_ = ecore.ADD
 [/if]
@@ -240,7 +238,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	mock.AssertExpectationsForObjects(t, mockValue,mockAdapter,mockResource,mockResourceSet)
 
 	// get a resolved value
-	mockURI, _ := url.Parse("test://file.t")
+	mockURI := [ecorePrefix/]NewURI("test:///file.t")
 	mockResolved := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
 	mockResolved.On("EProxyURI").Return(nil).Once()
 	mockResource.On("GetResourceSet").Return(mockResourceSet).Once()
