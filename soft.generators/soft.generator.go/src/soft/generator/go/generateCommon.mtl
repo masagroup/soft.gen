@@ -13,6 +13,7 @@
 [module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
 
 [**
  * File Comments 
@@ -189,8 +190,14 @@ methodName.toUpperFirst()
 	aPackage.eAllContents(EEnum)->exists( e | e <> aEEnum and aEEnum.eLiterals.name->asOrderedSet()->intersection(aEnumNames)->notEmpty() ) 
 /]
 
-[query public getConstantsName(eLiteral : EEnumLiteral) : String = 
-	if eLiteral.eEnum.isConstantsQualified() then eLiteral.eEnum.name.toUpperCase() + '__' + eLiteral.name.toUpperCase() else eLiteral.name.toUpperCase() endif/]
+[query public getConstantsName(eLiteral : EEnumLiteral) : String =
+	let eLiteralName : String =  upperCamelToUpperUnderscore(eLiteral.name.toUpperFirst()) in
+	if eLiteral.eEnum.isConstantsQualified() then
+		let eEnumName : String = upperCamelToUpperUnderscore(eLiteral.eEnum.name.toUpperFirst()) in	 
+		eEnumName + '__' + eLiteralName 
+	else eLiteralName 
+	endif
+/]
 
 [query public getValueName(eLiteral : EEnumLiteral) : String = eLiteral.name/]
 
