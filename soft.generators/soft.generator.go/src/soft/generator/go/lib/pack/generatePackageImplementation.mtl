@@ -174,7 +174,7 @@ p.InitEOperation([anEOperation.getPackageGetter()/],[anEOperation.eType.getPacka
 [/template]
 
 [template private generateInitialization(aEnum : EEnum,anEPackage : EPackage)]
-p.InitEEnum([aEnum.getPackageGetter()/], "[aEnum.name/]", "[aEnum.getInstanceTypeName()/]")
+p.InitEEnum([aEnum.getPackageGetter()/], "[aEnum.name/]","[if aEnum.instanceTypeName.oclIsUndefined()]int32[else][aEnum.getInstanceTypeName()/][/if]")
 [for (anEEnumLiteral : EEnumLiteral | aEnum.eLiterals)]
 p.AddEEnumLiteral([aEnum.getPackageGetter()/], "[anEEnumLiteral.name/]", "[anEEnumLiteral.literal/]", [anEEnumLiteral.value.toString()/])
 [/for]
