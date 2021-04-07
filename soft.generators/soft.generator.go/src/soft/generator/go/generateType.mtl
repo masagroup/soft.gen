@@ -181,8 +181,28 @@
 
 [query public getDefaultValue(anEAttribute : EAttribute, aContext : EPackage) : String = 
 	if anEAttribute.many then '' 
-	else if (defaultValueLiteral->notEmpty()) then defaultValueLiteral else eType.getDefaultValue(aContext) 
+	else if (defaultValueLiteral->notEmpty()) then eType.getDefaultValueFromLiteral(aContext,defaultValueLiteral) else eType.getDefaultValue(aContext) 
 	endif endif
+/]
+
+
+[query private getDefaultValueFromLiteral(aClassifier : EClassifier, aContext : EPackage, literal : String ) : String =
+	 if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValueFromLiteral(aContext,literal)
+	 else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValueFromLiteral(aContext,literal)
+	 else literal endif endif
+/]
+
+[query private getDefaultValueFromLiteral(aEnum : EEnum, aContext : EPackage, literal : String ) : String =
+	let eLiterals : OrderedSet(EEnumLiteral) = aEnum.eLiterals->select( el : EEnumLiteral | el.name = literal ) in
+	if eLiterals->isEmpty() then
+		literal 
+	else
+		getShortQualifiedName(aEnum.ePackage.name + '.' + eLiterals->first().getConstantsName(), aContext.name)		
+	endif
+/]
+
+[query private getDefaultValueFromLiteral(aDataType : EDataType, aContext : EPackage, literal : String ) : String = 
+	literal
 /]
 
 [query public getDefaultValue(aClassifier : EClassifier, aContext : EClass) : String = aClassifier.getDefaultValue(aContext.ePackage)/]
