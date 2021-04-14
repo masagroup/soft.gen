@@ -243,20 +243,19 @@ func (p *[className/])Initialize() {
 [anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(anEPackage)/]
 
 func (p *[className/])createPackageContents() {
-    factory := [if not anEPackage.isEcorePackage()]ecore.[/if]GetFactory()
 [let allClasses : OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)]
-[if allClasses->notEmpty()]
+[let allDataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name)]
+[if allClasses->notEmpty() or allDataTypes->notEmpty()]
+	factory := [if not anEPackage.isEcorePackage()]ecore.[/if]GetFactory()
 [for (aClass : EClass | allClasses)]
 	
 	[aClass.generateCreation()/]
 	[Sequence{ aClass.eStructuralFeatures, aClass.eOperations}->flatten().generateCreation()/]		
 [/for]
-[/if]
-[/let]
-[let allDataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name)]
-[if allDataTypes->notEmpty()]
+
 	[allDataTypes.generateCreation()/]
 [/if]
+[/let]
 [/let]    
 }
 
