@@ -21,7 +21,6 @@
 	allClasses : OrderedSet(EClass) = ePackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
 	allDataTypes : Sequence(EDataType) = ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
  } ]
-[if allDataTypes->notEmpty() or allClasses->notEmpty()] 
 [file (ePackage.getOutputDirectory() + '/' + ePackage.getFactoryTestFileName(ePackage.name), false, 'UTF-8')]
 [fileComment()/]
 
@@ -117,7 +116,6 @@ func TestFactoryConvert(t *testing.T) {
 [/for]	
 }
 [/file]
-[/if]
 [/template]
 
 [template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType)? (aDataType.oclIsTypeOf(EEnum))]
