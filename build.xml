@@ -1,0 +1,109 @@
+<project name="soft.gen" default="all">
+    
+    <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+    
+    <property name="soft.generators.version"        value="1.4.0"/>
+    <property name="soft.generator.common.version"  value="1.2.2"/>
+    <property name="soft.generator.cpp.version"     value="1.2.2"/>
+    <property name="soft.generator.go.version"      value="1.4.0"/>
+    <property name="soft.generator.ts.version"      value="1.0.2"/>
+    
+    <dirname property="project.dir" file="${ant.file}"/>
+
+    <macrodef name="docker_pull">
+        <attribute name="name"/>
+        <attribute name="image"/>
+        <sequential>
+            <exec taskname="@{name}" executable="docker.exe" dir="." failonerror="true">
+                <arg value="pull"/>
+                <arg value="@{image}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="docker_build">
+        <attribute name="name"/>
+        <attribute name="image"/>
+        <attribute name="file" default="dockerfile"/>
+        <sequential>
+            <exec taskname="@{name}" executable="docker.exe" dir="." failonerror="true">
+                <arg value="build"/>
+                <arg value="--quiet"/>
+                <arg value="--tag"/>
+                <arg value="@{image}"/>
+                <arg value="--file"/>
+                <arg value="@{file}"/>
+                <arg value="."/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="docker_run">
+        <attribute name="name"/>
+        <attribute name="image"/>
+        <attribute name="volume"/>
+        <attribute name="workdir"/>
+        <element name="options" optional="yes"/> 
+        <element name="command" optional="yes"/>
+        <sequential>
+            <exec taskname="@{name}" executable="docker.exe" dir="." failonerror="true">
+                <arg value="run"/>
+                <arg value="--rm"/>
+                <arg value="-v"/>
+                <arg value="@{volume}"/>
+                <arg value="-w=@{workdir}"/>
+                <options/>
+                <arg value="@{image}"/>
+                <command/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="dependencies">
+        <docker_pull name="dependencies" image="klakegg/saxon"/>
+        <docker_pull name="dependencies" image="maven"/>
+    </target>
+
+    <target name="generators.version">
+        <!-- pom.xml files -->
+        <!-- mvn version:set doesn't work : we go to do it manually with an xslt -->
+        <propertyselector property="generators.artifacts"
+                          match="(soft.generator.*).version"
+                          select="\1"/>
+        <for list="${generators.artifacts}" param="artifact">
+            <sequential>
+                <echo message="Setting pom version for artifact:'@{artifact}' to '${@{artifact}.version}' ${user.dir}"/>
+                <docker_run name="xslt" image="klakegg/saxon" volume="${user.dir}:/pwd" workdir="/pwd">
+                    <options>
+                        <arg line="-d"/>
+                    </options>
+                    <command>
+                        <arg line="xslt -s:/pwd/build.xml -xsl:/pwd/pom.xslt -o:/pwd/build.xml artifactId=@{artifact} version=${@{artifact}.version}"/>
+                    </command>
+                </docker_run>
+             </sequential>
+        </for>
+        
+        <!-- manifest.mf files -->
+        <fileset  id="generators.manifests.id" dir="." includes="**/MANIFEST.MF"/> 
+        <pathconvert targetos="unix" pathsep="," property="generators.manifests" refid="generators.manifests.id"/>
+        <for list="${generators.manifests}" param="manifest">
+            <sequential>
+                <local name="artifact"/>
+                <local name="artifact.version"/>
+                <propertyregex property="artifact"
+                               input="@{manifest}"
+                               regexp=".*/soft.generators/([^/]*)/META-INF/MANIFEST.MF"
+                               select="\1"/>
+                <propertycopy name="artifact.version" from="${artifact}.version"/>
+                <echo message="Setting manifest version for artifact:'${artifact}' to '${artifact.version}'"/>
+                <manifest file="@{manifest}" mode="update">
+                    <attribute name="Bundle-Version" value="${artifact.version}"/>
+                </manifest>
+            </sequential>
+        </for>
+    </target>
+
+    <target name="all" depends="dependencies"/>
+
+</project>
