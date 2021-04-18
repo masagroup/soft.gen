@@ -104,7 +104,7 @@
     </target>
 
     <target name="generators.build">
-        <docker_build name="build" image="soft.generators/base"/>
+        <docker_build name="build" file="Dockerfile" image="soft.generators"/>
     </target>
 
     <target name="all" depends="dependencies"/>
