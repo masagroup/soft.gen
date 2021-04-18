@@ -24,11 +24,10 @@
     <macrodef name="docker_build">
         <attribute name="name"/>
         <attribute name="image"/>
-        <attribute name="file" default="dockerfile"/>
+        <attribute name="file" default="Dockerfile"/>
         <sequential>
             <exec taskname="@{name}" executable="docker.exe" dir="." failonerror="true">
                 <arg value="build"/>
-                <arg value="--quiet"/>
                 <arg value="--tag"/>
                 <arg value="@{image}"/>
                 <arg value="--file"/>
@@ -102,6 +101,10 @@
                 </manifest>
             </sequential>
         </for>
+    </target>
+
+    <target name="generators.build">
+        <docker_build name="build" image="soft.generators/base"/>
     </target>
 
     <target name="all" depends="dependencies"/>

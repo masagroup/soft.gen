@@ -23,9 +23,9 @@
    </pluginRepositories>
    <profiles>
       <profile>
-         <id>ant</id>
+         <id>docker</id>
          <properties>
-            <project.target>../../../out/maven/${project.artifactId}</project.target>
+            <project.target>../../../out/${project.artifactId}</project.target>
             <acceleo.uriHandler>soft.acceleo.AcceleoURIHandler</acceleo.uriHandler>
          </properties>
          <dependencies>
