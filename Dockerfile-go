@@ -1,0 +1,7 @@
+FROM soft.generator.base AS base
+
+FROM openjdk:8-jre-slim
+
+COPY --from=base /soft.generator.go /usr/share/soft.generator.go
+
+ENTRYPOINT ["java","-jar","/usr/share/soft.generator.go/soft.generator.go-1.4.0.jar"] 

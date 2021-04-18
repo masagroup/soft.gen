@@ -1,0 +1,7 @@
+FROM soft.generator.base AS base
+
+FROM openjdk:8-jre-slim
+
+COPY --from=base /soft.generator.cpp /usr/share/soft.generator.cpp
+
+ENTRYPOINT ["java","-jar","/usr/share/soft.generator.cpp/soft.generator.cpp-1.2.2.jar"] 

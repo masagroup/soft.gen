@@ -58,10 +58,7 @@
         </sequential>
     </macrodef>
 
-    <target name="dependencies">
-        <docker_pull name="dependencies" image="klakegg/saxon"/>
-        <docker_pull name="dependencies" image="maven"/>
-    </target>
+    
 
     <target name="generators.version">
         <!-- pom.xml files -->
@@ -103,10 +100,24 @@
         </for>
     </target>
 
-    <target name="generators.build">
-        <docker_build name="build" file="Dockerfile" image="soft.generators"/>
+    <target name="generator.base">
+        <docker_build name="build" file="Dockerfile" image="soft.generator.base"/>
     </target>
 
-    <target name="all" depends="dependencies"/>
+    <target name="generator.cpp">
+        <docker_build name="build" file="Dockerfile-cpp" image="soft.generator.cpp"/>
+    </target>
+
+    <target name="generator.go">
+        <docker_build name="build" file="Dockerfile-go" image="soft.generator.go"/>
+    </target>
+
+    <target name="generator.ts">
+        <docker_build name="build" file="Dockerfile-ts" image="soft.generator.ts"/>
+    </target>
+
+    <target name="generators" depends="generator.base,generator.cpp,generator.go,generator.ts"/>
+    
+    <target name="all" depends="generators"/>
 
 </project>
