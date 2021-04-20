@@ -80,7 +80,6 @@
                      <addClasspath>true</addClasspath>
                      <mainClass>soft.generator.ts.Generate</mainClass>
                      <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                     <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                   </manifest>
                   <manifestEntries>
                      <Build-TimeStamp>${maven.build.timestamp}</Build-TimeStamp>
