@@ -1,3 +1,5 @@
+.PHONY : dist dist.clean versions
+
 default: generators
 
 # generators cerates all docker images for soft generators
@@ -25,13 +27,9 @@ dist:
 	@$(foreach lang,${LANGS}, docker cp $(id):/soft.generator.$(lang) - | gzip > dist/soft.generator.$(lang)-$(soft.generator.$(lang).version).tar.gz;)
 	@docker rm $(id) > /dev/null
 
-.PHONY : dist
-
 # distclean clean generators binaries distribution
 distclean:
 	@rm -rf dist
-
-.PHONY : distclean
 
 soft.generators.version := 1.4.1
 soft.generator.common.version := 1.2.2
@@ -49,5 +47,3 @@ versions:
 	@$(foreach package,${PACKAGES}, docker run --rm -d -v $(pwd):/pwd -w /pwd klakegg/saxon xslt -s:/pwd/build.xml -xsl:/pwd/pom.xslt -o:/pwd/build.xml artifactId=soft.generator.$(lang) version=$(soft.generator.$(lang).version) > /dev/null;)
 	@$(foreach package,${PACKAGES}, sed -i "s#Bundle-Version: .*#Bundle-Version: $(soft.generator.$(package).version)#g" soft.generators/soft.generator.$(package)/META-INF/MANIFEST.MF;)
 	@$(foreach lang,${LANGS}, sed -i "s#[0-9]*\.[0-9]*\.[0-9]*\.jar#$(soft.generator.$(lang).version).jar#g" Dockerfile-$(lang);)
-
-.PHONY : versions
