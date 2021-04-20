@@ -45,6 +45,8 @@ public class Generate extends Generator {
     public static void main(String[] args) {
         try {
             Generate g = new Generate();
+            String v = Generate.class.getPackage().getImplementationVersion();
+            System.out.println(v);
             boolean p = g.parse(args);
             if (p) {
                 g.initialize();
