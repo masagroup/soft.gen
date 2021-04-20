@@ -29,7 +29,7 @@ dist:
 
 # distclean clean generators binaries distribution
 distclean:
-	@rmdir dist
+	@rm -rf dist
 
 .PHONY : distclean
 
