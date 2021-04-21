@@ -1,4 +1,4 @@
-FROM soft.generator.base AS base
+FROM masagroup/soft.generator.base AS base
 
 FROM openjdk:8-jre-slim
 

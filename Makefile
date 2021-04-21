@@ -6,16 +6,16 @@ default: generators
 generators: generator.base generator.go generator.cpp generator.ts
 
 generator.base:
-	@docker build --file Dockerfile --tag soft.generator.base .
+	@docker build --file Dockerfile --tag masagroup/soft.generator.base .
 
 generator.go:
-	@docker build --file Dockerfile-go --tag soft.generator.go .
+	@docker build --file Dockerfile-go --tag masagroup/soft.generator.go .
 
 generator.cpp:
-	@docker build --file Dockerfile-cpp --tag soft.generator.cpp .
+	@docker build --file Dockerfile-cpp --tag masagroup/soft.generator.cpp .
 
 generator.ts:
-	@docker build --file Dockerfile-ts --tag soft.generator.ts .
+	@docker build --file Dockerfile-ts --tag masagroup/soft.generator.ts .
 
 LANGS := go ts cpp
 PACKAGES := go ts cpp common
@@ -23,7 +23,7 @@ PACKAGES := go ts cpp common
 # dist generators binaries for distribution
 dist:
 	@mkdir -p dist
-	@$(eval id := $(shell docker create soft.generator.base bash))
+	@$(eval id := $(shell docker create masagroup/soft.generator.base bash))
 	@$(foreach lang,${LANGS}, docker cp $(id):/soft.generator.$(lang) - | gzip > dist/soft.generator.$(lang)-$(soft.generator.$(lang).version).tar.gz;)
 	@docker rm $(id) > /dev/null
 
