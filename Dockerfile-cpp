@@ -1,7 +1,15 @@
 FROM masagroup/soft.generator.base AS base
 
-FROM openjdk:8-jre-slim
+# Build jvm stage
+FROM openjdk:16-alpine AS jvm
+COPY --from=base /soft.generator.cpp /soft.generator.cpp
+WORKDIR /soft.generator.cpp
+RUN jdeps --print-module-deps --ignore-missing-deps --class-path '*' -recursive soft.generator.cpp-1.2.2.jar > java.modules \
+ && jlink --strip-java-debug-attributes --add-modules $(cat java.modules) --output /java-generator
 
-COPY --from=base /soft.generator.cpp /usr/share/soft.generator.cpp
+# Build result stage
+FROM alpine
+COPY --from=jvm /soft.generator.cpp/*.jar /usr/share/soft.generator.cpp/
+COPY --from=jvm /java-generator /usr/lib/jvm/java-generator
 
-ENTRYPOINT ["java","-jar","/usr/share/soft.generator.cpp/soft.generator.cpp-1.2.2.jar"] 
+ENTRYPOINT ["/usr/lib/jvm/java-generator/bin/java","-jar","/usr/share/soft.generator.cpp/soft.generator.cpp-1.2.2.jar"]
