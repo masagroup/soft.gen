@@ -128,6 +128,12 @@ public class Generator extends AbstractAcceleoGenerator {
                                     .hasArg(false)
                                     .desc("print nothing but failures")
                                     .build();
+        Option headerOption = Option.builder("ps")
+                                    .longOpt("properties")
+                                    .argName("file")
+                                    .hasArg()
+                                    .desc("a properties file")
+                                    .build();
 
         generateOptions.addOption(helpOption);
         generateOptions.addOption(templateOption);
@@ -135,6 +141,7 @@ public class Generator extends AbstractAcceleoGenerator {
         generateOptions.addOption(outputOption);
         generateOptions.addOption(propertyOption);
         generateOptions.addOption(silentOption);
+        generateOptions.addOption(headerOption);
 
         String packageName = pack.getImplementationTitle();
         if (packageName == null) {
@@ -185,6 +192,11 @@ public class Generator extends AbstractAcceleoGenerator {
                 properties = line.getOptionProperties("p");
             properties.put("nsURI", nsURI);
             properties.put("templates", templates.stream().collect(Collectors.joining(",")));
+
+            if (line.hasOption("ps")) {
+                String[] properties = line.getOptionValues("ps");
+                propertiesFiles.addAll(Arrays.asList(properties));
+            }
 
             // silent mode
             silentMode = false;
