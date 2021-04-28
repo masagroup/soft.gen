@@ -33,15 +33,15 @@ tests: test.go test.cpp test.ts
 
 test.go:
 	@echo "[test.go]"
-	@test $(shell docker run --rm -i masagroup/soft.generator.go -v 2>&1 | sed -r 's#soft.generator.go version: (.*)#\1#g') = "$(soft.generator.go.version)"
+	@test $(shell docker run --rm -i masagroup/soft.generator.go -v 2>&1 | sed -r 's#soft.generator.go version: (.*)#\1#g') = "$(soft.generator.go.version)" || (echo "invalid soft.generator.go version"; exit 1)
 
 test.cpp:
 	@echo "[test.cpp]"
-	@test $(shell docker run --rm -i masagroup/soft.generator.cpp -v 2>&1 | sed -r 's#soft.generator.cpp version: (.*)#\1#g') = "$(soft.generator.cpp.version)"
+	@test $(shell docker run --rm -i masagroup/soft.generator.cpp -v 2>&1 | sed -r 's#soft.generator.cpp version: (.*)#\1#g') = "$(soft.generator.cpp.version)" || (echo "invalid soft.generator.cpp version"; exit 1)
 
 test.ts:
 	@echo "[test.ts]"
-	@test $(shell docker run --rm -i masagroup/soft.generator.ts -v 2>&1 | sed -r 's#soft.generator.ts version: (.*)#\1#g') = "$(soft.generator.ts.version)"
+	@test $(shell docker run --rm -i masagroup/soft.generator.ts -v 2>&1 | sed -r 's#soft.generator.ts version: (.*)#\1#g') = "$(soft.generator.ts.version)" || (echo "invalid soft.generator.ts version"; exit 1)
 
 
 
