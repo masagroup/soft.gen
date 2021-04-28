@@ -20,6 +20,12 @@ import soft.generator.common.Generator;
  * @generated NOT
  */
 public class Generate extends Generator {
+
+    /**
+     * The name of the generator.
+     */
+    public static final String GENERATOR_NAME = "soft.generator.ts";
+
     /**
      * The name of the module.
      */
@@ -36,7 +42,7 @@ public class Generate extends Generator {
     public static final String[] TEMPLATE_NAMES = { "generateModel", "generateModule", "generateTests" };
 
     private Generate() {
-        super(Generate.class.getPackage(), MODULE_FILE_NAME, NS_URI, TEMPLATE_NAMES);
+        super(GENERATOR_NAME, MODULE_FILE_NAME, NS_URI, TEMPLATE_NAMES);
     }
 
     public static void main(String[] args) {
