@@ -6,6 +6,8 @@ soft.generator.cpp.version := 1.2.2
 soft.generator.go.version := 1.4.0
 soft.generator.ts.version := 1.0.2
 
+export DOCKER_BUILDKIT=1
+
 .PHONY : dist dist.clean versions
 
 default: generators tests
