@@ -50,6 +50,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParseResult;
 
 /**
@@ -184,19 +185,25 @@ public class Generator extends AbstractAcceleoGenerator {
         this.defaultTemplates = defaultTemplates;
     }
 
-    public boolean parse(String[] args) {
+    public boolean parse(String[] args) throws Exception {
         CommandLine commandLine = new CommandLine(new Command(), new CommandLineFactory());
         commandLine.getCommandSpec().name(this.generatorName);
         commandLine.setUsageHelpLongOptionsMaxWidth(60);
-        ParseResult parseResult = commandLine.parseArgs(args);
-        if (CommandLine.printHelpIfRequested(parseResult)) {
+        try {
+            ParseResult parseResult = commandLine.parseArgs(args);
+            if (CommandLine.printHelpIfRequested(parseResult)) {
+                return false;
+            }
+            if (commandLine.isVersionHelpRequested()) {
+                commandLine.printVersionHelp(System.out);
+                return false;
+            }
+            return true;
+        } catch (ParameterException pe) {
+            commandLine.getParameterExceptionHandler().handleParseException(pe, args);
             return false;
         }
-        if (commandLine.isVersionHelpRequested()) {
-            commandLine.printVersionHelp(System.out);
-            return false;
-        }
-        return true;
+
 //        Options generateOptions = new Options();
 //        Option helpOption = Option.builder("h").longOpt("help").hasArg(false).desc("print this message").build();
 //        Option templateOption = Option.builder("t")
