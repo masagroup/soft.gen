@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.eclipse.acceleo.common.IAcceleoConstants;
 import org.eclipse.acceleo.common.internal.utils.AcceleoPackageRegistry;
@@ -44,6 +46,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.resource.impl.ExtensibleURIConverterImpl;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import picocli.CommandLine;
@@ -169,10 +172,7 @@ public class Generator extends AbstractAcceleoGenerator {
     private String moduleName;
     private String[] defaultTemplates;
     private String nsURI;
-    private Package pack;
 
-    private String modelPath;
-    private String targetPath;
     private List<String> templates;
     private Properties properties = new Properties();
     private List<String> propertiesFiles = new ArrayList<String>();
@@ -186,7 +186,8 @@ public class Generator extends AbstractAcceleoGenerator {
     }
 
     public boolean parse(String[] args) throws Exception {
-        CommandLine commandLine = new CommandLine(new Command(), new CommandLineFactory());
+        this.command = new Command();
+        CommandLine commandLine = new CommandLine(this.command, new CommandLineFactory());
         commandLine.getCommandSpec().name(this.generatorName);
         commandLine.setUsageHelpLongOptionsMaxWidth(60);
         try {
@@ -203,145 +204,49 @@ public class Generator extends AbstractAcceleoGenerator {
             commandLine.getParameterExceptionHandler().handleParseException(pe, args);
             return false;
         }
-
-//        Options generateOptions = new Options();
-//        Option helpOption = Option.builder("h").longOpt("help").hasArg(false).desc("print this message").build();
-//        Option templateOption = Option.builder("t")
-//                                      .argName("templates")
-//                                      .longOpt("templates")
-//                                      .required(false)
-//                                      .hasArgs()
-//                                      .desc("the templates to be executed : "
-//                                              + Arrays.stream(defaultTemplates).collect(Collectors.joining(", ")))
-//                                      .build();
-//        Option modelOption = Option.builder("m")
-//                                   .argName("model")
-//                                   .longOpt("model")
-//                                   .required()
-//                                   .hasArg()
-//                                   .desc("the input model")
-//                                   .build();
-//        Option outputOption = Option.builder("o")
-//                                    .argName("folder")
-//                                    .longOpt("output")
-//                                    .required()
-//                                    .hasArg()
-//                                    .desc("the output folder")
-//                                    .build();
-//        Option propertyOption = Option.builder("p")
-//                                      .longOpt("property")
-//                                      .argName("property=value")
-//                                      .desc("a property")
-//                                      .valueSeparator('=')
-//                                      .numberOfArgs(2)
-//                                      .build();
-//        Option silentOption = Option.builder("s")
-//                                    .longOpt("silent")
-//                                    .hasArg(false)
-//                                    .desc("print nothing but failures")
-//                                    .build();
-//        Option headerOption = Option.builder("ps")
-//                                    .longOpt("properties")
-//                                    .argName("file")
-//                                    .hasArg()
-//                                    .desc("a properties file")
-//                                    .build();
-//        Option versionOption = Option.builder("v").longOpt("version").desc("print generator version").build();
-//
-//        generateOptions.addOption(helpOption);
-//        generateOptions.addOption(templateOption);
-//        generateOptions.addOption(modelOption);
-//        generateOptions.addOption(outputOption);
-//        generateOptions.addOption(propertyOption);
-//        generateOptions.addOption(silentOption);
-//        generateOptions.addOption(headerOption);
-//        generateOptions.addOption(versionOption);
-//
-//        String packageName = pack.getImplementationTitle();
-//        if (packageName == null) {
-//            packageName = pack.getName();
-//        }
-//        String jarName = packageName;
-//        String packageVersion = pack.getImplementationVersion();
-//        if (packageVersion == null) {
-//            packageVersion = "dev";
-//        } else {
-//            jarName += "-" + packageVersion;
-//        }
-//        String commandLineSyntax = String.format("java -jar %s.jar [options]", jarName);
-//        HelpFormatter help = new HelpFormatter();
-//        try {
-//
-//            if (hasHelp(helpOption, args)) {
-//                help.printHelp(commandLineSyntax, generateOptions);
-//                return false;
-//            }
-//
-//            if (hasVersion(helpOption, args)) {
-//                help.printHelp(commandLineSyntax, generateOptions);
-//                return false;
-//            }
-//
-//            CommandLineParser parser = new DefaultParser();
-//            CommandLine line = parser.parse(generateOptions, args);
-//            if (line.hasOption("help")) {
-//                help.printHelp(commandLineSyntax, generateOptions);
-//                return false;
-//            }
-//            if (line.hasOption("version")) {
-//                System.out.println(String.format("%s version:%s", packageName, packageVersion));
-//                return false;
-//            }
-//            modelPath = line.getOptionValue("m");
-//            targetPath = line.getOptionValue("o");
-//
-//            // templates
-//            templates = Lists.newArrayList(defaultTemplates);
-//            if (line.hasOption("t")) {
-//                String[] regexs = line.getOptionValues("t");
-//                for (String regex : regexs) {
-//                    // check if pattern is excluded
-//                    boolean exclude = false;
-//                    if (regex.charAt(0) == '!') {
-//                        exclude = true;
-//                        regex = regex.substring(1);
-//                    }
-//
-//                    // check for all defined templates if they got
-//                    // to be excluded or not
-//                    Iterator<String> it = templates.iterator();
-//                    while (it.hasNext()) {
-//                        boolean match = Pattern.matches(regex, it.next());
-//                        if ((match && exclude) || (!match && !exclude))
-//                            it.remove();
-//                    }
-//                }
-//            }
-//
-//            // properties
-//            properties = new Properties();
-//            if (line.hasOption("p"))
-//                properties = line.getOptionProperties("p");
-//            properties.put("nsURI", nsURI);
-//            properties.put("templates", templates.stream().collect(Collectors.joining(",")));
-//
-//            if (line.hasOption("ps")) {
-//                String[] properties = line.getOptionValues("ps");
-//                propertiesFiles.addAll(Arrays.asList(properties));
-//            }
-//
-//            // silent mode
-//            silentMode = false;
-//            if (line.hasOption("s"))
-//                silentMode = true;
-//        } catch (ParseException e) {
-//            help.printHelp(commandLineSyntax, generateOptions);
-//            return false;
-//        }
-//        return true;
     }
 
     public void initialize() throws IOException {
+        // templates
+        templates = Lists.newArrayList(defaultTemplates);
+        if (command.templates != null) {
+            for (String template : command.templates) {
+                // check if pattern is excluded
+                boolean exclude = false;
+                if (template.charAt(0) == '!') {
+                    exclude = true;
+                    template = template.substring(1);
+                }
+
+                // check for all defined templates if they got
+                // to be excluded or not
+                Iterator<String> it = templates.iterator();
+                while (it.hasNext()) {
+                    boolean match = Pattern.matches(template, it.next());
+                    if ((match && exclude) || (!match && !exclude))
+                        it.remove();
+                }
+
+            }
+        }
+
+        // properties
+        properties.put("nsURI", nsURI);
+        properties.put("templates", templates.stream().collect(Collectors.joining(",")));
+        if (command.properties != null) {
+            for (Map.Entry<String, String> entry : command.properties.entrySet()) {
+                properties.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        // property files
+        if (command.propertyFiles != null)
+            propertiesFiles.addAll(command.propertyFiles);
+
+        // silent
+        silentMode = command.isSilent;
+
+        // model and output
         ResourceSet modulesResourceSet = new AcceleoResourceSetImpl();
         modulesResourceSet.setPackageRegistry(AcceleoPackageRegistry.INSTANCE);
 
@@ -390,9 +295,9 @@ public class Generator extends AbstractAcceleoGenerator {
         moduleURI = URI.createURI(moduleURI.toString(), true);
         module = (Module) ModelUtils.load(moduleURI, modulesResourceSet);
 
-        URI newModelURI = URI.createFileURI(modelPath);
+        URI newModelURI = URI.createFileURI(command.modelPath);
         model = ModelUtils.load(newModelURI, modelResourceSet);
-        targetFolder = new File(targetPath);
+        targetFolder = new File(command.targetPath);
         generationArguments = Collections.<Object>emptyList();
         this.postInitialize();
     }
