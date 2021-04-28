@@ -75,6 +75,7 @@ public class Generator extends AbstractAcceleoGenerator {
     private String moduleName;
     private String[] defaultTemplates;
     private String nsURI;
+    private Package pack;
 
     private String modelPath;
     private String targetPath;
@@ -83,15 +84,16 @@ public class Generator extends AbstractAcceleoGenerator {
     private List<String> propertiesFiles = new ArrayList<String>();
     private boolean silentMode = false;
 
-    protected Generator(String moduleName, String nsURI, String[] defaultTemplates) {
+    protected Generator(Package pack, String moduleName, String nsURI, String[] defaultTemplates) {
         this.moduleName = moduleName;
         this.nsURI = nsURI;
         this.defaultTemplates = defaultTemplates;
+        this.pack = pack;
     }
 
     public boolean parse(String[] args) {
         Options generateOptions = new Options();
-        Option helpOption = new Option("help", "print this message");
+        Option helpOption = Option.builder("h").longOpt("help").hasArg(false).desc("print this message").build();
         Option templateOption = Option.builder("t")
                                       .argName("templates")
                                       .longOpt("templates")
@@ -115,6 +117,7 @@ public class Generator extends AbstractAcceleoGenerator {
                                     .desc("the output folder")
                                     .build();
         Option propertyOption = Option.builder("p")
+                                      .longOpt("property")
                                       .argName("property=value")
                                       .desc("a property")
                                       .valueSeparator('=')
@@ -125,6 +128,12 @@ public class Generator extends AbstractAcceleoGenerator {
                                     .hasArg(false)
                                     .desc("print nothing but failures")
                                     .build();
+        Option headerOption = Option.builder("ps")
+                                    .longOpt("properties")
+                                    .argName("file")
+                                    .hasArg()
+                                    .desc("a properties file")
+                                    .build();
 
         generateOptions.addOption(helpOption);
         generateOptions.addOption(templateOption);
@@ -132,13 +141,23 @@ public class Generator extends AbstractAcceleoGenerator {
         generateOptions.addOption(outputOption);
         generateOptions.addOption(propertyOption);
         generateOptions.addOption(silentOption);
+        generateOptions.addOption(headerOption);
 
+        String packageName = pack.getImplementationTitle();
+        if (packageName == null) {
+            packageName = pack.getName();
+        }
+        String packageVersion = pack.getImplementationVersion();
+        if (packageVersion != null) {
+            packageName += "-" + packageVersion;
+        }
+        String commandLineSyntax = String.format("java -jar %s.jar [options]", packageName);
         HelpFormatter help = new HelpFormatter();
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(generateOptions, args);
             if (line.hasOption("help")) {
-                help.printHelp("Generate", generateOptions);
+                help.printHelp(commandLineSyntax, generateOptions);
                 return false;
             }
             modelPath = line.getOptionValue("m");
@@ -174,12 +193,17 @@ public class Generator extends AbstractAcceleoGenerator {
             properties.put("nsURI", nsURI);
             properties.put("templates", templates.stream().collect(Collectors.joining(",")));
 
+            if (line.hasOption("ps")) {
+                String[] properties = line.getOptionValues("ps");
+                propertiesFiles.addAll(Arrays.asList(properties));
+            }
+
             // silent mode
             silentMode = false;
             if (line.hasOption("s"))
                 silentMode = true;
         } catch (ParseException e) {
-            help.printHelp("Generate", generateOptions);
+            help.printHelp(commandLineSyntax, generateOptions);
             return false;
         }
         return true;

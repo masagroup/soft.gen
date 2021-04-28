@@ -39,7 +39,7 @@ public class Generate extends Generator {
                                                     "generateMocksTests" };
 
     private Generate() {
-        super(MODULE_FILE_NAME, NS_URI, TEMPLATE_NAMES);
+        super(Generate.class.getPackage(), MODULE_FILE_NAME, NS_URI, TEMPLATE_NAMES);
     }
 
     public static void main(String[] args) {
@@ -54,5 +54,4 @@ public class Generate extends Generator {
             System.out.println(e.getMessage());
         }
     }
-
 }

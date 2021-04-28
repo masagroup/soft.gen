@@ -1,0 +1,15 @@
+FROM masagroup/soft.generator.base AS base
+
+# Build jvm stage
+FROM openjdk:16-alpine AS jvm
+COPY --from=base /soft.generator.go /soft.generator.go
+WORKDIR /soft.generator.go
+RUN jdeps --print-module-deps --ignore-missing-deps --class-path '*' -recursive soft.generator.go-1.4.0.jar > java.modules \
+ && jlink --strip-java-debug-attributes --add-modules $(cat java.modules) --output /java-generator
+
+# Build result stage
+FROM alpine
+COPY --from=jvm /soft.generator.go/*.jar /usr/share/soft.generator.go/
+COPY --from=jvm /java-generator /usr/lib/jvm/java-generator
+
+ENTRYPOINT ["/usr/lib/jvm/java-generator/bin/java","-jar","/usr/share/soft.generator.go/soft.generator.go-1.4.0.jar"]
