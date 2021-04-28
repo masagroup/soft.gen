@@ -18,20 +18,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.eclipse.acceleo.common.IAcceleoConstants;
 import org.eclipse.acceleo.common.internal.utils.AcceleoPackageRegistry;
 import org.eclipse.acceleo.common.utils.ModelUtils;
@@ -50,13 +44,110 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.resource.impl.ExtensibleURIConverterImpl;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import picocli.CommandLine;
+import picocli.CommandLine.IFactory;
+import picocli.CommandLine.IVersionProvider;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.ParseResult;
 
 /**
  * Entry point of the 'Generate' generation module.
  */
 public class Generator extends AbstractAcceleoGenerator {
+
+    private class ManifestVersionProvider implements IVersionProvider {
+        private String generator;
+
+        public ManifestVersionProvider(String generator) {
+            this.generator = generator;
+        }
+
+        public String[] getVersion() throws Exception {
+            Enumeration<URL> resources = CommandLine.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                try {
+                    Manifest manifest = new Manifest(url.openStream());
+                    if (isApplicableManifest(manifest)) {
+                        Attributes attributes = manifest.getMainAttributes();
+                        return new String[] { attributes.get(key("Implementation-Title")) + " version: "
+                                + attributes.get(key("Implementation-Version")) };
+                    }
+                } catch (IOException ex) {
+                    return new String[] { "Unable to read from " + url + ": " + ex };
+                }
+            }
+            return new String[] { this.generator + " version: development" };
+        }
+
+        private boolean isApplicableManifest(Manifest manifest) {
+            Attributes attributes = manifest.getMainAttributes();
+            return this.generator.equals(attributes.get(key("Implementation-Title")));
+        }
+
+        private Attributes.Name key(String key) {
+            return new Attributes.Name(key);
+        }
+    }
+
+    private static class TemplateCandidates implements Iterable<String> {
+        private String[] templates;
+
+        public TemplateCandidates(String[] templates) {
+            this.templates = templates;
+        }
+
+        public Iterator<String> iterator() {
+            return Arrays.stream(this.templates).iterator();
+        }
+
+    }
+
+    private class CommandLineFactory implements IFactory {
+        @SuppressWarnings("unchecked")
+        public <K> K create(Class<K> cls) throws Exception {
+            if (cls == TemplateCandidates.class) {
+                return (K) new TemplateCandidates(Generator.this.defaultTemplates);
+            } else if (cls == ManifestVersionProvider.class) {
+                return (K) new ManifestVersionProvider(Generator.this.generatorName);
+            }
+            return CommandLine.defaultFactory().create(cls);
+        }
+
+    }
+
+    @picocli.CommandLine.Command(versionProvider = ManifestVersionProvider.class)
+    protected static class Command {
+        @Option(names = { "-h", "--help" }, usageHelp = true, description = "print this help and exit")
+        public boolean isHelp;
+
+        @Option(names = { "-v", "--version" }, versionHelp = true, description = "print version information and exit")
+        public boolean isVersion;
+
+        @Option(names = { "-m", "--model" }, required = true, paramLabel = "<model>", description = "the input model")
+        public String modelPath;
+
+        @Option(names = { "-o",
+                          "--output" }, required = true, paramLabel = "<folder>", description = "the output folder")
+        public String targetPath;
+
+        @Option(names = { "-p",
+                          "--property" }, paramLabel = "<property=value>", description = "set value for given property")
+        public Map<String, String> properties;
+
+        @Option(names = { "-P",
+                          "--properties" }, paramLabel = "<propertyfile>", description = "load properties from a property file")
+        public List<String> propertyFiles;
+
+        @Option(names = { "-s", "--silent" }, description = "print nothing but failures")
+        public boolean isSilent;
+
+        @Option(names = { "-t",
+                          "--template" }, paramLabel = "<template>", completionCandidates = TemplateCandidates.class, description = "the template to be executed: ${COMPLETION-CANDIDATES}")
+        public List<String> templates;
+    }
 
     private class ResourceFactoryRegistry extends AcceleoResourceFactoryRegistry {
         public ResourceFactoryRegistry(Resource.Factory.Registry delegate) {
@@ -72,6 +163,8 @@ public class Generator extends AbstractAcceleoGenerator {
         }
     }
 
+    private Command command;
+    private String generatorName;
     private String moduleName;
     private String[] defaultTemplates;
     private String nsURI;
@@ -84,129 +177,161 @@ public class Generator extends AbstractAcceleoGenerator {
     private List<String> propertiesFiles = new ArrayList<String>();
     private boolean silentMode = false;
 
-    protected Generator(Package pack, String moduleName, String nsURI, String[] defaultTemplates) {
+    protected Generator(String generatorName, String moduleName, String nsURI, String[] defaultTemplates) {
+        this.generatorName = generatorName;
         this.moduleName = moduleName;
         this.nsURI = nsURI;
         this.defaultTemplates = defaultTemplates;
-        this.pack = pack;
     }
 
     public boolean parse(String[] args) {
-        Options generateOptions = new Options();
-        Option helpOption = Option.builder("h").longOpt("help").hasArg(false).desc("print this message").build();
-        Option templateOption = Option.builder("t")
-                                      .argName("templates")
-                                      .longOpt("templates")
-                                      .required(false)
-                                      .hasArgs()
-                                      .desc("the templates to be executed : "
-                                              + Arrays.stream(defaultTemplates).collect(Collectors.joining(", ")))
-                                      .build();
-        Option modelOption = Option.builder("m")
-                                   .argName("model")
-                                   .longOpt("model")
-                                   .required()
-                                   .hasArg()
-                                   .desc("the input model")
-                                   .build();
-        Option outputOption = Option.builder("o")
-                                    .argName("folder")
-                                    .longOpt("output")
-                                    .required()
-                                    .hasArg()
-                                    .desc("the output folder")
-                                    .build();
-        Option propertyOption = Option.builder("p")
-                                      .longOpt("property")
-                                      .argName("property=value")
-                                      .desc("a property")
-                                      .valueSeparator('=')
-                                      .numberOfArgs(2)
-                                      .build();
-        Option silentOption = Option.builder("s")
-                                    .longOpt("silent")
-                                    .hasArg(false)
-                                    .desc("print nothing but failures")
-                                    .build();
-        Option headerOption = Option.builder("ps")
-                                    .longOpt("properties")
-                                    .argName("file")
-                                    .hasArg()
-                                    .desc("a properties file")
-                                    .build();
-
-        generateOptions.addOption(helpOption);
-        generateOptions.addOption(templateOption);
-        generateOptions.addOption(modelOption);
-        generateOptions.addOption(outputOption);
-        generateOptions.addOption(propertyOption);
-        generateOptions.addOption(silentOption);
-        generateOptions.addOption(headerOption);
-
-        String packageName = pack.getImplementationTitle();
-        if (packageName == null) {
-            packageName = pack.getName();
+        CommandLine commandLine = new CommandLine(new Command(), new CommandLineFactory());
+        commandLine.getCommandSpec().name(this.generatorName);
+        commandLine.setUsageHelpLongOptionsMaxWidth(60);
+        ParseResult parseResult = commandLine.parseArgs(args);
+        if (CommandLine.printHelpIfRequested(parseResult)) {
+            return false;
         }
-        String packageVersion = pack.getImplementationVersion();
-        if (packageVersion != null) {
-            packageName += "-" + packageVersion;
-        }
-        String commandLineSyntax = String.format("java -jar %s.jar [options]", packageName);
-        HelpFormatter help = new HelpFormatter();
-        CommandLineParser parser = new DefaultParser();
-        try {
-            CommandLine line = parser.parse(generateOptions, args);
-            if (line.hasOption("help")) {
-                help.printHelp(commandLineSyntax, generateOptions);
-                return false;
-            }
-            modelPath = line.getOptionValue("m");
-            targetPath = line.getOptionValue("o");
-
-            // templates
-            templates = Lists.newArrayList(defaultTemplates);
-            if (line.hasOption("t")) {
-                String[] regexs = line.getOptionValues("t");
-                for (String regex : regexs) {
-                    // check if pattern is excluded
-                    boolean exclude = false;
-                    if (regex.charAt(0) == '!') {
-                        exclude = true;
-                        regex = regex.substring(1);
-                    }
-
-                    // check for all defined templates if they got
-                    // to be excluded or not
-                    Iterator<String> it = templates.iterator();
-                    while (it.hasNext()) {
-                        boolean match = Pattern.matches(regex, it.next());
-                        if ((match && exclude) || (!match && !exclude))
-                            it.remove();
-                    }
-                }
-            }
-
-            // properties
-            properties = new Properties();
-            if (line.hasOption("p"))
-                properties = line.getOptionProperties("p");
-            properties.put("nsURI", nsURI);
-            properties.put("templates", templates.stream().collect(Collectors.joining(",")));
-
-            if (line.hasOption("ps")) {
-                String[] properties = line.getOptionValues("ps");
-                propertiesFiles.addAll(Arrays.asList(properties));
-            }
-
-            // silent mode
-            silentMode = false;
-            if (line.hasOption("s"))
-                silentMode = true;
-        } catch (ParseException e) {
-            help.printHelp(commandLineSyntax, generateOptions);
+        if (commandLine.isVersionHelpRequested()) {
+            commandLine.printVersionHelp(System.out);
             return false;
         }
         return true;
+//        Options generateOptions = new Options();
+//        Option helpOption = Option.builder("h").longOpt("help").hasArg(false).desc("print this message").build();
+//        Option templateOption = Option.builder("t")
+//                                      .argName("templates")
+//                                      .longOpt("templates")
+//                                      .required(false)
+//                                      .hasArgs()
+//                                      .desc("the templates to be executed : "
+//                                              + Arrays.stream(defaultTemplates).collect(Collectors.joining(", ")))
+//                                      .build();
+//        Option modelOption = Option.builder("m")
+//                                   .argName("model")
+//                                   .longOpt("model")
+//                                   .required()
+//                                   .hasArg()
+//                                   .desc("the input model")
+//                                   .build();
+//        Option outputOption = Option.builder("o")
+//                                    .argName("folder")
+//                                    .longOpt("output")
+//                                    .required()
+//                                    .hasArg()
+//                                    .desc("the output folder")
+//                                    .build();
+//        Option propertyOption = Option.builder("p")
+//                                      .longOpt("property")
+//                                      .argName("property=value")
+//                                      .desc("a property")
+//                                      .valueSeparator('=')
+//                                      .numberOfArgs(2)
+//                                      .build();
+//        Option silentOption = Option.builder("s")
+//                                    .longOpt("silent")
+//                                    .hasArg(false)
+//                                    .desc("print nothing but failures")
+//                                    .build();
+//        Option headerOption = Option.builder("ps")
+//                                    .longOpt("properties")
+//                                    .argName("file")
+//                                    .hasArg()
+//                                    .desc("a properties file")
+//                                    .build();
+//        Option versionOption = Option.builder("v").longOpt("version").desc("print generator version").build();
+//
+//        generateOptions.addOption(helpOption);
+//        generateOptions.addOption(templateOption);
+//        generateOptions.addOption(modelOption);
+//        generateOptions.addOption(outputOption);
+//        generateOptions.addOption(propertyOption);
+//        generateOptions.addOption(silentOption);
+//        generateOptions.addOption(headerOption);
+//        generateOptions.addOption(versionOption);
+//
+//        String packageName = pack.getImplementationTitle();
+//        if (packageName == null) {
+//            packageName = pack.getName();
+//        }
+//        String jarName = packageName;
+//        String packageVersion = pack.getImplementationVersion();
+//        if (packageVersion == null) {
+//            packageVersion = "dev";
+//        } else {
+//            jarName += "-" + packageVersion;
+//        }
+//        String commandLineSyntax = String.format("java -jar %s.jar [options]", jarName);
+//        HelpFormatter help = new HelpFormatter();
+//        try {
+//
+//            if (hasHelp(helpOption, args)) {
+//                help.printHelp(commandLineSyntax, generateOptions);
+//                return false;
+//            }
+//
+//            if (hasVersion(helpOption, args)) {
+//                help.printHelp(commandLineSyntax, generateOptions);
+//                return false;
+//            }
+//
+//            CommandLineParser parser = new DefaultParser();
+//            CommandLine line = parser.parse(generateOptions, args);
+//            if (line.hasOption("help")) {
+//                help.printHelp(commandLineSyntax, generateOptions);
+//                return false;
+//            }
+//            if (line.hasOption("version")) {
+//                System.out.println(String.format("%s version:%s", packageName, packageVersion));
+//                return false;
+//            }
+//            modelPath = line.getOptionValue("m");
+//            targetPath = line.getOptionValue("o");
+//
+//            // templates
+//            templates = Lists.newArrayList(defaultTemplates);
+//            if (line.hasOption("t")) {
+//                String[] regexs = line.getOptionValues("t");
+//                for (String regex : regexs) {
+//                    // check if pattern is excluded
+//                    boolean exclude = false;
+//                    if (regex.charAt(0) == '!') {
+//                        exclude = true;
+//                        regex = regex.substring(1);
+//                    }
+//
+//                    // check for all defined templates if they got
+//                    // to be excluded or not
+//                    Iterator<String> it = templates.iterator();
+//                    while (it.hasNext()) {
+//                        boolean match = Pattern.matches(regex, it.next());
+//                        if ((match && exclude) || (!match && !exclude))
+//                            it.remove();
+//                    }
+//                }
+//            }
+//
+//            // properties
+//            properties = new Properties();
+//            if (line.hasOption("p"))
+//                properties = line.getOptionProperties("p");
+//            properties.put("nsURI", nsURI);
+//            properties.put("templates", templates.stream().collect(Collectors.joining(",")));
+//
+//            if (line.hasOption("ps")) {
+//                String[] properties = line.getOptionValues("ps");
+//                propertiesFiles.addAll(Arrays.asList(properties));
+//            }
+//
+//            // silent mode
+//            silentMode = false;
+//            if (line.hasOption("s"))
+//                silentMode = true;
+//        } catch (ParseException e) {
+//            help.printHelp(commandLineSyntax, generateOptions);
+//            return false;
+//        }
+//        return true;
     }
 
     public void initialize() throws IOException {
