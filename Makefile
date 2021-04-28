@@ -1,6 +1,14 @@
+langs := go ts cpp
+packages := go ts cpp common
+soft.generators.version := 1.4.0
+soft.generator.common.version := 1.2.2
+soft.generator.cpp.version := 1.2.2
+soft.generator.go.version := 1.4.0
+soft.generator.ts.version := 1.0.2
+
 .PHONY : dist dist.clean versions
 
-default: generators
+default: generators tests
 
 # generators cerates all docker images for soft generators
 generators: generator.base generator.go generator.cpp generator.ts
@@ -21,13 +29,21 @@ generator.ts:
 	@echo "[generator.ts]"
 	@docker build --file Dockerfile-ts --tag masagroup/soft.generator.ts .
 
-langs := go ts cpp
-packages := go ts cpp common
-soft.generators.version := 1.4.0
-soft.generator.common.version := 1.2.2
-soft.generator.cpp.version := 1.2.2
-soft.generator.go.version := 1.4.0
-soft.generator.ts.version := 1.0.2
+tests: test.go test.cpp test.ts
+
+test.go:
+	@echo "[test.go]"
+	@test $(shell docker run --rm -i masagroup/soft.generator.go -v 2>&1 | sed -r 's#soft.generator.go version: (.*)#\1#g') = "$(soft.generator.go.version)"
+
+test.cpp:
+	@echo "[test.cpp]"
+	@test $(shell docker run --rm -i masagroup/soft.generator.cpp -v 2>&1 | sed -r 's#soft.generator.cpp version: (.*)#\1#g') = "$(soft.generator.cpp.version)"
+
+test.ts:
+	@echo "[test.ts]"
+	@test $(shell docker run --rm -i masagroup/soft.generator.ts -v 2>&1 | sed -r 's#soft.generator.ts version: (.*)#\1#g') = "$(soft.generator.ts.version)"
+
+
 
 # dist generators binaries for distribution
 dist:
