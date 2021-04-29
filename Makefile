@@ -8,11 +8,11 @@ soft.generator.ts.version := 1.0.2
 
 export DOCKER_BUILDKIT=1
 
-.PHONY : dist dist.clean versions
+.PHONY : dist dist.clean versions publish
 
 default: generators tests
 
-# generators cerates all docker images for soft generators
+# creates all docker images for soft generators
 generators: generator.base generator.go generator.cpp generator.ts
 
 generator.base:
@@ -31,6 +31,7 @@ generator.ts:
 	@echo "[generator.ts]"
 	@docker build --file Dockerfile-ts --tag masagroup/soft.generator.ts .
 
+#test all generators
 tests: test.go test.cpp test.ts
 
 test.go:
@@ -45,8 +46,10 @@ test.ts:
 	@echo "[test.ts]"
 	@test $(shell docker run --rm -i masagroup/soft.generator.ts -v 2>&1 | sed -r 's#soft.generator.ts version: (.*)#\1#g') = "$(soft.generator.ts.version)" || (echo "invalid soft.generator.ts version"; exit 1)
 
-
-
+# publish generators images on docker hub
+publish:
+	@$(foreach lang,$(langs), docker push masagroup/soft.generator.$(lang);)
+	
 # dist generators binaries for distribution
 dist:
 	@mkdir -p dist
@@ -57,8 +60,6 @@ dist:
 # distclean clean generators binaries distribution
 distclean:
 	@rm -rf dist
-
-
 
 # update projects versions in :
 #	* maven pom.xml
