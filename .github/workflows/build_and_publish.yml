@@ -1,0 +1,19 @@
+name: Build And Publish
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Build generators
+      run: make generators
+    - name: Test generators
+      run: make tests
+    - name: Publish generaors
+      run: for lang in cpp go ts; do docker push masagroup/soft.generator.${lang}; done;
