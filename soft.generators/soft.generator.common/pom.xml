@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <parent>
       <groupId>soft.generators</groupId>
       <artifactId>soft.generators</artifactId>
-      <version>1.4.0</version>
+      <version>1.5.0</version>
    </parent>
    <artifactId>soft.generator.common</artifactId>
-   <version>1.2.2</version>
+   <version>1.3.0</version>
    <packaging>jar</packaging>
    <dependencies>
       <dependency>
@@ -17,9 +17,9 @@
          <version>30.0-jre</version>
       </dependency>
       <dependency>
-          <groupId>info.picocli</groupId>
-          <artifactId>picocli</artifactId>
-          <version>4.6.1</version>
+         <groupId>info.picocli</groupId>
+         <artifactId>picocli</artifactId>
+         <version>4.6.1</version>
       </dependency>
       <dependency>
          <groupId>org.eclipse.acceleo</groupId>
@@ -140,21 +140,21 @@
             </configuration>
          </plugin>
          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <version>3.8.1</version>
-              <configuration>
-                <annotationProcessorPaths>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
+               <annotationProcessorPaths>
                   <path>
-                    <groupId>info.picocli</groupId>
-                    <artifactId>picocli-codegen</artifactId>
-                    <version>4.6.1</version>
+                     <groupId>info.picocli</groupId>
+                     <artifactId>picocli-codegen</artifactId>
+                     <version>4.6.1</version>
                   </path>
-                </annotationProcessorPaths>
-                <compilerArgs>
+               </annotationProcessorPaths>
+               <compilerArgs>
                   <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
-                </compilerArgs>
-              </configuration>
+               </compilerArgs>
+            </configuration>
          </plugin>
       </plugins>
       <pluginManagement>
@@ -183,7 +183,7 @@
                               </goals>
                            </pluginExecutionFilter>
                            <action>
-                              <ignore />
+                              <ignore/>
                            </action>
                         </pluginExecution>
                      </pluginExecutions>

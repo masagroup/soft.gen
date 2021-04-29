@@ -1,9 +1,9 @@
 langs := go ts cpp
 packages := go ts cpp common
-soft.generators.version := 1.4.0
-soft.generator.common.version := 1.2.2
+soft.generators.version := 1.5.0
+soft.generator.common.version := 1.3.0
 soft.generator.cpp.version := 1.2.2
-soft.generator.go.version := 1.4.0
+soft.generator.go.version := 1.5.0
 soft.generator.ts.version := 1.0.2
 
 export DOCKER_BUILDKIT=1
@@ -66,7 +66,7 @@ distclean:
 #	* java MANIFEST.MF
 #	* dockerfile entry point
 versions:
-	@docker run --rm -d -v $(pwd):/pwd -w /pwd klakegg/saxon xslt -s:/pwd/build.xml -xsl:/pwd/pom.xslt -o:/pwd/build.xml artifactId=soft.generators version=$(soft.generators.version) > /dev/null
-	@$(foreach package,$(packages), docker run --rm -d -v $(CURDIR):/pwd -w /pwd klakegg/saxon xslt -s:/pwd/build.xml -xsl:/pwd/pom.xslt -o:/pwd/build.xml artifactId=soft.generator.$(lang) version=$(soft.generator.$(lang).version) > /dev/null;)
+	@docker run --rm -v $(CURDIR):/pwd -w /pwd klakegg/saxon xslt -s:/pwd/pom.xml -xsl:/pwd/pom.xslt -o:/pwd/pom.xml artifactId=soft.generators version=$(soft.generators.version)
+	@$(foreach package,$(packages), docker run --rm -v $(CURDIR):/pwd -w /pwd klakegg/saxon xslt -s:/pwd/pom.xml -xsl:/pwd/pom.xslt -o:/pwd/pom.xml artifactId=soft.generator.$(package) version=$(soft.generator.$(package).version);)
 	@$(foreach package,$(packages), sed -i "s#Bundle-Version: .*#Bundle-Version: $(soft.generator.$(package).version)#g" soft.generators/soft.generator.$(package)/META-INF/MANIFEST.MF;)
 	@$(foreach lang,$(langs), sed -i "s#[0-9]*\.[0-9]*\.[0-9]*\.jar#$(soft.generator.$(lang).version).jar#g" Dockerfile-$(lang);)
