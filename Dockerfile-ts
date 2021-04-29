@@ -4,7 +4,7 @@ FROM masagroup/soft.generator.base AS base
 FROM openjdk:16-alpine AS jvm
 COPY --from=base /soft.generator.ts /soft.generator.ts
 WORKDIR /soft.generator.ts
-RUN jdeps --print-module-deps --multi-release 16 --ignore-missing-deps --class-path '*' -recursive soft.generator.ts-1.0.2.jar > java.modules \
+RUN jdeps --print-module-deps --multi-release 16 --ignore-missing-deps --class-path '*' -recursive soft.generator.ts-1.0.3.jar > java.modules \
  && jlink --strip-java-debug-attributes --add-modules $(cat java.modules) --output /java-generator
 
 # Build result stage
@@ -12,4 +12,4 @@ FROM alpine
 COPY --from=jvm /soft.generator.ts/*.jar /usr/share/soft.generator.ts/
 COPY --from=jvm /java-generator /usr/lib/jvm/java-generator
 
-ENTRYPOINT ["/usr/lib/jvm/java-generator/bin/java","-jar","/usr/share/soft.generator.ts/soft.generator.ts-1.0.2.jar"]
+ENTRYPOINT ["/usr/lib/jvm/java-generator/bin/java","-jar","/usr/share/soft.generator.ts/soft.generator.ts-1.0.3.jar"]

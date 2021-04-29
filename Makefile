@@ -2,9 +2,9 @@ langs := go ts cpp
 packages := go ts cpp common
 soft.generators.version := 1.5.0
 soft.generator.common.version := 1.3.0
-soft.generator.cpp.version := 1.2.2
+soft.generator.cpp.version := 1.2.3
 soft.generator.go.version := 1.5.0
-soft.generator.ts.version := 1.0.2
+soft.generator.ts.version := 1.0.3
 
 export DOCKER_BUILDKIT=1
 
