@@ -5,7 +5,7 @@ FROM openjdk:16-alpine AS jvm
 COPY --from=base /soft.generator.cpp /soft.generator.cpp
 WORKDIR /soft.generator.cpp
 RUN jdeps --print-module-deps --multi-release 16 --ignore-missing-deps --class-path '*' -recursive soft.generator.cpp-1.2.2.jar > java.modules \
- && jlink --strip-java-debug-attributes --add-modules $(cat java.modules) --output /java-generator
+ && jlink --strip-java-debug-attributes --add-modules jdk.zipfs,$(cat java.modules) --output /java-generator
 
 # Build result stage
 FROM alpine
