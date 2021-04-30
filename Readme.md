@@ -32,9 +32,9 @@ soft.generator.go version: 1.5.0
 
 ### Docker Hub ###
 Use the Docker images available from Docker Hub:
-- [Cpp generator image](https://hub.docker.com/repository/docker/masagroup/soft.generator.cpp)
-- [Go generator image](https://hub.docker.com/repository/docker/masagroup/soft.generator.go)
-- [TypeScript generator image](https://hub.docker.com/repository/docker/masagroup/soft.generator.ts)
+- [Cpp generator image](https://hub.docker.com/r/masagroup/soft.generator.cpp)
+- [Go generator image](https://hub.docker.com/r/masagroup/soft.generator.go)
+- [TypeScript generator image](https://hub.docker.com/r/masagroup/soft.generator.ts)
 
 Example:
 ```shell
