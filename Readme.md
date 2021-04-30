@@ -2,7 +2,7 @@
 ![](https://github.com/masagroup/soft.gen/actions/workflows/build_and_test.yml/badge.svg)
 # Soft Generators #
 
-Soft Generators is the implementation of the EMF generators in C++, Go and TypeScript langages
+Soft Generators is an implementation of EMF generators for C++, Go and TypeScript languages
 
 Soft Generators is part of [Soft](https://github.com/masagroup/soft) project
 
@@ -16,15 +16,12 @@ Soft Generators is part of [Soft](https://github.com/masagroup/soft) project
 - Unzip archive
 
 Generator can now be run with the following command:
+
 ```shell
-$ java -jar <generator>-<version>.jar --version
+$ java -jar sof.generator.<lang>-<version>.jar --version
 
-with <generator> = 
-soft.generator.go   the Go generator
-soft.generator.ts   the TypeScript generator
-soft.generator.cpp  the C++ generator
-
-with <version> = the generator version
+<lang>    = the generator language : go, ts, cpp
+<version> = the generator version
 ```
 
 Example:
@@ -41,7 +38,7 @@ Use the Docker images available from Docker Hub:
 
 Example:
 ```shell
-$ docker run --rm -i masagroup/soft.generator.go  --version
+$ docker run --rm masagroup/soft.generator.go  --version
 soft.generator.go version: 1.5.0
 ```
 
