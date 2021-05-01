@@ -57,9 +57,6 @@ Usage: [-hsv] -m=<model> -o=<folder> [-p=<property=value>]... [-P=<propertyfile>
   -v, --version                     print version information and exit
 ```
 
-## Examples ##
-![](https://raw.githubusercontent.com/masagroup/soft.gen/master/docs/example-docker.gif)
-
 ## Quick Build ##
 If you want to bootstrap generators yourself, you'll need:
 - Make
