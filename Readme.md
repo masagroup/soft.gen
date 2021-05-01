@@ -1,5 +1,6 @@
 [![](https://img.shields.io/github/license/masagroup/soft.gen.svg)](https://github.com/masagroup/soft.gen/blob/master/LICENSE)
 ![](https://github.com/masagroup/soft.gen/actions/workflows/build_and_test.yml/badge.svg)
+![](https://img.shields.io/github/v/release/masagroup/soft.gen)
 # Soft Generators #
 
 Soft Generators is an implementation of EMF generators for C++, Go and TypeScript languages
