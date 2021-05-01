@@ -43,6 +43,10 @@ $ docker run --rm masagroup/soft.generator.go  --version
 soft.generator.go version: 1.5.0
 ```
 
+```shell
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.go -s -m /gen/model.ecore -o /gen
+```
+
 ## Usage ##
 
 ```
