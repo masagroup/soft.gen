@@ -1,5 +1,6 @@
 [![](https://img.shields.io/github/license/masagroup/soft.gen.svg)](https://github.com/masagroup/soft.gen/blob/master/LICENSE)
 ![](https://github.com/masagroup/soft.gen/actions/workflows/build_and_test.yml/badge.svg)
+![](https://img.shields.io/github/v/release/masagroup/soft.gen)
 # Soft Generators #
 
 Soft Generators is an implementation of EMF generators for C++, Go and TypeScript languages
@@ -42,6 +43,10 @@ $ docker run --rm masagroup/soft.generator.go  --version
 soft.generator.go version: 1.5.0
 ```
 
+```shell
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.go -s -m /gen/model.ecore -o /gen
+```
+
 ## Usage ##
 
 ```
@@ -55,9 +60,6 @@ Usage: [-hsv] -m=<model> -o=<folder> [-p=<property=value>]... [-P=<propertyfile>
   -t, --template=<template>         the template to be executed: <templates list>
   -v, --version                     print version information and exit
 ```
-
-## Examples ##
-![](https://raw.githubusercontent.com/masagroup/soft.gen/master/docs/example-docker.gif)
 
 ## Quick Build ##
 If you want to bootstrap generators yourself, you'll need:

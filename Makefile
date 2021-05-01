@@ -13,11 +13,7 @@ export DOCKER_BUILDKIT=1
 default: generators tests
 
 # creates all docker images for soft generators
-generators: generator.base generator.go generator.cpp generator.ts
-
-generator.base:
-	@echo "[generator.base]"
-	@docker build --file Dockerfile --tag masagroup/soft.generator.base .
+generators: generator.go generator.cpp generator.ts
 
 generator.go:
 	@echo "[generator.go]"
@@ -49,13 +45,17 @@ test.ts:
 # publish generators images on docker hub
 publish:
 	@$(foreach lang,$(langs), docker push masagroup/soft.generator.$(lang);)
-	
+
+define export_generator
+	$(eval id := $(shell docker create masagroup/soft.generator.$(1) bash))
+	docker cp $(id)://usr/share/soft.generator.$(1) - | gzip > dist/soft.generator.$(1)-$(soft.generator.$(1).version).tar.gz
+	docker rm $(id) > /dev/null
+endef
+
 # dist generators binaries for distribution
 dist:
 	@mkdir -p dist
-	@$(eval id := $(shell docker create masagroup/soft.generator.base bash))
-	@$(foreach lang,$(langs), docker cp $(id):/soft.generator.$(lang) - | gzip > dist/soft.generator.$(lang)-$(soft.generator.$(lang).version).tar.gz;)
-	@docker rm $(id) > /dev/null
+	@$(foreach lang,$(langs),$(call export_generator,$(lang));)
 
 # distclean clean generators binaries distribution
 distclean:
