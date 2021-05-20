@@ -64,9 +64,8 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 		this.nsPrefix = [aPackage.getConstantsName()/].eNS_PREFIX;
 		this.nsURI = [aPackage.getConstantsName()/].eNS_URI;
 		this.eFactoryInstance = get[aPackage.getFactoryName()/]();
-        let factory = [getShortQualifiedName('ecore.getEcoreFactory', aPackage.name)/]();
-	    this.createPackageContents(factory);
-    	this.initializePackageContents(factory);
+        this.createPackageContents();
+    	this.initializePackageContents();
         this.createResource();
 	}
 
@@ -79,23 +78,17 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     [allDataTypes.generateGetter(aPackage)/]
 
 
-	private createPackageContents(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {		
+	private createPackageContents() : void {
+[if allClasses->notEmpty() or allDataTypes->notEmpty()]
+	let factory = [getShortQualifiedName('ecore.getEcoreFactory', aPackage.name)/]();
 [for (aClass : EClass | allClasses)]
-		this.create[aClass.name.toUpperFirst()/]Content(factory);
-[/for]
-		this.createPackageEDataTypes(factory);		
-	}
-[for (aClass : EClass | allClasses)]
-
-	private create[aClass.name.toUpperFirst()/]Content(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
-	    [aClass.generateCreation()/]
-	    [aClass.eStructuralFeatures.generateCreation()/]
-	    [aClass.eOperations.generateCreation()/]
-	}
+	
+	[aClass.generateCreation()/]
+	[Sequence{ aClass.eStructuralFeatures, aClass.eOperations}->flatten().generateCreation()/]
 [/for]
 
-	private createPackageEDataTypes(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
-    	[allDataTypes.generateCreation()/]
+	[allDataTypes.generateCreation()/]
+[/if]
 	}
 
 	private initializePackageContents(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
@@ -178,29 +171,33 @@ private [anENamedElement.getInstanceName()/] : [aPackage.getMetaType(anENamedEle
 
 [template private generateCreation(aEClass : EClass)]
 this.[aEClass.getInstanceName()/] = factory.createEClassFromContainerAndClassID(this, [aEClass.getQualifiedIDName()/]);
-
-[/template]
-
-[template private generateCreation(aStructuralFeature : EStructuralFeature)]
 [/template]
 
 [template private generateCreation(anEAttribute : EAttribute)]
-this.[anEAttribute.getInstanceName()/] = factory.createEAttributeFromContainerAndClassID(this.[anEAttribute.eContainingClass.getInstanceName()/], [anEAttribute.eContainingClass.getQualifiedIDName(anEAttribute)/]);
+factory.createEAttributeFromContainerAndClassID(this.[anEAttribute.eContainingClass.getInstanceName()/], [anEAttribute.eContainingClass.getQualifiedIDName(anEAttribute)/]);
 
 [/template]
 
 [template private generateCreation(anEReference : EReference)]
-this.[anEReference.getInstanceName()/] = factory.createEReferenceFromContainerAndClassID(this.[anEReference.eContainingClass.getInstanceName()/], [anEReference.eContainingClass.getQualifiedIDName(anEReference)/]);
+factory.createEReferenceFromContainerAndClassID(this.[anEReference.eContainingClass.getInstanceName()/], [anEReference.eContainingClass.getQualifiedIDName(anEReference)/]);
 
 [/template] 
 
 [template private generateCreation(anEOperation : EOperation)]
-this.[anEOperation.getInstanceName()/] = factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingClass.getInstanceName()/], [anEOperation.eContainingClass.getQualifiedIDName(anEOperation)/]);
+factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingClass.getInstanceName()/], [anEOperation.eContainingClass.getQualifiedIDName(anEOperation)/]);
+
+[/template]
+
+[template private generateCreation(aTypeElement : ETypedElement)]
+[/template]
+
+[template private generateCreation(aEnum : EEnum)]
+factory.createEEnumFromContainerAndClassID(this, [aEnum.getQualifiedIDName()/]);
 
 [/template]
 
 [template private generateCreation(anEDatatype : EDataType)]
-this.[anEDatatype.getInstanceName()/] = factory.create[if (anEDatatype.oclIsKindOf(EEnum))]EEnum[else]EDataType[/if]FromContainerAndClassID(this, [anEDatatype.getQualifiedIDName()/]);
+factory.createEDataTypeFromContainerAndClassID(this, [anEDatatype.getQualifiedIDName()/]);
 
 [/template]
 
