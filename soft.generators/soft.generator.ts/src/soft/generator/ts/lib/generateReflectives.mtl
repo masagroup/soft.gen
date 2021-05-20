@@ -196,7 +196,7 @@ eUnsetFromID(featureID : number ) {
         	this.[aStructFeature.getPropertyName()/] = null;
     [else]
 		[let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
-		[let defaultValue : String = aAttribute.getDefaultValue()]
+		[let defaultValue : String = aAttribute.getDefaultValue(aClass.ePackage)]
 		[if defaultValue <> '']
         	this.[aStructFeature.getPropertyName()/] = [defaultValue/];
         [else]
@@ -241,18 +241,6 @@ eInvokeFromID(operationID : number , args : [if not aPackage.isEcorePackage()]ec
 [eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]args.get([i-1/])[if needCast] as [eParameter.generateType()/][/if][/let][/for])
 [/template]
 
-[template public generateDefaultValue(anEAttribute : EAttribute) post (trim())]
-[if (anEAttribute.eType.oclIsTypeOf(EEnum))]
-    [if (anEAttribute.defaultValueLiteral->notEmpty())]
-        [anEAttribute.eType.name/].[anEAttribute.defaultValueLiteral.toUpperCase()/]
-    [else]
-        [anEAttribute.eType.name/].[anEAttribute.eType.oclAsType(EEnum).eLiterals->first().name.toUpperCase()/] 
-    [/if]
-[else]
-    [anEAttribute.getDefaultValue()/]
-[/if]
-[/template]
-
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
 [let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
 [let accessor : String = if isField() then aAttribute.getVariableName() else aAttribute.getPropertyName() endif]
@@ -263,11 +251,7 @@ eInvokeFromID(operationID : number , args : [if not aPackage.isEcorePackage()]ec
         this.[aAttribute.getPropertyName()/].size() != 0;
     [/if]
 [else] 
-    [if eType.oclIsKindOf(EEnum)]
-        this.[accessor/] != [aAttribute.generateDefaultValue()/]
-    [else]
-		this.[accessor/] != [aAttribute.getDefaultValue()/]
-    [/if]    
+    this.[accessor/] != [aAttribute.getDefaultValue(aClass)/]
 [/if]
 [/let]
 [/let]
@@ -288,7 +272,7 @@ eInvokeFromID(operationID : number , args : [if not aPackage.isEcorePackage()]ec
     [/if]
 [else]
     [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getPropertyName() endif]
-        this.[accessor/] != [anStructFeature.eType.getDefaultValue()/]
+        this.[accessor/] != [anStructFeature.eType.getDefaultValue(aClass)/]
     [/let]
 [/if]
 [/template]

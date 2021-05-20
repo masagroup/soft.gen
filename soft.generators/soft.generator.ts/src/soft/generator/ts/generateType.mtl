@@ -48,24 +48,62 @@ void
 
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
     Sequence {
-        Sequence{ 'EBoolean' , 'EBooleanObject' , 'Boolean'  , 'boolean' , 'false'},
-        Sequence{ 'EInt' , 'EIntegerObject' , 'EBigInteger' , 'Integer'  , 'number' , '0'},
-        Sequence{ 'EDouble' , 'EDoubleObject' , 'EBigDecimal' , 'Real'  , 'number' , '0.'},
-        Sequence{ 'ELong' , 'ELongObject' , 'number' , '0' },
-        Sequence{ 'EByte' , 'EByteObject' 'EChar' , 'ECharacterObject', 'number' , '0'},
-        Sequence{ 'EByteArray' , 'string' , ''},
-		Sequence{ 'EFeatureMapEntry' , 'ecore.EFeatureMapEntry' , 'null' },
-        Sequence{ 'EFloat' , 'EFloatObject', 'number' , '0.0'},
-        Sequence{ 'EEList' , 'ecore.EList', 'null'},
-        Sequence{ 'EDate' , 'Date', 'null'},
-        Sequence{ 'EMap' , 'Map', ''},
-        Sequence{ 'EJavaObject', 'EEnumerator' , 'EDiagnosticChain' , 'any', 'null' },
-        Sequence{ 'EJavaClass' , 'any', 'null'},
-        Sequence{ 'EString' , 'String', 'string', '""' },
-        Sequence{ 'ETreeIterator' , 'IterableIterator', ''},
-        Sequence{ 'EResource' , 'ecore.EResource', ''}
+        Sequence{ 'java.lang.Boolean', 'boolean', 'boolean', 'false' , 'true'},
+        Sequence{ 'java.lang.Integer', 'int', 'number' , '0', '45'},
+		Sequence{ 'java.lang.Byte','java.lang.Character', 'char', 'byte' ,'\'\'', '\'a\''},
+		Sequence{ 'byte[]','Uint8Array' , 'nil', 'nil'},
+		Sequence{ 'java.util.Date', 'Date', 'null', 'Date.now()'},
+		Sequence{ 'java.lang.Double', 'java.math.BigDecimal', 'double', 'number' , '0.0' , '3.5'},
+		Sequence{ 'java.lang.Float' , 'float' , 'number' , '0.0', '1.2'},
+		Sequence{ 'java.lang.Class' , 'any', 'null', ''},
+		Sequence{ 'java.lang.Object', 'any', 'null', 'null'},
+		Sequence{ 'java.lang.Long' , 'java.math.BigInteger', 'long' , 'number' , '0', '45'},
+        Sequence{ 'java.util.Map' , 'ecore.EMap', 'null', 'null'},
+        Sequence{ 'java.util.Map$Entry' , 'ecore.EMapEntry', 'null' , 'null'},
+		Sequence{ 'java.lang.Short' , 'short' , 'number' , '0', '2'},
+        Sequence{ 'java.lang.String' , 'string', '""' , '"Test String"'},
+		
+
+		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', 'ecore.EDiagnosticChain', 'null', 'null'},
+		Sequence{ 'org.eclipse.emf.common.util.EList', 'ecore.EList', 'null', 'new BasicEList()'},
+		Sequence{ 'org.eclipse.emf.common.util.Enumerator', 'any', 'null', 'null'},
+		Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap', 'any', 'null', 'null'},
+        Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap$Entry', 'any', 'null', 'null'},
+        Sequence{ 'org.eclipse.emf.ecore.resource.Resource', 'ecore.EResource', 'null' , 'null'},
+        Sequence{ 'org.eclipse.emf.ecore.resource.ResourceSet', 'ecore.EResourceSet', 'null' , 'null'},
+		Sequence{ 'org.eclipse.emf.common.util.TreeIterator', 'IterableIterator', 'null' , 'null'}
     }
 /]
+
+[query public getInstanceTypeName( aClassifier : EClassifier ) : String =
+	let instanceTypeName : String = 
+	if hasKey(aClassifier, 'instanceTypeName') then
+		aClassifier.valueKey('instanceTypeName')
+	else if not aClassifier.instanceTypeName.oclIsUndefined() then
+		aClassifier.instanceTypeName
+	else if aClassifier.oclIsKindOf(EClass) then
+		aClassifier.oclAsType(EClass).getQualifiedInterfaceName()
+	else
+		''
+	endif endif endif in
+	let tsTypeName : String = getAllDataTypes()->iterate( s ; res : String = '' |
+    if res = '' then
+        if s->exists(n : String | n = instanceTypeName) then
+            s->at( s->size() - 2 )
+        else
+            res
+        endif
+    else 
+        res 
+    endif
+	) in
+	if tsTypeName = '' then
+		instanceTypeName
+	else
+		tsTypeName
+	endif
+/] 
+
 
 [query public getType(aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then 'any'
@@ -76,44 +114,70 @@ void
 /]
 [query private getType( aClass : EClass ) : String = aClass.getQualifiedInterfaceName()/]
 [query private getType( aEnum : EEnum ) : String = aEnum.ePackage.name + '.' + aEnum.name/]
-[query private getType( aDataType : EDataType ) : String = 
-    getAllDataTypes()->iterate( s ; res : String = '' |
-    if res = '' then
-        if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() - 1 )
-        else
-            res
-        endif
-    else 
-        res 
-    endif
- ) 
-/] 
+[query private getType( aDataType : EDataType ) : String = aDataType.getInstanceTypeName()/]
 
 
-[query public getDefaultValue(anEAttribute : EAttribute) : String = if (defaultValueLiteral->notEmpty()) then defaultValueLiteral else eType.getDefaultValue() endif/]
+[query public getDefaultValue(anEAttribute : EAttribute, aContext : EClass) : String = anEAttribute.getDefaultValue(aContext.ePackage)/]
+
+[query public getDefaultValue(anEAttribute : EAttribute, aContext : EPackage) : String = 
+	if anEAttribute.many then '' 
+	else if (defaultValueLiteral->notEmpty()) then eType.getDefaultValueFromLiteral(aContext,defaultValueLiteral) else eType.getDefaultValue(aContext) 
+	endif endif
+/]
 
 
-[query public getDefaultValue(aClassifier : EClassifier) : String =
-    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue()
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue()
+[query private getDefaultValueFromLiteral(aClassifier : EClassifier, aContext : EPackage, literal : String ) : String =
+	 if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValueFromLiteral(aContext,literal)
+	 else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValueFromLiteral(aContext,literal)
+	 else literal endif endif
+/]
+
+[query private getDefaultValueFromLiteral(aEnum : EEnum, aContext : EPackage, literal : String ) : String =
+	let eLiterals : OrderedSet(EEnumLiteral) = aEnum.eLiterals->select( el : EEnumLiteral | el.name = literal ) in
+	if eLiterals->isEmpty() then
+		literal 
+	else
+		getShortQualifiedName(aEnum.ePackage.name + '.' + eLiterals->first().name.toUpperCase(), aContext.name)		
+	endif
+/]
+
+[query private getDefaultValueFromLiteral(aDataType : EDataType, aContext : EPackage, literal : String ) : String = 
+	literal
+/]
+
+[query public getDefaultValue(aClassifier : EClassifier, aContext : EClass) : String = aClassifier.getDefaultValue(aContext.ePackage)/]
+
+[query public getDefaultValue(aClassifier : EClassifier, aContext : EPackage) : String =
+    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue(aContext)
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue(aContext)
     else 'null' endif endif
 /]
 
-[query public getDefaultValue(aEnum : EEnum) : String = if aEnum.eLiterals->notEmpty() then aEnum.name + '.' + aEnum.eLiterals->at(1).name.toUpperCase() else 0 endif/]
+[query public getDefaultValue(aEnum : EEnum, aContext : EClass) : String = aEnum.getDefaultValue(aContext.ePackage)/]
 
-[query public getDefaultValue(aDataType : EDataType) : String =
-    getAllDataTypes()->iterate( s ; res : String = '' |
-    if res = '' then
-        if s->exists(n : String | n = aDataType.name) then
-            s->at( s->size() )
-        else
-            res
-        endif
-    else 
-        res 
-    endif
- ) 
+[query public getDefaultValue(aEnum : EEnum, aContext : EPackage) : String = if aEnum.eLiterals->notEmpty() then getShortQualifiedName(aEnum.ePackage.name + '.' + aEnum.name + '.' + aEnum.eLiterals->at(1).name.toUpperCase(), aContext.name) else 0 endif/]
+
+[query public getDefaultValue(aDataType : EDataType, aContext : EClass) : String = aDataType.getDefaultValue(aContext.ePackage)/]
+
+[query public getDefaultValue(aDataType : EDataType, aContext : EPackage) : String =
+	if hasKey(aDataType, 'defaultValue') then
+		aDataType.valueKey('defaultValue')
+	else if aDataType.name <> 'EChar' and not aDataType.defaultValue.oclIsUndefined() then
+		aDataType.defaultValue.toString()
+	else
+		let typeName : String = aDataType.getInstanceTypeName() in
+	    getAllDataTypes()->iterate( s ; res : String = '' |
+	    if res = '' then
+	        if s->exists(n : String | n = typeName) then
+	            getShortQualifiedName(s->at( s->size() - 1 ) , aContext.name)
+	        else
+	            res
+	        endif
+	    else 
+	        res 
+	    endif	
+ 		) 
+	endif endif
 /]
 
 [query private getAllImportModules(aPackage : EPackage) : OclAny =

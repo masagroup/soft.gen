@@ -48,7 +48,7 @@ protected [aStructuralFeature.getVariableName()/] : [aStructuralFeature.generate
 [/template]
 
 [template public generateVariableInitialization(aAttribute : EAttribute, aClass : EClass ) ]
-[let defaultValue : String = aAttribute.getDefaultValue()]
+[let defaultValue : String = aAttribute.getDefaultValue(aClass)]
 [if defaultValue <> '']
 this.[aAttribute.getVariableName()/] = [defaultValue/];
 [/if]
@@ -60,7 +60,7 @@ protected [aStructuralFeature.getInitializationMethodName()/]() : [aStructuralFe
 [if isListType()]
     return [getListConstructor(aClass)/];
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
-    return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
+    return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/];
 [else]
     throw new Error("[aStructuralFeature.getInitializationMethodName()/] not implemented");
 [/if]
@@ -75,7 +75,7 @@ protected [aStructuralFeature.getInitializationMethodName()/]() : void {
     this.[varName/] = [getListConstructor(aClass)/];
 [elseif isProxy()]
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
-    this.[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/];
+    this.[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/];
 [else]
     throw new Error("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
@@ -168,7 +168,7 @@ get [aStructuralFeature.getPropertyName()/]() : [aStructuralFeature.generateType
         [if lazy <> 'no']
             [if  lazy = 'function']
                 [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]) {
+    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/]) {
                 [else]
     if (this.[varName/] == null) {
                 [/if]
@@ -210,7 +210,7 @@ basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/]() : [aStructuralF
     [if lazy <> 'no']
         [if  lazy = 'function']
             [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/]) {
+    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/]) {
             [else]
     if (this.[varName/] == null) {
             [/if]
@@ -393,7 +393,7 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
 		[let lazy : String = aStructuralFeature.getLazy()]
 	    [if lazy = 'function']
 	        [if aStructuralFeature.oclIsKindOf(EAttribute)]
-	if ( this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue()/] ) {
+	if ( this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/] ) {
 		[else]
 	if ( this.[varName/] != null ) {
 		[/if]
