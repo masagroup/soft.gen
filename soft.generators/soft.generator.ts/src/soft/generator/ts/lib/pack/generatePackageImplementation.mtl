@@ -23,8 +23,8 @@
 
 [template public generatePackageImplementation(aPackage : EPackage){ 
 	className : String = aPackage.getImplementationName();
-	classes :  OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
-	dataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
+	allClasses :  OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	allDataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 }]
 [file (aPackage.getOutputDirectory() + '/'+  aPackage.getImplementationFileName(aPackage.getPackageName()),false, 'UTF-8')]
 [fileComment()/]
@@ -48,13 +48,8 @@
 export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EPackageExt implements [aPackage.getInterfaceName()/] {
 
 	private static _instance : [className/] = null;
-
-[for (aClass : EClass | classes)]
-    [let data : Sequence(ENamedElement) = Sequence{ Sequence{ aClass } , aClass.eStructuralFeatures, aClass.eOperations}->flatten()]
-    [data.generateVariableDeclaration(aPackage)/]
-    [/let]
-[/for]
-    [aPackage.eAllContents(EDataType)->sortedBy(name).generateVariableDeclaration(aPackage)/]
+    [allClasses.generateDataMember(aPackage)/]
+    [allDataTypes.generateDataMember(aPackage)/]
 
 	public static getInstance() : [className/] {
 		if (!this._instance) {
@@ -75,22 +70,22 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
         this.createResource();
 	}
 
-[for (aClass : EClass | classes)]
+[for (aClass : EClass | allClasses)]
     [aClass.generateGetter(aPackage)/]
     [aClass.eAttributes->sortedBy(name).generateGetter(aPackage)/]
     [aClass.eReferences->sortedBy(name).generateGetter(aPackage)/]
     [aClass.eOperations->sortedBy(name).generateGetter(aPackage)/]
 [/for]
-    [dataTypes.generateGetter(aPackage)/]
+    [allDataTypes.generateGetter(aPackage)/]
 
 
 	private createPackageContents(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {		
-[for (aClass : EClass | classes)]
+[for (aClass : EClass | allClasses)]
 		this.create[aClass.name.toUpperFirst()/]Content(factory);
 [/for]
 		this.createPackageEDataTypes(factory);		
 	}
-[for (aClass : EClass | classes)]
+[for (aClass : EClass | allClasses)]
 
 	private create[aClass.name.toUpperFirst()/]Content(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
 	    [aClass.generateCreation()/]
@@ -100,19 +95,19 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 [/for]
 
 	private createPackageEDataTypes(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
-    	[dataTypes.generateCreation()/]
+    	[allDataTypes.generateCreation()/]
 	}
 
 	private initializePackageContents(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
         // Add supertypes to classes
-        [classes.initSuperTypes()/]
+        [allClasses.initSuperTypes()/]
 [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
         this.initialize[aClass.name.toUpperFirst()/]Content(factory);
 [/for]
         this.initializePackageEDataTypes(factory);
 	}
 	
-[for (aClass : EClass | classes)]
+[for (aClass : EClass | allClasses)]
     private initialize[aClass.name.toUpperFirst()/]Content(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
         [aClass.generateInitialization()/]
         [aClass.eAttributes->sortedBy(name).generateInitialization(aPackage)/]
@@ -153,16 +148,32 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 [query private getParameterListDetailsName(aOperation : EOperation) : String = if aOperation.eParameters->size()>1 then aOperation.eParameters->first().eType.name + '_' + aOperation.eParameters->last().eType.name else aOperation.eParameters->first().eType.name endif /]
 
 
-[template private generateVariableDeclaration(anENamedElement : ENamedElement, aPackage : EPackage)] 
-private [anENamedElement.getInstanceName()/] : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/]; 
+[template private generateDataMember(anENamedElement : ENamedElement, aPackage : EPackage)] 
+private [anENamedElement.getInstanceName()/] : [aPackage.getMetaType(anENamedElement)/]; 
 
 [/template]
 
-[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage)]
-[anENamedElement.getReflectiveGetterName()/]() : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/] {
-    return this.[anENamedElement.getInstanceName()/];
+[template private generateGetter(aClassifier : EClassifier, anEPackage : EPackage)]
+[aClassifier.getReflectiveGetterName()/]() : [anEPackage.getMetaType(aClassifier)/] {
+    return this.[aClassifier.getInstanceName()/];
 }
 
+[/template]
+
+[template private generateGetter(aFeature : EStructuralFeature, anEPackage : EPackage)]
+[let aClass : EClass = aFeature.eContainingClass]
+[aFeature.getReflectiveGetterName()/]() : [anEPackage.getMetaType(aFeature)/] {
+    return this.[aClass.getInstanceName()/].eStructuralFeatures.get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]) as [anEPackage.getMetaType(aFeature)/];
+}
+[/let]
+[/template]
+
+[template private generateGetter(aOperation : EOperation, anEPackage : EPackage)]
+[let aClass : EClass = aOperation.eContainingClass]
+[aOperation.getReflectiveGetterName()/]() : [anEPackage.getMetaType(aOperation)/] {
+    return this.[aClass.getInstanceName()/].eOperations.get([aClass.eOperations->indexOf(aOperation)-1/]) as [anEPackage.getMetaType(aOperation)/];
+}
+[/let]
 [/template]
 
 [template private generateCreation(aEClass : EClass)]
