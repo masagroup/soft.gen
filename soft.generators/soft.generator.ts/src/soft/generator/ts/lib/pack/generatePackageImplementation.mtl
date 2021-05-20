@@ -23,8 +23,8 @@
 
 [template public generatePackageImplementation(aPackage : EPackage){ 
 	className : String = aPackage.getImplementationName();
-	classes :  OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
-	dataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
+	allClasses :  OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	allDataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 }]
 [file (aPackage.getOutputDirectory() + '/'+  aPackage.getImplementationFileName(aPackage.getPackageName()),false, 'UTF-8')]
 [fileComment()/]
@@ -48,13 +48,8 @@
 export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EPackageExt implements [aPackage.getInterfaceName()/] {
 
 	private static _instance : [className/] = null;
-
-[for (aClass : EClass | classes)]
-    [let data : Sequence(ENamedElement) = Sequence{ Sequence{ aClass } , aClass.eStructuralFeatures, aClass.eOperations}->flatten()]
-    [data.generateVariableDeclaration(aPackage)/]
-    [/let]
-[/for]
-    [aPackage.eAllContents(EDataType)->sortedBy(name).generateVariableDeclaration(aPackage)/]
+    [allClasses.generateDataMember(aPackage)/]
+    [allDataTypes.generateDataMember(aPackage)/]
 
 	public static getInstance() : [className/] {
 		if (!this._instance) {
@@ -69,62 +64,47 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 		this.nsPrefix = [aPackage.getConstantsName()/].eNS_PREFIX;
 		this.nsURI = [aPackage.getConstantsName()/].eNS_URI;
 		this.eFactoryInstance = get[aPackage.getFactoryName()/]();
-        let factory = [getShortQualifiedName('ecore.getEcoreFactory', aPackage.name)/]();
-	    this.createPackageContents(factory);
-    	this.initializePackageContents(factory);
+        this.createPackageContents();
+    	this.initializePackageContents();
         this.createResource();
 	}
 
-[for (aClass : EClass | classes)]
+[for (aClass : EClass | allClasses)]
     [aClass.generateGetter(aPackage)/]
     [aClass.eAttributes->sortedBy(name).generateGetter(aPackage)/]
     [aClass.eReferences->sortedBy(name).generateGetter(aPackage)/]
     [aClass.eOperations->sortedBy(name).generateGetter(aPackage)/]
 [/for]
-    [dataTypes.generateGetter(aPackage)/]
+    [allDataTypes.generateGetter(aPackage)/]
 
 
-	private createPackageContents(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {		
-[for (aClass : EClass | classes)]
-		this.create[aClass.name.toUpperFirst()/]Content(factory);
-[/for]
-		this.createPackageEDataTypes(factory);		
-	}
-[for (aClass : EClass | classes)]
-
-	private create[aClass.name.toUpperFirst()/]Content(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
-	    [aClass.generateCreation()/]
-	    [aClass.eStructuralFeatures.generateCreation()/]
-	    [aClass.eOperations.generateCreation()/]
-	}
-[/for]
-
-	private createPackageEDataTypes(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
-    	[dataTypes.generateCreation()/]
-	}
-
-	private initializePackageContents(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
-        // Add supertypes to classes
-        [classes.initSuperTypes()/]
-[for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-        this.initialize[aClass.name.toUpperFirst()/]Content(factory);
-[/for]
-        this.initializePackageEDataTypes(factory);
-	}
+	private createPackageContents() : void {
+[if allClasses->notEmpty() or allDataTypes->notEmpty()]
+		let factory = [getShortQualifiedName('ecore.getEcoreFactory', aPackage.name)/]();
+[for (aClass : EClass | allClasses)]
 	
-[for (aClass : EClass | classes)]
-    private initialize[aClass.name.toUpperFirst()/]Content(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
-        [aClass.generateInitialization()/]
-        [aClass.eAttributes->sortedBy(name).generateInitialization(aPackage)/]
-        [aClass.eReferences->sortedBy(name).generateInitialization(aPackage)/]
-        [aClass.eOperations->sortedBy(name).generateInitialization(aPackage)/]
-    }
+		[aClass.generateCreation()/]
+		[Sequence{ aClass.eStructuralFeatures, aClass.eOperations}->flatten().generateCreation()/]
 [/for]
 
-    private initializePackageEDataTypes(factory : [if not aPackage.isEcorePackage()]ecore.[/if]EcoreFactory) : void {
-        [aPackage.eAllContents(EDataType)->sortedBy(name).generateInitialization()/]
-    }
+		[allDataTypes.generateCreation()/]
+[/if]
+	}
 
+	private initializePackageContents() : void {
+
+[if allClasses->notEmpty()]
+        [allClasses.initSuperTypes()/]
+
+		[for (aClass : EClass | allClasses)]
+		[aClass.generateInitialization()/]
+		[Sequence{ aClass.eAttributes, aClass.eReferences, aClass.eOperations}->flatten().generateInitialization(aPackage)/]
+		[/for]
+[/if]
+[if allDataTypes->notEmpty()]
+        [allDataTypes.generateInitialization(aPackage)/]
+[/if]
+	}	
 }
 
 [/file]
@@ -152,44 +132,84 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 [query private getParameterListName( aOperation : EOperation) : String = if aOperation.eParameters->notEmpty() then '_' + aOperation.getParameterListDetailsName() else '' endif /]
 [query private getParameterListDetailsName(aOperation : EOperation) : String = if aOperation.eParameters->size()>1 then aOperation.eParameters->first().eType.name + '_' + aOperation.eParameters->last().eType.name else aOperation.eParameters->first().eType.name endif /]
 
+[query private getPackageGetter(aModelElement : EModelElement) : String =
+	if aModelElement.oclIsKindOf(EPackage) then  
+		'this'
+	else if aModelElement.oclIsKindOf(EEnumLiteral) then 
+		let aEnumLiteral : EEnumLiteral = aModelElement.oclAsType(EEnumLiteral) in 
+		aEnumLiteral.eEnum.getPackageGetter() + '.getEEnumLiteralByName("' + aEnumLiteral.name +'")' 
+	else if aModelElement.oclIsKindOf(ENamedElement) then 
+		aModelElement.oclAsType(ENamedElement).getPackageGetter()
+	else 
+		'nil' 
+	endif endif endif/]
+[query private getPackageGetter(aNamedElement : ENamedElement) : String = if oclIsUndefined() then 'null' else 'this.' + aNamedElement.getReflectiveGetterName() + '()' endif/]
 
-[template private generateVariableDeclaration(anENamedElement : ENamedElement, aPackage : EPackage)] 
-private [anENamedElement.getInstanceName()/] : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/]; 
+[query private getPackageGetter(aEClassifier : EClassifier, aStruct : EStructuralFeature) : String = getPackageGetter(aEClassifier,aStruct.eContainingClass) /]
+[query private getPackageGetter(aEClass : EClass, supertype : EClass) : String = getPackageGetter(supertype.oclAsType(EClassifier),aEClass.oclAsType(EClassifier)) /]
+[query private getPackageGetter(aEClassifier1 : EClassifier, aEClassifier2 : EClassifier) : String = getPackageInstance(aEClassifier1, aEClassifier2) + aEClassifier1.getReflectiveGetterName() + '()' /]
+[query private getPackageInstance(aClassifier1 : EClassifier ,aClassifier2 : EClassifier ) : String = if(aClassifier1.ePackage.name = aClassifier2.ePackage.name ) then 'this.' else  aClassifier1.ePackage.name + '.get' + aClassifier1.ePackage.getInterfaceName() + '().'  endif /]
+[query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'null' else getPackageInstance(anEClassifier, anOperation.eContainingClass) + anEClassifier.getReflectiveGetterName() + '()' endif/]
+
+
+
+[template private generateDataMember(anENamedElement : ENamedElement, aPackage : EPackage)] 
+private [anENamedElement.getInstanceName()/] : [aPackage.getMetaType(anENamedElement)/]; 
 
 [/template]
 
-[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage)]
-[anENamedElement.getReflectiveGetterName()/]() : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/] {
-    return this.[anENamedElement.getInstanceName()/];
+[template private generateGetter(aClassifier : EClassifier, anEPackage : EPackage)]
+[aClassifier.getReflectiveGetterName()/]() : [anEPackage.getMetaType(aClassifier)/] {
+    return this.[aClassifier.getInstanceName()/];
 }
 
 [/template]
 
-[template private generateCreation(aEClass : EClass)]
-this.[aEClass.getInstanceName()/] = factory.createEClassFromContainerAndClassID(this, [aEClass.getQualifiedIDName()/]);
-
+[template private generateGetter(aFeature : EStructuralFeature, anEPackage : EPackage)]
+[let aClass : EClass = aFeature.eContainingClass]
+[aFeature.getReflectiveGetterName()/]() : [anEPackage.getMetaType(aFeature)/] {
+    return this.[aClass.getInstanceName()/].eStructuralFeatures.get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]) as [anEPackage.getMetaType(aFeature)/];
+}
+[/let]
 [/template]
 
-[template private generateCreation(aStructuralFeature : EStructuralFeature)]
+[template private generateGetter(aOperation : EOperation, anEPackage : EPackage)]
+[let aClass : EClass = aOperation.eContainingClass]
+[aOperation.getReflectiveGetterName()/]() : [anEPackage.getMetaType(aOperation)/] {
+    return this.[aClass.getInstanceName()/].eOperations.get([aClass.eOperations->indexOf(aOperation)-1/]) as [anEPackage.getMetaType(aOperation)/];
+}
+[/let]
+[/template]
+
+[template private generateCreation(aEClass : EClass)]
+this.[aEClass.getInstanceName()/] = factory.createEClassFromContainerAndClassID(this, [aEClass.getQualifiedIDName()/]);
 [/template]
 
 [template private generateCreation(anEAttribute : EAttribute)]
-this.[anEAttribute.getInstanceName()/] = factory.createEAttributeFromContainerAndClassID(this.[anEAttribute.eContainingClass.getInstanceName()/], [anEAttribute.eContainingClass.getQualifiedIDName(anEAttribute)/]);
+factory.createEAttributeFromContainerAndClassID(this.[anEAttribute.eContainingClass.getInstanceName()/], [anEAttribute.eContainingClass.getQualifiedIDName(anEAttribute)/]);
 
 [/template]
 
 [template private generateCreation(anEReference : EReference)]
-this.[anEReference.getInstanceName()/] = factory.createEReferenceFromContainerAndClassID(this.[anEReference.eContainingClass.getInstanceName()/], [anEReference.eContainingClass.getQualifiedIDName(anEReference)/]);
+factory.createEReferenceFromContainerAndClassID(this.[anEReference.eContainingClass.getInstanceName()/], [anEReference.eContainingClass.getQualifiedIDName(anEReference)/]);
 
 [/template] 
 
 [template private generateCreation(anEOperation : EOperation)]
-this.[anEOperation.getInstanceName()/] = factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingClass.getInstanceName()/], [anEOperation.eContainingClass.getQualifiedIDName(anEOperation)/]);
+factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingClass.getInstanceName()/], [anEOperation.eContainingClass.getQualifiedIDName(anEOperation)/]);
+
+[/template]
+
+[template private generateCreation(aTypeElement : ETypedElement)]
+[/template]
+
+[template private generateCreation(aEnum : EEnum)]
+this.[aEnum.getInstanceName()/] = factory.createEEnumFromContainerAndClassID(this, [aEnum.getQualifiedIDName()/]);
 
 [/template]
 
 [template private generateCreation(anEDatatype : EDataType)]
-this.[anEDatatype.getInstanceName()/] = factory.create[if (anEDatatype.oclIsKindOf(EEnum))]EEnum[else]EDataType[/if]FromContainerAndClassID(this, [anEDatatype.getQualifiedIDName()/]);
+this.[anEDatatype.getInstanceName()/] = factory.createEDataTypeFromContainerAndClassID(this, [anEDatatype.getQualifiedIDName()/]);
 
 [/template]
 
@@ -207,72 +227,51 @@ this.[aEClass.getInstanceName()/].eSuperTypes.add([superClass.getGetter(aEClass.
 [/template]
 
 [template private generateInitialization(aEClass : EClass)]
-this.[aEClass.getInstanceName()/].name = "[aEClass.name/]";
-this.[aEClass.getInstanceName()/].isAbstract = [aEClass.abstract.toString()/];
-this.[aEClass.getInstanceName()/].isInterface = [aEClass.interface.toString()/];
+this.initEClass(this.[aEClass.getInstanceName()/],"[aEClass.name/]","[aEClass.getInstanceTypeName()/]",[aEClass.abstract.toString()/],[aEClass.interface.toString()/]);
 [/template]
 
 [template private generateInitialization(anEAttribute : EAttribute, aPackage : EPackage )]
-this.[anEAttribute.getInstanceName()/].name = "[anEAttribute.name/]";
-this.[anEAttribute.getInstanceName()/].eType = [anEAttribute.eType.getGetter(aPackage)/];
-this.[anEAttribute.getInstanceName()/].lowerBound = [anEAttribute.lowerBound/];
-this.[anEAttribute.getInstanceName()/].upperBound = [anEAttribute.upperBound/];
-this.[anEAttribute.getInstanceName()/].isTransient = [anEAttribute.transient.toString()/];
-this.[anEAttribute.getInstanceName()/].isVolatile = [anEAttribute.volatile.toString()/];
-this.[anEAttribute.getInstanceName()/].isChangeable = [anEAttribute.changeable.toString()/];
-this.[anEAttribute.getInstanceName()/].isUnsettable = [anEAttribute.unsettable.toString()/];
-this.[anEAttribute.getInstanceName()/].isUnique = [anEAttribute.unique.toString()/];
-this.[anEAttribute.getInstanceName()/].isDerived = [anEAttribute.derived.toString()/];
-this.[anEAttribute.getInstanceName()/].isOrdered = [anEAttribute.ordered.toString()/];
-this.[anEAttribute.getInstanceName()/].isID = [anEAttribute.iD.toString()/];
-[if ( anEAttribute.defaultValueLiteral <> '' )]
-this.[anEAttribute.getInstanceName()/].defaultValueLiteral = "[anEAttribute.defaultValueLiteral/]";
-[/if]
-
+this.initEAttribute([anEAttribute.getPackageGetter()/],[anEAttribute.eType.oclAsType(EDataType).getPackageGetter(anEAttribute)/],"[anEAttribute.name/]","[anEAttribute.defaultValueLiteral/]",[anEAttribute.lowerBound/],[anEAttribute.upperBound/],[anEAttribute.transient.toString()/],[anEAttribute.volatile.toString()/],[anEAttribute.changeable.toString()/],[anEAttribute.unsettable.toString()/],[anEAttribute.unique.toString()/],[anEAttribute.derived.toString()/],[anEAttribute.ordered.toString()/],[anEAttribute.iD.toString()/]);
 [/template]
 
 [template private generateInitialization(anEReference : EReference, aPackage : EPackage )]
-this.[anEReference.getInstanceName()/].name = "[anEReference.name/]";
-this.[anEReference.getInstanceName()/].eType = [anEReference.eType.getGetter(aPackage)/];
-this.[anEReference.getInstanceName()/].lowerBound = [anEReference.lowerBound/];
-this.[anEReference.getInstanceName()/].upperBound = [anEReference.upperBound/];
-this.[anEReference.getInstanceName()/].isTransient = [anEReference.transient.toString()/];
-this.[anEReference.getInstanceName()/].isVolatile = [anEReference.volatile.toString()/];
-this.[anEReference.getInstanceName()/].isChangeable = [anEReference.changeable.toString()/];
-this.[anEReference.getInstanceName()/].isUnsettable = [anEReference.unsettable.toString()/];
-this.[anEReference.getInstanceName()/].isUnique = [anEReference.unique.toString()/];
-this.[anEReference.getInstanceName()/].isDerived = [anEReference.derived.toString()/];
-this.[anEReference.getInstanceName()/].isOrdered = [anEReference.ordered.toString()/];
-this.[anEReference.getInstanceName()/].isContainment = [anEReference.containment.toString()/];
-this.[anEReference.getInstanceName()/].isResolveProxies = [anEReference.resolveProxies.toString()/];
-[if ( anEReference.defaultValueLiteral <> '' )]
-this.[anEReference.getInstanceName()/].defaultValueLiteral = "[anEReference.defaultValueLiteral/]";
-[/if]
-[if not anEReference.eOpposite.oclIsUndefined()]
-this.[anEReference.getInstanceName()/].eOpposite = this.[anEReference.eOpposite.getInstanceName()/];
-[/if]
+this.initEReference([anEReference.getPackageGetter()/],[anEReference.eGenericType.eClassifier.getPackageGetter(anEReference)/],[if anEReference.eOpposite.oclIsUndefined()]null[else][anEReference.eOpposite.getPackageGetter()/][/if],"[anEReference.name/]","[anEReference.defaultValueLiteral/]",[anEReference.lowerBound/],[anEReference.upperBound/],[anEReference.transient.toString()/],[anEReference.volatile.toString()/],[anEReference.changeable.toString()/],[anEReference.containment.toString()/],[anEReference.resolveProxies.toString()/],[anEReference.unsettable.toString()/],[anEReference.unique.toString()/],[anEReference.derived.toString()/],[anEReference.ordered.toString()/]);
 
 [/template]
 
-[template private generateInitialization(anEOperation : EOperation , aPackage : EPackage )]
-this.[anEOperation.getInstanceName()/].eType = [anEOperation.eType.getGetter(aPackage)/];
-this.[anEOperation.getInstanceName()/].name = "[anEOperation.name.toString()/]";
-this.[anEOperation.getInstanceName()/].lowerBound = [anEOperation.lowerBound/];
-this.[anEOperation.getInstanceName()/].upperBound = [anEOperation.upperBound/];
-this.[anEOperation.getInstanceName()/].isUnique = [anEOperation.unique.toString()/];
-this.[anEOperation.getInstanceName()/].isOrdered = [anEOperation.ordered.toString()/];
-[for (anEParameter : EParameter | anEOperation.eParameters)]
+[template private generateInitialization(anEOperation : EOperation , aPackage : EPackage )? (anEOperation.eParameters->isEmpty())]
+this.initEOperation([anEOperation.getPackageGetter()/],[anEOperation.eType.getPackageGetter(anEOperation)/],"[anEOperation.name.toString()/]",[anEOperation.lowerBound/],[anEOperation.upperBound/],[anEOperation.unique.toString()/],[anEOperation.ordered.toString()/]);
+
+[/template]
+
+[template private generateInitialization(anEOperation : EOperation , aPackage : EPackage )? (anEOperation.eParameters->notEmpty())]
 {
-    let parameter = factory.createEParameterFromContainer(this.[anEOperation.getInstanceName()/]);
-    parameter.name = "[anEParameter.name/]";
-    parameter.eType = [anEParameter.eType.getGetter(aPackage)/];
-    parameter.lowerBound = 0;
-    parameter.upperBound = 1;
-    parameter.isUnique = true;
-    parameter.isOrdered = true;
+	let operation = [anEOperation.getPackageGetter()/];
+	this.initEOperation(operation,[anEOperation.eType.getPackageGetter(anEOperation)/],"[anEOperation.name.toString()/]",[anEOperation.lowerBound/],[anEOperation.upperBound/],[anEOperation.unique.toString()/],[anEOperation.ordered.toString()/]);
+	[for (anEParameter : EParameter | anEOperation.eParameters)]
+	this.addEParameter(operation,[anEParameter.eType.getPackageGetter(anEParameter.eOperation)/],"[anEParameter.name/]",0,1,[anEParameter.unique.toString()/],[anEParameter.ordered.toString()/]);
+	[/for]
 }
-[/for]
+
 [/template]
+
+
+[template private generateInitialization(aTypedElement : ETypedElement, aPackage : EPackage)]
+[/template]
+
+[template private generateInitialization(aEnum : EEnum,anEPackage : EPackage)]
+this.initEEnum([aEnum.getPackageGetter()/], "[aEnum.name/]","[if aEnum.instanceTypeName.oclIsUndefined()]number[else][aEnum.getInstanceTypeName()/][/if]")
+[for (anEEnumLiteral : EEnumLiteral | aEnum.eLiterals)]
+this.addEEnumLiteral([aEnum.getPackageGetter()/], "[anEEnumLiteral.name/]", "[anEEnumLiteral.literal/]", [anEEnumLiteral.value.toString()/])
+[/for]
+
+[/template]
+
+[template private generateInitialization(aDataType : EDataType,anEPackage : EPackage)]
+this.initEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataType.getInstanceTypeName()/]",[let defaultValue : String = aDataType.getDefaultValue(anEPackage).replaceAll('\'|"', '')][if defaultValue = '' or defaultValue = 'null']""[else]"[defaultValue/]"[/if][/let],[aDataType.serializable.toString()/])
+
+[/template]
+
 
 [template private generateInitialization(aDataType : EDataType)]
 this.[aDataType.getInstanceName()/].name ="[aDataType.name/]";

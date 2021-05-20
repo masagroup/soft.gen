@@ -188,6 +188,8 @@ p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataTyp
 
 [template public generatePackageImplementation(anEPackage : EPackage){ 
 	className : String = anEPackage.getImplementationName();
+	allClasses :  OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	allDataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 	annotationSources : OrderedSet(String) = anEPackage.getAnnotationSources();
 }]
 [file (anEPackage.getOutputDirectory() + '/'+ anEPackage.getImplementationFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
@@ -212,8 +214,8 @@ import "[i/]"
 // [className/] is the [anEPackage.getInterfaceName()/] implementation
 type [className/] struct {
     [if not anEPackage.isEcorePackage()]ecore.[/if]EPackageExt
-	[anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name).generateDataMember(anEPackage)/]
-    [anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name).generateDataMember(anEPackage)/]
+	[allClasses.generateDataMember(anEPackage)/]
+    [allDataTypes.generateDataMember(anEPackage)/]
 }
 
 func new[className.toUpperFirst()/]() *[className/] {
@@ -234,17 +236,15 @@ func (p *[className/])Initialize() {
     p.CreateResource()
 }
 
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
+[for (aClass : EClass | allClasses)]
 [aClass.generateGetter(anEPackage)/]
 [aClass.eAttributes->sortedBy(name).generateGetter(anEPackage)/]
 [aClass.eReferences->sortedBy(name).generateGetter(anEPackage)/]
 [aClass.eOperations->sortedBy(name).generateGetter(anEPackage)/]
 [/for]
-[anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(anEPackage)/]
+[allDataTypes.generateGetter(anEPackage)/]
 
 func (p *[className/])createPackageContents() {
-[let allClasses : OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)]
-[let allDataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name)]
 [if allClasses->notEmpty() or allDataTypes->notEmpty()]
 	factory := [if not anEPackage.isEcorePackage()]ecore.[/if]GetFactory()
 [for (aClass : EClass | allClasses)]
@@ -255,13 +255,10 @@ func (p *[className/])createPackageContents() {
 
 	[allDataTypes.generateCreation()/]
 [/if]
-[/let]
-[/let]    
 }
 
 func (p *[className/])initializePackageContents() {
 
-[let allClasses : OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)]
 [if allClasses->notEmpty()]
 	[allClasses.initSuperTypes()/]
 
@@ -270,12 +267,9 @@ func (p *[className/])initializePackageContents() {
 	[Sequence{ aClass.eAttributes, aClass.eReferences, aClass.eOperations}->flatten().generateInitialization()/]	   
 	[/for]
 [/if]
-[/let]
-[let allDataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name)]
 [if allDataTypes->notEmpty()]
 	[allDataTypes.generateInitialization(anEPackage)/]
 [/if]
-[/let]    
 [if not anEPackage.isEcorePackage()]
 
 [for (aAnnotationSource : String | annotationSources)]

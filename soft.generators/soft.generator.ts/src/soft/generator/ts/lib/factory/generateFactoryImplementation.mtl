@@ -125,9 +125,49 @@ create[enumTypeName/]FromString(eDataType: [if not aPackage.isEcorePackage()]eco
 [/let]
 [/template]
 
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'string')]
+create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
+   return literalValue;
+}
+
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'boolean')]
+create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
+   return literalValue.toLowerCase() === "true";
+}
+
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'number')]
+create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
+	return Number(literalValue);
+}
+
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'byte')]
+create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
+	if (literalValue.length == 0 ) {
+		return '\0';
+	} else {
+		return literalValue['['/]0[']'/];
+	}
+}
+
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'Uint8Array')]
+create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
+	return new TextEncoder().encode(literalValue);
+}
+
+[/template]
+
+
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType )]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-   throw new Error("NotImplementedException");
+   	throw new Error("NotImplementedException");
 }
 [/template]
 
@@ -137,6 +177,28 @@ convert[enumTypeName/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecor
 	return [enumTypeName.toLowerFirst()/]ToString(instanceValue as [enumTypeName/]);
 }
 [/let]
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'string' )]
+convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
+	return instanceValue as string;
+}
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )
+	? ( aDataType.getType() = 'number' or
+		aDataType.getType() = 'boolean' or
+		aDataType.getType() = 'byte'
+	  )]
+convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
+	return instanceValue.toString();
+}
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'Uint8Array' )]
+convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
+	return new TextDecoder().decode(instanceValue as Uint8Array);
+}
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )]

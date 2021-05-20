@@ -15,6 +15,7 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon /]
+[import soft::generator::ts::generateType /]
 [import soft::generator::ts::lib::pack::generateCommon/]
 
 [template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage )]

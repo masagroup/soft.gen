@@ -147,6 +147,8 @@ endif endif endif endif
 
 [query public getOperationName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' )/]
 
+[query public getMetaType(aPackage : EPackage , anENamedElement : ENamedElement) : String = getShortQualifiedName( anENamedElement.eClass().getQualifiedInterfaceName(), aPackage.name ) /]
+
 [query public getParameterName(aParameter : EParameter) : String =
  	let n : String = aParameter.name in
 	if n = 'arguments' then 'args'
@@ -191,51 +193,3 @@ methodName
 /]
 
 
-[query private getAllImportModules(aPackage : EPackage) : OclAny =
-    let namespacesToPackages : OclAny = 
-    if (aPackage.hasGenAnnotation()) then
-        let annotations : Sequence(String) = aPackage.getGenAnnotation().details->select(key = 'importModule').value in
-        annotations->iterate( annotation : String ; res : OclAny = mapNew('getNamespaceToModule_' + aPackage.name) | (
-            let index : Integer = annotation.index(':') in 
-            if index = -1 then
-                res
-            else
-                res.mapPut(annotation.substring(1,index-1),annotation.substring(index+1)) 
-            endif
-        ))
-    else
-        mapNew('getNamespaceToModule_' + aPackage.name)
-    endif in
-    namespacesToPackages.mapPut('ecore','@masagroup/ecore')
-/]
-
-[query public getImportModule(aPackage : EPackage, namespace : String ) : String =
-    getAllImportModules().mapGetOrDefault(namespace, namespace)
-/]
-
-[template public generateImports(aPackage : EPackage ,allTypes : OrderedSet(String), aElementName : String)]
-[let namespaceToTypes : OclAny = allTypes->iterate( type : String ; res : OclAny = mapNew(aElementName) | (
-   let namespace : String = getQualification(type) in
-    if (namespace <> '') then
-        let typeName : String = getUnQualifiedName(type) in
-        let types : Sequence(OclAny) = res.mapGetOrDefault(namespace, Sequence{}).asSequence() in
-        res.mapPut( namespace , types->append(typeName) )
-    else
-        res
-    endif
-))]
-[for (namespace : OclAny | namespaceToTypes.mapKeys()->sortedBy(oclAsType(String)))]
-[if (namespace = aPackage.name)]
-import {
-[for ( type : OclAny | namespaceToTypes.mapGet(namespace).asSequence()->asOrderedSet())]
-    [type.oclAsType(String)/],
-[/for]    
-} from "./internal"
-[else]
-[let namespaceName : String = namespace.oclAsType(String)]
-import * as [namespaceName/] from "[aPackage.getImportModule(namespaceName)/]"
-[/let]
-[/if]
-[/for]
-[/let]
-[/template]
