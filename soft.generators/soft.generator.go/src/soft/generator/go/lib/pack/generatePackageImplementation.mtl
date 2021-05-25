@@ -13,6 +13,7 @@
 [module generatePackageImplementation('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generatePackage/]
 
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
@@ -38,35 +39,6 @@
 [query private getPackageInstance(aClassifier1 : EClassifier ,aClassifier2 : EClassifier ) : String = if(aClassifier1.ePackage.name = aClassifier2.ePackage.name ) then 'p.' else  aClassifier1.ePackage.name + '.GetPackage().'  endif /]
 [query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'nil' else getPackageInstance(anEClassifier, anOperation.eContainingClass) + anEClassifier.getReflectiveGetterName() + '()' endif/]
 
-[query private getAnnotionSourceIdentifierLastIndex(aAnnotationSource : String) : Integer = 
-	let index : Integer = aAnnotationSource.lastIndexOf('/') in
-	if ( index = aAnnotationSource.size() - 1 ) then
-		aAnnotationSource.first(index).lastIndexOf('/')
-	else
-		index
-	endif
-/]
-[query private getAnnotationSourceIdentifier(aAnnotationSource : String) : String = 
-	let index : Integer = getAnnotionSourceIdentifierLastIndex(aAnnotationSource) in
-	if ( index = -1 ) then
-		aAnnotationSource
-    else
-        aAnnotationSource.substring(index + 1 )
-    endif
-/]
-[query private getSuppressedAnnotations(aPackage : EPackage ) : Sequence(String) =
-	if aPackage.hasKey('supressAnnotations') then
-		let supressAnnotations : String = aPackage.valueKey('supressAnnotations') in
-		supressAnnotations.tokenize(' ')
-	else
-		Sequence{}
-	endif
-/]
-[query private getAnnotationSources(aPackage : EPackage) : OrderedSet(String) =
-	let allAnnotationsSources : Set(String) = aPackage.eAllContents(EAnnotation)->collect( a | a.source )->asSet() in
-	let supressedAnnotationsSources : Set(String) = aPackage.getSuppressedAnnotations()->asSet() in
-	(allAnnotationsSources - supressedAnnotationsSources)->asOrderedSet()->sortedBy(s | s) 
-/]
 
 [template private generateDataMember(anENamedElement : ENamedElement, anEPackage : EPackage)] 
 [anENamedElement.getElementInstanceName()/] [anEPackage.getMetaType(anENamedElement)/] 

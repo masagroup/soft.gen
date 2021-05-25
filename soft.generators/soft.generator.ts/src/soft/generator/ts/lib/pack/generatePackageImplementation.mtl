@@ -272,15 +272,3 @@ this.initEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aData
 
 [/template]
 
-
-[template private generateInitialization(aDataType : EDataType)]
-this.[aDataType.getInstanceName()/].name ="[aDataType.name/]";
-[if not aDataType.instanceTypeName.oclIsUndefined() and not (aDataType.instanceTypeName = '')] 
-//this.[aDataType.getInstanceName()/].instanceClass = typeOf [aDataType.instanceTypeName/];
-[/if]
-[if (not aDataType.oclIsKindOf(EEnum))]
-this.[aDataType.getInstanceName()/].isSerializable = [aDataType.serializable.toString()/];
-[/if]
-
-[/template]
-
