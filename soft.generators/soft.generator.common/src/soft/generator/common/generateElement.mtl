@@ -48,6 +48,8 @@
 
 [query public requiresList(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EEList' endif/]
 [query public requiresList(aClass : EClass) : Boolean = aClass.getImplementedFeatures()->exists(isListType()) or aClass.getImplementedOperations()->exists((eType.requiresList()  or isListType())) /]
+[query public requiresMap(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EMap' endif/]
+[query public requiresMap(aClass : EClass) : Boolean = aClass.getImplementedFeatures()->exists(isMapType()) or aClass.getImplementedOperations()->exists((eType.requiresMap()  or isMapType())) /]
 [query public requiresCollectionView(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'ETreeIterator' endif/]
 [query public requiresCollectionView(anGenericType : EGenericType) : Boolean = if (oclIsUndefined()) then false else anGenericType.eClassifier.requiresCollectionView() endif/]
 [query public requiresResource(anEClassifier : EClassifier) : Boolean = if (oclIsUndefined()) then false else name = 'EResource' endif/]
