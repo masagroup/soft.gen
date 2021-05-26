@@ -30,7 +30,7 @@ void
     [if aElement.isMapType()]
 		[getShortQualifiedName('ecore.EMap', aPackage.name )/]<[aDataType.generateMapKeyType(aPackage)/],[aDataType.generateMapValueType(aPackage)/]>
 	[elseif aElement.isListType()]
-        [getShortQualifiedName('ecore.EList', aPackage.name )/]<[aDataType.generateListItemType(aPackage)/]>
+        [getShortQualifiedName('ecore.EList', aPackage.name )/]<[aDataType.generateListTypeParameters(aPackage)/]>
     [else]
         [aDataType.generateType(aPackage)/][if aDataType.eClassifier.name <> 'EJavaClass' and aDataType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aDataType.eTypeArguments) separator (',')][getShortQualifiedName(g.eClassifier.getType(),aPackage.name)/][/for]>[/if]
     [/if]
@@ -39,19 +39,23 @@ void
 [/if]
 [/template]
 
-[template public generateListItemType(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
+[template public generateMapTypeParameters(anEDataType : EGenericType, aPackage : EPackage ) post(trim())]
+[anEDataType.generateMapKeyType(aPackage)/],[anEDataType.generateMapValueType(aPackage)/]	
+[/template]
+
+[template public generateListTypeParameters(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
 [anEDataType.generateType(aPackage)/]
 [/template]
 
-[template public generateMapKeyType(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
-[anEDataType.generateMapType(aPackage,1,'key')/]
+[template private generateMapKeyType(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
+[anEDataType.generateMapTypeParameter(aPackage,1,'key')/]
 [/template]
 
-[template public generateMapValueType(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
-[anEDataType.generateMapType(aPackage,2,'value')/]
+[template private generateMapValueType(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
+[anEDataType.generateMapTypeParameter(aPackage,2,'value')/]
 [/template]
 
-[template private generateMapType(anEDataType : EGenericType, aPackage : EPackage, index : Integer, featureName : String) post(trim())]
+[template private generateMapTypeParameter(anEDataType : EGenericType, aPackage : EPackage, index : Integer, featureName : String) post(trim())]
 [if anEDataType.eTypeArguments->size() = 2]
 [let keyType : EGenericType = anEDataType.eTypeArguments->at(index)]
 [getShortQualifiedName(keyType.eClassifier.getType(),aPackage.name)/]
