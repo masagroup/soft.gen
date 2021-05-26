@@ -13,6 +13,7 @@
 [module generatePackageImplementation('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generatePackage/]
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::generateType /]
@@ -25,6 +26,7 @@
 	className : String = aPackage.getImplementationName();
 	allClasses :  OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
 	allDataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
+	annotationSources : OrderedSet(String) = aPackage.getAnnotationSources();
 }]
 [file (aPackage.getOutputDirectory() + '/'+  aPackage.getImplementationFileName(aPackage.getPackageName()),false, 'UTF-8')]
 [fileComment()/]
@@ -104,7 +106,34 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 [if allDataTypes->notEmpty()]
         [allDataTypes.generateInitialization(aPackage)/]
 [/if]
-	}	
+[if not aPackage.isEcorePackage()]
+
+[for (aAnnotationSource : String | annotationSources)]
+		this.initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations()
+[/for]
+[/if]
+	}
+
+[if not aPackage.isEcorePackage()]
+[for (aAnnotationSource : String | annotationSources)]
+	private initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations() : void {
+		let source = "[aAnnotationSource/]";
+		let factory = [getShortQualifiedName('ecore.getEcoreFactory', aPackage.name)/]();
+		[for (eAnnotation : EAnnotation | aPackage.eAllContents(EAnnotation)->select( a | a.source = aAnnotationSource))]
+		{
+			let eAnnotation = factory.createEAnnotationFromContainer([eAnnotation.eModelElement.getPackageGetter()/]);
+			eAnnotation.source = source;
+			[for (eEntry : EStringToStringMapEntry | eAnnotation.details)]
+			[let value : String = if eEntry.value.oclIsUndefined() then '' else eEntry.value endif]
+			eAnnotation.details.put("[eEntry.key/]","[value.replaceAll('\\\\','\\\\\\\\').replaceAll('"', '\\\\"').replaceAll('\\n','\\\\n').replaceAll('\\r','\\\\r')/]")
+			[/let]
+			[/for]
+		}
+		[/for]
+	}
+
+[/for]
+[/if]	
 }
 
 [/file]
