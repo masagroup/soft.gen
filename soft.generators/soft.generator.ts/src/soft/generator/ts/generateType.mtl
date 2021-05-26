@@ -20,19 +20,55 @@
 [query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
 [query private isShared(aReference : EReference) : Boolean = if (aReference.hasKey('aggregation')) then aReference.valueKey('aggregation')='shared' else false endif/]
 
+
 [template public generateType(aElement : ETypedElement) post (trim())]
 [if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
 void
 [else]
+	[let aDataType : EGenericType = aElement.eGenericType]
     [let aPackage : EPackage = aElement.getEPackage()]
-    [if aElement.isListType()]
-        [getShortQualifiedName('ecore.EList', aPackage.name )/]<[aElement.eGenericType.generateType(aPackage)/]>
+    [if aElement.isMapType()]
+		[getShortQualifiedName('ecore.EMap', aPackage.name )/]<[aDataType.generateMapKeyType(aPackage)/],[aDataType.generateMapValueType(aPackage)/]>
+	[elseif aElement.isListType()]
+        [getShortQualifiedName('ecore.EList', aPackage.name )/]<[aDataType.generateListItemType(aPackage)/]>
     [else]
-        [aElement.eGenericType.generateType(aPackage)/][if aElement.eGenericType.eClassifier.name <> 'EJavaClass' and aElement.eGenericType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aElement.eGenericType.eTypeArguments) separator (',')][getShortQualifiedName(g.eClassifier.getType(),aPackage.name)/][/for]>[/if]
+        [aDataType.generateType(aPackage)/][if aDataType.eClassifier.name <> 'EJavaClass' and aDataType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aDataType.eTypeArguments) separator (',')][getShortQualifiedName(g.eClassifier.getType(),aPackage.name)/][/for]>[/if]
     [/if]
     [/let]
+	[/let]
 [/if]
 [/template]
+
+[template public generateListItemType(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
+[anEDataType.generateType(aPackage)/]
+[/template]
+
+[template public generateMapKeyType(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
+[anEDataType.generateMapType(aPackage,1,'key')/]
+[/template]
+
+[template public generateMapValueType(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
+[anEDataType.generateMapType(aPackage,2,'value')/]
+[/template]
+
+[template private generateMapType(anEDataType : EGenericType, aPackage : EPackage, index : Integer, featureName : String) post(trim())]
+[if anEDataType.eTypeArguments->size() = 2]
+[let keyType : EGenericType = anEDataType.eTypeArguments->at(index)]
+[getShortQualifiedName(keyType.eClassifier.getType(),aPackage.name)/]
+[/let]
+[elseif anEDataType.eClassifier.oclIsKindOf(EClass) and anEDataType.eClassifier.oclAsType(EClass).isMapEntry()]
+[let mapEntryClass : EClass = anEDataType.eClassifier.oclAsType(EClass)]
+[let keyFeature : EStructuralFeature = mapEntryClass.getEStructuralFeature(featureName)]
+[let keyType : EGenericType = keyFeature.eGenericType]
+[getShortQualifiedName(keyType.eClassifier.getType(),aPackage.name)/]
+[/let]
+[/let]
+[/let]
+[else]
+any
+[/if]
+[/template]
+
 
 [template public generateType(anEDataType : EGenericType, aPackage : EPackage ) post (trim())]
 [if (anEDataType.oclIsUndefined() or anEDataType.eClassifier.oclIsUndefined())]
