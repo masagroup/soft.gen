@@ -32,11 +32,14 @@
 [fileComment()/]
 
 [let refTypes : Set(EClassifier) = if isDiamond then aClass.eSuperTypes.getReferencedTypes()->asSet() else aClass.getReferencedTypes()->asSet() endif]
+[let mapType : Set(String) = if ( aClass.requiresMap() ) then Set{ 'ecore.EMap' } else Set{} endif]
 [let listType : Set(String) = if ( aClass.requiresList() or isDiamond ) then Set{ 'ecore.EList' } else Set{} endif]
 [let allTypes : OrderedSet(String) = Set{ interfaceExtends
                                         , refTypes->collect( type | type.getType())->asSet()
-                                        , listType }->flatten()->select(s | s <> '' and s <> aClass.getQualifiedInterfaceName() )->asOrderedSet()->sortedBy(s | s)]
+                                        , listType
+                                        , mapType }->flatten()->select(s | s <> '' and s <> aClass.getQualifiedInterfaceName() )->asOrderedSet()->sortedBy(s | s)]
 [aPackage.generateImports(allTypes,interfaceName)/]
+[/let]
 [/let]
 [/let]
 [/let]

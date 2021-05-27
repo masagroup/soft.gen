@@ -167,8 +167,15 @@ eSetFromID(featureID : number, newValue : any) {
     switch (featureID) {
 [for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
     	case [aClass.getQualifiedIDName(anStructFeature)/]: {
-    [if anStructFeature.isListType()]
-			this.[anStructFeature.getPropertyName()/].clear()
+	[if anStructFeature.isMapType()]
+	[let aPackage : EPackage = aClass.ePackage]
+	[let aDataType : EGenericType = anStructFeature.eGenericType]
+			this.[anStructFeature.getPropertyName()/].clear();
+			this.[anStructFeature.getPropertyName()/].addAll( newValue as [if not aPackage.isEcorePackage()]ecore.[/if]EList<[if not aPackage.isEcorePackage()]ecore.[/if]EMapEntry<[aDataType.generateMapTypeParameters(aPackage)/]>>);
+	[/let]
+	[/let]
+    [elseif anStructFeature.isListType()]
+    		this.[anStructFeature.getPropertyName()/].clear()
 	        this.[anStructFeature.getPropertyName()/].addAll(newValue as [anStructFeature.generateType()/]);
     [else]
         	this.[anStructFeature.getPropertyName()/] = newValue as [anStructFeature.generateType()/];
@@ -287,7 +294,9 @@ eBasicInverseAdd(otherEnd : [if not aPackage.isEcorePackage()]ecore.[/if]EObject
     switch (featureID) {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
     	case [aClass.getQualifiedIDName(aFeature)/]: {
-    [if aFeature.isListType()]
+	[if aFeature.isMapType()]
+			return notifications;
+    [elseif aFeature.isListType()]
 		[let type : String = aFeature.eGenericType.generateType(aPackage)]
 	        let list = this.[aFeature.getPropertyName()/] as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>;
 			let end = otherEnd as [type/];
@@ -332,7 +341,9 @@ eBasicInverseRemove(otherEnd : [if not aPackage.isEcorePackage()]ecore.[/if]EObj
     switch (featureID) {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
     	case [aClass.getQualifiedIDName(aFeature)/]: {
-    [if aFeature.isListType()]
+	[if aFeature.isMapType()]
+			return notifications;
+    [elseif aFeature.isListType()]
 		[let type : String = aFeature.eGenericType.generateType(aPackage)]
 	        let list = this.[aFeature.getPropertyName()/] as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>;
 			let end = otherEnd as [type/];
