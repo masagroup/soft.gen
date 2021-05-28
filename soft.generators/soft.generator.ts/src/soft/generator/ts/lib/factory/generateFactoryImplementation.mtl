@@ -3,7 +3,7 @@
  * code generation of an ecore model
  *
  * Copyright(c) 2021 MASA Group
- *	
+ *  
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -19,8 +19,8 @@
 [import soft::generator::ts::lib::generateCommon/]
 
 [template public generateFactoryImplementation(aPackage : EPackage) { 
-	className : String = aPackage.getFactoryImplementationName();
-	classes : Sequence(EClass) = aPackage.eAllContents(EClass)->select( not interface and not abstract );  
+    className : String = aPackage.getFactoryImplementationName();
+    classes : Sequence(EClass) = aPackage.eAllContents(EClass)->select( not interface and not abstract );  
 }]
 [file (aPackage.getOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
@@ -39,78 +39,78 @@
 
 export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EFactoryExt implements [aPackage.getFactoryName()/] {
     
-	private static _instance : [className/] = null;
+    private static _instance : [className/] = null;
 
-	public static getInstance() : [className/] {
-		if (!this._instance) {
-			this._instance = new [className/]();
-		}
-		return this._instance;
-	}
+    public static getInstance() : [className/] {
+        if (!this._instance) {
+            this._instance = new [className/]();
+        }
+        return this._instance;
+    }
 
-	protected constructor() {
-		super();
-	} 
+    protected constructor() {
+        super();
+    } 
 
-	create(eClass: [getShortQualifiedName('ecore.EClass',aPackage.name)/]): [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
-		switch(eClass.classifierID){
+    create(eClass: [getShortQualifiedName('ecore.EClass',aPackage.name)/]): [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
+        switch(eClass.classifierID){
 [for (aClass : EClass | classes)]
-	    case [aClass.getQualifiedIDName()/]:
-        	return this.create[aClass.name/]();
+        case [aClass.getQualifiedIDName()/]:
+            return this.create[aClass.name/]();
 [/for]
-    	default:
-        	throw new Error("create: " + eClass.classifierID + " not found");
-		}
-	}
+        default:
+            throw new Error("create: " + eClass.classifierID + " not found");
+        }
+    }
 [for (aClass : EClass | classes)]
 
-	create[aClass.name/](): [aClass.getInterfaceName()/] {
-		return new [if aClass.hasExtension()][aClass.getExtensionName()/][else][aClass.getImplementationName()/][/if]();
-	}
-	[let ref : OrderedSet(EReference) = aClass.getAllContainers()]
-	[for(aReference:EReference | ref->sortedBy(name))]
+    create[aClass.name/](): [aClass.getInterfaceName()/] {
+        return new [if aClass.hasExtension()][aClass.getExtensionName()/][else][aClass.getImplementationName()/][/if]();
+    }
+    [let ref : OrderedSet(EReference) = aClass.getAllContainers()]
+    [for(aReference:EReference | ref->sortedBy(name))]
 
-	create[aClass.name/]FromContainer(eContainer:[aReference.eGenericType.eClassifier.name/]): [aClass.getInterfaceName()/] {
-	    [generateCreateFunctionContent(aClass, aReference, false)/]
-	}
-	[if(aClass.getElementIDAccessorName().size() > 0)]
+    create[aClass.name/]FromContainer(eContainer:[aReference.eGenericType.eClassifier.name/]): [aClass.getInterfaceName()/] {
+        [generateCreateFunctionContent(aClass, aReference, false)/]
+    }
+    [if(aClass.getElementIDAccessorName().size() > 0)]
 
-	create[aClass.name/]FromContainerAndClassID(eContainer:[aReference.eGenericType.eClassifier.name/],classID: number): [aClass.getInterfaceName()/] {
-    	[generateCreateFunctionContent(aClass, aReference, true)/]
-	}
-	[/if]
-	[/for]
-	[/let]
+    create[aClass.name/]FromContainerAndClassID(eContainer:[aReference.eGenericType.eClassifier.name/],classID: number): [aClass.getInterfaceName()/] {
+        [generateCreateFunctionContent(aClass, aReference, true)/]
+    }
+    [/if]
+    [/for]
+    [/let]
 [/for]
 [let dataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
 
-	createFromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType,literalValue: string): any {
-		switch (eDataType.classifierID) {
-	    [for (aDataType : EDataType | dataTypes)]
-	    	case [aDataType.getQualifiedIDName()/]:
-	        	return this.create[aDataType.name/]FromString(eDataType, literalValue);
-	    [/for]
-	    	default:
-	        	throw new Error("The datatype '" + eDataType.name + "' is not a valid classifier");
-		}
-	}
+    createFromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType,literalValue: string): any {
+        switch (eDataType.classifierID) {
+        [for (aDataType : EDataType | dataTypes)]
+            case [aDataType.getQualifiedIDName()/]:
+                return this.create[aDataType.name/]FromString(eDataType, literalValue);
+        [/for]
+            default:
+                throw new Error("The datatype '" + eDataType.name + "' is not a valid classifier");
+        }
+    }
 
-	convertToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string {
-    	switch (eDataType.classifierID) {
-		[for (aDataType : EDataType | dataTypes)]
-	    case [aDataType.getQualifiedIDName()/]:
-	        return this.convert[aDataType.name/]ToString(eDataType, instanceValue);
-		[/for]
-	    default:
-	        throw new Error("The datatype '" + eDataType.name + "' is not a valid classifier");
-	    }
-	}
-	[for (aDataType : EDataType | dataTypes)]
+    convertToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string {
+        switch (eDataType.classifierID) {
+        [for (aDataType : EDataType | dataTypes)]
+        case [aDataType.getQualifiedIDName()/]:
+            return this.convert[aDataType.name/]ToString(eDataType, instanceValue);
+        [/for]
+        default:
+            throw new Error("The datatype '" + eDataType.name + "' is not a valid classifier");
+        }
+    }
+    [for (aDataType : EDataType | dataTypes)]
 
-	[aPackage.generateCreateFromString(aDataType)/]
+    [aPackage.generateCreateFromString(aDataType)/]
 
-	[aPackage.generateConvertToString(aDataType)/]
-	[/for]
+    [aPackage.generateConvertToString(aDataType)/]
+    [/for]
 [/let]
 }
 
@@ -141,25 +141,25 @@ create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]e
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'number')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-	return Number(literalValue);
+    return Number(literalValue);
 }
 
 [/template]
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'byte')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-	if (literalValue.length == 0 ) {
-		return '\0';
-	} else {
-		return literalValue['['/]0[']'/];
-	}
+    if (literalValue.length == 0 ) {
+        return '\0';
+    } else {
+        return literalValue['['/]0[']'/];
+    }
 }
 
 [/template]
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'Uint8Array')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-	return new TextEncoder().encode(literalValue);
+    return new TextEncoder().encode(literalValue);
 }
 
 [/template]
@@ -167,43 +167,43 @@ create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]e
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType )]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-   	throw new Error("NotImplementedException");
+    throw new Error("NotImplementedException");
 }
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
 [let enumTypeName : String = aDataType.name ]
 convert[enumTypeName/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-	return [enumTypeName.toLowerFirst()/]ToString(instanceValue as [enumTypeName/]);
+    return [enumTypeName.toLowerFirst()/]ToString(instanceValue as [enumTypeName/]);
 }
 [/let]
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'string' )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-	return instanceValue as string;
+    return instanceValue as string;
 }
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )
-	? ( aDataType.getType() = 'number' or
-		aDataType.getType() = 'boolean' or
-		aDataType.getType() = 'byte'
-	  )]
+    ? ( aDataType.getType() = 'number' or
+        aDataType.getType() = 'boolean' or
+        aDataType.getType() = 'byte'
+      )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-	return instanceValue.toString();
+    return instanceValue.toString();
 }
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'Uint8Array' )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-	return new TextDecoder().decode(instanceValue as Uint8Array);
+    return new TextDecoder().decode(instanceValue as Uint8Array);
 }
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-	throw new Error("NotImplementedException");
+    throw new Error("NotImplementedException");
 }
 [/template]
 

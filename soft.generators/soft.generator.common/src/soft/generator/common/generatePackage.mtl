@@ -3,7 +3,7 @@
  * generation of an ecore model
  *
  * Copyright(c) 2021 MASA Group
- *	
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -15,34 +15,34 @@
 [import soft::generator::common::generateCommon/]
 
 [query private getAnnotionSourceIdentifierLastIndex(aAnnotationSource : String) : Integer = 
-	let index : Integer = aAnnotationSource.lastIndexOf('/') in
-	if ( index = aAnnotationSource.size() - 1 ) then
-		aAnnotationSource.first(index).lastIndexOf('/')
-	else
-		index
-	endif
+    let index : Integer = aAnnotationSource.lastIndexOf('/') in
+    if ( index = aAnnotationSource.size() - 1 ) then
+        aAnnotationSource.first(index).lastIndexOf('/')
+    else
+        index
+    endif
 /]
 
 [query public getAnnotationSourceIdentifier(aAnnotationSource : String) : String = 
-	let index : Integer = getAnnotionSourceIdentifierLastIndex(aAnnotationSource) in
-	if ( index = -1 ) then
-		aAnnotationSource
+    let index : Integer = getAnnotionSourceIdentifierLastIndex(aAnnotationSource) in
+    if ( index = -1 ) then
+        aAnnotationSource
     else
         aAnnotationSource.substring(index + 1 )
     endif
 /]
 
 [query private getSuppressedAnnotations(aPackage : EPackage ) : Sequence(String) =
-	if aPackage.hasKey('supressAnnotations') then
-		let supressAnnotations : String = aPackage.valueKey('supressAnnotations') in
-		supressAnnotations.tokenize(' ')
-	else
-		Sequence{}
-	endif
+    if aPackage.hasKey('supressAnnotations') then
+        let supressAnnotations : String = aPackage.valueKey('supressAnnotations') in
+        supressAnnotations.tokenize(' ')
+    else
+        Sequence{}
+    endif
 /]
 
 [query public getAnnotationSources(aPackage : EPackage) : OrderedSet(String) =
-	let allAnnotationsSources : Set(String) = aPackage.eAllContents(EAnnotation)->collect( a | a.source )->asSet() in
-	let supressedAnnotationsSources : Set(String) = aPackage.getSuppressedAnnotations()->asSet() in
-	(allAnnotationsSources - supressedAnnotationsSources)->asOrderedSet()->sortedBy(s | s) 
+    let allAnnotationsSources : Set(String) = aPackage.eAllContents(EAnnotation)->collect( a | a.source )->asSet() in
+    let supressedAnnotationsSources : Set(String) = aPackage.getSuppressedAnnotations()->asSet() in
+    (allAnnotationsSources - supressedAnnotationsSources)->asOrderedSet()->sortedBy(s | s) 
 /]

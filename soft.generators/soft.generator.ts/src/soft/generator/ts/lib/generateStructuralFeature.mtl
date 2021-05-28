@@ -3,7 +3,7 @@
  * code generation of an ecore model
  *
  * Copyright(c) 2021 MASA Group
- *	
+ *  
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -58,7 +58,7 @@ this.[aAttribute.getVariableName()/] = [defaultValue/];
 [template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'function' )]
 protected [aStructuralFeature.getInitializationMethodName()/]() : [aStructuralFeature.generateType()/] {
 [if isMapType()]
-	return [getMapConstructor(aClass)/];
+    return [getMapConstructor(aClass)/];
 [elseif isListType()]
     return [getListConstructor(aClass)/];
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
@@ -183,20 +183,20 @@ get [aStructuralFeature.getPropertyName()/]() : [aStructuralFeature.generateType
             [/if]
         [/if]
         [/let]
-	[elseif aStructuralFeature.isMapType()]
-	if (this.[varName/] == null) {
-		this.[varName/] = [aStructuralFeature.getMapConstructor(aClass)/];
-	}
-	[elseif aStructuralFeature.isListType()]
-	if (this.[varName/] == null) {
-		this.[varName/] = [aStructuralFeature.getListConstructor(aClass)/];
-	}
-	[/if]
+    [elseif aStructuralFeature.isMapType()]
+    if (this.[varName/] == null) {
+        this.[varName/] = [aStructuralFeature.getMapConstructor(aClass)/];
+    }
+    [elseif aStructuralFeature.isListType()]
+    if (this.[varName/] == null) {
+        this.[varName/] = [aStructuralFeature.getListConstructor(aClass)/];
+    }
+    [/if]
     return this.[varName/];
 [elseif hasKey('getterBody')]
     [valueKey('getterBody')/]
 [else]
-	throw new Error("get [aStructuralFeature.getPropertyName()/] not implemented");
+    throw new Error("get [aStructuralFeature.getPropertyName()/] not implemented");
 [/if]
 [/let]
 [/let]
@@ -265,7 +265,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
         this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getQualifiedIDName(aStructuralFeature)/], [newVarName/], [newVarName/]));
     }
     [elseif isBidirectional() or isContains()]
-	let [oldVarName/] = this.[varName/];
+    let [oldVarName/] = this.[varName/];
     if ( [newVarName/] != [oldVarName/] ) {
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null;
         if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([oldVarName/])) {
@@ -408,19 +408,19 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
 [aStructuralFeature.getUnSetterName()/]() : void {
 [if not isVolatile()]
     [if isListType()]
-		[let lazy : String = aStructuralFeature.getLazy()]
-	    [if lazy = 'function']
-	        [if aStructuralFeature.oclIsKindOf(EAttribute)]
-	if ( this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/] ) {
-		[else]
-	if ( this.[varName/] != null ) {
-		[/if]
-		this.[varName/].clear();
-	}
-		[else]
+        [let lazy : String = aStructuralFeature.getLazy()]
+        [if lazy = 'function']
+            [if aStructuralFeature.oclIsKindOf(EAttribute)]
+    if ( this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/] ) {
+        [else]
+    if ( this.[varName/] != null ) {
+        [/if]
         this.[varName/].clear();
-		[/if]
-	    [/let]
+    }
+        [else]
+        this.[varName/].clear();
+        [/if]
+        [/let]
     [elseif isBidirectional() or isContains()]
     if (this.[varName/] != null) {
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null;
@@ -461,8 +461,8 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
 basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( msgs : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain )  : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
 [if not isVolatile()]
     let [oldVarName/] = this.[varName/];
-	let notifications = msgs;    
-	this.[varName/] = null;
+    let notifications = msgs;    
+    this.[varName/] = null;
     if (this.eNotificationRequired()) {
         let notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], null);
         if ( notifications != null ) {

@@ -3,7 +3,7 @@
  * code generation of an ecore model
  *
  * Copyright(c) 2021 MASA Group
- *	
+ *  
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -25,14 +25,14 @@
 [import soft::generator::ts::lib::generateStructuralFeature/]
 
 [template public generateImplementation(aClass : EClass) { 
-	className : String = aClass.getImplementationName();
-	classExtend : String = aClass.getClassExtends(); 
-	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
-	variableFeatures : Collection(EStructuralFeature) = features->select(isField());
-	initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
-	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName());
-	aPackage : EPackage = aClass.ePackage; 
-	classImplements : Sequence(String) = aClass.getClassImplements();
+    className : String = aClass.getImplementationName();
+    classExtend : String = aClass.getClassExtends(); 
+    features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
+    variableFeatures : Collection(EStructuralFeature) = features->select(isField());
+    initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
+    operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName());
+    aPackage : EPackage = aClass.ePackage; 
+    classImplements : Sequence(String) = aClass.getClassImplements();
 }]
 [file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
@@ -52,25 +52,25 @@
 export class [className/] extends [getShortQualifiedName(classExtend, aPackage.name)/] [for ( interface : String | classImplements) before(' implements ') separator (',')][getShortQualifiedName(interface,aPackage.name)/][/for]
 {
 [let dataDeclarationFeatures : Set(EStructuralFeature) = features->select( isField() )]
-	[dataDeclarationFeatures.generateVariableDeclaration()/]
+    [dataDeclarationFeatures.generateVariableDeclaration()/]
 [/let]
 
-	constructor() {
-		super();
-		[variableFeatures.generateVariableInitialization(aClass)/]
-	}
+    constructor() {
+        super();
+        [variableFeatures.generateVariableInitialization(aClass)/]
+    }
 
     eStaticClass() : [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
         return get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]()
     }
 
-	[features.generateImplementation(aClass)/]
+    [features.generateImplementation(aClass)/]
 
-	[operations.generateImplementation(aClass)/]
+    [operations.generateImplementation(aClass)/]
 
-	[initializerFeatures.generateVariableInitializationMethodDefinition(aClass)/]
+    [initializerFeatures.generateVariableInitializationMethodDefinition(aClass)/]
 
-	[aClass.generateReflectivesDefinition()/]
+    [aClass.generateReflectivesDefinition()/]
 }
 
 [/file]
