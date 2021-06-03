@@ -18,7 +18,10 @@
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::factory::generateCommon/]
 
-[template public generateFactoryImplementation(anEPackage : EPackage) { className : String = anEPackage.getFactoryImplementationName() ; }]
+[template public generateFactoryImplementation(anEPackage : EPackage) { 
+	className : String = anEPackage.getFactoryImplementationName(); 
+	dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)
+}]
 [file (anEPackage.getOutputDirectory() + '/' + anEPackage.getImplementationFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
@@ -28,16 +31,17 @@ import "strconv"
 [if not anEPackage.isEcorePackage()]
 import "[getImportForPackage('ecore')/]"
 [/if]
+[if dataTypes->exists( getType() = '*time.Time')]
+import "time"
+[/if]
 
 type [anEPackage.getFactoryInternalName()/] interface {
-[let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
 [for (aDataType : EDataType | dataTypes)]
     create[aDataType.name/]FromString(eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{}
 [/for]
 [for (aDataType : EDataType | dataTypes)]
     convert[aDataType.name/]ToString(eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue interface{}) string
 [/for]
-[/let]
 }
 
 type [className/] struct {
@@ -80,7 +84,6 @@ func new[className.toUpperFirst()/]() *[className/] {
 [/for]
 [/let]
 [/for]
-[let dataTypes : Sequence(EDataType) = anEPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
 [anEPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [if not anEPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
 	classID  := eDataType.GetClassifierID()
 [if dataTypes->notEmpty()]
@@ -114,7 +117,6 @@ func new[className.toUpperFirst()/]() *[className/] {
 [anEPackage.generateCreateFromString(aDataType)/]
 [anEPackage.generateConvertToString(aDataType)/]
 [/for]
-[/let]
 [/file]
 [/template]
 
@@ -219,6 +221,17 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '*time.Time')]
+const (
+	dateFormat string = "2006-01-02T15:04:05.999Z"
+)
+
+[aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
+   	t, _ := time.Parse(dateFormat, literalValue)
+	return &t
+}
+
+[/template]
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType )]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) interface{} {
@@ -325,6 +338,14 @@ func new[className.toUpperFirst()/]() *[className/] {
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue interface{}) string {
    	v, _ := instanceValue.(float32)
 	return strconv.FormatFloat(float64(v), 'f', -1, 32)
+}
+
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '*time.Time')]
+[aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue interface{}) string { 
+	t , _ := instanceValue.(*time.Time)
+	return t.Format(dateFormat)
 }
 
 [/template]
