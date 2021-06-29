@@ -18,9 +18,6 @@
 [import soft::generator::ts::generateType /]
 [import soft::generator::ts::lib::generateCommon /]
 
-[query public isInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
-
-[query public requiresNotification( aStructuralFeature : EStructuralFeature ) : Boolean = isSet() or isUnSet()/]
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature)]
 [if isGet() or isSet()]

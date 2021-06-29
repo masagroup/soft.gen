@@ -1,0 +1,55 @@
+[**
+ * This file is part of soft.generator.ts, a project for typescript 
+ * code generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
+[comment encoding = UTF-8 /]
+[module generateImplementationTests('http://www.eclipse.org/emf/2002/Ecore')/]
+
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
+[import soft::generator::common::generateStructuralFeature/]
+[import soft::generator::ts::generateCommon /]
+[import soft::generator::ts::generateElement /]
+[import soft::generator::ts::generateType /]
+[import soft::generator::ts::lib::generateCommon /]
+[import soft::generator::ts::lib::generateReflectives /]
+
+[template public generateImplementationTests(aClass : EClass) { 
+	aPackage : EPackage = aClass.ePackage;
+	className : String = aClass.getImplementationName();
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
+}]
+[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationTestFileName( aClass.name ), false, 'UTF-8')]
+[fileComment()/]
+
+import { mock, instance, when, anything } from "ts-mockito";
+[let allTypes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
+                                        , if aClass.requiresMap() then Set{ 'ecore.EMap', 'ecore.BasicEObjectMap', 'ecore.EMapEntry' } else Set{} endif
+                                        , if aClass.requiresList() then Set{ 'ecore.EList', 'ecore.BasicEList', 'ecore.BasicEObjectList', aPackage.getQualifiedConstantsName() } else Set{} endif
+                                        , if aClass.hasReflectives() then Set{'ecore.EObject','ecore.EObjectInternal','ecore.EList','ecore.ENotifyingList','ecore.ENotificationChain','ecore.isEObjectList'} else Set{} endif
+                                        , if features->exists(requiresNotification()) then Set{'ecore.ENotification','ecore.ENotificationChain','ecore.EventType','ecore.Notification','ecore.EOPPOSITE_FEATURE_BASE', aPackage.getQualifiedConstantsName() } else Set{} endif
+                                        , if features->exists(isContainer()) then Set{aPackage.getQualifiedConstantsName()} else Set{} endif
+                                        , Set {aClass.getQualifiedImplementationName(), aPackage.name + '.' + 'get'+ aPackage.getInterfaceName()}
+                                        }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
+[aPackage.generateImports(allTypes,aClass.getImplementationTestFileName( aClass.name ))/]
+[/let]
+
+describe("[className/]", () => {
+	
+	test("eStaticClass", () => {
+        let cls = new([className/])
+		expect(cls.eStaticClass()).toBe(get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]());
+    });
+
+})
+
+[/file]
+[/template]

@@ -125,6 +125,7 @@ endif endif endif
 [** FileNames **/]
 [query public getInterfaceFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceFileName', '$1.ts')/]
 [query public getImplementationFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationFileName', '$1Impl.ts')/]
+[query public getImplementationTestFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationTestsFileName', '$1Impl.test.ts')/]
 [query public getExtensionFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'extensionFileName', '$1Ext.ts')/]
 [query public getConstantsFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'constantsFileName', '$1.ts')/]
 [query public getInternalFileName( aPackage : EPackage ) : String = aPackage.getElementName( aPackage.getPackageName(), 'internalFileName', 'internal.ts')/]

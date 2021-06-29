@@ -5,7 +5,11 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Soft Generator TypeScript
 Bundle-SymbolicName: soft.generator.ts
 Bundle-Version: 1.0.3
-Export-Package: soft.generator.ts
+Export-Package: soft.generator.ts,
+ soft.generator.ts.lib,
+ soft.generator.ts.lib.factory,
+ soft.generator.ts.lib.pack,
+ soft.generator.ts.tests
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: soft.generator.ts
 
