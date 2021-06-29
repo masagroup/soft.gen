@@ -30,7 +30,7 @@
 [file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationTestFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-import { mock, instance, when, anything } from "ts-mockito";
+import { mock, instance, verify, when, anything } from "ts-mockito";
 [let allTypes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
                                         , if aClass.requiresMap() then Set{ 'ecore.EMap', 'ecore.BasicEObjectMap', 'ecore.EMapEntry' } else Set{} endif
                                         , if aClass.requiresList() then Set{ 'ecore.EList', 'ecore.BasicEList', 'ecore.BasicEObjectList', aPackage.getQualifiedConstantsName() } else Set{} endif
@@ -59,7 +59,38 @@ describe("[className/]", () => {
 
 
 [template private generateTestFeature(aStructuralFeature : EStructuralFeature, aClass : EClass )]
+[if isGet()]
 
+[aStructuralFeature.generateGetTestImplementation(aClass)/]
+[/if]
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isVolatile())]
+test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
+	let cls = new([aClass.getImplementationName()/])
+	expect(() => cls.[aStructuralFeature.getPropertyName()/]).toThrow(Error);
+})
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isContainer())]
+test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
+	// default
+	let cls = new([aClass.getImplementationName()/]);
+	expect(cls.[aStructuralFeature.getPropertyName()/]).toBeNull();
+
+	// set a mock container
+	let mockContainer = mock<EObject>();
+	let container = instance(mockContainer)
+	cls.eSetInternalContainer(container,[aClass.getQualifiedIDName(aStructuralFeature)/]);
+	
+	// no proxy
+	when(mockContainer.eIsProxy()).thenReturn(false);
+	expect(cls.[aStructuralFeature.getPropertyName()/]).toBe(container);
+	verify(mockContainer.eIsProxy()).once();
+})
+[/template]
+
+[template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
 [/template]
 
 [template private generateTestOperation(anEOperation : EOperation, aClass : EClass )]
