@@ -49,7 +49,23 @@ describe("[className/]", () => {
 		expect(cls.eStaticClass()).toBe(get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]());
     });
 
+	[aClass.getImplementedFeatures()->sortedBy( getVariableName() ).generateTestFeature(aClass)/]
+	[aClass.getImplementedOperations()->sortedBy( getOperationName() )->select(isDefault()).generateTestOperation(aClass)/]
+
 })
 
 [/file]
+[/template]
+
+
+[template private generateTestFeature(aStructuralFeature : EStructuralFeature, aClass : EClass )]
+
+[/template]
+
+[template private generateTestOperation(anEOperation : EOperation, aClass : EClass )]
+test("[anEOperation.getOperationName()/]", () => {
+	let cls = new([aClass.getImplementationName()/])
+	expect(() => cls.[anEOperation.getOperationName()/]([for (eClassifier : EClassifier | anEOperation.eParameters.eType) separator(',')][eClassifier.getDefaultValue(aClass)/][/for])).toThrow(Error);
+})
+
 [/template]
