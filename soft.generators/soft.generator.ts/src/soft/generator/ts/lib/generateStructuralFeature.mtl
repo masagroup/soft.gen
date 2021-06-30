@@ -44,6 +44,11 @@ protected [aStructuralFeature.getVariableName()/] : [aStructuralFeature.generate
 [template public generateVariableInitialization(aStructuralFeature : EStructuralFeature, aClass : EClass )]
 [/template]
 
+[template public generateVariableInitialization(aReference : EReference, aClass : EClass )]
+this.[aReference.getVariableName()/] = null;
+
+[/template]
+
 [template public generateVariableInitialization(aAttribute : EAttribute, aClass : EClass ) ]
 [let defaultValue : String = aAttribute.getDefaultValue(aClass)]
 [if defaultValue <> '']
@@ -93,6 +98,10 @@ protected [aStructuralFeature.getInitializationMethodName()/]() : void {
 [if isSet()]
 
 [aStructuralFeature.generateSetImplementation(aClass)/]
+[/if]
+[if isGet() and not isSet() and not isVolatile() and not isContainer() and not isListType()]
+
+[aStructuralFeature.generateInternalSetImplementation(aClass)/]
 [/if]
 [if isBasicGet()]
 
@@ -343,6 +352,18 @@ basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]( [newVarName/] : 
 [/let]
 [/template]
 
+[template private generateInternalSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
+[let varName : String = aStructuralFeature.getVariableName() ]
+[let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst() ]
+/** @internal */
+set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType()/] ) {
+	this.[varName/] = [newVarName/];
+}
+[/let]
+[/let]
+[/let]
+[/template]
 
 [template private getMapConstructor( aStructuralFeature : EStructuralFeature, aClass : EClass) post(trim())]
 [let aPackage : EPackage = aClass.ePackage]
