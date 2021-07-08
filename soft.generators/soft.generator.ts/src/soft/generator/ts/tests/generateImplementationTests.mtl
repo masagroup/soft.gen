@@ -79,6 +79,10 @@ describe("[className/]", () => {
 
 [aStructuralFeature.generateSetTestImplementation(aClass)/]
 [/if]
+[if isBasicSet()]
+
+[aStructuralFeature.generateBasicSetTestImplementation(aClass)/]
+[/if]
 [/template]
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isVolatile())]
@@ -331,6 +335,48 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	verify(mockAdapter.notifyChanged(anything())).once();
 	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
 	expect(notification.notifier).toBe(o)
+[let defaultValue : String = aStructuralFeature.getDefaultValue(aClass)]
+[if defaultValue = 'null']
+	expect(notification.oldValue).toBeNull();
+[else]
+	expect(notification.oldValue).toBe([defaultValue/]);
+[/if]
+[/let]
+	expect(notification.newValue).toBe(value);
+	expect(notification.position).toBe(-1);
+})
+[/let]
+[/let]
+[/template]
+
+
+[template private generateBasicSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
+[let aPackage : EPackage = aClass.ePackage ]
+test("basicSet[aStructuralFeature.name.toUpperFirst()/]", () => {
+	let o = new [aClass.getImplementationName()/]();
+	[aStructuralFeature.eType.generateTestValue(aPackage)/]
+
+	// add listener
+	let mockAdapter = mock<[ecorePrefix/]EAdapter>();
+	let adapter = instance(mockAdapter);
+	o.eAdapters.add(adapter);
+
+	// notification chain
+	let mockNotifications = mock<[ecorePrefix/]ENotificationChain>();
+	let notifications = instance(mockNotifications);
+
+	// set value
+[if isContainer()]
+	when(mockValue.eResource()).thenReturn(null)
+[/if]
+	when(mockNotifications.add(anything())).thenReturn(true)
+	o.basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/](value,notifications);
+	verify(mockNotifications.add(anything())).once();
+	const ['['/]notification[']'/] = capture(mockNotifications.add).last();
+	expect(notification.notifier).toBe(o)
+	expect(notification.eventType).toBe([ecorePrefix/]EventType.SET);
+	expect(notification.featureID).toBe([aClass.getQualifiedIDName(aStructuralFeature)/]);
 [let defaultValue : String = aStructuralFeature.getDefaultValue(aClass)]
 [if defaultValue = 'null']
 	expect(notification.oldValue).toBeNull();
