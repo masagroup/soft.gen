@@ -273,6 +273,47 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 [/let]
 [/template]
 
+[template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ?(isBidirectional())]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
+[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+[let reverseClass : EClass = reverseFeature.eContainingClass]
+test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
+	let o = new [aClass.getImplementationName()/]();
+	
+	// add listener
+	let mockAdapter = mock<[ecorePrefix/]EAdapter>();
+	let adapter = instance(mockAdapter);
+	o.eAdapters.add(adapter);
+	
+	// first value
+	[aStructuralFeature.eType.generateTestValue(aClass.ePackage)/]
+	when(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
+	o.[aStructuralFeature.getPropertyName()/] = value;
+	verify(mockAdapter.notifyChanged(anything())).once(); 
+	let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
+	expect(notification.notifier).toBe(o)
+	expect(notification.oldValue).toBeNull();
+	expect(notification.newValue).toBe(value);
+	
+	// set with other value
+	[aStructuralFeature.eType.generateTestOtherValue(aClass.ePackage)/]
+	reset(mockAdapter);
+	reset(mockValue);
+	when(mockValue.eInverseRemove(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
+	when(mockOther.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
+	o.[aStructuralFeature.getPropertyName()/] = other;
+	verify(mockAdapter.notifyChanged(anything())).once();
+	['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
+	expect(notification.notifier).toBe(o)
+	expect(notification.oldValue).toBe(value);
+	expect(notification.newValue).toBe(other);
+	expect(notification.position).toBe(-1);
+})
+[/let]
+[/let]
+[/let]
+[/template]
+
 [template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
 [let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 [let aPackage : EPackage = aClass.ePackage ]
