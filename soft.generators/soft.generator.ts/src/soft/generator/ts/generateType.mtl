@@ -220,6 +220,31 @@ void
 	endif endif
 /]
 
+[query public  getTestValue( aEnum : EEnum ,aPackage : EPackage ) : String =
+	if aEnum.eLiterals->size() >= 1 then
+		let aLiteral : EEnumLiteral = aEnum.eLiterals->at(if aEnum.eLiterals->size() > 1 then 2 else 1 endif) in
+		getShortQualifiedName(aEnum.ePackage.name + '.' + aEnum.name.toUpperFirst() + '.' + aLiteral.name.toUpperFirst(), aPackage.name)  
+	else 0 endif/]
+
+[query public getTestValue( aDataType : EDataType ,aPackage : EPackage) : String = 
+	if hasKey(aDataType, 'testValue') then
+		aDataType.valueKey('testValue')
+	else
+		let typeName : String = aDataType.getInstanceTypeName() in
+	    getAllDataTypes()->iterate( s ; res : String = '' |
+	    if res = '' then
+	        if s->exists(n : String | n = typeName) then
+				getShortQualifiedName(s->at( s->size() ) , aPackage.name)
+	        else
+				res
+	        endif
+	    else 
+	        res 
+	    endif
+	 	) 
+	endif
+/]
+
 [query private getAllImportModules(aPackage : EPackage) : OclAny =
     let namespacesToPackages : OclAny = 
     if (aPackage.hasGenAnnotation()) then
