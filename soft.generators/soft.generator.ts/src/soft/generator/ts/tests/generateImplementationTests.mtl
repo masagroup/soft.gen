@@ -83,6 +83,10 @@ describe("[className/]", () => {
 
 [aStructuralFeature.generateBasicSetTestImplementation(aClass)/]
 [/if]
+[if isUnSet()]
+
+[aStructuralFeature.generateUnSetTestImplementation(aClass)/]
+[/if]
 [/template]
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isVolatile())]
@@ -332,6 +336,8 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 
 	// set value
 	o.[aStructuralFeature.getPropertyName()/] = value;
+
+	// checks
 	verify(mockAdapter.notifyChanged(anything())).once();
 	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
 	expect(notification.notifier).toBe(o)
@@ -372,6 +378,8 @@ test("basicSet[aStructuralFeature.name.toUpperFirst()/]", () => {
 [/if]
 	when(mockNotifications.add(anything())).thenReturn(true)
 	o.basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/](value,notifications);
+
+	// checks
 	verify(mockNotifications.add(anything())).once();
 	const ['['/]notification[']'/] = capture(mockNotifications.add).last();
 	expect(notification.notifier).toBe(o)
@@ -390,6 +398,52 @@ test("basicSet[aStructuralFeature.name.toUpperFirst()/]", () => {
 [/let]
 [/let]
 [/template]
+
+[template private generateUnSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ?(isVolatile())]
+test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
+	let o = new [aClass.getImplementationName()/]();
+	expect(() => o.[aStructuralFeature.getUnSetterName()/]()).toThrow(Error);
+})
+[/template]
+
+[template private generateUnSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ?(isListType())]
+test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
+	let o = new [aClass.getImplementationName()/]();
+	o.[aStructuralFeature.getUnSetterName()/]();
+	expect(o.[aStructuralFeature.getPropertyName()/].isEmpty()).toBeTruthy();
+})
+[/template]
+
+[template private generateUnSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
+test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
+	let o = new [aClass.getImplementationName()/]();
+	
+	// add listener
+	let mockAdapter = mock<[ecorePrefix/]EAdapter>();
+	let adapter = instance(mockAdapter);
+	o.eAdapters.add(adapter);
+
+	// unset
+	o.[aStructuralFeature.getUnSetterName()/]();
+
+	// checks
+	verify(mockAdapter.notifyChanged(anything())).once();
+	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
+	expect(notification.notifier).toBe(o)
+	expect(notification.eventType).toBe([ecorePrefix/]EventType.UNSET);
+	expect(notification.featureID).toBe([aClass.getQualifiedIDName(aStructuralFeature)/]);	
+[let defaultValue : String = aStructuralFeature.getDefaultValue(aClass)]
+[if defaultValue = 'null']
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull();
+[else]
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe([defaultValue/]);
+[/if]
+[/let]
+})
+[/let]
+[/template]
+
 
 [template private generateTestValue(aClass : EClass, aPackage : EPackage )]
 let mockValue = mock<[getShortQualifiedName(aClass.getQualifiedInterfaceName() + 'Internal', aPackage.name)/]>();
