@@ -92,7 +92,7 @@ void
         Sequence{ 'java.lang.Integer', 'int', 'number' , '0', '45'},
 		Sequence{ 'java.lang.Byte','java.lang.Character', 'char', 'byte' ,'\'\'', '\'a\''},
 		Sequence{ 'byte[]','Uint8Array' , 'nil', 'nil'},
-		Sequence{ 'java.util.Date', 'Date', 'null', 'Date.now()'},
+		Sequence{ 'java.util.Date', 'Date', 'null', 'new Date()'},
 		Sequence{ 'java.lang.Double', 'java.math.BigDecimal', 'double', 'number' , '0.0' , '3.5'},
 		Sequence{ 'java.lang.Float' , 'float' , 'number' , '0.0', '1.2'},
 		Sequence{ 'java.lang.Class' , 'any', 'null', ''},
@@ -234,7 +234,7 @@ void
 [query public  getTestValue( aEnum : EEnum ,aPackage : EPackage ) : String =
 	if aEnum.eLiterals->size() >= 1 then
 		let aLiteral : EEnumLiteral = aEnum.eLiterals->at(if aEnum.eLiterals->size() > 1 then 2 else 1 endif) in
-		getShortQualifiedName(aEnum.ePackage.name + '.' + aEnum.name.toUpperFirst() + '.' + aLiteral.name.toUpperFirst(), aPackage.name)  
+		getShortQualifiedName(aEnum.ePackage.name + '.' + aEnum.name.toUpperFirst() + '.' + aLiteral.name.toUpperCase(), aPackage.name)  
 	else 0 endif/]
 
 [query public getTestValue( aDataType : EDataType ,aPackage : EPackage) : String = 
