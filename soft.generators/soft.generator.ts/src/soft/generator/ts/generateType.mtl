@@ -156,8 +156,18 @@ void
 [query private getType( aEnum : EEnum ) : String = aEnum.ePackage.name + '.' + aEnum.name/]
 [query private getType( aDataType : EDataType ) : String = aDataType.getInstanceTypeName()/]
 
+[query public getDefaultValue(anFeature : EStructuralFeature, aContext : EClass) : String = anFeature.getDefaultValue(aContext.ePackage)/]
+
+[query public getDefaultValue(anFeature : EStructuralFeature, aContext : EPackage) : String =
+	if  anFeature.oclIsKindOf(EAttribute) then anFeature.oclAsType(EAttribute).getDefaultValue(aContext)
+	else if  anFeature.oclIsKindOf(EReference) then anFeature.oclAsType(EReference).getDefaultValue(aContext)
+	else ''
+	endif endif
+/]
 
 [query public getDefaultValue(anEAttribute : EAttribute, aContext : EClass) : String = anEAttribute.getDefaultValue(aContext.ePackage)/]
+
+[query public getDefaultValue(anEReference : EReference, aContext : EClass) : String = anEReference.getDefaultValue(aContext.ePackage)/]
 
 [query public getDefaultValue(anEAttribute : EAttribute, aContext : EPackage) : String = 
 	if anEAttribute.many then '' 
@@ -165,6 +175,7 @@ void
 	endif endif
 /]
 
+[query public getDefaultValue(anEReference : EReference, aContext : EPackage) : String = 'null'/]
 
 [query private getDefaultValueFromLiteral(aClassifier : EClassifier, aContext : EPackage, literal : String ) : String =
 	 if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValueFromLiteral(aContext,literal)
