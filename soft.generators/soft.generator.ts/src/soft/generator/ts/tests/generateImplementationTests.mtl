@@ -31,7 +31,7 @@
 [fileComment()/]
 
 [comment imports/]
-import { mock, instance, verify, when, anything } from "ts-mockito";
+import { anything , capture, instance, mock, verify, when } from "ts-mockito";
 [let allTypes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
                                         , if aClass.requiresMap() then Set{ 'ecore.EMap', 'ecore.BasicEObjectMap', 'ecore.EMapEntry' } else Set{} endif
                                         , if aClass.requiresList() then Set{ 'ecore.EList', 'ecore.BasicEList', 'ecore.BasicEObjectList', aPackage.getQualifiedConstantsName() } else Set{} endif
@@ -74,6 +74,10 @@ describe("[className/]", () => {
 [if isGet()]
 
 [aStructuralFeature.generateGetTestImplementation(aClass)/]
+[/if]
+[if isSet()]
+
+[aStructuralFeature.generateSetTestImplementation(aClass)/]
 [/if]
 [/template]
 
@@ -203,6 +207,51 @@ test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
 [/template]
+
+[template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
+[let aPackage : EPackage = aClass.ePackage ]
+test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
+	let cls = new [aClass.getImplementationName()/]();
+	[aStructuralFeature.eType.generateTestValue(aPackage)/]	
+	let mockAdapter = mock<[ecorePrefix/]EAdapter>();
+	let adapter = instance(mockAdapter);
+	cls.eAdapters.add(adapter);
+	cls.[aStructuralFeature.getPropertyName()/] = v;
+	verify(mockAdapter.notifyChanged(anything())).once()
+	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
+	expect(notification.notifier).toBe(cls)
+[let aDefaultValue : String = aStructuralFeature.eType.getDefaultValue(aClass)]
+[if aDefaultValue = '']
+	expect(notification.oldValue).toBeNull()
+[else]
+	expect(notification.oldValue).toBe([defaultValue/])
+[/if]
+[/let]
+	expect(notification.newValue).toBe(v)
+	expect(notification.position).toBe(-1)
+})
+[/let]
+[/let]
+[/template]
+
+[template private generateTestValue(aClass : EClass, aPackage : EPackage )]
+let mockValue = mock<[getShortQualifiedName(aClass.getQualifiedInterfaceName() + 'Internal', aPackage.name)/]>()
+let v = instance(mockValue)	
+[/template]
+
+[template private generateTestValue(aDataType : EDataType, aPackage : EPackage )]
+let v = [aDataType.getTestValue(aPackage)/]	
+[/template]
+
+[template private generateTestValue(aEEnum : EEnum, aPackage : EPackage )]
+let v = [aEEnum.getTestValue(aPackage)/]	
+[/template]
+
+[template private generateTestValue(aClassifier : EClassifier, aPackage : EPackage )]
+let v = nil	
+[/template]
+
 
 [template private generateTestOperation(anEOperation : EOperation, aClass : EClass )]
 test("[anEOperation.getOperationName()/]", () => {
