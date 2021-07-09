@@ -63,7 +63,7 @@ describe("[className/]", () => {
 
 	[aClass.getImplementedFeatures()->sortedBy( getVariableName() ).generateTestFeature(aClass)/]
 	[aClass.getImplementedOperations()->sortedBy( getOperationName() )->select(isDefault()).generateTestOperation(aClass)/]
-
+	[aClass.generateElementIDTestImplementation()/]
 })
 
 [/file]
@@ -479,3 +479,52 @@ test("[anEOperation.getOperationName()/]", () => {
 })
 
 [/template]
+
+[template private generateElementIDTestImplementation(aClass : EClass)]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
+[let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
+[if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())]
+test("eDerivedFeatureID", () => {
+	let o = new [aClass.getImplementationName()/]();
+	{
+		let mockClass = mock<[ecorePrefix/]EClass>();
+		let cls = instance(mockClass);
+		expect(o.eDerivedFeatureID(cls,1)).toBe(1);
+	}
+[for (aMixinClass : EClass | mixinClasses)]
+	{
+		let cls = get[aClass.ePackage.getInterfaceName()/]().get[aMixinClass.getElementAccessorName()/]();
+		expect(o.eDerivedFeatureID(cls,-1)).toBe(-1);
+	[for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
+		expect(o.eDerivedFeatureID(cls,[aMixinClass.getQualifiedIDName(aFeature)/])).toBe([aClass.getQualifiedIDName(aFeature)/]);
+	[/for]
+	}
+[/for]
+})
+[/if]
+
+[if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
+test("eDerivedOperationID", () => {
+	o := new [aClass.getImplementationName()/]();
+	{
+		let mockClass = mock<[ecorePrefix/]EClass>();
+		let cls = instance(mockClass);
+		expect(o.eDerivedOperationID(cls,1)).toBe(1);
+	}
+[for (aMixinClass : EClass | mixinClasses)]
+	{
+		let cls = get[aClass.ePackage.getInterfaceName()/]().get[aMixinClass.getElementAccessorName()/]();
+		expect(o.eDerivedOperationID(cls,-1)).toBe(-1);
+	[for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
+		expect(o.eDerivedOperationID(cls,[aMixinClass.getQualifiedIDName(aOperation)/])).toBe([aClass.getQualifiedIDName(aOperation)/]);
+	[/for]
+	}
+[/for]
+})
+[/if]
+[/let]
+[/let]
+[/template]
+
+
+
