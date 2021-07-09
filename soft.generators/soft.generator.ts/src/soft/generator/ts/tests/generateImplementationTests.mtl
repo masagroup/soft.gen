@@ -73,6 +73,7 @@ describe("[className/]", () => {
 	[aClass.generateElementIDTestImplementation()/]
 	[aClass.generateEGetFromIDTestImplementation()/]
 	[aClass.generateESetFromIDTestImplementation()/]
+	[aClass.generateEIsSetFromIDTestImplementation()/]
 })
 
 [/file]
@@ -740,6 +741,24 @@ test("eSetFromID", () => {
 })
 [/if]
 [/let]
+[/let]
+[/template]
+
+[template private generateEIsSetFromIDTestImplementation(aClass : EClass)]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEIsSetFeatures()->select(not isFeatureMap())->asOrderedSet()->sortedBy(name)]
+[if features->notEmpty()]
+test("eIsSetFromID", () => {
+	let o = new [aClass.getImplementationName()/]();
+	expect(() => o.eIsSetFromID(-1)).toThrow(Error);
+	[for (anStructFeature : EStructuralFeature | features)]
+		[if anStructFeature.isVolatile()]
+		expect(() => o.eIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/])).toThrow(Error);
+		[else]
+		expect(o.eIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/])).toBeFalsy();
+		[/if]		
+	[/for]
+})
+[/if]
 [/let]
 [/template]
 

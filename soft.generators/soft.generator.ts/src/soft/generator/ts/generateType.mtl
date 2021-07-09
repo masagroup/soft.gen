@@ -105,7 +105,7 @@ void
 		
 
 		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', 'ecore.EDiagnosticChain', 'null', 'null'},
-		Sequence{ 'org.eclipse.emf.common.util.EList', 'ecore.EList', 'null', 'new BasicEList()'},
+		Sequence{ 'org.eclipse.emf.common.util.EList', 'ecore.EList', 'null', 'null'},
 		Sequence{ 'org.eclipse.emf.common.util.Enumerator', 'any', 'null', 'null'},
 		Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap', 'any', 'null', 'null'},
         Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap$Entry', 'any', 'null', 'null'},

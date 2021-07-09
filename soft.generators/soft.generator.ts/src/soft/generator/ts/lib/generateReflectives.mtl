@@ -285,7 +285,7 @@ eInvokeFromID(operationID : number , args : [if not aPackage.isEcorePackage()]ec
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (eType.isAny()) post (trim())]
-this.[anStructFeature.getPropertyName()/] != ""
+this.[anStructFeature.getPropertyName()/] != null
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass) ]
