@@ -543,7 +543,12 @@ test("eGetFromID", () => {
 	[else]
 	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],true)).toStrictEqual(o.[anStructFeature.getPropertyName()/]);
 	[if (not anStructFeature.isMapType() and anStructFeature.isListType() and anStructFeature.oclIsKindOf(EReference))]
-	expect(deepEqual(o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],false),(o.[anStructFeature.getPropertyName()/] as [ecorePrefix/]EObjectList<[anStructFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>).getUnResolvedList())).toBeTruthy();
+	expect(
+		deepEqual(
+			o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],false),
+			(o.[anStructFeature.getPropertyName()/] as [ecorePrefix/]EObjectList<[anStructFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>).getUnResolvedList()
+		)
+	).toBeTruthy();
 	[/if]
 	[/if]
     [/for]
