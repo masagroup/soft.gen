@@ -74,6 +74,7 @@ describe("[className/]", () => {
 	[aClass.generateEGetFromIDTestImplementation()/]
 	[aClass.generateESetFromIDTestImplementation()/]
 	[aClass.generateEIsSetFromIDTestImplementation()/]
+	[aClass.generateEUnSetFromIDTestImplementation()/]
 })
 
 [/file]
@@ -761,4 +762,48 @@ test("eIsSetFromID", () => {
 [/if]
 [/let]
 [/template]
+
+
+[template private generateEUnSetFromIDTestImplementation(aClass : EClass)]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEUnSetFeatures()->select(not isFeatureMap())->asOrderedSet()->sortedBy(name)]
+[if features->notEmpty()]
+test("eUnsetFromID", () => {
+	let o = new [aClass.getImplementationName()/]();
+	expect(() => o.eUnsetFromID(-1)).toThrow(Error);
+	[for (anStructFeature : EStructuralFeature | features)]
+	{
+	[if anStructFeature.isVolatile()]
+		expect(() => o.eUnsetFromID([aClass.getQualifiedIDName(anStructFeature)/])).toThrow(Error);
+	[else]
+		o.eUnsetFromID([aClass.getQualifiedIDName(anStructFeature)/]);
+		[if anStructFeature.isListType()]
+		let v = o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false);
+		expect(v).not.toBeNull();
+		let l = v as [if not aClass.ePackage.isEcorePackage()]ecore.[/if]EList<[anStructFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>; 
+		expect(l.isEmpty()).toBeTruthy();
+		[elseif anStructFeature.oclIsKindOf(EReference)]
+		expect(o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false)).toBeNull();
+		[else]
+			[let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
+			[let defaultValue : String = aAttribute.getDefaultValue(aClass)]
+			[if defaultValue <> '']
+		let v = o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false);
+			[if defaultValue = 'nil']
+		expect(v).toBeNull();
+			[else]
+		expect(v).toBe([defaultValue/]);
+			[/if]	
+			[else]
+			[/if]
+			[/let]
+			[/let]
+		[/if]
+	[/if]
+	}
+	[/for]
+})
+[/if]
+[/let]
+[/template]
+
 
