@@ -261,7 +261,11 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
             notifications = this.eBasicRemoveFromContainer(notifications);
         }
         if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([newVarName/])) {
-            notifications = [newVarName/].eInverseAdd(this, [aClass.getQualifiedIDName(aStructuralFeature)/], notifications);
+		[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+        [let reverseClass : EClass = reverseFeature.eContainingClass]
+            notifications = [newVarName/].eInverseAdd(this,  [reverseClass.getQualifiedIDName(reverseFeature)/], notifications);
+		[/let]
+		[/let]
         }
         notifications = this.basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]( [newVarName/], notifications );
         if ( notifications != null ) {
