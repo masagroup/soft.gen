@@ -75,6 +75,7 @@ describe("[className/]", () => {
 	[aClass.generateESetFromIDTestImplementation()/]
 	[aClass.generateEIsSetFromIDTestImplementation()/]
 	[aClass.generateEUnSetFromIDTestImplementation()/]
+	[aClass.generateEInverseAddTestImplementation()/]
 })
 
 [/file]
@@ -805,5 +806,92 @@ test("eUnsetFromID", () => {
 [/if]
 [/let]
 [/template]
+
+[template private generateEInverseAddTestImplementation(aClass : EClass)]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseAddFeatures()->asOrderedSet()->sortedBy(name)]
+[if features->notEmpty()]
+test("eBasicInverseAdd", () => {
+	let o = new [aClass.getImplementationName()/]();
+	{
+		let mockObject = mock<[ecorePrefix/]EObject>();
+		let object = instance(mockObject);
+		let mockNotifications = mock<[ecorePrefix/]ENotificationChain>(); 
+		let notifications = instance(mockNotifications);
+		expect(o.eBasicInverseAdd(object,-1,notifications)).toBe(notifications);
+	}
+	[features.generateFeatureEInverseAddTestImplementation(aClass)/]
+})
+[/if]
+[/let]
+[/let]
+[/template]
+
+[template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isMapType())]
+[/template]
+
+[template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isListType())]
+{
+	[aStructuralFeature.eType.generateTestValue(aClass.ePackage)/]
+	o.eBasicInverseAdd(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
+	expect(o.[aStructuralFeature.getPropertyName()/].contains(value)).toBeTruthy();
+}
+
+[/template]
+
+[template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isContainer())]
+{
+	[aStructuralFeature.eType.generateTestValue(aClass.ePackage)/]
+	when(mockValue.eResource()).thenReturn(null);
+	when(mockValue.eIsProxy()).thenReturn(false);
+	o.eBasicInverseAdd(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(value);
+
+	reset(mockValue);
+	[aStructuralFeature.eType.generateTestOtherValue(aClass.ePackage)/]
+	when(mockOther.eResource()).thenReturn(null);
+	when(mockOther.eIsProxy()).thenReturn(false);
+	when(mockValue.eResource()).thenReturn(null);
+[if aStructuralFeature.isContains()]
+	when(mockValue.eInverseRemove(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],null)).thenReturn(null);
+[else]
+	[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+	when(mockValue.eInverseRemove(o,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
+	[/let]
+[/if]
+	o.eBasicInverseAdd(other,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(other);
+}
+
+[/template]
+
+[template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass )]
+{
+	[aStructuralFeature.eType.generateTestValue(aClass.ePackage)/]
+[if aStructuralFeature.isProxy()]
+	when(mockValue.eIsProxy()).thenReturn(false);
+[/if]
+	o.eBasicInverseAdd(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(value);
+
+	reset(mockValue);
+	[aStructuralFeature.eType.generateTestOtherValue(aClass.ePackage)/]
+[if aStructuralFeature.isProxy()]
+	when(mockOther.eIsProxy()).thenReturn(false);
+[/if]
+[if aStructuralFeature.isContains()]
+	when(mockValue.eInverseRemove(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],null)).thenReturn(null);
+[else]
+	[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+	when(mockValue.eInverseRemove(o,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
+	[/let]
+[/if]
+	o.eBasicInverseAdd(other,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(other);
+}
+
+[/template]
+
+
 
 
