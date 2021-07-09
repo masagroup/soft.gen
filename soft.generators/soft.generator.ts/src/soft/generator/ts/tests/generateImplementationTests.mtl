@@ -15,6 +15,7 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
+[import soft::generator::common::generateReflectives/]
 [import soft::generator::common::generateStructuralFeature/]
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::generateElement /]
@@ -31,10 +32,11 @@
 [fileComment()/]
 
 [comment imports/]
+import * as deepEqual from "deep-equal";
 import { anything , capture, instance, mock, reset, verify, when } from "ts-mockito";
 [let allTypes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( o | o.getType() )->asSet()
-                                        , if aClass.requiresMap() then Set{ 'ecore.EMap', 'ecore.BasicEObjectMap', 'ecore.EMapEntry' } else Set{} endif
-                                        , if aClass.requiresList() then Set{ 'ecore.EList', 'ecore.BasicEList', 'ecore.BasicEObjectList', aPackage.getQualifiedConstantsName() } else Set{} endif
+                                        , if aClass.requiresMap() then Set{ 'ecore.EMap', 'ecore.EMapEntry' } else Set{} endif
+                                        , if aClass.requiresList() then Set{ 'ecore.EList', 'ecore.EObjectList', aPackage.getQualifiedConstantsName() } else Set{} endif
                                         , if aClass.hasReflectives() then Set{'ecore.EObject','ecore.EObjectInternal','ecore.EList','ecore.ENotifyingList','ecore.ENotificationChain','ecore.isEObjectList'} else Set{} endif
                                         , if features->exists(requiresNotification()) then Set{'ecore.ENotification','ecore.ENotificationChain','ecore.EventType','ecore.Notification','ecore.EOPPOSITE_FEATURE_BASE', aPackage.getQualifiedConstantsName() } else Set{} endif
                                         , if features->exists(isContainer()) then Set{aPackage.getQualifiedConstantsName()} else Set{} endif
@@ -64,6 +66,7 @@ describe("[className/]", () => {
 	[aClass.getImplementedFeatures()->sortedBy( getVariableName() ).generateTestFeature(aClass)/]
 	[aClass.getImplementedOperations()->sortedBy( getOperationName() )->select(isDefault()).generateTestOperation(aClass)/]
 	[aClass.generateElementIDTestImplementation()/]
+	[aClass.generateEGetFromIDTestImplementation()/]
 })
 
 [/file]
@@ -505,7 +508,7 @@ test("eDerivedFeatureID", () => {
 
 [if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
 test("eDerivedOperationID", () => {
-	o := new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]();
 	{
 		let mockClass = mock<[ecorePrefix/]EClass>();
 		let cls = instance(mockClass);
@@ -526,5 +529,27 @@ test("eDerivedOperationID", () => {
 [/let]
 [/template]
 
-
+[template private generateEGetFromIDTestImplementation(aClass : EClass)]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name)]
+[if features->notEmpty()]
+test("eGetFromID", () => {
+	let o = new [aClass.getImplementationName()/]();
+	expect(() => o.eGetFromID(-1,true)).toThrow(Error);
+	[for (anStructFeature : EStructuralFeature | features )]
+	[if anStructFeature.isVolatile() or ( anStructFeature.hasInitializationMethod() and anStructFeature.oclIsKindOf(EReference) and not anStructFeature.isListType() and not anStructFeature.isProxy() )  ]
+	expect(() => o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],true)).toThrow(Error);
+	expect(() => o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],false)).toThrow(Error);
+	[else]
+	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],true)).toStrictEqual(o.[anStructFeature.getPropertyName()/]);
+	[if (not anStructFeature.isMapType() and anStructFeature.isListType() and anStructFeature.oclIsKindOf(EReference))]
+	expect(deepEqual(o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],false),(o.[anStructFeature.getPropertyName()/] as [ecorePrefix/]EObjectList<[anStructFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>).getUnResolvedList())).toBeTruthy();
+	[/if]
+	[/if]
+    [/for]
+})
+[/if]
+[/let]
+[/let]
+[/template]
 
