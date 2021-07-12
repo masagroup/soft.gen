@@ -1,0 +1,281 @@
+[**
+ * This file is part of soft.generator.ts, a project for typescript 
+ * code generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, value. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
+[comment encoding = UTF-8 /]
+[module generateFactoryTests('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
+[import soft::generator::ts::generateCommon /]
+[import soft::generator::ts::generateType/]
+
+[template public generateFactoryTests(aPackage : EPackage) {
+	className : String = aPackage.getFactoryImplementationName(); 
+	allClasses : OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	allDataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+	ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.' else '' endif;
+ } ]
+[file (aPackage.getOutputDirectory() + '/' + aPackage.getFactoryTestFileName(aPackage.name), false, 'UTF-8')]
+[fileComment()/]
+
+import { anything , capture, instance, mock, reset, verify, when } from "ts-mockito";
+[let allTypes : OrderedSet(String) = Set{ allClasses->collect(c | c.getQualifiedInterfaceName())
+                                        , aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceName() )
+                                        , Set{'ecore.EObject' , 'ecore.EClass', 'ecore.EFactoryExt' , 'ecore.EDataType', 'ecore.EList' }
+                                        , Set{aPackage.name + '.' +  aPackage.getConstantsName() , aPackage.name + '.' + aPackage.getFactoryName(), aPackage.name + '.' + aPackage.getFactoryImplementationName() }
+                                        , aPackage.eAllContents(EEnum)->iterate( aEnum : EEnum ; res : Set(String) = Set{} | ( 
+                                                res->union(Set{ aPackage.name + '.' + aEnum.name
+                                                              , aPackage.name + '.' + aEnum.name.toLowerFirst() + 'ToString'
+                                                              , aPackage.name + '.' + aEnum.name.toLowerFirst() + 'FromString' })) )
+                                        }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
+[aPackage.generateImports(allTypes,className)/]
+[/let]
+
+describe("[className/]", () => {
+
+	test("createFromEClass", () => {
+        let factory = [className/].getInstance();
+		{
+			let mockEClass = mock<[ecorePrefix/]EClass>();
+			let eClass = instance(mockEClass);
+			when(mockEClass.classifierID).thenReturn(-1);
+			expect(() => factory.create(eClass)).toThrow(Error);
+		}
+		[for (aClass : EClass | allClasses) ? (aClass.abstract=false)]
+		{
+			let mockEClass = mock<[ecorePrefix/]EClass>();
+			let eClass = instance(mockEClass);
+			when(mockEClass.classifierID).thenReturn([aClass.getQualifiedIDName()/]);
+			expect(factory.create(eClass)).not.toBeNull();
+		}
+	    [/for]
+	});
+
+[for (aClass : EClass | allClasses) ? (aClass.abstract=false)]
+	test("create[aClass.name/]", () => {
+		expect([className/].getInstance().create[aClass.name/]()).not.toBeNull();
+	})
+
+	[let ref : OrderedSet(EReference) = aClass.getAllContainers()]
+	[for(aReference:EReference | ref->sortedBy(name))]
+		[let eClassType : EClass = aReference.eType.oclAsType(EClass)]
+	test("create[aClass.name/]FromContainer", () => {
+		let mockContainer = mock<[getShortQualifiedName(eClassType.getQualifiedInterfaceName(), aPackage.name)/]>();
+		let container = instance(mockContainer);
+		[if(aReference.eOpposite.upperBound <> 1)]
+		let mockList = mock<[ecorePrefix/]EList<[aReference.eOpposite.eGenericType.generateListTypeParameters(aPackage)/]>>();
+		let list = instance(mockList);
+		when(mockList.add(anything())).thenReturn(true);
+		when(mockContainer.[aReference.eOpposite.name/]).thenReturn(list);
+		[/if]
+		expect([className/].getInstance().create[aClass.name/]FromContainer(container)).not.toBeNull();
+	});
+
+		[if(aClass.getElementIDAccessorName().size() > 0)]
+	test("create[aClass.name/]FromContainerAndClassID", () => {
+		let mockContainer = mock<[getShortQualifiedName(eClassType.getQualifiedInterfaceName(), aPackage.name)/]>();
+		let container = instance(mockContainer);
+		[if(aReference.eOpposite.upperBound <> 1)]
+		let mockList = mock<[ecorePrefix/]EList<[aReference.eOpposite.eGenericType.generateListTypeParameters(aPackage)/]>>();
+		let list = instance(mockList);
+		when(mockList.add(anything())).thenReturn(true);
+		when(mockContainer.[aReference.eOpposite.name/]).thenReturn(list);
+		[/if]
+		expect([className/].getInstance().create[aClass.name/]FromContainerAndClassID(container,0)).not.toBeNull();
+	});
+		[/if]
+		[/let]
+	[/for]
+	[/let]
+[/for]
+
+	describe("convert", () => {
+		test("createFromStringInvalid", () => {
+			let mockDataType = mock<[ecorePrefix/]EDataType>();
+			let eDataType = instance(mockDataType);
+			when(mockDataType.classifierID).thenReturn(-1);
+			expect(() => [className/].getInstance().createFromString(eDataType, "")).toThrow(Error);
+		});
+		test("convertToStringInvalid", () => {
+			let mockDataType = mock<[ecorePrefix/]EDataType>();
+			let eDataType = instance(mockDataType);
+			when(mockDataType.classifierID).thenReturn(-1);
+			expect(() => [className/].getInstance().convertToString(eDataType, null)).toThrow(Error);
+		})
+[for (aDataType : EDataType | allDataTypes)]
+		[ePackage.generateCreateFrom(aDataType)/]
+		[ePackage.generateConvertTo(aDataType)/]
+[/for]
+	});
+
+})
+[/file]
+[/template]
+
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType)? (aDataType.oclIsTypeOf(EEnum))]
+[let eEnum : EEnum = aDataType.oclAsType(EEnum)]
+test("create[aDataType.name/]FromString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+[for (eLiteral : EEnumLiteral | eEnum.eLiterals->asOrderedSet()->sortedBy(name) )]
+	expect(factory.createFromString(eDataType, "[eLiteral.name/]")).toStrictEqual([eEnum.name/].[eLiteral.name.toUpperCase()/]);
+[/for]
+})
+[/let]
+[/template]
+
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'string')]
+test("create[aDataType.name/]FromString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.createFromString(eDataType, "test")).toStrictEqual("test");
+})
+[/template]
+
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'number')]
+test("create[aDataType.name/]FromString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.createFromString(eDataType, "3")).toStrictEqual(3);
+})
+[/template]
+
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'byte')]
+test("create[aDataType.name/]FromString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.createFromString(eDataType, "")).toStrictEqual(0);
+	expect(factory.createFromString(eDataType, "a")).toStrictEqual(97);
+})
+[/template]
+
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'Uint8Array')]
+test("create[aDataType.name/]FromString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.createFromString(eDataType, "ab")).toStrictEqual(Uint8Array.from(['['/]97,98[']'/]));
+})
+[/template]
+
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'boolean')]
+test("create[aDataType.name/]FromString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.createFromString(eDataType, "true")).toBeTruthy();
+	expect(factory.createFromString(eDataType, "false")).toBeFalsy();
+})
+[/template]
+
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'Date')]
+test("create[aDataType.name/]FromString", () => {	
+})
+[/template]
+
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType)]
+test("create[aDataType.name/]FromString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(() => factory.createFromString(eDataType, "")).toThrow(Error);
+})
+[/template]
+
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType)? (aDataType.oclIsTypeOf(EEnum))]
+test("convert[aDataType.name/]ToString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+[for (eLiteral : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
+	expect(factory.convertToString(eDataType, [eEnum.name/].[eLiteral.name.toUpperCase()/])).toStrictEqual("[eLiteral.name/]");
+[/for]
+})
+[/template]
+
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'string')]
+test("convert[aDataType.name/]ToString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.convertToString(eDataType, "test")).toStrictEqual("test");
+})
+[/template]
+
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'boolean')]
+test("convert[aDataType.name/]ToString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.convertToString(eDataType,true)).toStrictEqual("true");
+	expect(factory.convertToString(eDataType,false)).toStrictEqual("false");
+})
+[/template]
+
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'number')]
+test("convert[aDataType.name/]ToString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.convertToString(eDataType,3)).toStrictEqual("3");
+})
+[/template]
+
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'byte')]
+test("convert[aDataType.name/]ToString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.convertToString(eDataType,97)).toStrictEqual("a");
+})
+[/template]
+
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'Uint8Array')]
+test("convert[aDataType.name/]ToString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.convertToString(eDataType,Uint8Array.from(['['/]97,98[']'/]))).toStrictEqual("ab");
+})
+[/template]
+
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'Date')]
+test("convert[aDataType.name/]ToString", () => {
+})
+[/template]
+
+
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType)]
+test("convert[aDataType.name/]ToString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(() => factory.convertToString(eDataType, "")).toThrow(Error);
+})
+[/template]

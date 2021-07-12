@@ -22,6 +22,7 @@
 [import soft::generator::ts::lib::pack::generatePackageImplementation/]
 [import soft::generator::ts::lib::pack::generatePackageInterface/]
 [import soft::generator::ts::tests::generateImplementationTests/]
+[import soft::generator::ts::tests::generateFactoryTests/]
 
 
 [template public generateModel(aPackage : EPackage)]
@@ -56,4 +57,5 @@
 		[aClass.generateImplementationTests()/]
 	[/if]
 [/for]
+[aPackage.generateFactoryTests()/]
 [/template]
