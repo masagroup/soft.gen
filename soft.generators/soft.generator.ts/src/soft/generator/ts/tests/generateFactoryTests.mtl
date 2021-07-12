@@ -97,25 +97,22 @@ describe("[className/]", () => {
 	[/let]
 [/for]
 
-	describe("convert", () => {
-		test("createFromStringInvalid", () => {
-			let mockDataType = mock<[ecorePrefix/]EDataType>();
-			let eDataType = instance(mockDataType);
-			when(mockDataType.classifierID).thenReturn(-1);
-			expect(() => [className/].getInstance().createFromString(eDataType, "")).toThrow(Error);
-		});
-		test("convertToStringInvalid", () => {
-			let mockDataType = mock<[ecorePrefix/]EDataType>();
-			let eDataType = instance(mockDataType);
-			when(mockDataType.classifierID).thenReturn(-1);
-			expect(() => [className/].getInstance().convertToString(eDataType, null)).toThrow(Error);
-		})
-[for (aDataType : EDataType | allDataTypes)]
-		[ePackage.generateCreateFrom(aDataType)/]
-		[ePackage.generateConvertTo(aDataType)/]
-[/for]
+	test("createFromStringInvalid", () => {
+		let mockDataType = mock<[ecorePrefix/]EDataType>();
+		let eDataType = instance(mockDataType);
+		when(mockDataType.classifierID).thenReturn(-1);
+		expect(() => [className/].getInstance().createFromString(eDataType, "")).toThrow(Error);
 	});
-
+	test("convertToStringInvalid", () => {
+		let mockDataType = mock<[ecorePrefix/]EDataType>();
+		let eDataType = instance(mockDataType);
+		when(mockDataType.classifierID).thenReturn(-1);
+		expect(() => [className/].getInstance().convertToString(eDataType, null)).toThrow(Error);
+	})
+[for (aDataType : EDataType | allDataTypes)]
+	[ePackage.generateCreateFrom(aDataType)/]
+	[ePackage.generateConvertTo(aDataType)/]
+[/for]
 })
 [/file]
 [/template]
