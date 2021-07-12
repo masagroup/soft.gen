@@ -918,7 +918,7 @@ test("eBasicInverseRemove", () => {
 [template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isMapType())]
 {
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage)/]
-	o.eBasicInverseRemove(mockObject,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
+	o.eBasicInverseRemove(mockValue,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
 	expect(o.[aStructuralFeature.getPropertyName()/].isEmpty())
 }
 
@@ -928,7 +928,7 @@ test("eBasicInverseRemove", () => {
 {
 	// initialize list with a mock object
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage)/]
-	[aStructuralFeature.generateFeatureMockAddedExpectations('mockObject',aClass)/]
+	[aStructuralFeature.generateFeatureMockAddedExpectations('mockValue',aClass)/]
 	o.[aStructuralFeature.getPropertyName()/].add(value);
 
 	// basic inverse remove
