@@ -75,6 +75,7 @@ describe("[className/]", () => {
 	[aClass.generateESetFromIDTestImplementation()/]
 	[aClass.generateEIsSetFromIDTestImplementation()/]
 	[aClass.generateEUnSetFromIDTestImplementation()/]
+	[aClass.generateEInvokeFromIDTestImplementation()/]
 	[aClass.generateEInverseAddTestImplementation()/]
 	[aClass.generateEInverseRemoveTestImplementation()/]
 
@@ -460,7 +461,7 @@ test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
 
 
 [template private generateTestValue(aClass : EClass, aPackage : EPackage )]
-let mockValue = mock<[getShortQualifiedName(aClass.getQualifiedInterfaceName() + 'Internal', aPackage.name)/]>();
+let mockValue = mock<[aClass.getInterfaceName()/]Internal>();
 let value = instance(mockValue);
 [/template]
 
@@ -948,7 +949,19 @@ test("eBasicInverseRemove", () => {
 
 [/template]
 
-
+[template private generateEInvokeFromIDTestImplementation(aClass : EClass)]
+[let operations : OrderedSet(EOperation) = aClass.getEInvokeOperations()->asOrderedSet()->sortedBy( o | o.eContainingClass.getOperationIDName(o))]
+[if aClass.name <> 'EObject' and operations->notEmpty()]
+test("eBasicInverseRemove", () => {
+	let o = new [aClass.getImplementationName()/]();
+	expect(() => o.eInvokeFromID(-1,null)).toThrow(Error);
+	[for ( eOperation : EOperation | operations )]
+	expect(() => o.eInvokeFromID([eOperation.eContainingClass.getQualifiedIDName(eOperation)/],null)).toThrow(Error);
+	[/for]
+})
+[/if]
+[/let]
+[/template]
 
 
 
