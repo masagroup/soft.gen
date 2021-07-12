@@ -76,6 +76,8 @@ describe("[className/]", () => {
 	[aClass.generateEIsSetFromIDTestImplementation()/]
 	[aClass.generateEUnSetFromIDTestImplementation()/]
 	[aClass.generateEInverseAddTestImplementation()/]
+	[aClass.generateEInverseRemoveTestImplementation()/]
+
 })
 
 [/file]
