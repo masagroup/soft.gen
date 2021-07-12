@@ -184,7 +184,12 @@ test("create[aDataType.name/]FromString", () => {
 [/template]
 
 [template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'Date')]
-test("create[aDataType.name/]FromString", () => {	
+test("create[aDataType.name/]FromString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.createFromString(eDataType, "2020-05-12T17:33:10.770Z")).toEqual(new Date(Date.UTC(2020, 4, 12, 17, 33, 10, 770)));
 })
 [/template]
 
@@ -263,6 +268,11 @@ test("convert[aDataType.name/]ToString", () => {
 
 [template private generateConvertTo(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'Date')]
 test("convert[aDataType.name/]ToString", () => {
+	let factory = [aPackage.getFactoryImplementationName()/].getInstance();
+	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>();
+	let eDataType = instance(mockDataType);
+	when(mockDataType.classifierID).thenReturn([aDataType.getQualifiedIDName()/]);
+	expect(factory.convertToString(eDataType,new Date(Date.UTC(2020, 4, 12, 17, 33, 10, 770)))).toStrictEqual("2020-05-12T17:33:10.770Z");
 })
 [/template]
 
