@@ -893,5 +893,61 @@ test("eBasicInverseAdd", () => {
 [/template]
 
 
+[template private generateEInverseRemoveTestImplementation(aClass : EClass)]
+[let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
+[let features : OrderedSet(EStructuralFeature) = aClass.getEInverseRemoveFeatures()->asOrderedSet()->sortedBy(name)]
+[if features->notEmpty()]
+test("eBasicInverseRemove", () => {
+	let o = new [aClass.getImplementationName()/]();
+	{
+		let mockObject = mock<[ecorePrefix/]EObject>();
+		let object = instance(mockObject);
+		let mockNotifications = mock<[ecorePrefix/]ENotificationChain>(); 
+		let notifications = instance(mockNotifications);
+		expect(o.eBasicInverseRemove(object,-1,notifications)).toBe(notifications);
+	}
+	[features.generateFeatureEInverseRemoveTestImplementation(aClass)/]
+})
+[/if]
+[/let]
+[/let]
+[/template]
+
+[template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isMapType())]
+{
+	[aStructuralFeature.eType.generateTestValue(aClass.ePackage)/]
+	o.eBasicInverseRemove(mockObject,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
+	expect(o.[aStructuralFeature.getPropertyName()/].isEmpty())
+}
+
+[/template]
+
+[template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isListType())]
+{
+	// initialize list with a mock object
+	[aStructuralFeature.eType.generateTestValue(aClass.ePackage)/]
+	[aStructuralFeature.generateFeatureMockAddedExpectations('mockObject',aClass)/]
+	o.[aStructuralFeature.getPropertyName()/].add(value);
+
+	// basic inverse remove
+	o.eBasicInverseRemove(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
+
+	// check it was removed
+	expect(o.[aStructuralFeature.getPropertyName()/].contains(value)).toBeFalsy();
+}
+
+[/template]
+
+[template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass )]
+{
+	[aStructuralFeature.eType.generateTestValue(aClass.ePackage)/]
+	o.eBasicInverseRemove(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null);	
+}
+
+[/template]
+
+
+
+
 
 
