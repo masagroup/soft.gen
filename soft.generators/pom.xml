@@ -11,14 +11,30 @@
    </properties>
    <repositories>
       <repository>
-         <id>Eclipse Acceleo</id>
-         <url>https://repo.eclipse.org/content/repositories/acceleo</url>
+          <id>central</id>
+          <url>https://repo1.maven.org/maven2</url>
+      </repository>
+      <repository>
+          <id>eclipse</id>
+          <url>https://repo.eclipse.org/content/repositories/acceleo</url>
+      </repository>
+      <repository>
+          <id>github</id>
+          <url>https://maven.pkg.github.com/SokaDance/soft.acceleo</url>
       </repository>
    </repositories>
    <pluginRepositories>
       <pluginRepository>
-         <id>Eclipse Acceleo</id>
-         <url>https://repo.eclipse.org/content/repositories/acceleo</url>
+         <id>central</id>
+          <url>https://repo1.maven.org/maven2</url>
+      </pluginRepository>
+      <pluginRepository>
+         <id>eclipse</id>
+          <url>https://repo.eclipse.org/content/repositories/acceleo</url>
+      </pluginRepository>
+      <pluginRepository>
+         <id>github</id>
+         <url>https://maven.pkg.github.com/SokaDance/soft.acceleo</url>
       </pluginRepository>
    </pluginRepositories>
    <profiles>
