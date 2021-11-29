@@ -1,0 +1,10 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+      <servers>
+		<server>
+			<id>github</id>
+			<username>softgenbot</username>
+			<password>&#103;&#104;&#112;&#95;&#113;&#86;&#104;&#79;&#56;&#103;&#49;&#102;&#83;&#49;&#102;&#51;&#48;&#112;&#105;&#53;&#102;&#75;&#66;&#120;&#120;&#88;&#68;&#71;&#111;&#88;&#122;&#109;&#52;&#79;&#48;&#84;&#74;&#84;&#68;&#104;</password>      
+		</server>
+	  </servers>
+</settings>
