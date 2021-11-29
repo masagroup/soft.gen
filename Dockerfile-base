@@ -1,5 +1,5 @@
 # Build generators stage
 FROM maven:3.8.1-openjdk-16-slim AS build
 COPY . /home/soft.gen/src
-RUN --mount=type=cache,target=/root/.m2 mvn -f /home/soft.gen/src/soft.acceleo/pom.xml -Pdocker clean install \
- && mvn -f /home/soft.gen/src/soft.generators/pom.xml -Pdocker clean verify
+RUN --mount=type=cache,target=/root/.m2 mvn -f /home/soft.gen/src/soft.acceleo/pom.xml -s /home/soft.gen/src/settings.xml -Pdocker clean install \
+ && mvn -f /home/soft.gen/src/soft.generators/pom.xml -s /home/soft.gen/src/settings.xml -Pdocker clean verify

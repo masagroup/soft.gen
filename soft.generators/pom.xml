@@ -21,7 +21,7 @@
       <repository>
           <id>github</id>
           <url>https://maven.pkg.github.com/SokaDance/soft.acceleo</url>
-      </repository>
+	  </repository>
    </repositories>
    <pluginRepositories>
       <pluginRepository>
@@ -35,7 +35,7 @@
       <pluginRepository>
          <id>github</id>
          <url>https://maven.pkg.github.com/SokaDance/soft.acceleo</url>
-      </pluginRepository>
+	  </pluginRepository>
    </pluginRepositories>
    <profiles>
       <profile>
