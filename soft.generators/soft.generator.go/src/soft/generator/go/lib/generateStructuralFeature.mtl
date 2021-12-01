@@ -58,7 +58,9 @@
 
 [template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
 [let aPackage : EPackage = aClass.ePackage]
-[if not aPackage.isEcorePackage()]ecore.[/if]New[if anEAttribute.unique]Unique[/if]BasicEList(['['/][']'/]interface{}{})
+[let receiverName : String = aClass.getReceiverName()]
+[if not aPackage.isEcorePackage()]ecore[/if].NewBasicEDataTypeList([receiverName/].AsEObjectInternal() , [aClass.getFeatureIDName(anEAttribute)/],[anEAttribute.unique/])
+[/let]
 [/let]
 [/template]
 
