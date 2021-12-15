@@ -78,3 +78,8 @@ if hasKey('initializationName') then
 else 
     'init'.concat(name.toUpperFirst()) 
 endif/]
+
+[query public isInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
+
+[query public requiresNotification( aStructuralFeature : EStructuralFeature ) : Boolean = isSet() or isUnSet()/]
+

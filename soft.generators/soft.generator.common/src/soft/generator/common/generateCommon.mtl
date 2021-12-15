@@ -65,6 +65,7 @@
         false 
     endif
 /]
+[query public isDefault(anEOperation : EOperation ) : Boolean = not anEOperation.hasKey('default') or ( anEOperation.hasKey('default') and anEOperation.valueKey('default') = 'true' )/]
 [query public isBidirectional(aStructuralFeature : EStructuralFeature) : Boolean = if aStructuralFeature.oclIsKindOf(EReference) then not aStructuralFeature.oclAsType(EReference).eOpposite.oclIsUndefined() else false endif/]
 [query public isContains(aStructuralFeature : EStructuralFeature) : Boolean = aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).containment/]
 [query public isChangeable(aStructuralFeature : EStructuralFeature) : Boolean = aStructuralFeature.changeable/]

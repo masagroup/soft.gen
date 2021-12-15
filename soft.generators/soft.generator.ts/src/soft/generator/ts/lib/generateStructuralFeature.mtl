@@ -18,9 +18,6 @@
 [import soft::generator::ts::generateType /]
 [import soft::generator::ts::lib::generateCommon /]
 
-[query public isInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
-
-[query public requiresNotification( aStructuralFeature : EStructuralFeature ) : Boolean = isSet() or isUnSet()/]
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature)]
 [if isGet() or isSet()]
@@ -45,6 +42,11 @@ protected [aStructuralFeature.getVariableName()/] : [aStructuralFeature.generate
 [/template]
 
 [template public generateVariableInitialization(aStructuralFeature : EStructuralFeature, aClass : EClass )]
+[/template]
+
+[template public generateVariableInitialization(aReference : EReference, aClass : EClass )]
+this.[aReference.getVariableName()/] = null;
+
 [/template]
 
 [template public generateVariableInitialization(aAttribute : EAttribute, aClass : EClass ) ]
@@ -96,6 +98,10 @@ protected [aStructuralFeature.getInitializationMethodName()/]() : void {
 [if isSet()]
 
 [aStructuralFeature.generateSetImplementation(aClass)/]
+[/if]
+[if isGet() and not isSet() and not isVolatile() and not isContainer() and not isListType()]
+
+[aStructuralFeature.generateInternalSetImplementation(aClass)/]
 [/if]
 [if isBasicGet()]
 
@@ -255,7 +261,11 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
             notifications = this.eBasicRemoveFromContainer(notifications);
         }
         if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([newVarName/])) {
-            notifications = [newVarName/].eInverseAdd(this, [aClass.getQualifiedIDName(aStructuralFeature)/], notifications);
+		[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+        [let reverseClass : EClass = reverseFeature.eContainingClass]
+            notifications = [newVarName/].eInverseAdd(this,  [reverseClass.getQualifiedIDName(reverseFeature)/], notifications);
+		[/let]
+		[/let]
         }
         notifications = this.basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]( [newVarName/], notifications );
         if ( notifications != null ) {
@@ -346,6 +356,18 @@ basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]( [newVarName/] : 
 [/let]
 [/template]
 
+[template private generateInternalSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
+[let varName : String = aStructuralFeature.getVariableName() ]
+[let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst() ]
+/** @internal */
+set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType()/] ) {
+	this.[varName/] = [newVarName/];
+}
+[/let]
+[/let]
+[/let]
+[/template]
 
 [template private getMapConstructor( aStructuralFeature : EStructuralFeature, aClass : EClass) post(trim())]
 [let aPackage : EPackage = aClass.ePackage]
@@ -362,7 +384,7 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectMap<[aType.generate
 
 [template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
 [let aPackage : EPackage = aClass.ePackage]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEList<[anEAttribute.eGenericType.generateType(aPackage)/]>([anEAttribute.unique/])
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEDataTypeList<[anEAttribute.eGenericType.generateType(aPackage)/]>(this,[aClass.getQualifiedIDName(anEAttribute)/])
 [/let]
 [/template]
 

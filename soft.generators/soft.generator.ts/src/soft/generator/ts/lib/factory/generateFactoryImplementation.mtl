@@ -149,9 +149,9 @@ create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]e
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'byte')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
     if (literalValue.length == 0 ) {
-        return '\0';
+        return 0;
     } else {
-        return literalValue['['/]0[']'/];
+        return literalValue.charCodeAt(0);
     }
 }
 
@@ -160,6 +160,13 @@ create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]e
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'Uint8Array')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
     return new TextEncoder().encode(literalValue);
+}
+
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'Date')]
+create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
+     return new Date(literalValue);
 }
 
 [/template]
@@ -187,17 +194,28 @@ convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ec
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )
     ? ( aDataType.getType() = 'number' or
-        aDataType.getType() = 'boolean' or
-        aDataType.getType() = 'byte'
+        aDataType.getType() = 'boolean'
       )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
     return instanceValue.toString();
 }
 [/template]
 
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'byte' )]
+convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
+    return String.fromCharCode(instanceValue as number);
+}
+[/template]
+
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'Uint8Array' )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
     return new TextDecoder().decode(instanceValue as Uint8Array);
+}
+[/template]
+
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'Date' )]
+convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
+    return (instanceValue as Date).toISOString();
 }
 [/template]
 
