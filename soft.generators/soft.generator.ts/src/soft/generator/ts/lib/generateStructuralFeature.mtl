@@ -384,7 +384,7 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectMap<[aType.generate
 
 [template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
 [let aPackage : EPackage = aClass.ePackage]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEList<[anEAttribute.eGenericType.generateType(aPackage)/]>([anEAttribute.unique/])
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEDataTypeList<[anEAttribute.eGenericType.generateType(aPackage)/]>(this,[aClass.getQualifiedIDName(anEAttribute)/])
 [/let]
 [/template]
 
