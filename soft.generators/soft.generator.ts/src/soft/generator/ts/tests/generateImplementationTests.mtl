@@ -698,7 +698,7 @@ verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature
 {
 	let l = new [ecorePrefix/]ImmutableEList<[anStructuralFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>();
 	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], l)
-	expect(o.[anStructuralFeature.getPropertyName()/]().isEmpty()).toBeTruthy();
+	expect(o.[anStructuralFeature.getPropertyName()/].isEmpty()).toBeTruthy();
 }
 [/let]
 
