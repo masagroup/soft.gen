@@ -10,18 +10,18 @@
    </properties>
    <repositories>
       <repository>
-          <id>central</id>
-          <url>https://repo1.maven.org/maven2</url>
+         <id>central</id>
+         <url>https://repo1.maven.org/maven2</url>
       </repository>
       <repository>
-          <id>github</id>
-          <url>https://maven.pkg.github.com/masagroup/soft.acceleo</url>
+         <id>github</id>
+         <url>https://maven.pkg.github.com/masagroup/soft.acceleo</url>
       </repository>
    </repositories>
    <pluginRepositories>
       <pluginRepository>
          <id>central</id>
-          <url>https://repo1.maven.org/maven2</url>
+         <url>https://repo1.maven.org/maven2</url>
       </pluginRepository>
       <pluginRepository>
          <id>github</id>
