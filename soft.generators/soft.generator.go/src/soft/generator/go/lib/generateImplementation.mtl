@@ -31,6 +31,7 @@
 	variableFeatures : Collection(EStructuralFeature) = features->select(isField());
 	initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
+	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
 }]
 [file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
@@ -90,7 +91,7 @@ func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
 }
 [/if]
 
-[aClass.generateFunctionImplementationReceiver()/] EStaticClass() [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
+[aClass.generateFunctionImplementationReceiver()/] EStaticClass() [ecorePrefix/]EClass {
     return GetPackage().[aClass.getReflectiveGetterName()/]()
 }
 
@@ -98,26 +99,35 @@ func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
     return [if aClass.isReflectiveDelegation()]0[else][aClass.getFeatureCountIDName()/][/if]
 }
 [if aClass.isMapEntry()]
-
+[let keyFeature : EStructuralFeature = aClass.getEStructuralFeature('key')]
+[let valueFeature : EStructuralFeature = aClass.getEStructuralFeature('value')]
 [aClass.generateFunctionImplementationReceiver()/] GetKey() interface{} {
-    return [aClass.getReceiverName()/].[aClass.getEStructuralFeature('key').getGetterName()/]()
+    return [aClass.getReceiverName()/].[keyFeature.getGetterName()/]()
 }
 
 [aClass.generateFunctionImplementationReceiver()/] SetKey(key interface{}) {
-[let anStructFeature : EStructuralFeature =  aClass.getEStructuralFeature('key')]
-    [aClass.getReceiverName()/].[anStructFeature.getSetterName()/](key[if anStructFeature.eType.getType() <> 'interface{}'].([anStructFeature.generateType()/])[/if])
-[/let]
+[if keyFeature.isListType()]
+	[aClass.getReceiverName()/].[keyFeature.getGetterName()/]().AddAll(key.([ecorePrefix/]EList))
+[else]
+    [aClass.getReceiverName()/].[keyFeature.getSetterName()/](key[if keyFeature.eType.getType() <> 'interface{}'].([keyFeature.generateType()/])[/if])
+[/if]
 }
 
 [aClass.generateFunctionImplementationReceiver()/] GetValue() interface{} {
-    return [aClass.getReceiverName()/].[aClass.getEStructuralFeature('value').getGetterName()/]()
+    return [aClass.getReceiverName()/].[valueFeature.getGetterName()/]()
 }
 
 [aClass.generateFunctionImplementationReceiver()/] SetValue(value interface{}) {
-[let anStructFeature : EStructuralFeature =  aClass.getEStructuralFeature('value')]
-    [aClass.getReceiverName()/].[anStructFeature.getSetterName()/](value[if anStructFeature.eType.getType() <> 'interface{}'].([anStructFeature.generateType()/])[/if])
-[/let]
+[if valueFeature.isListType()]
+	l := [aClass.getReceiverName()/].[valueFeature.getGetterName()/]()
+	l.Clear()
+	l.AddAll(value.([ecorePrefix/]EList))
+[else]
+    [aClass.getReceiverName()/].[valueFeature.getSetterName()/](value[if valueFeature.eType.getType() <> 'interface{}'].([valueFeature.generateType()/])[/if])
+[/if]
 }
+[/let]
+[/let]
 [/if]
 
 [operations.generateImplementation(aClass)/]
