@@ -181,6 +181,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	assert.Nil(t, o.[aStructuralFeature.getGetterName()/]())
 	[else]
 	assert.NotNil(t, o.[aStructuralFeature.getGetterName()/]())
+	assert.Panics(t, func () { _ =  o.[aStructuralFeature.getGetterName()/]().Get(0).([getShortQualifiedName(aStructuralFeature.eType.getType(), aClass.ePackage.name)/]) })
 	[/if]
 }
 [/template]
