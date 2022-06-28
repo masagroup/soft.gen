@@ -27,8 +27,18 @@
 
 [query private isFeatureMap(aStructuralFeature : EStructuralFeature) : Boolean = isListType() and eType.name = 'EFeatureMapEntry'/]
 
+[query private getMapTypes(aStructuralFeature : EStructuralFeature) : Set(EClassifier) =
+	if isMapType() and eType.oclIsKindOf(EClass) and eType.oclAsType(EClass).isMapEntry() then
+		let mapType : EClass = eType.oclAsType(EClass) in
+		Set{ mapType.getEStructuralFeature('key').eType, mapType.getEStructuralFeature('value').eType }
+	else
+		Set{}
+	endif
+/]
+
 [template public generateImplementationTests(aClass : EClass) { 
-	implementationName : String = aClass.getImplementationName(); 
+	implementationName : String = aClass.getImplementationName();
+	implementedFeatures : Set(EStructuralFeature) = aClass.getImplementedFeatures();
 	aPackage : EPackage = aClass.ePackage;
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.getImplementedFeatures()->notEmpty() or aClass.requiresList() );
 }]
@@ -45,8 +55,10 @@ import (
 	"github.com/stretchr/testify/mock"
 [let imports : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
 										, OrderedSet{aClass.eSuperTypes
-              									    ,aClass.getImplementedFeatures().eType}->flatten()->select( cls | not cls.oclIsUndefined() )->collect( cls | aPackage.getImport(cls) )->asSet()
-                                        }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
+              									    ,implementedFeatures.eType
+													,implementedFeatures->collect( getMapTypes() )->flatten()
+													}->flatten()->select( not oclIsUndefined() )->collect( cls | aPackage.getImport(cls) )->asSet()
+										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
 	"[i/]"
 [/for]
