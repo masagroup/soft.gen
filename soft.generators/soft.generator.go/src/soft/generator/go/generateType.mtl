@@ -226,18 +226,21 @@
 		aDataType.defaultValue.toString()
 	else
 		let typeName : String = aDataType.getInstanceTypeName() in
-	    getAllDataTypes()->iterate( s ; res : String = '' |
-	    if res = '' then
-	        if s->exists(n : String | n = typeName) then
-	            getShortQualifiedName(s->at( s->size() - 2 ) , aContext.name)
-	        else
-	            res
-	        endif
-	    else 
-	        res 
-	    endif	
- 		) 
-	endif endif
+		if typeName.size() > 0 and typeName.first(1) = '*' then
+			'nil'
+		else
+		    getAllDataTypes()->iterate( s ; res : String = '' |
+		    if res = '' then
+		        if s->exists(n : String | n = typeName) then
+		            getShortQualifiedName(s->at( s->size() - 2 ) , aContext.name)
+		        else
+		            res
+		        endif
+		    else 
+		        res 
+		    endif	
+	 		)
+	endif endif endif
 /]
 
 [query public getDefaultValueWithType(aFeature : EStructuralFeature, aContext : EClass ) : String = aFeature.getDefaultValueWithType(aContext.ePackage)/]
