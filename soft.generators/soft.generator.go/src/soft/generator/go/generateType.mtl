@@ -81,7 +81,8 @@
         Sequence{ 'java.util.Map$Entry' , 'ecore.EMapEntry', 'nil' , 'nil', ''},
 		Sequence{ 'java.lang.Short' , 'short' , 'int16' , '0', '2' , ''},
         Sequence{ 'java.lang.String' , 'string', '""' , '"Test String"', ''},
-		
+
+		Sequence{ 'com.google.common.primitives.UnsignedLong' , 'uint64', '0' , '1', ''},
 
 		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', 'ecore.EDiagnosticChain', 'nil', 'nil', '' },
 		Sequence{ 'org.eclipse.emf.common.util.EList', 'ecore.EList', 'nil', 'ecore.NewEmptyBasicEList()', '' },
