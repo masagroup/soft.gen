@@ -8,7 +8,7 @@
       <version>1.5.1</version>
    </parent>
    <artifactId>soft.generator.ts</artifactId>
-   <version>1.0.4</version>
+   <version>1.0.5</version>
    <dependencies>
       <dependency>
          <groupId>soft.generators</groupId>
