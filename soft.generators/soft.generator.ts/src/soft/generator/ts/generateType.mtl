@@ -90,7 +90,7 @@ void
     Sequence {
         Sequence{ 'java.lang.Boolean', 'boolean', 'boolean', 'false' , 'true'},
         Sequence{ 'java.lang.Integer', 'int', 'number' , '0', '45'},
-		Sequence{ 'java.lang.Byte','java.lang.Character', 'char', 'byte' ,'\'\'', '\'a\''},
+		Sequence{ 'java.lang.Byte','java.lang.Character', 'char', 'number' ,'\'\'', '\'a\''},
 		Sequence{ 'byte[]','Uint8Array' , 'nil', 'nil'},
 		Sequence{ 'java.util.Date', 'Date', 'null', 'new Date()'},
 		Sequence{ 'java.lang.Double', 'java.math.BigDecimal', 'double', 'number' , '0.0' , '3.5'},
