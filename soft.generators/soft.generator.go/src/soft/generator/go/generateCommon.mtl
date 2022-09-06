@@ -15,6 +15,38 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 
+[query public getGoVersion(aPackage : EPackage) : String = if hasKey('go-version') then valueKey('go-version') else '1.19' endif/]
+
+[query public compareVersion(aAny : OclAny, v1 : String, v2 : String) : Integer =
+	let v1Tokenized : Sequence(String) = v1.tokenize('.') in
+    let v2Tokenized : Sequence(String) = v2.tokenize('.') in
+	let v1Parts : Sequence(String) = if v1Tokenized->size() >= v2Tokenized->size() then v1Tokenized else v2Tokenized endif in
+	let v2Parts : Sequence(String) = if v1Tokenized->size() >= v2Tokenized->size() then v2Tokenized else v1Tokenized endif in
+	let order : Integer = if v1Tokenized->size() >= v2Tokenized->size() then 1 else -1 endif in
+ 	Sequence{1..v1Parts->size()}->iterate( index ; res : Integer = -2 |
+        if res = -2 then
+			if index > v2Parts->size() then
+            	order 
+        	else
+				let p1 : String = v1Parts->at(index) in
+	        	let p2 : String = v2Parts->at(index) in
+				let c : Integer = p1.strcmp(p2) in
+				if c <> 0 then
+					order*c
+				else
+					if index = v1Parts->size() then
+						0
+					else  
+	            		res
+					endif
+				endif
+			endif
+		else
+			res
+        endif
+	)
+/]
+
 [**
  * File Comments 
 */]
@@ -25,7 +57,7 @@
 [/template]
 
 [query public hasExtension( aModelElement : EModelElement ) : Boolean = hasKey('extension') and valueKey('extension' )='true'/]
-[query public isExported( aNamedElement : ENamedElement ) : Boolean = if ( hasKey('exported') ) then valueKey('exported') = 'true' else false endif/]
+[query public isExported( aNamedElement : ENamedElement ) : Boolean = if hasKey('exported') then valueKey('exported') = 'true' else false endif/]
 
 [**
  * Factory / Package / Classes Interfaces and Implementations Names  

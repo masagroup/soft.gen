@@ -290,7 +290,7 @@ func [testMethodName/](t *testing.T) {
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let receiverName : String = aClass.getReceiverName()]
 [if isReflectiveDelegation()]
-	result, _ := [receiverName/].EGetFromID([aClass.getFeatureIDName(aStructuralFeature)/] , true)[if aStructuralFeature.eType.getType() <> 'interface{}'].([aStructuralFeature.generateType()/])[/if]
+	result, _ := [receiverName/].EGetFromID([aClass.getFeatureIDName(aStructuralFeature)/] , true)[if not aPackage.isAnyType(aStructuralFeature.eType.getType())].([aStructuralFeature.generateType()/])[/if]
 	return result 
 [elseif isContainer()]
     if [receiverName/].EContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] {
