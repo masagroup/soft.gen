@@ -720,7 +720,7 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 	
 	// set list with new contents
 	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], mockMap)
-	assert.Equal(t, map['['/]interface{}[']'/]interface{}{mockKey : mockValue},o.[anStructuralFeature.getGetterName()/]().ToMap())
+	assert.Equal(t, map['['/][aPackage.getAnyType()/][']'/][aPackage.getAnyType()/]{mockKey : mockValue},o.[anStructuralFeature.getGetterName()/]().ToMap())
 	mock.AssertExpectationsForObjects(t, mockMap, mockEntry)
 [/let]
 [/let]
@@ -735,10 +735,11 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 [/template]
 
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isListType() and oclIsKindOf(EReference))]
+[let aPackage : EPackage = aClass.ePackage]
 {
 	// list with a value
 	mockValue := [anStructuralFeature.eType.getTestValue(aClass.ePackage)/]
-	l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{mockValue})
+	l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/][aPackage.getAnyType()/]{mockValue})
 [if anStructuralFeature.isProxy()]
 	mockValue.On("EIsProxy").Return(false).Once()
 [/if]
@@ -750,7 +751,7 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 	assert.Equal(t, mockValue, o.[anStructuralFeature.getGetterName()/]().Get(0))
 	mock.AssertExpectationsForObjects(t, mockValue)	
 }
-
+[/let]
 [/template]
 
 [template private generateFeatureMockAddedExpectations(anStructuralFeature : EStructuralFeature , mockName : String , aClass : EClass)]
@@ -781,12 +782,13 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 [/template]
 
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isListType())]
+[let aPackage : EPackage = aClass.ePackage]
 {
-	l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/]interface{}{})
+	l := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewImmutableEList(['['/][']'/][aPackage.getAnyType()/]{})
 	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], l)
 	assert.True(t, o.[anStructuralFeature.getGetterName()/]().Empty())
 }
-
+[/let]
 [/template]
 
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isBidirectional())]

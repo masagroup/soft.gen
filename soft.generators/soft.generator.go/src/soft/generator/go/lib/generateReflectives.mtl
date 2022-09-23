@@ -105,7 +105,8 @@
 [/template]
 
 [template private generateEGetDefinition(aClass : EClass)]
-[aClass.generateFunctionImplementationReceiver()/] EGetFromID(featureID int, resolve bool) interface{} {
+[let aPackage : EPackage = aClass.ePackage]
+[aClass.generateFunctionImplementationReceiver()/] EGetFromID(featureID int, resolve bool) [aPackage.getAnyType()/] {
     switch featureID {
     [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name))]
     case [aClass.getQualifiedIDName(anStructFeature)/]:
@@ -132,6 +133,7 @@
         return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EGetFromID(featureID, resolve)
     }
 }
+[/let]
 [/template]
 
 
@@ -149,7 +151,8 @@
 [/template]
 
 [template private generateESetDefinition(aClass : EClass)]
-[aClass.generateFunctionImplementationReceiver()/] ESetFromID(featureID int, newValue interface{}) {
+[let aPackage : EPackage = aClass.ePackage]
+[aClass.generateFunctionImplementationReceiver()/] ESetFromID(featureID int, newValue [aPackage.getAnyType()/]) {
     switch featureID {
 [for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
     case [aClass.getQualifiedIDName(anStructFeature)/]:
@@ -162,13 +165,14 @@
         list.Clear()
         list.AddAll(newValue.([anStructFeature.generateType()/]))
     [else]
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue[if anStructFeature.eType.getType() <> 'interface{}'].([anStructFeature.generateType()/])[/if])
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue[if not aPackage.isAnyType(anStructFeature.eType.getType())].([anStructFeature.generateType()/])[/if])
     [/if]    
 [/for]
     default:
         [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].ESetFromID(featureID, newValue)
     }
 }
+[/let]
 [/template]
 
 [template private generateEUnSetDefinition(aClass : EClass)]
@@ -202,7 +206,7 @@
 
 [template private generateEInvokeDefinition(aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
-[aClass.generateFunctionImplementationReceiver()/] EInvokeFromID(operationID int, arguments [if not aPackage.isEcorePackage()]ecore.[/if]EList) interface{} {
+[aClass.generateFunctionImplementationReceiver()/] EInvokeFromID(operationID int, arguments [if not aPackage.isEcorePackage()]ecore.[/if]EList) [aPackage.getAnyType()/] {
     switch operationID {
     [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy( getOperationName() ) )]
     case [aClass.getQualifiedIDName(eOperation)/]:

@@ -101,29 +101,29 @@ func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
 [if aClass.isMapEntry()]
 [let keyFeature : EStructuralFeature = aClass.getEStructuralFeature('key')]
 [let valueFeature : EStructuralFeature = aClass.getEStructuralFeature('value')]
-[aClass.generateFunctionImplementationReceiver()/] GetKey() interface{} {
+[aClass.generateFunctionImplementationReceiver()/] GetKey() [aPackage.getAnyType()/] {
     return [aClass.getReceiverName()/].[keyFeature.getGetterName()/]()
 }
 
-[aClass.generateFunctionImplementationReceiver()/] SetKey(key interface{}) {
+[aClass.generateFunctionImplementationReceiver()/] SetKey(key [aPackage.getAnyType()/]) {
 [if keyFeature.isListType()]
 	[aClass.getReceiverName()/].[keyFeature.getGetterName()/]().AddAll(key.([ecorePrefix/]EList))
 [else]
-    [aClass.getReceiverName()/].[keyFeature.getSetterName()/](key[if keyFeature.eType.getType() <> 'interface{}'].([keyFeature.generateType()/])[/if])
+    [aClass.getReceiverName()/].[keyFeature.getSetterName()/](key[if not aPackage.isAnyType(keyFeature.eType.getType())].([keyFeature.generateType()/])[/if])
 [/if]
 }
 
-[aClass.generateFunctionImplementationReceiver()/] GetValue() interface{} {
+[aClass.generateFunctionImplementationReceiver()/] GetValue() [aPackage.getAnyType()/] {
     return [aClass.getReceiverName()/].[valueFeature.getGetterName()/]()
 }
 
-[aClass.generateFunctionImplementationReceiver()/] SetValue(value interface{}) {
+[aClass.generateFunctionImplementationReceiver()/] SetValue(value [aPackage.getAnyType()/]) {
 [if valueFeature.isListType()]
 	l := [aClass.getReceiverName()/].[valueFeature.getGetterName()/]()
 	l.Clear()
 	l.AddAll(value.([ecorePrefix/]EList))
 [else]
-    [aClass.getReceiverName()/].[valueFeature.getSetterName()/](value[if valueFeature.eType.getType() <> 'interface{}'].([valueFeature.generateType()/])[/if])
+    [aClass.getReceiverName()/].[valueFeature.getSetterName()/](value[if not aPackage.isAnyType(valueFeature.eType.getType())].([valueFeature.generateType()/])[/if])
 [/if]
 }
 [/let]
