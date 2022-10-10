@@ -551,7 +551,7 @@ func [testMethodName/](t *testing.T) {
 [template public generateBasicSetDeclaration(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif]
-basic[aStructuralFeature.getSetterName().toUpperFirst()/]( [aStructuralFeature.generateType()/] , msgs [ecorePrefix/]ENotificationChain )  [ecorePrefix/]ENotificationChain
+basic[aStructuralFeature.getSetterName().toUpperFirst()/]( [aStructuralFeature.generateType()/] ,[ecorePrefix/]ENotificationChain ) [ecorePrefix/]ENotificationChain
 [/let]
 [/let]
 [/template]
@@ -684,7 +684,7 @@ func [testMethodName/](t *testing.T) {
 [template public generateBasicUnSetDeclaration(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 [let ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif]
-basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( [aStructuralFeature.generateType()/] , msgs [ecorePrefix/]ENotificationChain )  [ecorePrefix/]ENotificationChain
+basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( [aStructuralFeature.generateType()/] ,[ecorePrefix/]ENotificationChain ) [ecorePrefix/]ENotificationChain
 [/let]
 [/let]
 [/template]
