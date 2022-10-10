@@ -20,7 +20,9 @@
 
 [query public isInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
 
-[query public getInitializersInterface( aClass : EClass ) : String = aClass.getImplementationName() + 'Initializers'/]
+[query public getInitializersInterface( aClass : EClass ) : String = aClass.getInterfaceName().toLowerFirst() + 'Initializers'/]
+
+[query public getBasicsInterface( aClass : EClass ) : String = aClass.getInterfaceName().toLowerFirst() + 'Basics'/]
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature)]
 [if isGet()]
@@ -174,6 +176,17 @@ nil
 
 [/template]
 
+[template public generateBasicsMethodDeclaration(aStructuralFeature : EStructuralFeature , aClass : EClass)]
+[if isBasicGet() and not isReflectiveDelegation()]
+[aStructuralFeature.generateBasicGetDeclaration(aClass)/]
+[/if]
+[if isBasicSet() and not isReflectiveDelegation()]
+[aStructuralFeature.generateBasicSetDeclaration(aClass)/]
+[/if]
+[if isBasicUnSet() and not isReflectiveDelegation()]
+[aStructuralFeature.generateBasicUnSetDeclaration(aClass)/]
+[/if]
+[/template]
 
 [template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
 [if isGet()]
@@ -377,6 +390,10 @@ func [testMethodName/](t *testing.T) {
 
 [/template]
 
+[template public generateBasicGetDeclaration(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+basic[aStructuralFeature.getGetterName().toUpperFirst()/]() [aStructuralFeature.generateType()/]
+[/template]
+
 [template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 [aClass.generateFunctionImplementationReceiver()/] basic[aStructuralFeature.getGetterName().toUpperFirst()/]() [aStructuralFeature.generateType()/] {
 [let aPackage : EPackage =  aClass.ePackage ]
@@ -474,7 +491,7 @@ func [testMethodName/](t *testing.T) {
 		[/let]
 		[/let]
         }
-        notifications = [receiverName/].basic[methodName.toUpperFirst()/]( [newVarName/], notifications )
+        notifications = [receiverName/].asBasics().basic[methodName.toUpperFirst()/]( [newVarName/], notifications )
         if ( notifications != nil ) {
             notifications.Dispatch()
         }
@@ -502,7 +519,7 @@ func [testMethodName/](t *testing.T) {
             [/let]
             [/let]
         [/if]
-        notifications = [receiverName/].basic[methodName.toUpperFirst()/]([newVarName/],notifications)
+        notifications = [receiverName/].asBasics().basic[methodName.toUpperFirst()/]([newVarName/],notifications)
         if (notifications != nil) {
             notifications.Dispatch()
         }
@@ -529,6 +546,14 @@ func [testMethodName/](t *testing.T) {
 [/let]
 [/let]
 
+[/template]
+
+[template public generateBasicSetDeclaration(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
+[let ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif]
+basic[aStructuralFeature.getSetterName().toUpperFirst()/]( [aStructuralFeature.generateType()/] ,[ecorePrefix/]ENotificationChain ) [ecorePrefix/]ENotificationChain
+[/let]
+[/let]
 [/template]
 
 [template public generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
@@ -625,7 +650,7 @@ func [testMethodName/](t *testing.T) {
         notifications = [receiverName/].[varName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove( [receiverName/].AsEObject(), [reverseFeature.eContainingClass.getFeatureIDName(reverseFeature)/] , notifications )
             [/let]
         [/if]
-        notifications = basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](notifications)
+        notifications = [receiverName/].asBasics().basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](notifications)
         if notifications != nil {
             notifications.Dispatch()
         }
@@ -654,6 +679,14 @@ func [testMethodName/](t *testing.T) {
 [/let]
 [/let]
 
+[/template]
+
+[template public generateBasicUnSetDeclaration(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[let aPackage : EPackage = aClass.ePackage]
+[let ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif]
+basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( [aStructuralFeature.generateType()/] ,[ecorePrefix/]ENotificationChain ) [ecorePrefix/]ENotificationChain
+[/let]
+[/let]
 [/template]
 
 [template public generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]

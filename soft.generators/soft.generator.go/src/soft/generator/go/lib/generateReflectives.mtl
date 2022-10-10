@@ -123,7 +123,7 @@
 		if resolve {
 			return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
 		}
-		return  [aClass.getReceiverName()/].basic[anStructFeature.getGetterName().toUpperFirst()/]()
+		return  [aClass.getReceiverName()/].asBasics().basic[anStructFeature.getGetterName().toUpperFirst()/]()
 		[/if]		
 	[else] 
         return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
@@ -293,14 +293,14 @@
             msgs = [aClass.getReceiverName()/].EBasicRemoveFromContainer(msgs)
         }
         [if aFeature.isBasicSet()]
-        return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType()/]), msgs)
+        return [aClass.getReceiverName()/].asBasics().basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType()/]), msgs)
         [else]
         return [aClass.getReceiverName()/].EBasicSetContainer(otherEnd, [aClass.getQualifiedIDName(aFeature)/], msgs)
         [/if]
     [else]
         msgs := notifications
 		[if aFeature.isVolatile()]
-		[aFeature.name/] := [aClass.getReceiverName()/].[if aFeature.isProxy()]basic[aFeature.getGetterName().toUpperFirst()/][else][aFeature.getGetterName()/][/if]()
+		[aFeature.name/] := [aClass.getReceiverName()/].[if aFeature.isProxy()]asBasics().basic[aFeature.getGetterName().toUpperFirst()/][else][aFeature.getGetterName()/][/if]()
 		[else]
 		[aFeature.name/] := [aClass.getReceiverName()/].[aFeature.name/]
 		[/if]
@@ -313,7 +313,7 @@
                 [/let]
             [/if]
         }
-        return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType()/]) ,msgs)
+        return [aClass.getReceiverName()/].asBasics().basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType()/]) ,msgs)
     [/if]
 [/for]
     default:
@@ -337,9 +337,9 @@
     [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
         return [aClass.getReceiverName()/].EBasicSetContainer(nil, [aClass.getQualifiedIDName(aFeature)/], notifications)
     [elseif aFeature.isUnSet()]
-        return [aClass.getReceiverName()/].basic[aFeature.getUnSetterName().toUpperFirst()/](notifications)
+        return [aClass.getReceiverName()/].asBasics().basic[aFeature.getUnSetterName().toUpperFirst()/](notifications)
     [else]
-        return [aClass.getReceiverName()/].basic[aFeature.getSetterName().toUpperFirst()/](nil, notifications)
+        return [aClass.getReceiverName()/].asBasics().basic[aFeature.getSetterName().toUpperFirst()/](nil, notifications)
     [/if]
 [/for]
     default:
