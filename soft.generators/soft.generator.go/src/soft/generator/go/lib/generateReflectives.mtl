@@ -228,60 +228,52 @@
 [eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]arguments.Get([i-1/])[if needCast].([eParameter.generateEffectiveType()/])[/if][/let][/for])
 [/template]
 
+[template private generateGetAccessor(aClass : EClass,anStructFeature : EStructuralFeature) post (trim())]
+[aClass.getReceiverName()/].[if anStructFeature.isField()][anStructFeature.getVariableName()/][else]as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()[/if]
+[/template]
+
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
 [let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
 [if isListType()]
-    [if isField()]
-        [aClass.getReceiverName()/].[aAttribute.getVariableName()/] != nil && [aClass.getReceiverName()/].[aAttribute.getVariableName()/].Size() != 0
-    [else]
-        [aClass.getReceiverName()/].[aAttribute.getGetterName()/]().Size() != 0
-    [/if]
+    [if isField()][aClass.generateGetAccessor(anStructFeature)/] != nil && [/if][aClass.generateGetAccessor(anStructFeature)/].Size() != 0
 [else]
-    [let accessor : String = if isField() then aAttribute.getVariableName() else 'as'+ aClass.getInterfaceName()+ '().' + aAttribute.getGetterName()+'()' endif]
     [if eType.oclIsKindOf(EEnum)]
-        [aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue(aClass)/]
+        [aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass)/]
     [elseif eType.oclIsKindOf(EDataType)]
 		[let comparisonFunction : String = eType.oclAsType(EDataType).getComparisonFunction()]
 		[if comparisonFunction <> '']
 		[if comparisonFunction.at(1) = '!']
-		![aClass.getReceiverName()/].[accessor/].[comparisonFunction.substring(2)/]()
+		![aClass.generateGetAccessor(anStructFeature)/].[comparisonFunction.substring(2)/]()
 		[else]
-		[aClass.getReceiverName()/].[accessor/].[comparisonFunction/]()
+		[aClass.generateGetAccessor(anStructFeature)/].[comparisonFunction/]()
 		[/if]		
 		[else]
-        [aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue(aClass)/]
+        [aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass)/]
         [/if]
         [/let]
 	[else]
-		[aClass.getReceiverName()/].[accessor/] != [aAttribute.getDefaultValue(aClass)/]
+		[aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass)/]
     [/if]
-    [/let]
 [/if]
 [/let]
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
 [if isListType()]
-    [if isField()]
-        [aClass.getReceiverName()/].[anStructFeature.getVariableName()/] != nil && [aClass.getReceiverName()/].[anStructFeature.getVariableName()/].Size() != 0
-    [else]
-        [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]().Size() != 0
-    [/if]
+    [if isField()][aClass.generateGetAccessor(anStructFeature)/] != nil && [/if][aClass.generateGetAccessor(anStructFeature)/].Size() != 0
 [elseif anStructFeature.oclAsType(EReference).isBackReference() ]
     [if anStructFeature.eType.name <> 'EBoolean']
-    [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]() != nil
+    [aClass.generateGetAccessor(anStructFeature)/] != nil
     [else]
-    [aClass.getReceiverName()/].[anStructFeature.getGetterName()/]()
+    [aClass.generateGetAccessor(anStructFeature)/]
     [/if]
 [else]
-    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getGetterName()+'()' endif]
-        [aClass.getReceiverName()/].[accessor/] != [anStructFeature.eType.getDefaultValue(aClass)/]
-    [/let]
+	[aClass.generateGetAccessor(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(aClass)/]
 [/if]
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (eType.isAny()) post (trim())]
-[aClass.getReceiverName()/].[anStructFeature.getGetterName()/]() != [anStructFeature.eType.getDefaultValue(aClass)/]
+[aClass.generateGetAccessor(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(aClass)/]
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass) ]
