@@ -190,10 +190,14 @@ anyType = type
 [query public getTestValueImport( aClassifier : EClassifier,aPackage : EPackage ) : String =
     if aClassifier.oclIsKindOf( EDataType ) then 
 		let v : String = aClassifier.oclAsType(EDataType).getTestValue(aPackage) in
-		getImportForType(aPackage, v)
+		aPackage.getImportForType(v)
     else
-		if aClassifier.ePackage <> aPackage then aClassifier.ePackage.name else '' endif
-	endif	
+		if aClassifier.ePackage <> aPackage then 
+			aPackage.getImportForPackage(aClassifier.ePackage.name) 
+		else 
+			'' 
+		endif
+	endif
 /]
 
 
