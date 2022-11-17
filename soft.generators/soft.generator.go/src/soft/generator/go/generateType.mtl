@@ -96,6 +96,7 @@ anyType = type
         Sequence{ 'java.util.Map$Entry' , 'ecore.EMapEntry', 'nil' , 'nil', ''},
 		Sequence{ 'java.lang.Short' , 'short' , 'int16' , '0', '2' , ''},
         Sequence{ 'java.lang.String' , 'string', '""' , '"Test String"', ''},
+		Sequence{ 'java.lang.Error' , 'error', 'nil' , 'errors.New("Error")', ''},
 
 		Sequence{ 'com.google.common.primitives.UnsignedLong' , 'uint64', '0' , '1', ''},
 
@@ -185,6 +186,16 @@ anyType = type
 		 	) 
 	endif endif
 /]
+
+[query public getTestValueImport( aClassifier : EClassifier,aPackage : EPackage ) : String =
+    if aClassifier.oclIsKindOf( EDataType ) then 
+		let v : String = aClassifier.oclAsType(EDataType).getTestValue(aPackage) in
+		getImportForType(aPackage, v)
+    else
+		if aClassifier.ePackage <> aPackage then aClassifier.ePackage.name else '' endif
+	endif	
+/]
+
 
 [query public getType( aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then aClassifier.ePackage.getAnyType()
@@ -280,6 +291,8 @@ anyType = type
 	endif
 /]
 
+
+
 [query public getComparisonFunction( aDataType : EDataType) : String =
 	let typeName : String = aDataType.getInstanceTypeName() in 
 	aDataType.ePackage.getAllDataTypes()->iterate( s ; res : String = '' |
@@ -356,3 +369,5 @@ anyType = type
 		endif
     endif
 /]
+
+
