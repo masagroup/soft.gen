@@ -58,6 +58,7 @@ import (
               									    ,implementedFeatures.eType
 													,implementedFeatures->collect( getMapTypes() )->flatten()
 													}->flatten()->select( not oclIsUndefined() )->collect( cls | aPackage.getImport(cls) )->asSet()
+										, implementedFeatures->collect( f : EStructuralFeature | f.eType.getTestValueImport(aPackage) )->asSet()
 										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
 	"[i/]"
