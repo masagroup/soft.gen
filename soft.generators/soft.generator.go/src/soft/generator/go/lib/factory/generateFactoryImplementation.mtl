@@ -55,12 +55,21 @@ func new[className.toUpperFirst()/]() *[className/] {
     return factory 
 }
 
+[aPackage.generateFactoryImplementationMember()/] AsInternal() [aPackage.getFactoryInternalName()/] {
+	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryInternalName()/])
+}
+
+[aPackage.generateFactoryImplementationMember()/] AsEFactory()  [aPackage.getFactoryName()/] {
+	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryName()/])
+}
+
+
 [aPackage.generateFactoryImplementationMember()/] Create(eClass [if not aPackage.isEcorePackage()]ecore.[/if]EClass) [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
 	classID := eClass.GetClassifierID()
 	switch classID {
     [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
     case [aClass.getClassifierIDName()/]:
-        return [aPackage.getFactoryReceiverName()/].Create[aClass.name/]()
+        return [aPackage.getFactoryReceiverName()/].AsEFactory().Create[aClass.name/]()
     [/for]
     default:
         panic("Create: " + strconv.Itoa( classID ) + " not found")
@@ -71,28 +80,28 @@ func new[className.toUpperFirst()/]() *[className/] {
 [aPackage.generateFactoryImplementationMember()/] Create[aClass.name/]() [aClass.getInterfaceName()/] {
 	return [if aClass.hasExtension()][aClass.getConstructorExtensionName()/][else][aClass.getConstructorName()/][/if]()
 }
+
 [let ref : OrderedSet(EReference) = aClass.getAllContainers()]
 [for(aReference:EReference | ref->sortedBy(name))]
 [aPackage.generateFactoryImplementationMember()/] Create[aClass.name/]FromContainer(eContainer [aReference.eGenericType.eClassifier.name/]) [aClass.getInterfaceName()/] {
-    [generateCreateFunctionContent(aClass, aReference, false)/]
+    [aPackage.generateCreateFunctionContent(aClass, aReference, false)/]
 }
+
 [if(aClass.getElementIDAccessorName().size() > 0)]
 [aPackage.generateFactoryImplementationMember()/] Create[aClass.name/]FromContainerAndClassID(eContainer [aReference.eGenericType.eClassifier.name/], classID int) [aClass.getInterfaceName()/] {
-    [generateCreateFunctionContent(aClass, aReference, true)/]
+    [aPackage.generateCreateFunctionContent(aClass, aReference, true)/]
 }
 [/if]
+
 [/for]
 [/let]
 [/for]
 [aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
 	classID  := eDataType.GetClassifierID()
-[if dataTypes->notEmpty()]
-    internal := [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryInternalName()/])
-[/if] 
 	switch classID {
     [for (aDataType : EDataType | dataTypes)]
     case [aDataType.getClassifierIDName()/]:
-        return internal.create[aDataType.name/]FromString(eDataType, literalValue)
+        return [aPackage.getFactoryReceiverName()/].AsInternal().create[aDataType.name/]FromString(eDataType, literalValue)
     [/for]
     default:
         panic("The datatype '" + eDataType.GetName() + "' is not a valid classifier")
@@ -101,13 +110,10 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [aPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
     classID := eDataType.GetClassifierID()
-[if dataTypes->notEmpty()]
-    internal := [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryInternalName()/])
-[/if]
     switch classID {
 [for (aDataType : EDataType | dataTypes)]
     case [aDataType.getClassifierIDName()/]:
-        return internal.convert[aDataType.name/]ToString(eDataType, instanceValue)
+        return [aPackage.getFactoryReceiverName()/].AsInternal().convert[aDataType.name/]ToString(eDataType, instanceValue)
 [/for]
     default:
         panic("The datatype '" + eDataType.GetName() + "' is not a valid classifier")
@@ -357,8 +363,8 @@ const (
 
 [/template]
 
-[template public generateCreateFunctionContent(aClass : EClass, aReference : EReference, addID : Boolean)]
-element := [if aClass.hasExtension()][aClass.getConstructorExtensionName()/][else][aClass.getConstructorName()/][/if]()
+[template public generateCreateFunctionContent(aPackage : EPackage, aClass : EClass, aReference : EReference, addID : Boolean)]
+element := [aPackage.getFactoryReceiverName()/].AsEFactory().Create[aClass.name/]()
 [if(addID)]
 element.Set[aClass.getElementIDAccessorName()/]ID(classID)
 [/if]
