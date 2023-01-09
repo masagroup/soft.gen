@@ -313,9 +313,12 @@ anyType = type
 /] 
 
 [query public getAllImports(aPackage : EPackage) : OclAny =
+	let property : OclAny = getProperty('imports') in 
+	let allImports : String = (if property.oclIsUndefined() or property = '' then '' else property.oclAsType(String) endif) + 
+							  (if aPackage.hasKey('imports') then ';' + aPackage.valueKey('imports') else '' endif) in
 	let namespacesToPackages : OclAny = 
-    if aPackage.hasKey('imports') then
-		let annotations : Sequence(String) = aPackage.valueKey('imports').tokenize(' \r\n') in
+    if allImports <> '' then
+		let annotations : Sequence(String) = allImports.tokenize('; \r\n') in
         annotations->iterate( annotation : String ; res : OclAny = mapNew('getNamespaceToPackages_' + aPackage.name) | (
         	let index : Integer = annotation.index('=') in 
             if index = -1 then

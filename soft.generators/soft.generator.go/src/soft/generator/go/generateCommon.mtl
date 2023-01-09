@@ -15,7 +15,26 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 
-[query public getGoVersion(aPackage : EPackage) : String = if hasKey('go-version') then valueKey('go-version') else '1.19' endif/]
+[query public hasPackageProperty(anPackage : EPackage, aProperty : String ) : Boolean =
+	let property : OclAny = getProperty(aProperty) in 
+	if property.oclIsUndefined() or property = '' then
+		anPackage.hasKey(aProperty)
+	else
+		true
+	endif
+/]
+
+[query public getPackageProperty(anPackage : EPackage, aProperty : String ) : String =
+	let property : OclAny = getProperty(aProperty) in 
+	if property.oclIsUndefined() or property = '' then
+		anPackage.valueKey(aProperty)
+	else
+		property
+	endif
+/]
+
+
+[query public getGoVersion(aPackage : EPackage) : String = if aPackage.hasPackageProperty('go-version') then aPackage.getPackageProperty('go-version') else '1.19' endif/]
 
 [query public compareVersion(aAny : OclAny, v1 : String, v2 : String) : Integer =
 	let v1Tokenized : Sequence(String) = v1.tokenize('.') in
