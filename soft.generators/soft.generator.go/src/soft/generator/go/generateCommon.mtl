@@ -15,7 +15,26 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 
-[query public getGoVersion(aPackage : EPackage) : String = if hasKey('go-version') then valueKey('go-version') else '1.19' endif/]
+[query public hasPackageProperty(anPackage : EPackage, aProperty : String ) : Boolean =
+	let property : OclAny = getProperty(aProperty) in 
+	if property.oclIsUndefined() or property = '' then
+		anPackage.hasKey(aProperty)
+	else
+		true
+	endif
+/]
+
+[query public getPackageProperty(anPackage : EPackage, aProperty : String ) : String =
+	let property : OclAny = getProperty(aProperty) in 
+	if property.oclIsUndefined() or property = '' then
+		anPackage.valueKey(aProperty)
+	else
+		property
+	endif
+/]
+
+
+[query public getGoVersion(aPackage : EPackage) : String = if aPackage.hasPackageProperty('go-version') then aPackage.getPackageProperty('go-version') else '1.19' endif/]
 
 [query public compareVersion(aAny : OclAny, v1 : String, v2 : String) : Integer =
 	let v1Tokenized : Sequence(String) = v1.tokenize('.') in
@@ -57,7 +76,27 @@
 [/template]
 
 [query public hasExtension( aModelElement : EModelElement ) : Boolean = hasKey('extension') and valueKey('extension' )='true'/]
-[query public isExported( aNamedElement : ENamedElement ) : Boolean = if hasKey('exported') then valueKey('exported') = 'true' else false endif/]
+[query public isExported( aNamedElement : ENamedElement ) : Boolean = 
+	if aNamedElement.oclIsKindOf(EPackage) then aNamedElement.oclAsType(EPackage).isExported()
+	else if aNamedElement.oclIsKindOf(EClassifier) then aNamedElement.oclAsType(EClassifier).isExported()
+	else false
+	endif endif
+/]
+
+[query public isExported( aPackage : EPackage ) : Boolean = 
+	if aPackage.hasPackageProperty('exported') then 
+		aPackage.getPackageProperty('exported') = 'true' 
+	else 
+		false 
+	endif
+/]
+[query public isExported( aClassifier : EClassifier ) : Boolean = 
+	if aClassifier.hasKey('exported') then 
+		aClassifier.valueKey('exported') = 'true' 
+	else 
+		aClassifier.ePackage.isExported() 
+	endif
+/]
 
 [**
  * Factory / Package / Classes Interfaces and Implementations Names  
@@ -130,12 +169,7 @@ endif endif endif
 [query public getImplementationName( aPackage : EPackage ) : String = aPackage.getImplementationName( getPackageName() ) /]
 [query private getImplementationName( aNamedElement : ENamedElement , aName : String ) : String = 
     let name : String = aNamedElement.getElementName( aName, 'implementationName', '$1Impl') in
-    if  aNamedElement.isExported() then 
-        if ( aNamedElement.hasExtension() ) then
-            name.toLowerFirst()
-        else 
-            name.toUpperFirst()
-        endif
+    if  aNamedElement.isExported() then name.toUpperFirst()
     else name.toLowerFirst() endif/]
 
 [query public getQualifiedImplementationName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getImplementationName()/]

@@ -74,21 +74,21 @@ func (p *[anEPackage.getImplementationName()/]) [aOperation.getReflectiveGetterN
 [/template]
 
 [template private generateCreation(aEClass : EClass)]
-p.[aEClass.getElementInstanceName()/] = factory.CreateEClassFromContainerAndClassID(p, [aEClass.getClassifierIDName()/])
+p.[aEClass.getElementInstanceName()/] = ecoreFactory.CreateEClassFromContainerAndClassID(p, [aEClass.getClassifierIDName()/])
 [/template]
 
 [template private generateCreation(aAttribute : EAttribute)]
-factory.CreateEAttributeFromContainerAndClassID(p.[aAttribute.eContainingClass.getElementInstanceName()/], [aAttribute.eContainingClass.getFeatureIDName(aAttribute)/])
+ecoreFactory.CreateEAttributeFromContainerAndClassID(p.[aAttribute.eContainingClass.getElementInstanceName()/], [aAttribute.eContainingClass.getFeatureIDName(aAttribute)/])
 
 [/template]
 
 [template private generateCreation(aReference : EReference)]
-factory.CreateEReferenceFromContainerAndClassID(p.[aReference.eContainingClass.getElementInstanceName()/], [aReference.eContainingClass.getFeatureIDName(aReference)/])
+ecoreFactory.CreateEReferenceFromContainerAndClassID(p.[aReference.eContainingClass.getElementInstanceName()/], [aReference.eContainingClass.getFeatureIDName(aReference)/])
 
 [/template]
 
 [template private generateCreation(anEOperation : EOperation)]
-factory.CreateEOperationFromContainerAndClassID(p.[anEOperation.eContainingClass.getElementInstanceName()/], [anEOperation.eContainingClass.getOperationIDName(anEOperation)/])
+ecoreFactory.CreateEOperationFromContainerAndClassID(p.[anEOperation.eContainingClass.getElementInstanceName()/], [anEOperation.eContainingClass.getOperationIDName(anEOperation)/])
 
 [/template]
 
@@ -96,12 +96,12 @@ factory.CreateEOperationFromContainerAndClassID(p.[anEOperation.eContainingClass
 [/template]
 
 [template private generateCreation(aEnum : EEnum)]
-p.[aEnum.getElementInstanceName()/] = factory.CreateEEnumFromContainerAndClassID(p, [aEnum.getClassifierIDName()/])
+p.[aEnum.getElementInstanceName()/] = ecoreFactory.CreateEEnumFromContainerAndClassID(p, [aEnum.getClassifierIDName()/])
 
 [/template]
 
 [template private generateCreation(anEDatatype : EDataType)]
-p.[anEDatatype.getElementInstanceName()/] = factory.CreateEDataTypeFromContainerAndClassID(p, [anEDatatype.getClassifierIDName()/])
+p.[anEDatatype.getElementInstanceName()/] = ecoreFactory.CreateEDataTypeFromContainerAndClassID(p, [anEDatatype.getClassifierIDName()/])
 
 [/template]
 
@@ -193,17 +193,17 @@ type [className/] struct {
 func new[className.toUpperFirst()/]() *[className/] {
     p := new([className/])
     p.SetInterfaces(p)
-	p.Initialize()
+	p.Initialize(GetFactory())
     return p
 }
 
-func (p *[className/])Initialize() {
+func (p *[className/])Initialize(packageFactory [anEPackage.getFactoryName()/]) {
 	p.EPackageExt.Initialize()
 	p.SetName(NAME)
     p.SetNsPrefix(NS_PREFIX)
     p.SetNsURI(NS_URI)
-	p.SetEFactoryInstance(GetFactory())
-    p.createPackageContents()
+	p.SetEFactoryInstance(packageFactory)
+    p.createPackageContents([if not anEPackage.isEcorePackage()]ecore.[/if]GetFactory())
     p.initializePackageContents()
     p.CreateResource()
 }
@@ -216,9 +216,7 @@ func (p *[className/])Initialize() {
 [/for]
 [allDataTypes.generateGetter(anEPackage)/]
 
-func (p *[className/])createPackageContents() {
-[if allClasses->notEmpty() or allDataTypes->notEmpty()]
-	factory := [if not anEPackage.isEcorePackage()]ecore.[/if]GetFactory()
+func (p *[className/])createPackageContents(ecoreFactory  [if not anEPackage.isEcorePackage()]ecore.[/if]EcoreFactory) {
 [for (aClass : EClass | allClasses)]
 	
 	[aClass.generateCreation()/]
@@ -226,7 +224,6 @@ func (p *[className/])createPackageContents() {
 [/for]
 
 	[allDataTypes.generateCreation()/]
-[/if]
 }
 
 func (p *[className/])initializePackageContents() {

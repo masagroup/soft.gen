@@ -16,7 +16,7 @@
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
 
-[query public isReflectiveDelegation(anPackage : EPackage ) : Boolean = anPackage.hasKey('featureDelegation') and anPackage.valueKey('featureDelegation') = 'Reflective'/]
+[query public isReflectiveDelegation(anPackage : EPackage ) : Boolean = anPackage.hasPackageProperty('featureDelegation') and anPackage.getPackageProperty('featureDelegation') = 'Reflective'/]
 
 [query public isReflectiveDelegation(aClass : EClass) : Boolean = aClass.ePackage.isReflectiveDelegation()/]
 
@@ -52,8 +52,8 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
     else if ( aClass.eSuperTypes->isEmpty() ) then
         if ( aClass.name = 'EObject' ) then
             Sequence{'ecore.ENotifier'}
-        else if ( aPackage.hasKey('rootExtendsInterface') ) then
-			Sequence{aPackage.valueKey('rootExtendsInterface')}
+        else if ( aPackage.hasPackageProperty('rootExtendsInterface') ) then
+			Sequence{aPackage.getPackageProperty('rootExtendsInterface')}
 		else
             Sequence{'ecore.EObject'}
         endif endif
@@ -68,8 +68,8 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
     if ( extendsClass.oclIsUndefined() ) then
         if ( aClass.name = 'EObject' ) then
             'ecore.BasicEObjectImpl'
-		else if ( aPackage.hasKey('rootExtendsClass') ) then
-			aPackage.valueKey('rootExtendsClass')
+		else if ( aPackage.hasPackageProperty('rootExtendsClass') ) then
+			aPackage.getPackageProperty('rootExtendsClass')
 		else if ( aPackage.isReflectiveDelegation() ) then
 			'ecore.ReflectiveEObjectImpl'
 		else
@@ -84,14 +84,11 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
     endif
 /]
 
-[query private isUpperFirst( aString : String ) : Boolean = aString.toUpperFirst() = aString /]
-
 [query public getConstructorName( aClass : EClass ) : String = getConstructorName(aClass.getImplementationName())/]
 [query public getConstructorName( aQualifiedName : String ) : String =
     let index : Integer = aQualifiedName.index('.') in
     let className : String = if index = -1 then aQualifiedName else aQualifiedName.substring( index + 1 ) endif in
-    let new : String = if isUpperFirst( className ) then 'New' else 'new' endif in
-    if index = -1 then new + className.toUpperFirst() else aQualifiedName.substring(1, index - 1) + '.' + new + className.toUpperFirst() endif
+    if index = -1 then 'new' + className.toUpperFirst() else aQualifiedName.substring(1, index - 1) + '.' + 'new' + className.toUpperFirst() endif
 /]
 [query public getConstructorExtensionName( aClass : EClass ) : String = getConstructorName(aClass.getExtensionName())/]
 
