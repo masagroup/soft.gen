@@ -164,14 +164,14 @@ p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataTyp
 	allDataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 	annotationSources : OrderedSet(String) = anEPackage.getAnnotationSources();
 	ecorePrefix : String = if anEPackage.isEcorePackage() then '' else 'ecore.' endif;
-	ecorePackage : String = anEPackage.getEcorePackage();
+	ecoreNamespace : String = anEPackage.getGoEcoreNamespace();
 }]
 [file (anEPackage.getOutputDirectory() + '/'+ anEPackage.getImplementationFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
 package [anEPackage.name/]
 
-[let imports : OrderedSet(String) = Set { if not anEPackage.isEcorePackage() then Set{ ecorePackage , 'ecore'} else Set{} endif
+[let imports : OrderedSet(String) = Set { if not anEPackage.isEcorePackage() then Set{ ecoreNamespace , 'ecore'} else Set{} endif
 										, anEPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.name->asSet()
                                         }->flatten()
 										 ->select( s | s <> anEPackage.name)
@@ -195,7 +195,7 @@ type [className/] struct {
 func new[className.toUpperFirst()/]() *[className/] {
     p := new([className/])
     p.SetInterfaces(p)
-	p.Initialize(GetFactory(),[getShortQualifiedName(ecorePackage + '.GetFactory()',anEPackage.name)/])
+	p.Initialize(GetFactory(),[getShortQualifiedName(ecoreNamespace + '.GetFactory()',anEPackage.name)/])
     return p
 }
 
