@@ -29,7 +29,10 @@ package [aPackage.name/]
 
 import "strconv"
 [if not aPackage.isEcorePackage()]
-import "[getImportForPackage('ecore')/]"
+import "[aPackage.getDefaultEcoreModulePath()/]"
+[if not aPackage.isDefaultEcoreModule()]
+import "[aPackage.getEcoreModulePath()/]"
+[/if]
 [/if]
 [if dataTypes->exists( getType() = '*time.Time')]
 import "time"
@@ -45,7 +48,7 @@ type [aPackage.getFactoryInternalName()/] interface {
 }
 
 type [className/] struct {
-    [if not aPackage.isEcorePackage()]ecore.[/if]EFactoryExt
+	[if not aPackage.isEcorePackage()][aPackage.getEcoreModuleNamespace()/].[/if]EFactoryExt
 }
 
 func new[className.toUpperFirst()/]() *[className/] {

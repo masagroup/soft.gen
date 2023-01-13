@@ -335,7 +335,8 @@ anyType = type
     else
         mapNew('getNamespaceToPackages_' + aPackage.name)
     endif in
-    namespacesToPackages.mapPut('ecore','github.com/masagroup/soft.go/ecore')
+    namespacesToPackages.mapPut(getEcoreModuleNamespace(),getEcoreModulePath())
+					    .mapPut(getDefaultEcoreModuleNamespace(),getDefaultEcoreModulePath())
 /]
 
 
