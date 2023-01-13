@@ -55,20 +55,16 @@
 [template private getMapConstructor( anEReference : EReference, aClass : EClass) post(trim())]
 [let aPackage : EPackage = aClass.ePackage]
 [let receiverName : String = aClass.getReceiverName()]
-[let ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.' else '' endif]
-[let packageName : String = if anEReference.eType.ePackage.isEcorePackage() then aPackage.getEcoreModuleNamespace() else anEReference.eType.ePackage.name endif]
-[let packagePrefix : String = if packageName = aPackage.name then '' else packageName + '.' endif]
+[let packageInstance : String = anEReference.eType.getPackageInstance(aPackage)]
 [if anEReference.eOpposite.oclIsUndefined() ]
-[ecorePrefix/]NewBasicEObjectMap([packagePrefix/]GetPackage().[anEReference.eType.getReflectiveGetterName()/](),[receiverName/].AsEObjectInternal(),[aClass.getFeatureIDName(anEReference)/],-1,[anEReference.isUnSettable()/] )
+[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEObjectMap([packageInstance/].[anEReference.eType.getReflectiveGetterName()/](),[receiverName/].AsEObjectInternal(),[aClass.getFeatureIDName(anEReference)/],-1,[anEReference.isUnSettable()/] )
 [else]
 	[let reverseFeature :EReference = anEReference.eOpposite ]
     [let reverseClass :EClass = reverseFeature.eContainingClass ]
-[ecorePrefix/]NewBasicEObjectMap([packagePrefix/]GetPackage().[anEReference.eType.getReflectiveGetterName()/](),[receiverName/].AsEObjectInternal(),[aClass.getFeatureIDName(anEReference)/],[reverseClass.getFeatureIDName(reverseFeature)/],[anEReference.isUnSettable()/] )
+[if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEObjectMap([packageInstance/].[anEReference.eType.getReflectiveGetterName()/](),[receiverName/].AsEObjectInternal(),[aClass.getFeatureIDName(anEReference)/],[reverseClass.getFeatureIDName(reverseFeature)/],[anEReference.isUnSettable()/] )
 	[/let]
 	[/let]
 [/if]
-[/let]
-[/let]
 [/let]
 [/let]
 [/let]

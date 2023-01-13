@@ -342,3 +342,9 @@ methodName.toUpperFirst()
 	}
 /]
 
+[query public getPackageInstance(aClassifier : EClassifier, aPackage : EPackage) : String = 
+	let packageNamespace : String = if aClassifier.ePackage.isEcorePackage() then aPackage.getEcoreModuleNamespace() else aClassifier.ePackage.name endif in
+	let packagePrefix : String = if packageNamespace = aPackage.name then '' else packageNamespace + '.' endif in
+	packagePrefix + 'GetPackage()'
+/]
+
