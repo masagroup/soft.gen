@@ -36,7 +36,7 @@
 [query private getPackageGetter(aEClass : EClass, supertype : EClass) : String = getPackageGetter(supertype.oclAsType(EClassifier),aEClass.oclAsType(EClassifier)) /]
 [query private getPackageGetter(aEClassifier1 : EClassifier, aEClassifier2 : EClassifier) : String = getPackageInstance(aEClassifier1, aEClassifier2) + '.' + aEClassifier1.getReflectiveGetterName() + '()' /]
 [query private getPackageInstance(aClassifier1 : EClassifier ,aClassifier2 : EClassifier ) : String = if(aClassifier1.ePackage.name = aClassifier2.ePackage.name ) then 'p' else aClassifier1.getPackageInstance(aClassifier2.ePackage) endif/]
-[query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'nil' else getPackageInstance(anEClassifier, anOperation.eContainingClass) + anEClassifier.getReflectiveGetterName() + '()' endif/]
+[query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'nil' else getPackageInstance(anEClassifier, anOperation.eContainingClass) + '.' +anEClassifier.getReflectiveGetterName() + '()' endif/]
 
 
 [template private generateDataMember(anENamedElement : ENamedElement, anEPackage : EPackage)] 
