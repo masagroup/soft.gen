@@ -73,11 +73,28 @@
 /]
 
 [**
- * Get Ecore package name 
+ * Returns true if ecore module is the default one
 */]
-[query public getGoEcorePackage(aPackage : EPackage) : String =
-	 if aPackage.hasPackageProperty('goEcorePackage') then 
-		let p : String = aPackage.getPackageProperty('goEcorePackage') in
+[query public isDefaultEcoreModule(aPackage : EPackage) : Boolean =
+	aPackage.getEcoreModulePath() = 'github.com/masagroup/soft.go/ecore' 
+/]
+
+[**
+ * Get Ecore module default path
+*/]
+[query public getDefaultEcoreModulePath(aPackage : EPackage) : String = 'github.com/masagroup/soft.go/ecore' /]
+
+[**
+ * Get Ecore module default namespace
+*/]
+[query public getDefaultEcoreModuleNamespace(aPackage : EPackage) : String = 'ecore' /]
+
+[**
+ * Get Ecore module path
+*/]
+[query public getEcoreModulePath(aPackage : EPackage) : String =
+	 if aPackage.hasPackageProperty('ecoreModule') then 
+		let p : String = aPackage.getPackageProperty('ecoreModule') in
 		let index : Integer = p.index('=') in 
         if index = -1 then
 			p
@@ -85,13 +102,16 @@
             p.substring(index+1) 
         endif
 	else 
-		'github.com/masagroup/soft.go/ecore' 
+		aPackage.getDefaultEcoreModulePath()
 	endif
 /]
 
-[query public getGoEcoreNamespace(aPackage : EPackage) : String =
-	if aPackage.hasPackageProperty('goEcorePackage') then
-		let p : String = aPackage.getGoEcorePackage() in
+[**
+ * Get Ecore module namespace
+*/]
+[query public getEcoreModuleNamespace(aPackage : EPackage) : String =
+	if aPackage.hasPackageProperty('ecoreModule') then
+		let p : String = aPackage.getPackageProperty('ecoreModule') in
 		let index : Integer = p.index('=') in 
         if index = -1 then
 			let namespaceIndex : Integer = p.lastIndexOf('/') in
@@ -104,7 +124,7 @@
             p.substring(1,index-1)
         endif
 	else 
-		'ecore' 
+		aPackage.getDefaultEcoreModuleNamespace()
 	endif
 /]
 

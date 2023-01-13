@@ -71,9 +71,9 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
 		else if ( aPackage.hasPackageProperty('rootExtendsClass') ) then
 			aPackage.getPackageProperty('rootExtendsClass')
 		else if ( aPackage.isReflectiveDelegation() ) then
-			aPackage.getGoEcoreNamespace() + '.ReflectiveEObjectImpl'
+			aPackage.getEcoreModuleNamespace() + '.ReflectiveEObjectImpl'
 		else
-            aPackage.getGoEcoreNamespace() + '.EObjectImpl'
+            aPackage.getEcoreModuleNamespace() + '.EObjectImpl'
         endif endif endif 
     else
         if ( extendsClass.hasExtension() ) then

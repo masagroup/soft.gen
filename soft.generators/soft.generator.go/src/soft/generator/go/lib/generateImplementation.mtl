@@ -46,8 +46,8 @@ package [aPackage.name/]
 [let imports : OrderedSet(String) = Set { Set { aPackage.getImportForType(classExtend) }
 									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
-										, if not aPackage.isEcorePackage() then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
-										, if not aPackage.isEcorePackage() then aClass.getReferencedMapTypes()->collect( cls | if cls.ePackage.isEcorePackage() then aPackage.getGoEcorePackage() else '' endif) else Set{} endif
+										, if not aPackage.isEcorePackage() then Set{ aPackage.getDefaultEcoreModulePath() } else Set{} endif
+										, if not aPackage.isEcorePackage() then aClass.getReferencedMapTypes()->collect( cls | if cls.ePackage.isEcorePackage() then aPackage.getEcoreModulePath() else '' endif) else Set{} endif
 										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
 import "[i/]"

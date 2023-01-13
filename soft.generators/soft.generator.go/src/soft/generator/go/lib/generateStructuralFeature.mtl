@@ -56,7 +56,7 @@
 [let aPackage : EPackage = aClass.ePackage]
 [let receiverName : String = aClass.getReceiverName()]
 [let ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.' else '' endif]
-[let packageName : String = if anEReference.eType.ePackage.isEcorePackage() then aPackage.getGoEcoreNamespace() else anEReference.eType.ePackage.name endif]
+[let packageName : String = if anEReference.eType.ePackage.isEcorePackage() then aPackage.getEcoreModuleNamespace() else anEReference.eType.ePackage.name endif]
 [let packagePrefix : String = if packageName = aPackage.name then '' else packageName + '.' endif]
 [if anEReference.eOpposite.oclIsUndefined() ]
 [ecorePrefix/]NewBasicEObjectMap([packagePrefix/]GetPackage().[anEReference.eType.getReflectiveGetterName()/](),[receiverName/].AsEObjectInternal(),[aClass.getFeatureIDName(anEReference)/],-1,[anEReference.isUnSettable()/] )

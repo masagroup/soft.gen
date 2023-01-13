@@ -163,8 +163,8 @@ p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataTyp
 	allClasses :  OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
 	allDataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 	annotationSources : OrderedSet(String) = anEPackage.getAnnotationSources();
-	ecorePrefix : String = if anEPackage.isEcorePackage() then '' else 'ecore.' endif;
-	ecoreNamespace : String = anEPackage.getGoEcoreNamespace();
+	ecorePrefix : String = if anEPackage.isEcorePackage() then '' else anEPackage.getDefaultEcoreModuleNamespace() + '.' endif;
+	ecoreNamespace : String = anEPackage.getEcoreModuleNamespace();
 }]
 [file (anEPackage.getOutputDirectory() + '/'+ anEPackage.getImplementationFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
@@ -187,8 +187,8 @@ import "[i/]"
 
 // [className/] is the [anEPackage.getInterfaceName()/] implementation
 type [className/] struct {
-    [ecorePrefix/]EPackageExt
-	[allClasses.generateDataMember(anEPackage)/]
+	[if not anEPackage.isEcorePackage()][ecoreNamespace/].[/if]EPackageExt
+    [allClasses.generateDataMember(anEPackage)/]
     [allDataTypes.generateDataMember(anEPackage)/]
 }
 
