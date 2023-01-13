@@ -23,6 +23,10 @@
 [import soft::generator::go::lib::generateStructuralFeature/]
 [import soft::generator::go::lib::generateReflectives/]
 
+[query private getReferencedMapTypes(aClass : EClass) : Set(EClassifier) = 
+	aClass.getImplementedFeatures()->select(feature : EStructuralFeature | feature.isMapType() ).eType->asSet()
+/]
+
 [template public generateImplementation(aClass : EClass) { 
 	implementationName : String = aClass.getImplementationName(); 
 	aPackage : EPackage = aClass.ePackage; 
@@ -39,10 +43,11 @@
 
 package [aPackage.name/]
 
-[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() then Set{ '_ '+ aPackage.getGoEcorePackage(), '_ '+ aPackage.getImportForPackage('ecore') } else Set{} endif
-										, Set { aPackage.getImportForType(classExtend) }
+[let imports : OrderedSet(String) = Set { Set { aPackage.getImportForType(classExtend) }
 									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
+										, if not aPackage.isEcorePackage() then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
+										, if not aPackage.isEcorePackage() then aClass.getReferencedMapTypes()->collect( cls | if cls.ePackage.isEcorePackage() then aPackage.getGoEcorePackage() else '' endif) else Set{} endif
 										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
 import "[i/]"
