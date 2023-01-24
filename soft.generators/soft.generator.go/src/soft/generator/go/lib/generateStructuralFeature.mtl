@@ -166,6 +166,7 @@ nil
 [/if]
 }
 
+
 [/template]
 
 [template public generateBasicsMethodDeclaration(aStructuralFeature : EStructuralFeature , aClass : EClass)]
