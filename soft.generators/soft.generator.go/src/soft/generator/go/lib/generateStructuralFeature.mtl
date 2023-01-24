@@ -635,10 +635,10 @@ func (c *[aClass.getMockName()/]_[methodName/]_Call) Return() *[aClass.getMockNa
 }]
 // [testMethodName/] tests method [unsetMethodName/]
 func [testMethodName/](t *testing.T) {
-	o := &[mockName/]{}
-	o.On("[unsetMethodName/]").Once()
+	o := New[mockName/](t)
+	m := new[mockName/]Run(t)
+	o.EXPECT().[unsetMethodName/]().Run(func(){ m.Run() } ).Once()
 	o.[unsetMethodName/]()
-	o.AssertExpectations(t)
 }
 [/template]
 
