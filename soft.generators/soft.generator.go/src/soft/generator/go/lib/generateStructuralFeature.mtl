@@ -258,7 +258,7 @@ func (e *[aClass.getMockName()/]_Expecter) [methodName/]() *[aClass.getMockName(
 }
 
 func (c *[aClass.getMockName()/]_[methodName/]_Call) Run(run func()) *[aClass.getMockName()/]_[methodName/]_Call {
-	c.Call.Run(func(args mock.Arguments) {
+	c.Call.Run(func(mock.Arguments) {
 		run()
 	})
 	return c
@@ -460,6 +460,26 @@ basic[aStructuralFeature.getGetterName().toUpperFirst()/]() [aStructuralFeature.
 [aClass.generateFunctionMockReceiver()/] [methodName/]( [newVarName/] [aStructuralFeature.generateType()/] ) {
 	[aClass.getReceiverName()/].Called([newVarName/])
 }
+
+type [aClass.getMockName()/]_[methodName/]_Call struct {
+	*mock.Call
+}
+
+func (e *[aClass.getMockName()/]_Expecter) [methodName/]([newVarName/] [aStructuralFeature.generateType()/]) *[aClass.getMockName()/]_[methodName/]_Call {
+	return &[aClass.getMockName()/]_[methodName/]_Call{Call: e.Mock.On("[methodName/]",[newVarName/])}
+}
+
+func (c *[aClass.getMockName()/]_[methodName/]_Call) Run(run func([newVarName/] [aStructuralFeature.generateType()/])) *[aClass.getMockName()/]_[methodName/]_Call {
+	c.Call.Run(func(args mock.Arguments) {
+		run(args['['/]0[']'/].([aStructuralFeature.generateType()/]))
+	})
+	return c
+}
+
+func (c *[aClass.getMockName()/]_[methodName/]_Call) Return() *[aClass.getMockName()/]_[methodName/]_Call {
+	c.Call.Return()
+	return c
+}
 [/let]
 [/let]
 [/let]
@@ -614,6 +634,26 @@ basic[aStructuralFeature.getSetterName().toUpperFirst()/]( [aStructuralFeature.g
 // [methodName/] provides mock implementation for unset the value of [aStructuralFeature.getVariableName()/]
 [aClass.generateFunctionMockReceiver()/] [methodName/]() {
 	[aClass.getReceiverName()/].Called()
+}
+
+type [aClass.getMockName()/]_[methodName/]_Call struct {
+	*mock.Call
+}
+
+func (e *[aClass.getMockName()/]_Expecter) [methodName/]() *[aClass.getMockName()/]_[methodName/]_Call {
+	return &[aClass.getMockName()/]_[methodName/]_Call{Call: e.Mock.On("[methodName/]")}
+}
+
+func (c *[aClass.getMockName()/]_[methodName/]_Call) Run(run func()) *[aClass.getMockName()/]_[methodName/]_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *[aClass.getMockName()/]_[methodName/]_Call) Return() *[aClass.getMockName()/]_[methodName/]_Call {
+	c.Call.Return()
+	return c
 }
 [/let]
 [/template]
