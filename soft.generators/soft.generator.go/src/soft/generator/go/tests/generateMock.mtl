@@ -41,6 +41,7 @@
 	mockExtends : String = aClass.getMockExtends();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
+	mockName : String = aClass.getMockName();
 }]
 [file (ePackage.getOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
@@ -57,22 +58,35 @@ import "[i/]"
 [/for]
 [/let]
 
-type [aClass.getMockName()/] struct {
+type [mockName/] struct {
 	[getShortQualifiedName( mockExtends ,aPackage.name)/]
 }
 
-type [aClass.getMockName()/]_Expecter struct {
+type [mockName/]_Expecter struct {
 	[getShortQualifiedName( mockExtends ,aPackage.name)/]_Expecter
 }
 
-[aClass.generateFunctionMockReceiver()/] EXPECT() *[aClass.getMockName()/]_Expecter {
-	e := &[aClass.getMockName()/]_Expecter{}
+[aClass.generateFunctionMockReceiver()/] EXPECT() *[mockName/]_Expecter {
+	e := &[mockName/]_Expecter{}
 	e.Mock = &[aClass.getReceiverName()/].Mock
 	return e
 }
 
 [features.generateMock(aClass)/]
 [operations.generateMock(aClass)/]
+
+type mockConstructorTestingTNew[mockName/] interface {
+	mock.TestingT
+	Cleanup(func())
+}
+
+// New[mockName/] creates a new instance of [mockName/]. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+func New[mockName/](t mockConstructorTestingT[mockName/]) *[mockName/] {
+	mock := &[mockName/]{}
+	mock.Mock.Test(t)
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+	return mock
+}
 
 [/file]
 [/template]
