@@ -53,9 +53,12 @@ package [aPackage.name/]
 									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
+import (
+	 "github.com/stretchr/testify/mock"
 [for ( i : String | imports )]
-import "[i/]"
+	"[i/]"
 [/for]
+)
 [/let]
 
 type [mockName/] struct {
@@ -81,7 +84,7 @@ type mockConstructorTestingTNew[mockName/] interface {
 }
 
 // New[mockName/] creates a new instance of [mockName/]. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func New[mockName/](t mockConstructorTestingT[mockName/]) *[mockName/] {
+func New[mockName/](t mockConstructorTestingTNew[mockName/]) *[mockName/] {
 	mock := &[mockName/]{}
 	mock.Mock.Test(t)
 	t.Cleanup(func() { mock.AssertExpectations(t) })

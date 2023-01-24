@@ -36,6 +36,7 @@ package [aPackage.name/]
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/mock"
 [let imports : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
 										, aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined() )->collect( cls | aPackage.getImport(cls) )->asSet()
                                         , features->collect( f : EStructuralFeature | f.eType.getTestValueImport(aPackage) )->asSet()
@@ -53,6 +54,29 @@ func discard[mockName.toUpperFirst()/]() {
 	_ = ecore.ADD
 [/if]
 }
+
+type [mockName.toLowerFirst()/]Run struct {
+	mock.Mock
+}
+
+func (m *[mockName.toLowerFirst()/]Run) Run(args ...any) {
+	m.Called(args...)
+}
+
+type mockConstructorTestingT[mockName.toLowerFirst()/]Run interface {
+	mock.TestingT
+	Cleanup(func())
+}
+
+// new[mockName/]Run creates a new instance of [mockName.toLowerFirst()/]Run. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+func new[mockName/]Run(t mockConstructorTestingT[mockName.toLowerFirst()/]Run, args ...any) *[mockName.toLowerFirst()/]Run {
+	mock := &[mockName.toLowerFirst()/]Run{}
+	mock.Test(t)
+	mock.On("Run", args...).Once()
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+	return mock
+}
+
 
 [features.generateMockTests(aClass)/]
 [operations.generateMockTests(aClass)/]
