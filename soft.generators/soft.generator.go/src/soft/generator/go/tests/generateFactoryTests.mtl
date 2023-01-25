@@ -39,6 +39,12 @@ import (
 [/if]
 )
 
+func TestFactoryAs(t *testing.T) {
+	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	assert.Equal(t, factory, factory.AsInternal())
+	assert.Equal(t, factory, factory.AsEFactory())
+}
+
 
 func TestFactoryCreateFromEClass(t *testing.T) {
 	_ = mock.Anything
