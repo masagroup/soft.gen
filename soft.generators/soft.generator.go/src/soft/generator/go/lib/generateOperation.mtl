@@ -125,7 +125,7 @@ func [testMethodName/](t *testing.T) {
 	[aParameter.name/] := [aParameter.eType.getTestValue(aClass.ePackage)/]
 [/for]
 	m := new[mockName/]Run(t,[aOperation.generateParameterCall()/])
-	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Run(func([aOperation.generateParameterList(true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Once()	
+	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Return().Run(func([aOperation.generateParameterList(true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Once()	
 	o.[methodName/]([aOperation.generateParameterCall()/])
 	o.AssertExpectations(t)
 }
@@ -147,8 +147,8 @@ func [testMethodName/](t *testing.T) {
 [/for]
 	m := new[mockName/]Run(t,[aOperation.generateParameterCall()/])
 	r := [aOperation.eGenericType.eClassifier.getTestValue(aPackage)/]
-	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Run(func([aOperation.generateParameterList(true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Return(r).Once()	
-	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Once().Return(func()[aOperation.generateType()/] {
+	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Return(r).Run(func([aOperation.generateParameterList(true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Once()	
+	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Once().Return(func() [aOperation.generateType()/] {
 		return r
 	})	
 	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )

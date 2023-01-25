@@ -279,7 +279,7 @@ func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
 	r := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
 	m := new[mockName/]Run(t)
-	o.EXPECT().[getterMethodName/]().Run(func() { m.Run() }).Return(r).Once()
+	o.EXPECT().[getterMethodName/]().Return(r).Run(func() { m.Run() }).Once()
 	o.EXPECT().[getterMethodName/]().Once().Return(func() [aStructuralFeature.generateType()/] { return r })
 	assert.Equal(t,r,o.[getterMethodName/]())
 	assert.Equal(t,r,o.[getterMethodName/]())
@@ -293,10 +293,10 @@ func [testMethodName/](t *testing.T) {
 }]
 // [testMethodName/] tests method [getterMethodName/]
 func [testMethodName/](t *testing.T) {
-	o := &[mockName/]{}
-	l := &[if not isEcorePackage(aClass.ePackage)]ecore.[/if][if isMapType()]MockEMap[else]MockEList[/if]{}
+	o := New[mockName/](t)
+	l := [if not isEcorePackage(aClass.ePackage)]ecore.[/if][if isMapType()]NewMockEMap[else]NewMockEList[/if](t)
 	m := new[mockName/]Run(t)
-	o.EXPECT().[getterMethodName/]().Run(func() { m.Run() }).Return(l).Once()
+	o.EXPECT().[getterMethodName/]().Return(l).Run(func() { m.Run() }).Once()
 	o.EXPECT().[getterMethodName/]().Once().Return(func() [aStructuralFeature.generateType()/] { return l })
 	assert.Equal(t,l,o.[getterMethodName/]())
 	assert.Equal(t,l,o.[getterMethodName/]())
@@ -485,7 +485,7 @@ func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
 	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
 	m := new[mockName/]Run(t,v)
-	o.EXPECT().[setterMethodName/](v).Run(func(_p0 [aStructuralFeature.generateType()/]) { m.Run(_p0) }).Once()
+	o.EXPECT().[setterMethodName/](v).Return().Run(func(_p0 [aStructuralFeature.generateType()/]) { m.Run(_p0) }).Once()
 	o.[setterMethodName/](v)
 }
 [/template]
