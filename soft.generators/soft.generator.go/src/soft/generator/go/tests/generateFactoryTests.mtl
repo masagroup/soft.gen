@@ -45,8 +45,8 @@ func TestFactoryCreateFromEClass(t *testing.T) {
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
 	{
 		mockEClass := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEClass(t)
-		mockEClass.EXPECT().GetClassifierID().Return(-1)
-		assert.Panics(t, func() { factory.Create(mockEClass) }).Once()
+		mockEClass.EXPECT().GetClassifierID().Return(-1).Once()
+		assert.Panics(t, func() { factory.Create(mockEClass) })
 	}
     [for (aClass : EClass | allClasses) ? (aClass.abstract=false)]
 	{
@@ -69,9 +69,9 @@ func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]Contain
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
 	mockContainer := [aReference.eType.getTestValue(aClass.ePackage)/]
 [if(aReference.eOpposite.upperBound <> 1)]
-	mockList := new([if not ePackage.isEcorePackage()]ecore.[/if]MockEList)
+	mockList := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEList(t)
 	mockList.EXPECT().Add(mock.Anything).Return(true).Once()
-    mockContainer.EXPECT()Get[aReference.eOpposite.name.toUpperFirst()/]().Return(mockList).Once()
+    mockContainer.EXPECT().Get[aReference.eOpposite.name.toUpperFirst()/]().Return(mockList).Once()
 [else]
 	mockContainer.EXPECT().Set[aReference.eOpposite.name.toUpperFirst()/](mock.Anything).Once()    
 [/if]

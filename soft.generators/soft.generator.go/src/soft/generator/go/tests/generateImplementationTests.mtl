@@ -236,14 +236,14 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 [/if]
 
 	// events
-	mockAdapter := [ecorePrefix/]MockEAdapter(t)
+	mockAdapter := [ecorePrefix/]NewMockEAdapter(t)
 	mockAdapter.EXPECT().SetTarget(o).Once()
 	o.EAdapters().Add(mockAdapter)
 	mock.AssertExpectationsForObjects(t, mockAdapter)
 
 	// set object resource
-	mockResourceSet := [ecorePrefix/]MockEResourceSet(t)
-	mockResource := [ecorePrefix/]MockEResource(t)
+	mockResourceSet := [ecorePrefix/]NewMockEResourceSet(t)
+	mockResource := [ecorePrefix/]NewMockEResource(t)
 	o.ESetInternalResource(mockResource)
 
 	// get non resolved value
@@ -472,7 +472,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	o := [aClass.getConstructorName()/]()
 	
 	// add listener
-	mockAdapter := new([ecorePrefix/]MockEAdapter)
+	mockAdapter := [ecorePrefix/]NewMockEAdapter(t)
 	mockAdapter.EXPECT().SetTarget( o).Once()
 	o.EAdapters().Add(mockAdapter)
 	mock.AssertExpectationsForObjects(t, mockAdapter)
@@ -505,7 +505,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	o := [aClass.getConstructorName()/]()
 
 	// add listener
-	mockAdapter := new([ecorePrefix/]MockEAdapter)
+	mockAdapter := [ecorePrefix/]NewMockEAdapter(t)
 	mockAdapter.EXPECT().SetTarget( o).Once()
 	o.EAdapters().Add(mockAdapter)
 	mock.AssertExpectationsForObjects(t, mockAdapter)
@@ -534,7 +534,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]Set(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	v := [aStructuralFeature.eType.getTestValue(aPackage)/]	
-	mockAdapter := new([getShortQualifiedName('ecore.MockEAdapter',aPackage.name)/])
+	mockAdapter := [getShortQualifiedName('ecore.NewMockEAdapter',aPackage.name)/](t)
 	mockAdapter.EXPECT().SetTarget(o).Once()		
 	mockAdapter.EXPECT().NotifyChanged( mock.Anything).Once()
 	o.EAdapters().Add(mockAdapter)
@@ -551,13 +551,13 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]B
 	o := [aClass.getConstructorName()/]()
 	
 	// add listener
-	mockAdapter := new([ecorePrefix/]MockEAdapter)
+	mockAdapter := [ecorePrefix/]NewMockEAdapter(t)
 	mockAdapter.EXPECT().SetTarget( o).Once()
 	o.EAdapters().Add(mockAdapter)
 	mock.AssertExpectationsForObjects(t, mockAdapter)
 
 	mockValue := [aStructuralFeature.eType.getTestValue(aPackage)/]	
-	mockNotifications := new([ecorePrefix/]MockENotificationChain)
+	mockNotifications := [ecorePrefix/]NewMockENotificationChain(t)
 [if isContainer()]
 	mockValue.EXPECT().EResource().Return(nil).Once()
 [/if]
@@ -591,7 +591,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 [let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]UnSet(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	mockAdapter := new([ecorePrefix/]MockEAdapter)
+	mockAdapter := [ecorePrefix/]NewMockEAdapter(t)
 	mockAdapter.EXPECT().SetTarget(o).Once()
 	o.EAdapters().Add(mockAdapter)
 
@@ -618,7 +618,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 func Test[aClass.name.toUpperFirst()/]EDerivedFeatureID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	{
-		eClass := new([if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockEClass)
+		eClass := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewMockEClass(t)
 		assert.Equal(t,1, o.EDerivedFeatureID(eClass,1) )
 	}
 [for (aMixinClass : EClass | mixinClasses)]
@@ -637,7 +637,7 @@ func Test[aClass.name.toUpperFirst()/]EDerivedFeatureID(t *testing.T) {
 func Test[aClass.name.toUpperFirst()/]EDerivedOperationID(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	{
-		eClass := new([if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockEClass)
+		eClass := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewMockEClass(t)
 		assert.Equal(t,1, o.EDerivedOperationID(eClass,1) )
 	}
 [for (aMixinClass : EClass | mixinClasses)]
@@ -925,8 +925,8 @@ func Test[aClass.name.toUpperFirst()/]EUnsetFromID(t *testing.T) {
 func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	{
-		mockObject := new([if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockEObject)
-		mockNotifications := new([if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockENotificationChain)
+		mockObject := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewMockEObject(t)
+		mockNotifications := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewMockENotificationChain(t)
 		assert.Equal(t,mockNotifications,o.EBasicInverseAdd(mockObject,-1,mockNotifications))
 	}
 	[features.generateFeatureEInverseAddTestImplementation(aClass)/]
@@ -1010,8 +1010,8 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 func Test[aClass.name.toUpperFirst()/]EBasicInverseRemove(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	{
-		mockObject := new([if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockEObject)
-		mockNotifications := new([if not aClass.ePackage.isEcorePackage()]ecore.[/if]MockENotificationChain)
+		mockObject := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewMockEObject(t)
+		mockNotifications := [if not aClass.ePackage.isEcorePackage()]ecore.[/if]NewMockENotificationChain(t)
 		assert.Equal(t,mockNotifications,o.EBasicInverseRemove(mockObject,-1,mockNotifications))
 	}
 	[features.generateFeatureEInverseRemoveTestImplementation(aClass)/]
