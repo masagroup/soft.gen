@@ -33,18 +33,47 @@
 
 [/template]
 
-[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined())]
-// [anEOperation.getOperationName()/] provides mock implementation
-[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(true)/]) {
+[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined()){
+	methodName : String = anEOperation.getOperationName();
+	mockName : String = aClass.getMockName();
+	mockExpecterName : String =mockName +'_Expecter';
+	mockCallName : String = mockName+'_' +methodName+'_Call';
+}]
+// [methodName/] provides mock implementation
+[aClass.generateFunctionMockReceiver()/] [methodName/]([anEOperation.generateParameterList(true)/]) {
 	[aClass.getReceiverName()/].Called([anEOperation.generateParameterCall()/])
 }
 
+type [mockCallName/] struct {
+	*mock.Call
+}
 
+func (e *[mockExpecterName/]) [methodName/]([anEOperation.generateParameterList(true)/]) *[mockCallName/] {
+	return &[mockCallName/]{Call: e.Mock.On("[methodName/]",[anEOperation.generateParameterCall()/])}
+}
+
+func (c *[mockCallName/]) Run(run func([anEOperation.generateParameterList(false)/])) *[mockCallName/] {
+	c.Call.Run(func(_args mock.Arguments) {
+		run([for (eParameter : EParameter | anEOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]_args['['/][i-1/][']'/][if needCast].([eParameter.generateEffectiveType()/])[/if][/let][/for])
+	})
+	return c
+}
+
+func (c *[mockCallName/]) Return() *[mockCallName/] {
+	c.Call.Return()
+	return c
+}
 [/template]
 
-[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (not (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined()))]
-// [anEOperation.getOperationName()/] provides mock implementation
-[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(true)/]) [anEOperation.generateType()/] {
+[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (not (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined())){
+	methodName : String = anEOperation.getOperationName();
+	mockName : String = aClass.getMockName();
+	mockExpecterName : String =mockName +'_Expecter';
+	mockCallName : String = mockName+'_' +methodName+'_Call';
+	needCast : Boolean = not(not anEOperation.eGenericType.oclIsUndefined() and anEOperation.eGenericType.eClassifier.isAny());
+}]
+// [methodName/] provides mock implementation
+[aClass.generateFunctionMockReceiver()/] [methodName/]([anEOperation.generateParameterList(true)/]) [anEOperation.generateType()/] {
 	ret := [aClass.getReceiverName()/].Called([anEOperation.generateParameterCall()/])
 
 	var r [anEOperation.generateType()/]
@@ -52,13 +81,32 @@
 		r = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r = ret.Get(0).([anEOperation.generateType()/])
+			r = ret.Get(0)[if needCast].([anEOperation.generateType()/])[/if]
 		}
 	}
 
 	return r
 }
 
+type [mockCallName/] struct {
+	*mock.Call
+}
+
+func (e *[mockExpecterName/]) [methodName/]([anEOperation.generateParameterList(true)/]) *[mockCallName/] {
+	return &[mockCallName/]{Call: e.Mock.On("[methodName/]",[anEOperation.generateParameterCall()/])}
+}
+
+func (c *[mockCallName/]) Run(run func([anEOperation.generateParameterList(false)/])) *[mockCallName/] {
+	c.Call.Run(func(_args mock.Arguments) {
+		run([for (eParameter : EParameter | anEOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]_args['['/][i-1/][']'/][if needCast].([eParameter.generateEffectiveType()/])[/if][/let][/for])
+	})
+	return c
+}
+
+func (c *[mockCallName/]) Return(_a0 [anEOperation.generateType()/]) *[mockCallName/] {
+	c.Call.Return(_a0)
+	return c
+}
 
 [/template]
 
