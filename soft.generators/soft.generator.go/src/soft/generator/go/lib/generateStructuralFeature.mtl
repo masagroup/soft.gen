@@ -279,8 +279,8 @@ func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
 	r := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
 	m := new[mockName/]Run(t)
-	o.EXPECT().[getterMethodName/]().Run(func(){ m.Run() } ).Return(r).Once()
-	o.EXPECT().[getterMethodName/]().Once().Return(func () [aStructuralFeature.generateType()/] { return r })
+	o.EXPECT().[getterMethodName/]().Run(func() { m.Run() }).Return(r).Once()
+	o.EXPECT().[getterMethodName/]().Once().Return(func() [aStructuralFeature.generateType()/] { return r })
 	assert.Equal(t,r,o.[getterMethodName/]())
 	assert.Equal(t,r,o.[getterMethodName/]())
 }
@@ -296,8 +296,8 @@ func [testMethodName/](t *testing.T) {
 	o := &[mockName/]{}
 	l := &[if not isEcorePackage(aClass.ePackage)]ecore.[/if][if isMapType()]MockEMap[else]MockEList[/if]{}
 	m := new[mockName/]Run(t)
-	o.EXPECT().[getterMethodName/]().Run(func(){ m.Run() } ).Return(l).Once()
-	o.EXPECT().[getterMethodName/]().Once().Return(func () [aStructuralFeature.generateType()/] { return l })
+	o.EXPECT().[getterMethodName/]().Run(func() { m.Run() }).Return(l).Once()
+	o.EXPECT().[getterMethodName/]().Once().Return(func() [aStructuralFeature.generateType()/] { return l })
 	assert.Equal(t,l,o.[getterMethodName/]())
 	assert.Equal(t,l,o.[getterMethodName/]())
 }
@@ -440,7 +440,6 @@ basic[aStructuralFeature.getGetterName().toUpperFirst()/]() [aStructuralFeature.
 [template public generateSetMock(aStructuralFeature : EStructuralFeature , aClass : EClass){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
-	newVarName : String = 'new' + varName.toUpperFirst();
 	methodName : String = aStructuralFeature.getSetterName();
 	featureType : String = aStructuralFeature.generateType();
 	mockName : String = aClass.getMockName();
@@ -448,19 +447,21 @@ basic[aStructuralFeature.getGetterName().toUpperFirst()/]() [aStructuralFeature.
 	mockCallName : String = mockName+'_' +methodName+'_Call';
 }]
 // [methodName/] provides mock implementation for setting the value of [aStructuralFeature.getVariableName()/]
-[aClass.generateFunctionMockReceiver()/] [methodName/]( [newVarName/] [featureType/] ) {
-	[aClass.getReceiverName()/].Called([newVarName/])
+[aClass.generateFunctionMockReceiver()/] [methodName/]( [varName/] [featureType/] ) {
+	[aClass.getReceiverName()/].Called([varName/])
 }
 
 type [mockCallName/] struct {
 	*mock.Call
 }
 
-func (e *[mockExpecterName/]) [methodName/]([newVarName/] [featureType/]) *[mockCallName/] {
-	return &[mockCallName/]{Call: e.Mock.On("[methodName/]",[newVarName/])}
+// [methodName/]is a helper method to define mock.On call
+// - [varName/] [featureType/]
+func (e *[mockExpecterName/]) [methodName/]([varName/] any) *[mockCallName/] {
+	return &[mockCallName/]{Call: e.Mock.On("[methodName/]",[varName/])}
 }
 
-func (c *[mockCallName/]) Run(run func([newVarName/] [featureType/])) *[mockCallName/] {
+func (c *[mockCallName/]) Run(run func([varName/] [featureType/])) *[mockCallName/] {
 	c.Call.Run(func(args mock.Arguments) {
 		run(args['['/]0[']'/][if not aPackage.isAnyType(featureType)].([featureType/])[/if])
 	})
@@ -484,7 +485,7 @@ func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
 	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
 	m := new[mockName/]Run(t,v)
-	o.EXPECT().[setterMethodName/](v).Run(func(_p0 [aStructuralFeature.generateType()/]){ m.Run(_p0) } ).Once()
+	o.EXPECT().[setterMethodName/](v).Run(func(_p0 [aStructuralFeature.generateType()/]) { m.Run(_p0) }).Once()
 	o.[setterMethodName/](v)
 }
 [/template]
@@ -647,7 +648,7 @@ func (c *[mockCallName/]) Return() *[mockCallName/] {
 func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
 	m := new[mockName/]Run(t)
-	o.EXPECT().[unsetMethodName/]().Run(func(){ m.Run() } ).Once()
+	o.EXPECT().[unsetMethodName/]().Run(func() { m.Run() }).Once()
 	o.[unsetMethodName/]()
 }
 [/template]

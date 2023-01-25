@@ -104,12 +104,14 @@ func TestFactoryConvert(t *testing.T) {
 	{
 		mockEDataType := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEDataType(t)
 		mockEDataType.EXPECT().GetClassifierID().Return(-1).Once()
+		mockEDataType.EXPECT().GetName().Return("dataType").Once()
 		assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
 		mockEDataType.AssertExpectations(t)
 	}
 	{
 		mockEDataType := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEDataType(t)
 		mockEDataType.EXPECT().GetClassifierID().Return(-1).Once()
+		mockEDataType.EXPECT().GetName().Return("dataType").Once()
 		assert.Panics(t, func() { factory.ConvertToString(mockEDataType, nil) })
 		mockEDataType.AssertExpectations(t)
 	}
@@ -121,11 +123,13 @@ func TestFactoryConvert(t *testing.T) {
 [/file]
 [/template]
 
-[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType)? (aDataType.oclIsTypeOf(EEnum))]
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType)? (aDataType.oclIsTypeOf(EEnum)){
+	aEnum : EEnum = aDataType.oclAsType(EEnum);
+}]
 {
 	mockEDataType := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEDataType(t)
-	mockEDataType.EXPECT().GetClassifierID().Return([aDataType.getClassifierIDName()/]).Once()
-[for (lit : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
+	mockEDataType.EXPECT().GetClassifierID().Return([aDataType.getClassifierIDName()/]).Times([aEnum.eLiterals->size()/])
+[for (lit : EEnumLiteral | aEnum.eLiterals->asOrderedSet()->sortedBy(name) )]
 	assert.Equal(t, [lit.getConstantsName()/], factory.CreateFromString(mockEDataType, "[lit.getValueName()/]") )	
 [/for]
 	mockEDataType.AssertExpectations(t)
@@ -209,12 +213,14 @@ func TestFactoryConvert(t *testing.T) {
 }
 [/template]
 
-[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType)? (aDataType.oclIsTypeOf(EEnum))]
+[template private generateConvertTo(aPackage : EPackage , aDataType : EDataType)? (aDataType.oclIsTypeOf(EEnum)) {
+	aEnum : EEnum = aDataType.oclAsType(EEnum);
+}]
 {
 	mockEDataType := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEDataType(t)
-	mockEDataType.EXPECT().GetClassifierID().Return([aDataType.getClassifierIDName()/])
+	mockEDataType.EXPECT().GetClassifierID().Return([aDataType.getClassifierIDName()/]).Times([aEnum.eLiterals->size()+1/])
 	assert.Equal(t, "", factory.ConvertToString(mockEDataType, nil) )
-[for (lit : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
+[for (lit : EEnumLiteral | aEnum.eLiterals->asOrderedSet()->sortedBy(name) )]
 	assert.Equal(t, "[lit.getValueName()/]", factory.ConvertToString(mockEDataType, [lit.getConstantsName()/]) )
 [/for]
 	mockEDataType.AssertExpectations(t)

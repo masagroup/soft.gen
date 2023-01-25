@@ -92,7 +92,11 @@ type [mockCallName/] struct {
 	*mock.Call
 }
 
-func (e *[mockExpecterName/]) [methodName/]([anEOperation.generateParameterList(true)/]) *[mockCallName/] {
+// [methodName/]is a helper method to define mock.On call
+[for (sParameter : EParameter | anEOperation.eParameters)]
+// - [sParameter.name/] [sParameter.generateType()/]
+[/for]
+func (e *[mockExpecterName/]) [methodName/]([for (sParameter : EParameter | anEOperation.eParameters) separator (', ')][sParameter.name/] any[/for]) *[mockCallName/] {
 	return &[mockCallName/]{Call: e.Mock.On("[methodName/]",[anEOperation.generateParameterCall()/])}
 }
 
@@ -120,8 +124,8 @@ func [testMethodName/](t *testing.T) {
 [for (aParameter : EParameter | aOperation.eParameters)]
 	[aParameter.name/] := [aParameter.eType.getTestValue(aClass.ePackage)/]
 [/for]
-	m := new[mockName/]Run(t)
-	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Run(func ([aOperation.generateParameterList(true)/]){ m.Run([aOperation.generateParameterCall()/])}).Once()	
+	m := new[mockName/]Run(t,[aOperation.generateParameterCall()/])
+	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Run(func([aOperation.generateParameterList(true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Once()	
 	o.[methodName/]([aOperation.generateParameterCall()/])
 	o.AssertExpectations(t)
 }
@@ -143,8 +147,8 @@ func [testMethodName/](t *testing.T) {
 [/for]
 	m := new[mockName/]Run(t,[aOperation.generateParameterCall()/])
 	r := [aOperation.eGenericType.eClassifier.getTestValue(aPackage)/]
-	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Run(func ([aOperation.generateParameterList(true)/]){ m.Run([aOperation.generateParameterCall()/])}).Return(r).Once()	
-	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Once().Return( func () [aOperation.generateType()/] {
+	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Run(func([aOperation.generateParameterList(true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Return(r).Once()	
+	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Once().Return(func()[aOperation.generateType()/] {
 		return r
 	})	
 	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
