@@ -273,14 +273,16 @@ func (c *[mockCallName/]) Return([aStructuralFeature.getVariableName()/] [aStruc
 	mockName : String = aClass.getMockName();
 	getterMethodName : String = aStructuralFeature.getGetterName();
 	testMethodName : String = 'Test' + mockName + getterMethodName.toUpperFirst();
+	aPackage : EPackage = aClass.ePackage;
+	ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif
 }]
 // [testMethodName/] tests method [getterMethodName/]
 func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
 	r := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
-	m := new[mockName/]Run(t)
+	m := [ecorePrefix/]NewMockRun(t)
 	o.EXPECT().[getterMethodName/]().Return(r).Run(func() { m.Run() }).Once()
-	o.EXPECT().[getterMethodName/]().Once().Return(func() [aStructuralFeature.generateType()/] { return r })
+	o.EXPECT().[getterMethodName/]().Call.Return(func() [aStructuralFeature.generateType()/] { return r }).Once()
 	assert.Equal(t,r,o.[getterMethodName/]())
 	assert.Equal(t,r,o.[getterMethodName/]())
 }
@@ -290,14 +292,16 @@ func [testMethodName/](t *testing.T) {
 	mockName : String = aClass.getMockName();
 	getterMethodName : String = aStructuralFeature.getGetterName();
 	testMethodName : String = 'Test' + mockName + getterMethodName.toUpperFirst();
+	aPackage : EPackage = aClass.ePackage;
+	ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif
 }]
 // [testMethodName/] tests method [getterMethodName/]
 func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
-	l := [if not isEcorePackage(aClass.ePackage)]ecore.[/if][if isMapType()]NewMockEMap[else]NewMockEList[/if](t)
-	m := new[mockName/]Run(t)
+	l := [ecorePrefix/][if isMapType()]NewMockEMap[else]NewMockEList[/if](t)
+	m := [ecorePrefix/]NewMockRun(t)
 	o.EXPECT().[getterMethodName/]().Return(l).Run(func() { m.Run() }).Once()
-	o.EXPECT().[getterMethodName/]().Once().Return(func() [aStructuralFeature.generateType()/] { return l })
+	o.EXPECT().[getterMethodName/]().Call.Return(func() [aStructuralFeature.generateType()/] { return l }).Once()
 	assert.Equal(t,l,o.[getterMethodName/]())
 	assert.Equal(t,l,o.[getterMethodName/]())
 }
@@ -479,12 +483,14 @@ func (c *[mockCallName/]) Return() *[mockCallName/] {
 	mockName : String =aClass.getMockName();
 	setterMethodName : String =aStructuralFeature.getSetterName();
 	testMethodName : String ='Test' + mockName + setterMethodName.toUpperFirst();
+	aPackage : EPackage = aClass.ePackage;
+	ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif
 }]
 // [testMethodName/] tests method [setterMethodName/]
 func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
 	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
-	m := new[mockName/]Run(t,v)
+	m := [ecorePrefix/]NewMockRun(t,v)
 	o.EXPECT().[setterMethodName/](v).Return().Run(func(_p0 [aStructuralFeature.generateType()/]) { m.Run(_p0) }).Once()
 	o.[setterMethodName/](v)
 }
@@ -643,11 +649,13 @@ func (c *[mockCallName/]) Return() *[mockCallName/] {
 	mockName : String =aClass.getMockName();
 	unsetMethodName : String =aStructuralFeature.getUnSetterName();
 	testMethodName : String ='Test' + mockName + unsetMethodName.toUpperFirst();
+	aPackage : EPackage = aClass.ePackage;
+	ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif
 }]
 // [testMethodName/] tests method [unsetMethodName/]
 func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
-	m := new[mockName/]Run(t)
+	m := [ecorePrefix/]NewMockRun(t)
 	o.EXPECT().[unsetMethodName/]().Return().Run(func() { m.Run() }).Once()
 	o.[unsetMethodName/]()
 }
