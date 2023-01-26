@@ -286,6 +286,7 @@ func [testMethodName/](t *testing.T) {
 	assert.Equal(t,r,o.[getterMethodName/]())
 	assert.Equal(t,r,o.[getterMethodName/]())
 }
+
 [/template]
 
 [template public generateGetMockTest(aStructuralFeature : EStructuralFeature, aClass : EClass) ? (isListType()){
@@ -305,6 +306,7 @@ func [testMethodName/](t *testing.T) {
 	assert.Equal(t,l,o.[getterMethodName/]())
 	assert.Equal(t,l,o.[getterMethodName/]())
 }
+
 [/template]
 
 [template public generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass) {
@@ -494,6 +496,7 @@ func [testMethodName/](t *testing.T) {
 	o.EXPECT().[setterMethodName/](v).Return().Run(func(_p0 [aStructuralFeature.generateType()/]) { m.Run(_p0) }).Once()
 	o.[setterMethodName/](v)
 }
+
 [/template]
 
 
@@ -659,6 +662,7 @@ func [testMethodName/](t *testing.T) {
 	o.EXPECT().[unsetMethodName/]().Return().Run(func() { m.Run() }).Once()
 	o.[unsetMethodName/]()
 }
+
 [/template]
 
 [template public generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass){

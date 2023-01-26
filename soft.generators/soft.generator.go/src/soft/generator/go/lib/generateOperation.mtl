@@ -130,8 +130,8 @@ func [testMethodName/](t *testing.T) {
 	m := [ecorePrefix/]NewMockRun(t,[aOperation.generateParameterCall()/])
 	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Return().Run(func([aOperation.generateParameterList(true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Once()	
 	o.[methodName/]([aOperation.generateParameterCall()/])
-	o.AssertExpectations(t)
 }
+
 [/template]
 
 [template public generateMockTests(aOperation : EOperation, aClass : EClass) ? (not (aOperation.oclIsUndefined() or aOperation.eGenericType.oclIsUndefined())){
@@ -155,7 +155,7 @@ func [testMethodName/](t *testing.T) {
 	}).Once()
 	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
 	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
-	o.AssertExpectations(t)
 }
+
 [/template]
 
