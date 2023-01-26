@@ -648,7 +648,7 @@ func (c *[mockCallName/]) Return() *[mockCallName/] {
 func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
 	m := new[mockName/]Run(t)
-	o.EXPECT().[unsetMethodName/]().Run(func() { m.Run() }).Once()
+	o.EXPECT().[unsetMethodName/]().Return().Run(func() { m.Run() }).Once()
 	o.[unsetMethodName/]()
 }
 [/template]
