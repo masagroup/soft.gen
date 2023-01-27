@@ -707,9 +707,9 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 [let keyFeature : EStructuralFeature = aMapClass.getEStructuralFeature('key')]
 [let valueFeature : EStructuralFeature = aMapClass.getEStructuralFeature('value')]
 	// list with a value
-	mockMap := &[ecorePrefix/]MockEMap{}
-	mockEntry := &[ecorePrefix/]MockEMapEntry{}
-	mockIterator := &[ecorePrefix/]MockEIterator{}
+	mockMap := [ecorePrefix/]NewMockEMap(t)
+	mockEntry := [ecorePrefix/]NewMockEMapEntry(t)
+	mockIterator := [ecorePrefix/]NewMockEIterator(t)
 	mockKey := [keyFeature.eType.getTestValue(aPackage)/]
 	mockValue := [valueFeature.eType.getTestValue(aPackage)/]
 	mockMap.EXPECT().Iterator().Return(mockIterator).Once()
