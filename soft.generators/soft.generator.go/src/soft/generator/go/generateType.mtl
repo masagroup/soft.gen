@@ -155,8 +155,8 @@ anyType = type
 /]
 
 [query private getTestValue( aClass : EClass ,aPackage : EPackage ) : String = 
-	let qualifiedMockName : String = if aClass.name='EObject' then 'ecore.MockEObjectInternal' else aClass.getQualifiedMockName() endif in 
-	'new(' + getShortQualifiedName( qualifiedMockName , aPackage.name ) +')'
+	let qualifiedMockConstructorName : String = if aClass.name='EObject' then 'ecore.NewMockEObjectInternal' else aClass.ePackage.name + '.New' + aClass.getMockName() endif in 
+	getShortQualifiedName( qualifiedMockConstructorName , aPackage.name ) +'(t)'
 /]
 
 [query private getTestValue( aEnum : EEnum ,aPackage : EPackage ) : String =

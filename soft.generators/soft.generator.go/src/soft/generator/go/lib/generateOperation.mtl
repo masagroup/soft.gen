@@ -33,18 +33,47 @@
 
 [/template]
 
-[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined())]
-// [anEOperation.getOperationName()/] provides mock implementation
-[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(true)/]) {
+[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined()){
+	methodName : String = anEOperation.getOperationName();
+	mockName : String = aClass.getMockName();
+	mockExpecterName : String =mockName +'_Expecter';
+	mockCallName : String = mockName+'_' +methodName+'_Call';
+}]
+// [methodName/] provides mock implementation
+[aClass.generateFunctionMockReceiver()/] [methodName/]([anEOperation.generateParameterList(true)/]) {
 	[aClass.getReceiverName()/].Called([anEOperation.generateParameterCall()/])
 }
 
+type [mockCallName/] struct {
+	*mock.Call
+}
 
+func (e *[mockExpecterName/]) [methodName/]([anEOperation.generateParameterList(true)/]) *[mockCallName/] {
+	return &[mockCallName/]{Call: e.Mock.On("[methodName/]",[anEOperation.generateParameterCall()/])}
+}
+
+func (c *[mockCallName/]) Run(run func([anEOperation.generateParameterList(false)/])) *[mockCallName/] {
+	c.Call.Run(func(_args mock.Arguments) {
+		run([for (eParameter : EParameter | anEOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]_args['['/][i-1/][']'/][if needCast].([eParameter.generateEffectiveType()/])[/if][/let][/for])
+	})
+	return c
+}
+
+func (c *[mockCallName/]) Return() *[mockCallName/] {
+	c.Call.Return()
+	return c
+}
 [/template]
 
-[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (not (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined()))]
-// [anEOperation.getOperationName()/] provides mock implementation
-[aClass.generateFunctionMockReceiver()/] [anEOperation.getOperationName()/]([anEOperation.generateParameterList(true)/]) [anEOperation.generateType()/] {
+[template public generateMock(anEOperation : EOperation, aClass : EClass) ? (not (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined())){
+	methodName : String = anEOperation.getOperationName();
+	mockName : String = aClass.getMockName();
+	mockExpecterName : String =mockName +'_Expecter';
+	mockCallName : String = mockName+'_' +methodName+'_Call';
+	needCast : Boolean = not(not anEOperation.eGenericType.oclIsUndefined() and anEOperation.eGenericType.eClassifier.isAny());
+}]
+// [methodName/] provides mock implementation
+[aClass.generateFunctionMockReceiver()/] [methodName/]([anEOperation.generateParameterList(true)/]) [anEOperation.generateType()/] {
 	ret := [aClass.getReceiverName()/].Called([anEOperation.generateParameterCall()/])
 
 	var r [anEOperation.generateType()/]
@@ -52,58 +81,81 @@
 		r = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r = ret.Get(0).([anEOperation.generateType()/])
+			r = ret.Get(0)[if needCast].([anEOperation.generateType()/])[/if]
 		}
 	}
 
 	return r
 }
 
+type [mockCallName/] struct {
+	*mock.Call
+}
+
+// [methodName/]is a helper method to define mock.On call
+[for (sParameter : EParameter | anEOperation.eParameters)]
+// - [sParameter.name/] [sParameter.generateType()/]
+[/for]
+func (e *[mockExpecterName/]) [methodName/]([for (sParameter : EParameter | anEOperation.eParameters) separator (', ')][sParameter.name/] any[/for]) *[mockCallName/] {
+	return &[mockCallName/]{Call: e.Mock.On("[methodName/]",[anEOperation.generateParameterCall()/])}
+}
+
+func (c *[mockCallName/]) Run(run func([anEOperation.generateParameterList(false)/])) *[mockCallName/] {
+	c.Call.Run(func(_args mock.Arguments) {
+		run([for (eParameter : EParameter | anEOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]_args['['/][i-1/][']'/][if needCast].([eParameter.generateEffectiveType()/])[/if][/let][/for])
+	})
+	return c
+}
+
+func (c *[mockCallName/]) Return(_a0 [anEOperation.generateType()/]) *[mockCallName/] {
+	c.Call.Return(_a0)
+	return c
+}
 
 [/template]
 
-[template public generateMockTests(aOperation : EOperation, aClass : EClass) ? (aOperation.oclIsUndefined() or aOperation.eGenericType.oclIsUndefined())]
-[let mockName : String =aClass.getMockName()]
-[let methodName : String =aOperation.getOperationName()] 
-[let testMethodName : String ='Test' + mockName + methodName.toUpperFirst()]
+[template public generateMockTests(aOperation : EOperation, aClass : EClass) ? (aOperation.oclIsUndefined() or aOperation.eGenericType.oclIsUndefined()){
+	mockName : String =aClass.getMockName();
+	methodName : String =aOperation.getOperationName();
+	testMethodName : String ='Test' + mockName + methodName.toUpperFirst();
+	aPackage : EPackage = aClass.ePackage;
+	ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif
+}]
 // [testMethodName/] tests method [methodName/]
 func [testMethodName/](t *testing.T) {
-	o := &[mockName/]{}
+	o := New[mockName/](t)
 [for (aParameter : EParameter | aOperation.eParameters)]
 	[aParameter.name/] := [aParameter.eType.getTestValue(aClass.ePackage)/]
 [/for]
-	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Once()	
+	m := [ecorePrefix/]NewMockRun(t,[aOperation.generateParameterCall()/])
+	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Return().Run(func([aOperation.generateParameterList(true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Once()	
 	o.[methodName/]([aOperation.generateParameterCall()/])
-	o.AssertExpectations(t)
 }
-[/let]
-[/let]
-[/let]
+
 [/template]
 
-[template public generateMockTests(aOperation : EOperation, aClass : EClass) ? (not (aOperation.oclIsUndefined() or aOperation.eGenericType.oclIsUndefined()))]
-[let aPackage : EPackage =aClass.ePackage]
-[let mockName : String =aClass.getMockName()]
-[let methodName : String =aOperation.getOperationName()] 
-[let testMethodName : String ='Test' + mockName + methodName.toUpperFirst()]
+[template public generateMockTests(aOperation : EOperation, aClass : EClass) ? (not (aOperation.oclIsUndefined() or aOperation.eGenericType.oclIsUndefined())){
+	mockName : String =aClass.getMockName();
+	methodName : String =aOperation.getOperationName();
+	testMethodName : String ='Test' + mockName + methodName.toUpperFirst();
+	aPackage : EPackage = aClass.ePackage;
+	ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif
+}]
 // [testMethodName/] tests method [methodName/]
 func [testMethodName/](t *testing.T) {
-	o := &[mockName/]{}
+	o := New[mockName/](t)
 [for (aParameter : EParameter | aOperation.eParameters)]
 	[aParameter.name/] := [aParameter.eType.getTestValue(aPackage)/]
 [/for]
+	m := [ecorePrefix/]NewMockRun(t,[aOperation.generateParameterCall()/])
 	r := [aOperation.eGenericType.eClassifier.getTestValue(aPackage)/]
-	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Return(r).Once()	
-	o.On("[methodName/]",[aOperation.generateParameterCall()/]).Return( func () [aOperation.generateType()/] {
+	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Return(r).Run(func([aOperation.generateParameterList(true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Once()	
+	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Call.Return(func() [aOperation.generateType()/] {
 		return r
-	}).Once()	
+	}).Once()
 	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
 	assert.Equal(t , r, o.[methodName/]([aOperation.generateParameterCall()/]) )
-	o.AssertExpectations(t)
 }
-[/let]
-[/let]
-[/let]
-[/let]
+
 [/template]
 

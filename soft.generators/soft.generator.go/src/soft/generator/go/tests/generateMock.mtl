@@ -34,11 +34,14 @@
     endif 
 /]
 
+[query public getMockExpecterExtends(aClass : EClass ) : String = aClass.getMockExtends()+'_Expecter'/]
+
 [template public generateMock(aClass : EClass) { 
 	aPackage : EPackage = aClass.ePackage;
 	mockExtends : String = aClass.getMockExtends();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
+	mockName : String = aClass.getMockName();
 }]
 [file (ePackage.getOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
@@ -50,17 +53,49 @@ package [aPackage.name/]
 									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
+import (
+	 "github.com/stretchr/testify/mock"
 [for ( i : String | imports )]
-import "[i/]"
+	"[i/]"
 [/for]
+)
 [/let]
 
-type [aClass.getMockName()/] struct {
-	[getShortQualifiedName( mockExtends ,aPackage.name)/]
+type [mockName/] struct {
+	[mockName/]_Prototype
+	mock.Mock
+}
+
+type [mockName/]_Prototype struct {
+	[getShortQualifiedName( mockExtends ,aPackage.name)/]_Prototype
+}
+
+type [mockName/]_Expecter struct {
+	[getShortQualifiedName( mockExtends ,aPackage.name)/]_Expecter
+}
+
+[aClass.generateFunctionMockReceiver()/] EXPECT() *[mockName/]_Expecter {
+	e := &[mockName/]_Expecter{}
+	e.Mock = [aClass.getReceiverName()/].Mock
+	return e
 }
 
 [features.generateMock(aClass)/]
 [operations.generateMock(aClass)/]
+
+type mockConstructorTestingTNew[mockName/] interface {
+	mock.TestingT
+	Cleanup(func())
+}
+
+// New[mockName/] creates a new instance of [mockName/]. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+func New[mockName/](t mockConstructorTestingTNew[mockName/]) *[mockName/] {
+	mock := &[mockName/]{}
+	mock.[mockName/]_Prototype.Mock = &mock.Mock
+	mock.Mock.Test(t)
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+	return mock
+}
 
 [/file]
 [/template]

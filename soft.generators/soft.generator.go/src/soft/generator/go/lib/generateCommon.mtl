@@ -38,7 +38,7 @@ func ([aClass.getReceiverName()/] *[aClass.getImplementationName()/])
 [/template]
 
 [template public generateFunctionMockReceiver(aClass : EClass)]
-func ([aClass.getReceiverName()/] *[aClass.getMockName()/])
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype)
 [/template]
 
 
