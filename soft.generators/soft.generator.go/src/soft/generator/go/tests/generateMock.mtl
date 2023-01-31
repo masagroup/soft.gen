@@ -42,6 +42,7 @@
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	mockName : String = aClass.getMockName();
+	interfaceName : String = aClass.getInterfaceName();
 }]
 [file (ePackage.getOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
@@ -61,31 +62,34 @@ import (
 )
 [/let]
 
+// [mockName/] is an mock type for the [aClass.getInterfaceName()/] type
 type [mockName/] struct {
 	mock.Mock
 	[mockName/]_Prototype
 }
 
+// [mockName/]_Prototype is the mock implementation of all [interfaceName/] methods ( inherited and declared )
 type [mockName/]_Prototype struct {
 	mock *mock.Mock
 	[getShortQualifiedName(mockExtends ,aPackage.name)/]_Prototype
-	[mockName/]_Declared_Prototype
+	[mockName/]_Prototype_Methods
 }
 
 func (_mp *[mockName/]_Prototype) SetMock(mock *mock.Mock) {
 	_mp.mock = mock
 	_mp.[getUnQualifiedName(mockExtends)/]_Prototype.SetMock(mock)
-	_mp.[mockName/]_Declared_Prototype.SetMock(mock)
+	_mp.[mockName/]_Prototype_Methods.SetMock(mock)
 }
 
+// [mockName/]_Expecter is the expecter implementation for all [interfaceName/] methods ( inherited and declared )
 type [mockName/]_Expecter struct {
 	[getShortQualifiedName(mockExtends ,aPackage.name)/]_Expecter
-	[mockName/]_Declared_Expecter
+	[mockName/]_Expecter_Methods
 }
 
 func (_me *[mockName/]_Expecter) SetMock(mock *mock.Mock) {
 	_me.[getUnQualifiedName(mockExtends)/]_Expecter.SetMock(mock)
-	_me.[mockName/]_Declared_Expecter.SetMock(mock)
+	_me.[mockName/]_Expecter_Methods.SetMock(mock)
 }
 
 func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype) EXPECT() *[mockName/]_Expecter {
@@ -94,19 +98,21 @@ func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype) EXPECT() *
 	return expecter
 }
 
-type [mockName/]_Declared_Prototype struct {
+// [mockName/]_Prototype_Methods is the mock implementation of [interfaceName/] declared methods
+type [mockName/]_Prototype_Methods struct {
 	mock *mock.Mock
 }
 
-func (_mdp *[mockName/]_Declared_Prototype) SetMock(mock *mock.Mock) {
+func (_mdp *[mockName/]_Prototype_Methods) SetMock(mock *mock.Mock) {
 	_mdp.mock = mock
 }
 
-type [mockName/]_Declared_Expecter struct {
+// [mockName/]_Expecter_Methods is the expecter implementation of [interfaceName/] declared methods
+type [mockName/]_Expecter_Methods struct {
 	mock *mock.Mock
 }
 
-func (_mde *[mockName/]_Declared_Expecter) SetMock(mock *mock.Mock) {
+func (_mde *[mockName/]_Expecter_Methods) SetMock(mock *mock.Mock) {
 	_mde.mock = mock
 }
 

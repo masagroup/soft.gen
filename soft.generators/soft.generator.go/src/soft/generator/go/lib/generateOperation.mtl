@@ -36,11 +36,11 @@
 [template public generateMock(anEOperation : EOperation, aClass : EClass) ? (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined()){
 	methodName : String = anEOperation.getOperationName();
 	mockName : String = aClass.getMockName();
-	mockExpecterName : String =mockName +'_Declared_Expecter';
+	mockExpecterName : String =mockName +'_Expecter_Methods';
 	mockCallName : String = mockName+'_' +methodName+'_Call';
 }]
 // [methodName/] provides mock implementation
-func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Declared_Prototype) [methodName/]([anEOperation.generateParameterList(true)/]) {
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype_Methods) [methodName/]([anEOperation.generateParameterList(true)/]) {
 	[aClass.getReceiverName()/].mock.Called([anEOperation.generateParameterCall()/])
 }
 
@@ -68,12 +68,12 @@ func (c *[mockCallName/]) Return() *[mockCallName/] {
 [template public generateMock(anEOperation : EOperation, aClass : EClass) ? (not (anEOperation.oclIsUndefined() or anEOperation.eGenericType.oclIsUndefined())){
 	methodName : String = anEOperation.getOperationName();
 	mockName : String = aClass.getMockName();
-	mockExpecterName : String =mockName +'_Declared_Expecter';
+	mockExpecterName : String =mockName +'_Expecter_Methods';
 	mockCallName : String = mockName+'_' +methodName+'_Call';
 	needCast : Boolean = not(not anEOperation.eGenericType.oclIsUndefined() and anEOperation.eGenericType.eClassifier.isAny());
 }]
 // [methodName/] provides mock implementation
-func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Declared_Prototype) [methodName/]([anEOperation.generateParameterList(true)/]) [anEOperation.generateType()/] {
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype_Methods) [methodName/]([anEOperation.generateParameterList(true)/]) [anEOperation.generateType()/] {
 	ret := [aClass.getReceiverName()/].mock.Called([anEOperation.generateParameterCall()/])
 
 	var r [anEOperation.generateType()/]

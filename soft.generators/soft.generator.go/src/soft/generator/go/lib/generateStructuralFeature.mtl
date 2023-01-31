@@ -229,11 +229,11 @@ nil
 [template public generateGetMock(aStructuralFeature : EStructuralFeature, aClass : EClass){
 	methodName : String = aStructuralFeature.getGetterName();	
 	mockName : String = aClass.getMockName();
-	mockExpecterName : String =mockName +'_Declared_Expecter';
+	mockExpecterName : String =mockName +'_Expecter_Methods';
 	mockCallName : String = mockName+'_' +methodName+'_Call';
 }]
 // [methodName/] get the value of [aStructuralFeature.getVariableName()/]
-func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Declared_Prototype) [methodName/]() [aStructuralFeature.generateType()/] {
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype_Methods) [methodName/]() [aStructuralFeature.generateType()/] {
 	ret := [aClass.getReceiverName()/].mock.Called()
 
 	var r [aStructuralFeature.generateType()/]
@@ -449,11 +449,11 @@ basic[aStructuralFeature.getGetterName().toUpperFirst()/]() [aStructuralFeature.
 	methodName : String = aStructuralFeature.getSetterName();
 	featureType : String = aStructuralFeature.generateType();
 	mockName : String = aClass.getMockName();
-	mockExpecterName : String =mockName +'_Declared_Expecter';
+	mockExpecterName : String =mockName +'_Expecter_Methods';
 	mockCallName : String = mockName+'_' +methodName+'_Call';
 }]
 // [methodName/] provides mock implementation for setting the value of [aStructuralFeature.getVariableName()/]
-func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Declared_Prototype) [methodName/]( [varName/] [featureType/] ) {
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype_Methods) [methodName/]( [varName/] [featureType/] ) {
 	[aClass.getReceiverName()/].mock.Called([varName/])
 }
 
@@ -619,11 +619,11 @@ basic[aStructuralFeature.getSetterName().toUpperFirst()/]( [aStructuralFeature.g
 [template public generateUnSetMock(aStructuralFeature : EStructuralFeature , aClass : EClass) {
 	methodName : String = aStructuralFeature.getUnSetterName();
 	mockName : String = aClass.getMockName();
-	mockExpecterName : String =mockName +'_Declared_Expecter';
+	mockExpecterName : String =mockName +'_Expecter_Methods';
 	mockCallName : String = mockName+'_' +methodName+'_Call';
 }]
 // [methodName/] provides mock implementation for unset the value of [aStructuralFeature.getVariableName()/]
-func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Declared_Prototype) [methodName/]() {
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype_Methods) [methodName/]() {
 	[aClass.getReceiverName()/].mock.Called()
 }
 
