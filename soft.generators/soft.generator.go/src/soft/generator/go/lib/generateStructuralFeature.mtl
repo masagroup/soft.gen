@@ -229,12 +229,12 @@ nil
 [template public generateGetMock(aStructuralFeature : EStructuralFeature, aClass : EClass){
 	methodName : String = aStructuralFeature.getGetterName();	
 	mockName : String = aClass.getMockName();
-	mockExpecterName : String =mockName +'_Expecter';
+	mockExpecterName : String =mockName +'_Declared_Expecter';
 	mockCallName : String = mockName+'_' +methodName+'_Call';
 }]
 // [methodName/] get the value of [aStructuralFeature.getVariableName()/]
-[aClass.generateFunctionMockReceiver()/] [methodName/]() [aStructuralFeature.generateType()/] {
-	ret := [aClass.getReceiverName()/].Called()
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Declared_Prototype) [methodName/]() [aStructuralFeature.generateType()/] {
+	ret := [aClass.getReceiverName()/].mock.Called()
 
 	var r [aStructuralFeature.generateType()/]
 	if rf, ok := ret.Get(0).(func() [aStructuralFeature.generateType()/]); ok {
@@ -253,7 +253,7 @@ type [mockCallName/] struct {
 }
 
 func (e *[mockExpecterName/]) [methodName/]() *[mockCallName/] {
-	return &[mockCallName/]{Call: e.Mock.On("[methodName/]")}
+	return &[mockCallName/]{Call: e.mock.On("[methodName/]")}
 }
 
 func (c *[mockCallName/]) Run(run func()) *[mockCallName/] {
@@ -449,22 +449,22 @@ basic[aStructuralFeature.getGetterName().toUpperFirst()/]() [aStructuralFeature.
 	methodName : String = aStructuralFeature.getSetterName();
 	featureType : String = aStructuralFeature.generateType();
 	mockName : String = aClass.getMockName();
-	mockExpecterName : String =mockName +'_Expecter';
+	mockExpecterName : String =mockName +'_Declared_Expecter';
 	mockCallName : String = mockName+'_' +methodName+'_Call';
 }]
 // [methodName/] provides mock implementation for setting the value of [aStructuralFeature.getVariableName()/]
-[aClass.generateFunctionMockReceiver()/] [methodName/]( [varName/] [featureType/] ) {
-	[aClass.getReceiverName()/].Called([varName/])
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Declared_Prototype) [methodName/]( [varName/] [featureType/] ) {
+	[aClass.getReceiverName()/].mock.Called([varName/])
 }
 
 type [mockCallName/] struct {
 	*mock.Call
 }
 
-// [methodName/]is a helper method to define mock.On call
+// [methodName/] is a helper method to define mock.On call
 // - [varName/] [featureType/]
 func (e *[mockExpecterName/]) [methodName/]([varName/] any) *[mockCallName/] {
-	return &[mockCallName/]{Call: e.Mock.On("[methodName/]",[varName/])}
+	return &[mockCallName/]{Call: e.mock.On("[methodName/]",[varName/])}
 }
 
 func (c *[mockCallName/]) Run(run func([varName/] [featureType/])) *[mockCallName/] {
@@ -619,12 +619,12 @@ basic[aStructuralFeature.getSetterName().toUpperFirst()/]( [aStructuralFeature.g
 [template public generateUnSetMock(aStructuralFeature : EStructuralFeature , aClass : EClass) {
 	methodName : String = aStructuralFeature.getUnSetterName();
 	mockName : String = aClass.getMockName();
-	mockExpecterName : String =mockName +'_Expecter';
+	mockExpecterName : String =mockName +'_Declared_Expecter';
 	mockCallName : String = mockName+'_' +methodName+'_Call';
 }]
 // [methodName/] provides mock implementation for unset the value of [aStructuralFeature.getVariableName()/]
-[aClass.generateFunctionMockReceiver()/] [methodName/]() {
-	[aClass.getReceiverName()/].Called()
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Declared_Prototype) [methodName/]() {
+	[aClass.getReceiverName()/].mock.Called()
 }
 
 type [mockCallName/] struct {
@@ -632,7 +632,7 @@ type [mockCallName/] struct {
 }
 
 func (e *[mockExpecterName/]) [methodName/]() *[mockCallName/] {
-	return &[mockCallName/]{Call: e.Mock.On("[methodName/]")}
+	return &[mockCallName/]{Call: e.mock.On("[methodName/]")}
 }
 
 func (c *[mockCallName/]) Run(run func()) *[mockCallName/] {
