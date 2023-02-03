@@ -24,11 +24,13 @@
 [query public getMockExtends(aClass : EClass ) : String =
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
-        if ( aClass.name = 'EObject' ) then
+		if ( aClass.isMapEntry() ) then
+			'ecore.MockEMapEntry'
+        else if ( aClass.name = 'EObject' ) then
             'ecore.MockENotifier'
         else
             'ecore.MockEObjectInternal'
-        endif
+        endif endif
     else
         extendsClass.getQualifiedMockName()
     endif 
