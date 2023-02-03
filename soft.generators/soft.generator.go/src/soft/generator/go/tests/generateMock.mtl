@@ -21,18 +21,19 @@
 [import soft::generator::go::lib::generateStructuralFeature/]
 [import soft::generator::go::lib::generateOperation/]
 
-[query public getMockExtends(aClass : EClass ) : String =
+[query public getMockExtends(aClass : EClass ) : Sequence(String) =
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
 		if ( aClass.isMapEntry() ) then
-			'ecore.MockEMapEntry'
+			Sequence{'ecore.MockEObjectInternal', 'ecore.MockEMapEntry'}
+			
         else if ( aClass.name = 'EObject' ) then
-            'ecore.MockENotifier'
+            Sequence{'ecore.MockENotifier'}
         else
-            'ecore.MockEObjectInternal'
+            Sequence{'ecore.MockEObjectInternal'}
         endif endif
     else
-        extendsClass.getQualifiedMockName()
+        Sequence{ extendsClass.getQualifiedMockName()}
     endif 
 /]
 
@@ -40,7 +41,7 @@
 
 [template public generateMock(aClass : EClass) { 
 	aPackage : EPackage = aClass.ePackage;
-	mockExtends : String = aClass.getMockExtends();
+	mockExtends : Sequence(String) = aClass.getMockExtends();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	mockName : String = aClass.getMockName();
@@ -52,7 +53,7 @@
 package [aPackage.name/]
 
 [let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
-										, Set { aPackage.getImportForType(mockExtends) }
+										, mockExtends->collect( extend | aPackage.getImportForType( extend ) )->asSet()
 									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
                                         , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
@@ -73,24 +74,32 @@ type [mockName/] struct {
 // [mockName/]_Prototype is the mock implementation of all [interfaceName/] methods ( inherited and declared )
 type [mockName/]_Prototype struct {
 	mock *mock.Mock
-	[getShortQualifiedName(mockExtends ,aPackage.name)/]_Prototype
+[for (mockExtend : String | mockExtends)]
+	[getShortQualifiedName(mockExtend ,aPackage.name)/]_Prototype
+[/for]
 	[mockName/]_Prototype_Methods
 }
 
 func (_mp *[mockName/]_Prototype) SetMock(mock *mock.Mock) {
 	_mp.mock = mock
-	_mp.[getUnQualifiedName(mockExtends)/]_Prototype.SetMock(mock)
+[for (mockExtend : String | mockExtends)]
+	_mp.[getUnQualifiedName(mockExtend)/]_Prototype.SetMock(mock)
+[/for]
 	_mp.[mockName/]_Prototype_Methods.SetMock(mock)
 }
 
 // [mockName/]_Expecter is the expecter implementation for all [interfaceName/] methods ( inherited and declared )
 type [mockName/]_Expecter struct {
-	[getShortQualifiedName(mockExtends ,aPackage.name)/]_Expecter
+[for (mockExtend : String | mockExtends)]
+	[getShortQualifiedName(mockExtend ,aPackage.name)/]_Expecter
+[/for]
 	[mockName/]_Expecter_Methods
 }
 
 func (_me *[mockName/]_Expecter) SetMock(mock *mock.Mock) {
-	_me.[getUnQualifiedName(mockExtends)/]_Expecter.SetMock(mock)
+[for (mockExtend : String | mockExtends)]
+	_me.[getUnQualifiedName(mockExtend)/]_Expecter.SetMock(mock)
+[/for]
 	_me.[mockName/]_Expecter_Methods.SetMock(mock)
 }
 
