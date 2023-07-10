@@ -164,7 +164,10 @@
 		list := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
         list.Clear()
         list.AddAll(newValue.([anStructFeature.generateType()/]))
-    [else]
+    [elseif anStructFeature.oclIsKindOf(EReference)]
+		newValueOrNil , _ :=  newValue.([anStructFeature.generateType()/])
+		[aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValueOrNil) 
+	[else]
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue[if not aPackage.isAnyType(anStructFeature.eType.getType())].([anStructFeature.generateType()/])[/if])
     [/if]    
 [/for]
