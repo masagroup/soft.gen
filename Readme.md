@@ -70,5 +70,10 @@ If you want to bootstrap generators yourself, you'll need:
     make all dist
     ```
 
-
+## IDE ##
+If you want to debug generators with an Eclipse IDE, you'll need:
+- [Eclipse IDE Modeling Tools](https://www.eclipse.org/downloads/)
+- [Eclipse IDE integration for Maven](https://download.eclipse.org/technology/m2e/releases/latest/)
+- [Annotation Processor in IDE](https://immutables.github.io/apt.html)
+- [Acceleo](https://download.eclipse.org/acceleo/updates/releases)
 
