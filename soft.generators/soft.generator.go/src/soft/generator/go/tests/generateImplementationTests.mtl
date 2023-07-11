@@ -801,8 +801,15 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], mockValue)
 	assert.Equal(t,mockValue,o.EGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false))
 	mock.AssertExpectationsForObjects(t, mockValue)
+
+	mockValue.EXPECT().EInverseRemove(o,[reverseClass.getQualifiedIDName(reverseFeature)/],nil).Return(nil).Once()
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], nil)
+	mock.AssertExpectationsForObjects(t, mockValue)	
+	assert.Nil(t,o.EGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false))
 [/let]
 [/let]
+	
+	
 }
 
 [/template]
@@ -814,6 +821,22 @@ assert.Panics(t, func() { o.ESetFromID([aClass.getQualifiedIDName(anStructuralFe
 	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], mockValue)
 	assert.Equal(t,mockValue,o.EGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false))
 	mock.AssertExpectationsForObjects(t, mockValue)
+
+	mockValue.EXPECT().EInverseRemove(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],mock.Anything).Return(nil).Once()
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], nil)	
+	mock.AssertExpectationsForObjects(t, mockValue)
+	assert.Nil(t,o.EGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false))
+}
+
+[/template]
+
+[template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (oclIsKindOf(EReference))]
+{
+	v := [anStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], v)
+	assert.Equal(t,v,o.EGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false))
+
+	o.ESetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], nil)
 }
 
 [/template]
