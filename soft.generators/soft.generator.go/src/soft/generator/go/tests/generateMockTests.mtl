@@ -16,6 +16,7 @@
 [import soft::generator::common::generateElement/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateElement/]
+[import soft::generator::go::generateImport/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::generateStructuralFeature/]
@@ -38,7 +39,7 @@ import (
 	"github.com/stretchr/testify/assert"
 [let imports : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportPathForPackage('ecore') } else Set{} endif
 										, aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined() )->collect( cls | aPackage.getImportPath(cls) )->asSet()
-                                        , features->collect( f : EStructuralFeature | f.eType.getTestValueImportPath(aPackage) )->asSet()
+                                        , features->collect( f : EStructuralFeature | f.eType.getImportPathForTestValue(aPackage) )->asSet()
 										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
 	"[i/]"

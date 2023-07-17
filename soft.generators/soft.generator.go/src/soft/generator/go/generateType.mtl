@@ -187,20 +187,6 @@ anyType = type
 	endif endif
 /]
 
-[query public getTestValueImportPath( aClassifier : EClassifier,aPackage : EPackage ) : String =
-    if aClassifier.oclIsKindOf( EDataType ) then 
-		let v : String = aClassifier.oclAsType(EDataType).getTestValue(aPackage) in
-		aPackage.getImportPathForType(v)
-    else
-		if aClassifier.ePackage <> aPackage then 
-			aPackage.getImportPathForPackage(aClassifier.ePackage.name) 
-		else 
-			'' 
-		endif
-	endif
-/]
-
-
 [query public getType( aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then aClassifier.ePackage.getAnyType()
     else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getType()
@@ -312,70 +298,7 @@ anyType = type
 	)
 /] 
 
-[query private getAllImportPaths(aPackage : EPackage) : OclAny =
-	let property : OclAny = getProperty('imports') in 
-	let allImports : String = (if property.oclIsUndefined() or property = '' then '' else property.oclAsType(String) endif) + 
-							  (if aPackage.hasKey('imports') then ';' + aPackage.valueKey('imports') else '' endif) in
-	let packageToImportPath : OclAny = 
-    if allImports <> '' then
-		let tokenized : Sequence(String) = allImports.tokenize('; \r\n') in
-        tokenized->iterate( import : String ; res : OclAny = mapNew('getPackageToImport_' + aPackage.name) | (
-        	let index : Integer = import.index('=') in 
-            if index = -1 then
-				let importIndex : Integer = import.lastIndexOf('/') in
-				if importIndex = -1 then
-					res
-				else
-					res.mapPut(import.substring(importIndex+1),import)
-				endif
-            else
-                res.mapPut(import.substring(1,index-1),import.substring(index+1)) 
-            endif
-		))
-    else
-        mapNew('getPackageToImport_' + aPackage.name)
-    endif in
-    packageToImportPath.mapPut(getEcoreModuleName(),getEcoreModulePath())
-					   .mapPut(getDefaultEcoreModuleName(),getDefaultEcoreModulePath())
-/]
 
 
-
-[query public getImportPathForPackage(aPackage : EPackage, aPackageName : String ) : String =
-	aPackage.getAllImportPaths().mapGetOrDefault(aPackageName, '')
-/]
-
-
-[query public getImportPathForType( aPackage : EPackage , qualifiedName : String ) : String =
-    let q : String = getQualification( qualifiedName ) in
-    if q = '' then 
-        ''
-    else 
-        if aPackage.name = q then 
-            ''
-        else
-            let import : String = aPackage.getImportPathForPackage( q ) in
-            if import = '' then
-                q
-            else
-                import
-            endif
-        endif 
-    endif
-    
-/]
-
-[query public getImportPath( aPackage : EPackage , aClassifier : EClassifier ) : String = 
-    if aClassifier.oclIsUndefined() then 
-        ''
-    else
-		let type : String = aClassifier.getType() in
-		if type.size() > 0 and type.first(1) = '*' then
-        	aPackage.getImportPathForType(type.substring(2))
-		else
-			aPackage.getImportPathForType(type)
-		endif
-    endif
-/]
 
 

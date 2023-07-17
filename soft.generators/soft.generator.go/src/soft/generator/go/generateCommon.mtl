@@ -76,7 +76,7 @@
  * Returns true if ecore module is the default one
 */]
 [query public isDefaultEcoreModule(aPackage : EPackage) : Boolean =
-	aPackage.getEcoreModulePath() = 'github.com/masagroup/soft.go/ecore' 
+	aPackage.getEcoreModulePath() = aPackage.getDefaultEcoreModulePath()
 /]
 
 [**
@@ -347,4 +347,6 @@ methodName.toUpperFirst()
 	let packagePrefix : String = if packageName = aPackage.name then '' else packageName + '.' endif in
 	packagePrefix + 'GetPackage()'
 /]
+
+
 

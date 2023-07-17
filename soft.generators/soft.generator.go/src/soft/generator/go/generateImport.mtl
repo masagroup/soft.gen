@@ -1,0 +1,96 @@
+[**
+ * This file is part of soft.generator.go, a project for go code 
+ * generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
+[comment encoding = UTF-8 /]
+[module generateImport('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
+[import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateType/]
+
+[query private getAllImportPaths(aPackage : EPackage) : OclAny =
+	let packageToImportPath : OclAny = mapNew('getPackageToImport_' + aPackage.name)
+											.mapPut(getDefaultEcoreModuleName(),getDefaultEcoreModulePath())
+											.mapPut(getEcoreModuleName(),getEcoreModulePath())
+    in
+	let importProperty : OclAny = getProperty('imports') in 
+	let imports : String = (if importProperty.oclIsUndefined() or importProperty = '' then '' else importProperty.oclAsType(String) endif) + 
+							  (if aPackage.hasKey('imports') then ';' + aPackage.valueKey('imports') else '' endif) in
+	if imports <> '' then
+		let tokenized : Sequence(String) = imports.tokenize('; \r\n') in
+        tokenized->iterate( import : String ; res : OclAny = packageToImportPath | (
+        	let index : Integer = import.index('=') in 
+            if index = -1 then
+				let importIndex : Integer = import.lastIndexOf('/') in
+				if importIndex = -1 then
+					res
+				else
+					res.mapPut(import.substring(importIndex+1),import)
+				endif
+            else
+                res.mapPut(import.substring(1,index-1),import.substring(index+1)) 
+            endif
+		))
+    else
+        packageToImportPath
+    endif
+/]
+
+[query public getImportPathForPackage(aPackage : EPackage, aPackageName : String ) : String =
+	aPackage.getAllImportPaths().mapGetOrDefault(aPackageName, '')
+/]
+
+
+[query public getImportPathForType( aPackage : EPackage , qualifiedName : String ) : String =
+    let q : String = getQualification( qualifiedName ) in
+    if q = '' then 
+        ''
+    else 
+        if aPackage.name = q then 
+            ''
+        else
+            let import : String = aPackage.getImportPathForPackage( q ) in
+            if import = '' then
+                q
+            else
+                import
+            endif
+        endif 
+    endif
+    
+/]
+
+[query public getImportPath( aPackage : EPackage , aClassifier : EClassifier ) : String = 
+    if aClassifier.oclIsUndefined() then 
+        ''
+    else
+		let type : String = aClassifier.getType() in
+		if type.size() > 0 and type.first(1) = '*' then
+        	aPackage.getImportPathForType(type.substring(2))
+		else
+			aPackage.getImportPathForType(type)
+		endif
+    endif
+/]
+
+[query public getImportPathForTestValue( aClassifier : EClassifier,aPackage : EPackage ) : String =
+    if aClassifier.oclIsKindOf( EDataType ) then 
+		let v : String = aClassifier.oclAsType(EDataType).getTestValue(aPackage) in
+		aPackage.getImportPathForType(v)
+    else
+		if aClassifier.ePackage <> aPackage then 
+			aPackage.getImportPathForPackage(aClassifier.ePackage.name) 
+		else 
+			'' 
+		endif
+	endif
+/]
