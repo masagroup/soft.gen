@@ -33,7 +33,7 @@
 	if property.oclIsUndefined() or property = '' then
 		anPackage.valueKey(aProperty)
 	else
-		property
+		''
 	endif
 /]
 
@@ -73,28 +73,11 @@
 /]
 
 [**
- * Returns true if ecore module is the default one
-*/]
-[query public isDefaultEcoreModule(aPackage : EPackage) : Boolean =
-	aPackage.getEcoreModulePath() = aPackage.getDefaultEcoreModulePath()
-/]
-
-[**
- * Get Ecore module default path
-*/]
-[query public getDefaultEcoreModulePath(aPackage : EPackage) : String = 'github.com/masagroup/soft.go/ecore' /]
-
-[**
- * Get Ecore module default name
-*/]
-[query public getDefaultEcoreModuleName(aPackage : EPackage) : String = 'ecore' /]
-
-[**
- * Get Ecore module path
-*/]
-[query public getEcoreModulePath(aPackage : EPackage) : String =
-	 if aPackage.hasPackageProperty('ecoreModule') then 
-		let p : String = aPackage.getPackageProperty('ecoreModule') in
+ * Returns package import path for a specific property if defined , otherwise default value
+ */]
+[query public getPackageImport(aPackage : EPackage, packageProperty : String, defaultValue : String) : String =
+	if aPackage.hasPackageProperty(packageProperty) then 
+		let p : String = aPackage.getPackageProperty(packageProperty) in
 		let index : Integer = p.index('=') in 
         if index = -1 then
 			p
@@ -102,16 +85,16 @@
             p.substring(index+1) 
         endif
 	else 
-		aPackage.getDefaultEcoreModulePath()
+		''
 	endif
 /]
 
 [**
- * Get Ecore module name
-*/]
-[query public getEcoreModuleName(aPackage : EPackage) : String =
-	if aPackage.hasPackageProperty('ecoreModule') then
-		let p : String = aPackage.getPackageProperty('ecoreModule') in
+ * Returns package name for a specific property if defined , otherwise default value
+ */]
+[query public getPackageName(aPackage : EPackage, packageProperty : String, defaultValue : String) : String =
+	if aPackage.hasPackageProperty(packageProperty) then
+		let p : String = aPackage.getPackageProperty(packageProperty) in
 		let index : Integer = p.index('=') in 
         if index = -1 then
 			let moduleIndex : Integer = p.lastIndexOf('/') in
@@ -124,8 +107,48 @@
             p.substring(1,index-1)
         endif
 	else 
-		aPackage.getDefaultEcoreModuleName()
+		defaultValue
 	endif
+/]
+
+
+[**
+ * Returns Ecore module default path
+*/]
+[query public getDefaultEcoreModulePath(aPackage : EPackage) : String = 'github.com/masagroup/soft.go/ecore' /]
+
+[**
+ * Returns Ecore module default name
+*/]
+[query public getDefaultEcoreModuleName(aPackage : EPackage) : String = 'ecore' /]
+
+[**
+ * Returns Ecore module path
+*/]
+[query public getEcoreModulePath(aPackage : EPackage) : String =
+	aPackage.getPackageImport('ecoreModule', aPackage.getDefaultEcoreModulePath())
+/]
+
+[**
+ * Get Ecore module name
+*/]
+[query public getEcoreModuleName(aPackage : EPackage) : String =
+	aPackage.getPackageName('ecoreModule', aPackage.getDefaultEcoreModuleName())
+/]
+
+[**
+ * Returns true if ecore module is the default one
+*/]
+[query public isDefaultEcoreModule(aPackage : EPackage) : Boolean =
+	aPackage.getEcoreModulePath() = aPackage.getDefaultEcoreModulePath()
+/]
+
+[query public hasModulePath(aPackage : EPackage) : Boolean =
+	aPackage.hasPackageProperty('modulePath')
+/]
+
+[query public getModulePath(aPackage : EPackage) : String =
+	aPackage.getPackageProperty('modulePath')
 /]
 
 [**

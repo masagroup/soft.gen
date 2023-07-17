@@ -17,12 +17,39 @@
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
 
+[query private getDefaultImportPath(aPackage : EPackage) : String =
+	if aPackage.hasModulePath() then aPackage.getModulePath() + '/' + aPackage.name else aPackage.name endif
+/]
+
+[query public getInterfaceImportPath(aPackage : EPackage) : String =
+	aPackage.getPackageImport('interfacePackage', aPackage.getDefaultImportPath())	
+/]
+
+[query public getInterfacePackageName(aPackage : EPackage) : String =
+	aPackage.getPackageName('interfacePackage', aPackage.name)
+/]
+
+[query public getImplementationImportPath(aPackage : EPackage) : String =
+	 aPackage.getPackageImport('implementationPackage', aPackage.getDefaultImportPath())
+/]
+
+[query public getImplementationPackageName(aPackage : EPackage) : String =
+	 aPackage.getPackageName('implementationPackage', aPackage.name)
+/]
+
+[query public getMockImportPath(aPackage : EPackage) : String =
+	 aPackage.getPackageImport('mockPackage', aPackage.getDefaultImportPath())
+/]
+
+[query public getMockPackageName(aPackage : EPackage) : String =
+	 aPackage.getPackageName('mockPackage', aPackage.name)
+/]
+
 [query private getAllImportPaths(aPackage : EPackage) : OclAny =
 	let packageToImportPath : OclAny = mapNew('getPackageToImport_' + aPackage.name)
 											.mapPut(getDefaultEcoreModuleName(),getDefaultEcoreModulePath())
-											.mapPut(getEcoreModuleName(),getEcoreModulePath())
-    in
-	let importProperty : OclAny = getProperty('imports') in 
+											.mapPut(getEcoreModuleName(),getEcoreModulePath()) in
+    let importProperty : OclAny = getProperty('imports') in 
 	let imports : String = (if importProperty.oclIsUndefined() or importProperty = '' then '' else importProperty.oclAsType(String) endif) + 
 							  (if aPackage.hasKey('imports') then ';' + aPackage.valueKey('imports') else '' endif) in
 	if imports <> '' then
@@ -94,3 +121,5 @@
 		endif
 	endif
 /]
+
+
