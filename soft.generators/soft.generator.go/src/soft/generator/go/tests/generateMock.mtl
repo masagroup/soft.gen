@@ -52,10 +52,10 @@
 
 package [aPackage.name/]
 
-[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
-										, mockExtends->collect( extend | aPackage.getImportForType( extend ) )->asSet()
-									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
-                                        , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
+[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ aPackage.getImportPathForPackage('ecore') } else Set{} endif
+										, mockExtends->collect( extend | aPackage.getImportPathForType( extend ) )->asSet()
+									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportPathForType( extend ) )->asSet()
+                                        , aClass.getReferencedTypes()->collect( cls | aPackage.getImportPath(cls) )->asSet()
                                         }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 import (
 	 "github.com/stretchr/testify/mock"

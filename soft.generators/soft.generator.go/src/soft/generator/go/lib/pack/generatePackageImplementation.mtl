@@ -174,7 +174,7 @@ package [anEPackage.name/]
 										, anEPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.name->asSet()
                                         }->flatten()
 										 ->select( s | s <> anEPackage.name)
-										 ->collect( i | anEPackage.getImportForPackage(i) )
+										 ->collect( i | anEPackage.getImportPathForPackage(i) )
 										 ->select( s | s <> '')
 									     ->asOrderedSet()->sortedBy( s | s) ]
 

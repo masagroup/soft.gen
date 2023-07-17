@@ -187,13 +187,13 @@ anyType = type
 	endif endif
 /]
 
-[query public getTestValueImport( aClassifier : EClassifier,aPackage : EPackage ) : String =
+[query public getTestValueImportPath( aClassifier : EClassifier,aPackage : EPackage ) : String =
     if aClassifier.oclIsKindOf( EDataType ) then 
 		let v : String = aClassifier.oclAsType(EDataType).getTestValue(aPackage) in
-		aPackage.getImportForType(v)
+		aPackage.getImportPathForType(v)
     else
 		if aClassifier.ePackage <> aPackage then 
-			aPackage.getImportForPackage(aClassifier.ePackage.name) 
+			aPackage.getImportPathForPackage(aClassifier.ePackage.name) 
 		else 
 			'' 
 		endif
@@ -312,14 +312,14 @@ anyType = type
 	)
 /] 
 
-[query public getAllImports(aPackage : EPackage) : OclAny =
+[query private getAllImportPaths(aPackage : EPackage) : OclAny =
 	let property : OclAny = getProperty('imports') in 
 	let allImports : String = (if property.oclIsUndefined() or property = '' then '' else property.oclAsType(String) endif) + 
 							  (if aPackage.hasKey('imports') then ';' + aPackage.valueKey('imports') else '' endif) in
 	let namespacesToPackages : OclAny = 
     if allImports <> '' then
 		let annotations : Sequence(String) = allImports.tokenize('; \r\n') in
-        annotations->iterate( annotation : String ; res : OclAny = mapNew('getNamespaceToPackages_' + aPackage.name) | (
+        annotations->iterate( annotation : String ; res : OclAny = mapNew('getPackageToImport_' + aPackage.name) | (
         	let index : Integer = annotation.index('=') in 
             if index = -1 then
 				let namespaceIndex : Integer = annotation.lastIndexOf('/') in
@@ -333,7 +333,7 @@ anyType = type
             endif
 		))
     else
-        mapNew('getNamespaceToPackages_' + aPackage.name)
+        mapNew('getPackageToImport_' + aPackage.name)
     endif in
     namespacesToPackages.mapPut(getEcoreModuleNamespace(),getEcoreModulePath())
 					    .mapPut(getDefaultEcoreModuleNamespace(),getDefaultEcoreModulePath())
@@ -341,12 +341,12 @@ anyType = type
 
 
 
-[query public getImportForPackage(aPackage : EPackage, aPackageName : String ) : String =
-	aPackage.getAllImports().mapGetOrDefault(aPackageName, '')
+[query public getImportPathForPackage(aPackage : EPackage, aPackageName : String ) : String =
+	aPackage.getAllImportPaths().mapGetOrDefault(aPackageName, '')
 /]
 
 
-[query public getImportForType( aPackage : EPackage , qualifiedName : String ) : String =
+[query public getImportPathForType( aPackage : EPackage , qualifiedName : String ) : String =
     let q : String = getQualification( qualifiedName ) in
     if q = '' then 
         ''
@@ -354,7 +354,7 @@ anyType = type
         if aPackage.name = q then 
             ''
         else
-            let import : String = aPackage.getImportForPackage( q ) in
+            let import : String = aPackage.getImportPathForPackage( q ) in
             if import = '' then
                 q
             else
@@ -365,15 +365,15 @@ anyType = type
     
 /]
 
-[query public getImport( aPackage : EPackage , aClassifier : EClassifier ) : String = 
+[query public getImportPath( aPackage : EPackage , aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then 
         ''
     else
 		let type : String = aClassifier.getType() in
 		if type.size() > 0 and type.first(1) = '*' then
-        	aPackage.getImportForType(type.substring(2))
+        	aPackage.getImportPathForType(type.substring(2))
 		else
-			aPackage.getImportForType(type)
+			aPackage.getImportPathForType(type)
 		endif
     endif
 /]

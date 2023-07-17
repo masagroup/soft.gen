@@ -53,12 +53,12 @@ import (
 	"testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-[let imports : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
+[let imports : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportPathForPackage('ecore') } else Set{} endif
 										, OrderedSet{aClass.eSuperTypes
               									    ,implementedFeatures.eType
 													,implementedFeatures->collect( getMapTypes() )->flatten()
-													}->flatten()->select( not oclIsUndefined() )->collect( cls | aPackage.getImport(cls) )->asSet()
-										, implementedFeatures->collect( f : EStructuralFeature | f.eType.getTestValueImport(aPackage) )->asSet()
+													}->flatten()->select( not oclIsUndefined() )->collect( cls | aPackage.getImportPath(cls) )->asSet()
+										, implementedFeatures->collect( f : EStructuralFeature | f.eType.getTestValueImportPath(aPackage) )->asSet()
 										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
 	"[i/]"

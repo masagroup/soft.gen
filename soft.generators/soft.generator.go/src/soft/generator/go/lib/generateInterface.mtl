@@ -34,9 +34,9 @@
 package [aPackage.name/]
 
 [let refTypes : Set(EClassifier) = if isDiamond then aClass.eSuperTypes.getReferencedTypes()->asSet() else aClass.getReferencedTypes()->asSet() endif]
-[let ecorePackage : Set(String) = if not aPackage.isEcorePackage() and ( aClass.requiresList() or isDiamond ) then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif]
-[let imports : OrderedSet(String) = Set { interfaceExtends->collect( extend | aPackage.getImportForType(extend))->asSet()
-                                        , refTypes->collect(cls | aPackage.getImport(cls))->asSet()
+[let ecorePackage : Set(String) = if not aPackage.isEcorePackage() and ( aClass.requiresList() or isDiamond ) then Set{ aPackage.getImportPathForPackage('ecore') } else Set{} endif]
+[let imports : OrderedSet(String) = Set { interfaceExtends->collect( extend | aPackage.getImportPathForType(extend))->asSet()
+                                        , refTypes->collect(cls | aPackage.getImportPath(cls))->asSet()
 										, ecorePackage
                                         }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
 [for ( i : String | imports )]

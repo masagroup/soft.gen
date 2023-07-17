@@ -32,7 +32,7 @@
 package [packageName/]
 
 [if not anEPackage.isEcorePackage()]
-import "[getImportForPackage('ecore')/]"
+import "[getImportPathForPackage('ecore')/]"
 [/if]
 
 const (
