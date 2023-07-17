@@ -316,27 +316,27 @@ anyType = type
 	let property : OclAny = getProperty('imports') in 
 	let allImports : String = (if property.oclIsUndefined() or property = '' then '' else property.oclAsType(String) endif) + 
 							  (if aPackage.hasKey('imports') then ';' + aPackage.valueKey('imports') else '' endif) in
-	let namespacesToPackages : OclAny = 
+	let packageToImportPath : OclAny = 
     if allImports <> '' then
-		let annotations : Sequence(String) = allImports.tokenize('; \r\n') in
-        annotations->iterate( annotation : String ; res : OclAny = mapNew('getPackageToImport_' + aPackage.name) | (
-        	let index : Integer = annotation.index('=') in 
+		let tokenized : Sequence(String) = allImports.tokenize('; \r\n') in
+        tokenized->iterate( import : String ; res : OclAny = mapNew('getPackageToImport_' + aPackage.name) | (
+        	let index : Integer = import.index('=') in 
             if index = -1 then
-				let namespaceIndex : Integer = annotation.lastIndexOf('/') in
-				if namespaceIndex = -1 then
+				let importIndex : Integer = import.lastIndexOf('/') in
+				if importIndex = -1 then
 					res
 				else
-					res.mapPut(annotation.substring(namespaceIndex+1),annotation)
+					res.mapPut(import.substring(importIndex+1),import)
 				endif
             else
-                res.mapPut(annotation.substring(1,index-1),annotation.substring(index+1)) 
+                res.mapPut(import.substring(1,index-1),import.substring(index+1)) 
             endif
 		))
     else
         mapNew('getPackageToImport_' + aPackage.name)
     endif in
-    namespacesToPackages.mapPut(getEcoreModuleNamespace(),getEcoreModulePath())
-					    .mapPut(getDefaultEcoreModuleNamespace(),getDefaultEcoreModulePath())
+    packageToImportPath.mapPut(getEcoreModuleName(),getEcoreModulePath())
+					   .mapPut(getDefaultEcoreModuleName(),getDefaultEcoreModulePath())
 /]
 
 

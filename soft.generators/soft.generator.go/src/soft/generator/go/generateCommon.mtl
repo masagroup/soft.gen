@@ -85,9 +85,9 @@
 [query public getDefaultEcoreModulePath(aPackage : EPackage) : String = 'github.com/masagroup/soft.go/ecore' /]
 
 [**
- * Get Ecore module default namespace
+ * Get Ecore module default name
 */]
-[query public getDefaultEcoreModuleNamespace(aPackage : EPackage) : String = 'ecore' /]
+[query public getDefaultEcoreModuleName(aPackage : EPackage) : String = 'ecore' /]
 
 [**
  * Get Ecore module path
@@ -107,24 +107,24 @@
 /]
 
 [**
- * Get Ecore module namespace
+ * Get Ecore module name
 */]
-[query public getEcoreModuleNamespace(aPackage : EPackage) : String =
+[query public getEcoreModuleName(aPackage : EPackage) : String =
 	if aPackage.hasPackageProperty('ecoreModule') then
 		let p : String = aPackage.getPackageProperty('ecoreModule') in
 		let index : Integer = p.index('=') in 
         if index = -1 then
-			let namespaceIndex : Integer = p.lastIndexOf('/') in
-			if namespaceIndex = -1 then
+			let moduleIndex : Integer = p.lastIndexOf('/') in
+			if moduleIndex = -1 then
 				''
 			else
-				p.substring(namespaceIndex+1)
+				p.substring(moduleIndex+1)
 			endif
 		else
             p.substring(1,index-1)
         endif
 	else 
-		aPackage.getDefaultEcoreModuleNamespace()
+		aPackage.getDefaultEcoreModuleName()
 	endif
 /]
 
@@ -343,8 +343,8 @@ methodName.toUpperFirst()
 /]
 
 [query public getPackageInstance(aClassifier : EClassifier, aPackage : EPackage) : String = 
-	let packageNamespace : String = if aClassifier.ePackage.isEcorePackage() then aPackage.getEcoreModuleNamespace() else aClassifier.ePackage.name endif in
-	let packagePrefix : String = if packageNamespace = aPackage.name then '' else packageNamespace + '.' endif in
+	let packageName : String = if aClassifier.ePackage.isEcorePackage() then aPackage.getEcoreModuleName() else aClassifier.ePackage.name endif in
+	let packagePrefix : String = if packageName = aPackage.name then '' else packageName + '.' endif in
 	packagePrefix + 'GetPackage()'
 /]
 

@@ -162,15 +162,15 @@ p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataTyp
 	allClasses :  OrderedSet(EClass) = anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
 	allDataTypes : OrderedSet(EDataType) = anEPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 	annotationSources : OrderedSet(String) = anEPackage.getAnnotationSources();
-	ecorePrefix : String = if anEPackage.isEcorePackage() then '' else anEPackage.getDefaultEcoreModuleNamespace() + '.' endif;
-	ecoreNamespace : String = anEPackage.getEcoreModuleNamespace();
+	ecorePrefix : String = if anEPackage.isEcorePackage() then '' else anEPackage.getDefaultEcoreModuleName() + '.' endif;
+	ecoreName : String = anEPackage.getEcoreModuleName();
 }]
 [file (anEPackage.getOutputDirectory() + '/'+ anEPackage.getImplementationFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
 package [anEPackage.name/]
 
-[let imports : OrderedSet(String) = Set { if not anEPackage.isEcorePackage() then Set{ ecoreNamespace , 'ecore'} else Set{} endif
+[let imports : OrderedSet(String) = Set { if not anEPackage.isEcorePackage() then Set{ ecoreName , 'ecore'} else Set{} endif
 										, anEPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.name->asSet()
                                         }->flatten()
 										 ->select( s | s <> anEPackage.name)
@@ -186,7 +186,7 @@ import "[i/]"
 
 // [className/] is the [anEPackage.getInterfaceName()/] implementation
 type [className/] struct {
-	[if not anEPackage.isEcorePackage()][ecoreNamespace/].[/if]EPackageExt
+	[if not anEPackage.isEcorePackage()][ecoreName/].[/if]EPackageExt
     [allClasses.generateDataMember(anEPackage)/]
     [allDataTypes.generateDataMember(anEPackage)/]
 }
@@ -194,7 +194,7 @@ type [className/] struct {
 func new[className.toUpperFirst()/]() *[className/] {
     p := new([className/])
     p.SetInterfaces(p)
-	p.Initialize(GetFactory(),[getShortQualifiedName(ecoreNamespace + '.GetFactory()',anEPackage.name)/])
+	p.Initialize(GetFactory(),[getShortQualifiedName(ecoreName + '.GetFactory()',anEPackage.name)/])
     return p
 }
 

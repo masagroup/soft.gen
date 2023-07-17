@@ -48,7 +48,7 @@ type [aPackage.getFactoryInternalName()/] interface {
 }
 
 type [className/] struct {
-	[if not aPackage.isEcorePackage()][aPackage.getEcoreModuleNamespace()/].[/if]EFactoryExt
+	[if not aPackage.isEcorePackage()][aPackage.getEcoreModuleName()/].[/if]EFactoryExt
 }
 
 func new[className.toUpperFirst()/]() *[className/] {
