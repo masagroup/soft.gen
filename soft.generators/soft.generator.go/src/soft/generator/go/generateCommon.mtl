@@ -33,7 +33,7 @@
 	if property.oclIsUndefined() or property = '' then
 		anPackage.valueKey(aProperty)
 	else
-		''
+		property
 	endif
 /]
 
