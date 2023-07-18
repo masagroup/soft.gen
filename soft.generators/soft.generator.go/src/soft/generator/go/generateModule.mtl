@@ -30,7 +30,7 @@
             p.substring(index+1) 
         endif
 	else 
-		''
+		defaultValue
 	endif
 /]
 
