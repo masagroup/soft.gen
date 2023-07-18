@@ -18,7 +18,43 @@
 [import soft::generator::go::generateModule/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
-[import soft::generator::go::lib::pack::generateCommon/]
+
+[template private generateStaticClassID(aEClass : EClass)]
+// [aEClass.getClassifierIDName()/] is the meta object id for the class [aEClass.name/].
+[aEClass.getClassifierIDName()/] = [aEClass.getClassifierIDValue()/]
+
+[/template]
+
+[template private generateStaticFeatureID(anStructFeature : EStructuralFeature,anEClass : EClass )]
+// [anEClass.getFeatureIDName(anStructFeature)/] is the feature id for the [anEClass.name/] '[anStructFeature.name.toUpperFirst()/]' [anStructFeature.getFeatureKind()/].
+[anEClass.getFeatureIDName(anStructFeature)/] = [anEClass.getFeatureIDValue(anStructFeature)/]
+
+
+[/template]
+
+[template private generateStaticFeatureCountID(anEClass : EClass )]
+// [anEClass.getFeatureCountIDName()/] is the number of structural features of the class [anEClass.name/].
+[anEClass.getFeatureCountIDName()/] = [anEClass.getFeatureCountIDValue()/]
+
+[/template]
+
+[template private generateStaticOperationID(aOperation : EOperation , aClass : EClass )]
+// [aClass.getOperationIDName(aOperation)/] is the operation id for the '[aOperation.name/]' operation.
+[aClass.getOperationIDName(aOperation)/] = [aClass.getOperationIDValue(aOperation)/];
+
+[/template]
+
+[template private generateStaticOperationCountID(anEClass : EClass )]
+// [anEClass.getOperationCountIDName()/] is the number of [anEClass.getOperationCountIDName()/]
+[anEClass.getOperationCountIDName()/] = [anEClass.getOperationCountIDValue()/];
+
+[/template]
+
+[template private generateStaticDataTypeID(aEDatatype : EDataType )]
+// [aEDatatype.getClassifierIDName()/] The meta object id for the [if aEDatatype.oclIsKindOf(EEnum)]enum[else]data type[/if] [aEDatatype.name/].
+[aEDatatype.getClassifierIDName()/] = [aEDatatype.getClassifierIDValue()/];
+
+[/template]
 
 [template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage )]
 
@@ -27,7 +63,7 @@
 [/template]
 
 [template public generatePackageInterface(anEPackage : EPackage) { className : String = anEPackage.getInterfaceName(); packageName : String = anEPackage.name; } ]
-[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
+[file (anEPackage.getInterfaceOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
 package [packageName/]

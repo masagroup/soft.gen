@@ -48,7 +48,7 @@
 	mockName : String = aClass.getMockName();
 	interfaceName : String = aClass.getInterfaceName();
 }]
-[file (ePackage.getOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
+[file (aPackage.getMockOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]

@@ -19,7 +19,6 @@
 [import soft::generator::go::generateModule/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
-[import soft::generator::go::lib::pack::generateCommon/]
 
 [query private getPackageInstance(aClassifier : EClassifier, aPackage : EPackage) : String = 
 	let packageName : String = if aClassifier.ePackage.isEcorePackage() then aPackage.getEcoreModuleName() else aClassifier.ePackage.name endif in
@@ -172,7 +171,7 @@ p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataTyp
 	ecorePrefix : String = if anEPackage.isEcorePackage() then '' else anEPackage.getDefaultEcoreModuleName() + '.' endif;
 	ecoreName : String = anEPackage.getEcoreModuleName();
 }]
-[file (anEPackage.getOutputDirectory() + '/'+ anEPackage.getImplementationFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
+[file (anEPackage.getImplementationOutputDirectory() + '/'+ anEPackage.getImplementationFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
 package [anEPackage.name/]

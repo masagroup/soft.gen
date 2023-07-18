@@ -16,6 +16,7 @@
 [import soft::generator::common::generateUtils/]
 
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateModule/]
 [import soft::generator::go::lib::generateCommon/]
 
 [template public generateEnum(aEEnum : EEnum) { 
@@ -23,7 +24,7 @@
 	varName : String = enumName.toLowerFirst(); 
 	aPackage : EPackage = aEEnum.ePackage; 
 	literals : OrderedSet(EEnumLiteral) = aEEnum.eLiterals->asOrderedSet()->sortedBy(name);  }]
-[file (aPackage.getOutputDirectory() + '/' + aEEnum.getInterfaceFileName( enumName ), false, 'UTF-8')]
+[file (aPackage.getInterfaceOutputDirectory() + '/' + aEEnum.getInterfaceFileName( enumName ), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]

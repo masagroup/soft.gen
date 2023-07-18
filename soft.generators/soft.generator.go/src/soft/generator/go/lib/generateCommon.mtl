@@ -23,15 +23,6 @@
 
 [query public isReflectiveDelegation(anFeature : EStructuralFeature ) : Boolean = anFeature.eContainingClass.isReflectiveDelegation()/]
 
-[query public getOutputDirectory( anPackage : EPackage ) : String = 
-    let property : OclAny = getProperty('library.output.dir') in 
-    if property.oclIsUndefined() or property = '' then 
-        anPackage.name 
-    else 
-        property 
-    endif
-/]
-
 [query public getReceiverName(aClass : EClass) : String = aClass.name.toLowerFirst()/]
 
 [template public generateFunctionImplementationReceiver(aClass : EClass)]

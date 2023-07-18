@@ -19,7 +19,7 @@
 [import soft::generator::go::generateCommon/]
 
 [template public generateFactoryInterface(anEPackage : EPackage) { className : String = anEPackage.getFactoryName(); packageName : String = anEPackage.name; }]
-[file (anEPackage.getOutputDirectory() + '/' + anEPackage.getInterfaceFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
+[file (anEPackage.getInterfaceOutputDirectory() + '/' + anEPackage.getInterfaceFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
 package [anEPackage.name/]

@@ -29,7 +29,7 @@
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() );
 }]
-[file (ePackage.getOutputDirectory() + '/' + aClass.getMockTestFileName(aClass.name), false, 'UTF-8')]
+[file (aPackage.getMockOutputDirectory() + '/' + aClass.getMockTestFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]

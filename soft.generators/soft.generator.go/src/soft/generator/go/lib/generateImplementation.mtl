@@ -39,7 +39,7 @@
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
 }]
-[file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getImplementationOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]

@@ -64,10 +64,23 @@
 		let modulePath : String = aPackage.getModulePath() in
 		if aPackage.hasPackageProperty(packageProperty) then
 			let packagePath : String = aPackage.getPackageProperty(packageProperty) in
-			if packagePath.startsWith(modulePath) then
-				packagePath.substring(1, modulePath.size() + 1) 
-			else
-				aPackage.name
+			if packagePath.size() = modulePath.size() then
+				if packagePath = modulePath then
+					''
+				else
+					aPackage.name
+				endif
+			else 
+				if packagePath.size() > modulePath.size() then
+					let index : Integer = packagePath.indexOf(modulePath) in
+					if index = 1 then
+						packagePath.substring(modulePath.size() + 1)
+					else
+						aPackage.name
+					endif
+				else 
+					aPackage.name
+				endif
 			endif
 		else
 			aPackage.name

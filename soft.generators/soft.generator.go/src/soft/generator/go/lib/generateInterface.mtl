@@ -29,7 +29,7 @@
 	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
 	isDiamond : Boolean = aClass.eSuperTypes->size() > 1;
 }]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getInterfaceOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]

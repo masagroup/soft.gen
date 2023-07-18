@@ -17,13 +17,21 @@
 [import soft::generator::go::generateModule/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
-[import soft::generator::go::lib::factory::generateCommon/]
+
+[template private generateFactoryImplementationMember(anEPackage : EPackage)]
+func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementationName()/])
+[/template]
+
+[query private getFactoryReceiverName(anEPackage : EPackage) : String = anEPackage.getFactoryImplementationName().toLowerFirst() /]
+[query private getTypeFromReference(aRef : EReference) : String = aRef.eClass().name /]
+
 
 [template public generateFactoryImplementation(aPackage : EPackage) { 
 	className : String = aPackage.getFactoryImplementationName(); 
 	dataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
 }]
-[file (aPackage.getOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
+
+[file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]
