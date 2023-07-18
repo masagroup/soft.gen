@@ -86,7 +86,7 @@ anyType = type
         Sequence{ 'java.lang.Integer', 'int' , '0', '45' , ''},
 		Sequence{ 'java.lang.Byte','java.lang.Character', 'char', 'byte' ,'\'\'', '\'a\'', ''},
 		Sequence{ 'byte[]','[]byte' , 'nil', 'nil' , ''},
-		Sequence{ 'java.util.Date', '*time.Time', 'nil', 'func() *time.Time { t := time.Now(); return &t }()' , ''},
+		Sequence{ 'java.util.Date', '*time.Time', 'nil', 'nil' , ''},
 		Sequence{ 'java.lang.Double', 'java.math.BigDecimal', 'double', 'float64' , '0.0' , '3.5' , ''},
 		Sequence{ 'java.lang.Float' , 'float' , 'float32' , '0.0', '1.2', ''},
 		Sequence{ 'java.lang.Class' , 'reflect.Type', 'nil', 'reflect.TypeOf("")', ''},
@@ -141,6 +141,14 @@ anyType = type
 		goTypeName
 	endif
 /] 
+
+[query public getUndecoratedTestValue(aClassifier : EClassifier,aPackage : EPackage) : String =
+	if aClassifier.oclIsUndefined() then 'nil'
+    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(aPackage)
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue(aPackage)
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTestValue(aPackage)
+	else '' endif endif endif endif	
+/]
 
 [query public getTestValue(aClassifier : EClassifier,aPackage : EPackage) : String =
 	if aClassifier.oclIsUndefined() then 'nil'
@@ -297,8 +305,3 @@ anyType = type
     endif
 	)
 /] 
-
-
-
-
-
