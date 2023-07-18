@@ -15,6 +15,7 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateStructuralFeature/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateModule/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 
@@ -23,6 +24,12 @@
 [query public getInitializersInterface( aClass : EClass ) : String = aClass.getInterfaceName().toLowerFirst() + 'Initializers'/]
 
 [query public getBasicsInterface( aClass : EClass ) : String = aClass.getInterfaceName().toLowerFirst() + 'Basics'/]
+
+[query private getPackageInstance(aClassifier : EClassifier, aPackage : EPackage) : String = 
+	let packageName : String = if aClassifier.ePackage.isEcorePackage() then aPackage.getEcoreModuleName() else aClassifier.ePackage.name endif in
+	let packagePrefix : String = if packageName = aPackage.name then '' else packageName + '.' endif in
+	packagePrefix + 'GetPackage()'
+/]
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature)]
 [if isGet()]

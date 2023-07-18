@@ -14,6 +14,7 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generateModule/]
 [import soft::generator::go::generateType/]
 
 [query public isReflectiveDelegation(anPackage : EPackage ) : Boolean = anPackage.hasPackageProperty('featureDelegation') and anPackage.getPackageProperty('featureDelegation') = 'Reflective'/]

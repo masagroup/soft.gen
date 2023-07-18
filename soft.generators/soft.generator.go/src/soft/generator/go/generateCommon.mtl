@@ -72,84 +72,7 @@
 	)
 /]
 
-[**
- * Returns package import path for a specific property if defined , otherwise default value
- */]
-[query public getPackageImport(aPackage : EPackage, packageProperty : String, defaultValue : String) : String =
-	if aPackage.hasPackageProperty(packageProperty) then 
-		let p : String = aPackage.getPackageProperty(packageProperty) in
-		let index : Integer = p.index('=') in 
-        if index = -1 then
-			p
-		else
-            p.substring(index+1) 
-        endif
-	else 
-		''
-	endif
-/]
 
-[**
- * Returns package name for a specific property if defined , otherwise default value
- */]
-[query public getPackageName(aPackage : EPackage, packageProperty : String, defaultValue : String) : String =
-	if aPackage.hasPackageProperty(packageProperty) then
-		let p : String = aPackage.getPackageProperty(packageProperty) in
-		let index : Integer = p.index('=') in 
-        if index = -1 then
-			let moduleIndex : Integer = p.lastIndexOf('/') in
-			if moduleIndex = -1 then
-				''
-			else
-				p.substring(moduleIndex+1)
-			endif
-		else
-            p.substring(1,index-1)
-        endif
-	else 
-		defaultValue
-	endif
-/]
-
-
-[**
- * Returns Ecore module default path
-*/]
-[query public getDefaultEcoreModulePath(aPackage : EPackage) : String = 'github.com/masagroup/soft.go/ecore' /]
-
-[**
- * Returns Ecore module default name
-*/]
-[query public getDefaultEcoreModuleName(aPackage : EPackage) : String = 'ecore' /]
-
-[**
- * Returns Ecore module path
-*/]
-[query public getEcoreModulePath(aPackage : EPackage) : String =
-	aPackage.getPackageImport('ecoreModule', aPackage.getDefaultEcoreModulePath())
-/]
-
-[**
- * Get Ecore module name
-*/]
-[query public getEcoreModuleName(aPackage : EPackage) : String =
-	aPackage.getPackageName('ecoreModule', aPackage.getDefaultEcoreModuleName())
-/]
-
-[**
- * Returns true if ecore module is the default one
-*/]
-[query public isDefaultEcoreModule(aPackage : EPackage) : Boolean =
-	aPackage.getEcoreModulePath() = aPackage.getDefaultEcoreModulePath()
-/]
-
-[query public hasModulePath(aPackage : EPackage) : Boolean =
-	aPackage.hasPackageProperty('modulePath')
-/]
-
-[query public getModulePath(aPackage : EPackage) : String =
-	aPackage.getPackageProperty('modulePath')
-/]
 
 [**
  * File Comments 
@@ -365,11 +288,7 @@ methodName.toUpperFirst()
 	}
 /]
 
-[query public getPackageInstance(aClassifier : EClassifier, aPackage : EPackage) : String = 
-	let packageName : String = if aClassifier.ePackage.isEcorePackage() then aPackage.getEcoreModuleName() else aClassifier.ePackage.name endif in
-	let packagePrefix : String = if packageName = aPackage.name then '' else packageName + '.' endif in
-	packagePrefix + 'GetPackage()'
-/]
+
 
 
 

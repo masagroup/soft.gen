@@ -10,12 +10,116 @@
 **/]
 
 [comment encoding = UTF-8 /]
-[module generateImport('http://www.eclipse.org/emf/2002/Ecore')/]
+[module generateModule('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
+
+[**
+ * Returns package import path for a specific property if defined , otherwise default value
+ */]
+[query private getPackageImport(aPackage : EPackage, packageProperty : String, defaultValue : String) : String =
+	if aPackage.hasPackageProperty(packageProperty) then 
+		let p : String = aPackage.getPackageProperty(packageProperty) in
+		let index : Integer = p.index('=') in 
+        if index = -1 then
+			p
+		else
+            p.substring(index+1) 
+        endif
+	else 
+		''
+	endif
+/]
+
+[**
+ * Returns package name for a specific property if defined , otherwise default value
+ */]
+[query private getPackageName(aPackage : EPackage, packageProperty : String, defaultValue : String) : String =
+	if aPackage.hasPackageProperty(packageProperty) then
+		let p : String = aPackage.getPackageProperty(packageProperty) in
+		let index : Integer = p.index('=') in 
+        if index = -1 then
+			let moduleIndex : Integer = p.lastIndexOf('/') in
+			if moduleIndex = -1 then
+				''
+			else
+				p.substring(moduleIndex+1)
+			endif
+		else
+            p.substring(1,index-1)
+        endif
+	else 
+		defaultValue
+	endif
+/]
+
+[**
+ * Returns package output directory
+ */]
+[query private getPackageOutputDirectory(aPackage : EPackage, packageProperty : String) : String =
+	if aPackage.hasModulePath() then
+		let modulePath : String = aPackage.getModulePath() in
+		if aPackage.hasPackageProperty(packageProperty) then
+			let packagePath : String = aPackage.getPackageProperty(packageProperty) in
+			if packagePath.startsWith(modulePath) then
+				packagePath.substring(1, modulePath.size() + 1) 
+			else
+				aPackage.name
+			endif
+		else
+			aPackage.name
+		endif
+	else 
+		aPackage.name 
+	endif
+/]
+
+
+[**
+ * Returns Ecore module default path
+*/]
+[query public getDefaultEcoreModulePath(aPackage : EPackage) : String = 'github.com/masagroup/soft.go/ecore' /]
+
+[**
+ * Returns Ecore module default name
+*/]
+[query public getDefaultEcoreModuleName(aPackage : EPackage) : String = 'ecore' /]
+
+[**
+ * Returns Ecore module path
+*/]
+[query public getEcoreModulePath(aPackage : EPackage) : String =
+	aPackage.getPackageImport('ecoreModule', aPackage.getDefaultEcoreModulePath())
+/]
+
+[**
+ * Returns Ecore module name
+*/]
+[query public getEcoreModuleName(aPackage : EPackage) : String =
+	aPackage.getPackageName('ecoreModule', aPackage.getDefaultEcoreModuleName())
+/]
+
+[**
+ * Returns true if ecore module is the default one
+*/]
+[query public isDefaultEcoreModule(aPackage : EPackage) : Boolean =
+	aPackage.getEcoreModulePath() = aPackage.getDefaultEcoreModulePath()
+/]
+
+
+[query public hasModulePath(aPackage : EPackage) : Boolean =
+	aPackage.hasPackageProperty('modulePath')
+/]
+
+[**
+ * Returns current module path
+*/]
+[query public getModulePath(aPackage : EPackage) : String =
+	aPackage.getPackageProperty('modulePath')
+/]
 
 [query private getDefaultImportPath(aPackage : EPackage) : String =
 	if aPackage.hasModulePath() then aPackage.getModulePath() + '/' + aPackage.name else aPackage.name endif
@@ -29,6 +133,10 @@
 	aPackage.getPackageName('interfacePackage', aPackage.name)
 /]
 
+[query public getInterfaceOutputDirectory(aPackage : EPackage) : String =
+	aPackage.getPackageOutputDirectory('interfacePackage')
+/]
+
 [query public getImplementationImportPath(aPackage : EPackage) : String =
 	 aPackage.getPackageImport('implementationPackage', aPackage.getDefaultImportPath())
 /]
@@ -37,12 +145,20 @@
 	 aPackage.getPackageName('implementationPackage', aPackage.name)
 /]
 
+[query public getImplementationOutputDirectory(aPackage : EPackage) : String =
+	aPackage.getPackageOutputDirectory('implementationPackage')
+/]
+
 [query public getMockImportPath(aPackage : EPackage) : String =
 	 aPackage.getPackageImport('mockPackage', aPackage.getDefaultImportPath())
 /]
 
 [query public getMockPackageName(aPackage : EPackage) : String =
 	 aPackage.getPackageName('mockPackage', aPackage.name)
+/]
+
+[query public getMockOutputDirectory(aPackage : EPackage) : String =
+	aPackage.getPackageOutputDirectory('mockPackage')
 /]
 
 [query private getAllImportPaths(aPackage : EPackage) : OclAny =

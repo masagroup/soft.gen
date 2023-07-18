@@ -18,7 +18,7 @@
 [import soft::generator::common::generateStructuralFeature/]
 
 [import soft::generator::go::generateCommon/]
-[import soft::generator::go::generateImport/]
+[import soft::generator::go::generateModule/]
 [import soft::generator::go::generateType/]
 
 [import soft::generator::go::lib::generateCommon/]
