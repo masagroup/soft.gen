@@ -43,3 +43,40 @@
         packageToPaths
     endif
 /]
+
+[query private getPackagePath(aPackage : EPackage, paths : String, index : Integer) : String =
+	let tokenized : Sequence(String) = paths.tokenize('#') in
+	let size : Integer = tokenized->size() in 
+	if index > size then
+		tokenized->at( size )
+	else
+		tokenized->at(index)
+	endif
+/]
+
+[query private getPackageIndexPath(aPackage : EPackage, index : Integer) : String =
+	let packageToPaths : OclAny = aPackage.getPackagePaths() in
+	let uriPath : OclAny = mapGet(packageToPaths, 'uri:' + aPackage.nsURI) in
+	if not uriPath.oclIsUndefined() then
+		aPackage.getPackagePath(uriPath.oclAsType(String),index)
+	else
+		let namePath : OclAny = mapGet(packageToPaths, 'name:' + aPackage.name) in
+		if not namePath.oclIsUndefined() then
+			aPackage.getPackagePath(namePath.oclAsType(String),index)
+		else
+			''
+		endif
+	endif 	
+/] 
+
+[query public getPackageInterfacePath(aPackage : EPackage) : String =
+	aPackage.getPackageIndexPath(1)
+/]
+
+[query public getPackageImplementationPath(aPackage : EPackage) : String =
+	aPackage.getPackageIndexPath(2)
+/]
+
+[query public getPackageMockPath(aPackage : EPackage) : String =
+	aPackage.getPackageIndexPath(3)
+/]
