@@ -22,10 +22,15 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EcorePackage;
 
 import com.google.common.base.CaseFormat;
 
 public class GenerateUtils {
+
+    public EPackage getEcorePackage() {
+        return EcorePackage.eINSTANCE;
+    }
 
     public String lowerCamelToUpperUnderscore(String s) {
         return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, s);
