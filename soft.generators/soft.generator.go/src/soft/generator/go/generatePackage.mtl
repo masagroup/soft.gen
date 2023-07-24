@@ -17,8 +17,15 @@
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
 
+[**
+ * Returns Ecore module default path
+*/]
+[query public getEcoreModulePath(aPackage : EPackage) : String = 'github.com/masagroup/soft.go/ecore' /]
+
 [query private getPackagePaths(aPackage : EPackage) : OclAny =
-	let packageToPaths : OclAny = mapNew('getPackageToPaths_' + aPackage.name) in
+	let ecorePackage : EPackage = getEcorePackage() in
+	let packageToPaths : OclAny = mapNew('getPackageToPaths_' + aPackage.name)
+									.mapPut('uri:'+ ecorePackage.nsURI, getEcoreModulePath()) in
     let packagesProperty : OclAny = getProperty('packages') in 
 	let packages : String = (if packagesProperty.oclIsUndefined() or packagesProperty = '' then '' else packagesProperty.oclAsType(String) endif) + 
 							(if aPackage.hasKey('packages') then ';' + aPackage.valueKey('packages') else '' endif) in
@@ -69,14 +76,62 @@
 	endif 	
 /] 
 
-[query public getPackageInterfacePath(aPackage : EPackage) : String =
+[query public getInterfacePackagePath(aPackage : EPackage) : String =
 	aPackage.getPackageIndexPath(1)
 /]
 
-[query public getPackageImplementationPath(aPackage : EPackage) : String =
+[query public getImplementationPackagePath(aPackage : EPackage) : String =
 	aPackage.getPackageIndexPath(2)
 /]
 
-[query public getPackageMockPath(aPackage : EPackage) : String =
+[query public getMockPackagePath(aPackage : EPackage) : String =
 	aPackage.getPackageIndexPath(3)
 /]
+
+
+[query private hasModulePath(aPackage : EPackage) : Boolean =
+	aPackage.hasPackageProperty('modulePath')
+/]
+
+[query private getModulePath(aPackage : EPackage) : String =
+	aPackage.getPackageProperty('modulePath')
+/]
+
+[**
+ * Returns package output directory
+ */]
+[query private getPackageIndexDirectory(aPackage : EPackage, index : Integer) : String =
+	if aPackage.hasModulePath() then
+		let modulePath : String = aPackage.getModulePath() in
+		let packagePath : String = aPackage.getPackageIndexPath(index) in
+		if packagePath = modulePath then
+			''
+		else 
+			if packagePath.size() > modulePath.size() then
+				if packagePath.startsWith(modulePath) then
+					packagePath.substring(modulePath.size() + 1)
+				else
+					aPackage.name
+				endif
+			else 
+				aPackage.name
+			endif
+		endif
+	else 
+		aPackage.name 
+	endif
+/]
+
+[query public getInterfaceOutputDirectory(aPackage : EPackage) : String =
+	aPackage.getPackageIndexDirectory(1)
+/]
+
+[query public getImplementationOutputDirectory(aPackage : EPackage) : String =
+	aPackage.getPackageIndexDirectory(2)
+/]
+
+[query public getMockOutputDirectory(aPackage : EPackage) : String =
+	aPackage.getPackageIndexDirectory(3)
+/]
+
+
