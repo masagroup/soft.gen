@@ -10,7 +10,7 @@
 **/]
 
 [comment encoding = UTF-8 /]
-[module generatePackage('http://www.eclipse.org/emf/2002/Ecore')/]
+[module generatePath('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
@@ -77,7 +77,7 @@
 /] 
 
 [query public getPackagePath(aPackage : EPackage) : String =
-	aPackage.getInterfacePackagePath()
+	aPackage.getPackageIndexPath(1)
 /]
 
 [query public getInterfacePackagePath(aPackage : EPackage) : String =
@@ -94,11 +94,11 @@
 
 
 [query private hasModulePath(aPackage : EPackage) : Boolean =
-	aPackage.hasPackageProperty('modulePath')
+	aPackage.hasPackageProperty('module')
 /]
 
 [query private getModulePath(aPackage : EPackage) : String =
-	aPackage.getPackageProperty('modulePath')
+	aPackage.getPackageProperty('module')
 /]
 
 [**

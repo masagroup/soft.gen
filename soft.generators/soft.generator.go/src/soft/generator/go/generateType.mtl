@@ -15,7 +15,6 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
-[import soft::generator::go::generatePackage/]
 
 [query public isBackReference(aStructuralFeature:EStructuralFeature) : Boolean = aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).isBackReference()/]
 [query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
@@ -33,8 +32,6 @@ endif
 let anyType : String = aPackage.getAnyType() in
 anyType = type
 /]
-
-[query public getQualifiedIdentifier(aPackage : EPackage, identifier : String ) : String = aPackage.getPackagePath() + '$' + identifier/]
 
 [query public getImportedIdentifier(aPackage : EPackage, qualifiedName : String, imports : OclAny ) : String =
 	let index : Integer = qualifiedName.indexOf('$') in

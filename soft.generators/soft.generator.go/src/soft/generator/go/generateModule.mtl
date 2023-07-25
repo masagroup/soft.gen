@@ -56,40 +56,6 @@
 	endif
 /]
 
-[**
- * Returns package output directory
- */]
-[query private getPackageOutputDirectory(aPackage : EPackage, packageProperty : String) : String =
-	if aPackage.hasModulePath() then
-		let modulePath : String = aPackage.getModulePath() in
-		if aPackage.hasPackageProperty(packageProperty) then
-			let packagePath : String = aPackage.getPackageProperty(packageProperty) in
-			if packagePath.size() = modulePath.size() then
-				if packagePath = modulePath then
-					''
-				else
-					aPackage.name
-				endif
-			else 
-				if packagePath.size() > modulePath.size() then
-					let index : Integer = packagePath.indexOf(modulePath) in
-					if index = 1 then
-						packagePath.substring(modulePath.size() + 1)
-					else
-						aPackage.name
-					endif
-				else 
-					aPackage.name
-				endif
-			endif
-		else
-			aPackage.name
-		endif
-	else 
-		aPackage.name 
-	endif
-/]
-
 
 [**
  * Returns Ecore module default path
@@ -120,58 +86,6 @@
 */]
 [query public isDefaultEcoreModule(aPackage : EPackage) : Boolean =
 	aPackage.getEcoreModulePath() = aPackage.getDefaultEcoreModulePath()
-/]
-
-
-[query public hasModulePath(aPackage : EPackage) : Boolean =
-	aPackage.hasPackageProperty('modulePath')
-/]
-
-[**
- * Returns current module path
-*/]
-[query public getModulePath(aPackage : EPackage) : String =
-	aPackage.getPackageProperty('modulePath')
-/]
-
-[query private getDefaultImportPath(aPackage : EPackage) : String =
-	if aPackage.hasModulePath() then aPackage.getModulePath() + '/' + aPackage.name else aPackage.name endif
-/]
-
-[query public getInterfaceImportPath(aPackage : EPackage) : String =
-	aPackage.getPackageImport('interfacePackage', aPackage.getDefaultImportPath())	
-/]
-
-[query public getInterfacePackageName(aPackage : EPackage) : String =
-	aPackage.getPackageName('interfacePackage', aPackage.name)
-/]
-
-[query public getInterfaceOutputDirectory(aPackage : EPackage) : String =
-	aPackage.getPackageOutputDirectory('interfacePackage')
-/]
-
-[query public getImplementationImportPath(aPackage : EPackage) : String =
-	 aPackage.getPackageImport('implementationPackage', aPackage.getDefaultImportPath())
-/]
-
-[query public getImplementationPackageName(aPackage : EPackage) : String =
-	 aPackage.getPackageName('implementationPackage', aPackage.name)
-/]
-
-[query public getImplementationOutputDirectory(aPackage : EPackage) : String =
-	aPackage.getPackageOutputDirectory('implementationPackage')
-/]
-
-[query public getMockImportPath(aPackage : EPackage) : String =
-	 aPackage.getPackageImport('mockPackage', aPackage.getDefaultImportPath())
-/]
-
-[query public getMockPackageName(aPackage : EPackage) : String =
-	 aPackage.getPackageName('mockPackage', aPackage.name)
-/]
-
-[query public getMockOutputDirectory(aPackage : EPackage) : String =
-	aPackage.getPackageOutputDirectory('mockPackage')
 /]
 
 [query private getAllImportPaths(aPackage : EPackage) : OclAny =

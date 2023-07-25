@@ -16,7 +16,7 @@
 [import soft::generator::common::generateUtils/]
 
 [import soft::generator::go::generateCommon/]
-[import soft::generator::go::generateModule/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::lib::generateCommon/]
 
 [template public generateEnum(aEEnum : EEnum) { 
