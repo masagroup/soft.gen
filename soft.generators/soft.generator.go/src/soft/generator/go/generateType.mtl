@@ -15,6 +15,7 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generatePackage/]
 
 [query public isBackReference(aStructuralFeature:EStructuralFeature) : Boolean = aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).isBackReference()/]
 [query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
@@ -32,6 +33,29 @@ endif
 let anyType : String = aPackage.getAnyType() in
 anyType = type
 /]
+
+[query public getQualifiedIdentifier(aPackage : EPackage, identifier : String ) : String = aPackage.getPackagePath() + '$' + identifier/]
+
+[query public getImportedIdentifier(aPackage : EPackage, qualifiedName : String, imports : OclAny ) : String =
+	let index : Integer = qualifiedName.indexOf('$') in
+	if index = -1 then
+		qualifiedName.getShortQualifiedNameSep(aPackage.name, '.')
+	else
+		let p : String = qualifiedName.substring(1, index-1) in
+		let o : String = qualifiedName.substring(index+1) in
+		let i : OclAny = mapGet(imports,p) in		
+		if i.oclIsUndefined() then
+			let nameIndex : Integer = p.lastIndexOf('/') in
+			if nameIndex = -1 then
+				p + '.' + o
+			else
+				p.substring(nameIndex+1) + '.' + o
+			endif
+		else
+			i.oclAsType(String) + '.' + o
+		endif
+	endif
+/] 
 
 
 [template public generateEffectiveType(aElement : ETypedElement) post(trim())]

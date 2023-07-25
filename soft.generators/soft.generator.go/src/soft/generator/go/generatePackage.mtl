@@ -15,7 +15,7 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
-[import soft::generator::go::generateType/]
+
 
 [**
  * Returns Ecore module default path
@@ -71,10 +71,14 @@
 		if not namePath.oclIsUndefined() then
 			aPackage.getPackagePath(namePath.oclAsType(String),index)
 		else
-			''
+			aPackage.name
 		endif
 	endif 	
 /] 
+
+[query public getPackagePath(aPackage : EPackage) : String =
+	aPackage.getInterfacePackagePath()
+/]
 
 [query public getInterfacePackagePath(aPackage : EPackage) : String =
 	aPackage.getPackageIndexPath(1)
