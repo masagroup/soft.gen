@@ -20,6 +20,7 @@
 [import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::lib::pack::generateCommon/]
 
 [query private getPackageInstance(aClassifier : EClassifier, aPackage : EPackage) : String = 
 	let packageName : String = if aClassifier.ePackage.isEcorePackage() then aPackage.getEcoreModuleName() else aClassifier.ePackage.name endif in
@@ -46,35 +47,39 @@
 [query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'nil' else getPackageInstance(anEClassifier, anOperation.eContainingClass) + '.' +anEClassifier.getReflectiveGetterName() + '()' endif/]
 
 
-[template private generateDataMember(anENamedElement : ENamedElement, anEPackage : EPackage)] 
-[anENamedElement.getElementInstanceName()/] [anEPackage.getMetaType(anENamedElement)/] 
+[template private generateDataMember(anENamedElement : ENamedElement, anEPackage : EPackage, imports : OclAny)] 
+[anENamedElement.getElementInstanceName()/] [anEPackage.getMetaType(anENamedElement,imports)/] 
 
 [/template]
 
-[template private generateGetter(aClassifier : EClassifier, anEPackage : EPackage)]
+[template private generateGetter(aClassifier : EClassifier, anEPackage : EPackage, imports : OclAny)]
 // [aClassifier.getReflectiveGetterName()/] returns the meta object corresponding to 
-func (p *[anEPackage.getImplementationName()/]) [aClassifier.getReflectiveGetterName()/]() [anEPackage.getMetaType(aClassifier)/] {
+func (p *[anEPackage.getImplementationName()/]) [aClassifier.getReflectiveGetterName()/]() [anEPackage.getMetaType(aClassifier,imports)/] {
     return p.[aClassifier.getElementInstanceName()/]
 }
 
 [/template]
 
-[template private generateGetter(aFeature : EStructuralFeature, anEPackage : EPackage)]
+[template private generateGetter(aFeature : EStructuralFeature, anEPackage : EPackage, imports : OclAny)]
 [let aClass : EClass = aFeature.eContainingClass]
+[let metaType : String = anEPackage.getMetaType(aFeature,imports)]
 // [aFeature.getReflectiveGetterName()/] returns the meta object corresponding to 
-func (p *[anEPackage.getImplementationName()/]) [aFeature.getReflectiveGetterName()/]() [anEPackage.getMetaType(aFeature)/] {
-    return p.[aClass.getElementInstanceName()/].GetEStructuralFeatures().Get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]).([anEPackage.getMetaType(aFeature)/])
+func (p *[anEPackage.getImplementationName()/]) [aFeature.getReflectiveGetterName()/]() [metaType/] {
+    return p.[aClass.getElementInstanceName()/].GetEStructuralFeatures().Get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]).([metaType/])
 }
+[/let]
 [/let]
 
 [/template]
 
-[template private generateGetter(aOperation : EOperation, anEPackage : EPackage)]
+[template private generateGetter(aOperation : EOperation, anEPackage : EPackage, imports : OclAny)]
 [let aClass : EClass = aOperation.eContainingClass]
+[let metaType : String = anEPackage.getMetaType(aOperation,imports)]
 // [aOperation.getReflectiveGetterName()/] returns the meta object corresponding to 
-func (p *[anEPackage.getImplementationName()/]) [aOperation.getReflectiveGetterName()/]() [anEPackage.getMetaType(aOperation)/] {
-    return p.[aClass.getElementInstanceName()/].GetEOperations().Get([aClass.eOperations->indexOf(aOperation)-1/]).([anEPackage.getMetaType(aOperation)/])
+func (p *[anEPackage.getImplementationName()/]) [aOperation.getReflectiveGetterName()/]() [metaType/] {
+    return p.[aClass.getElementInstanceName()/].GetEOperations().Get([aClass.eOperations->indexOf(aOperation)-1/]).([metaType/])
 }
+[/let]
 [/let]
 
 [/template]

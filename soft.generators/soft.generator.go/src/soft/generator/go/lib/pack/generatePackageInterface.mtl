@@ -19,6 +19,7 @@
 [import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::lib::pack::generateCommon/]
 
 [template private generateStaticClassID(aEClass : EClass)]
 // [aEClass.getClassifierIDName()/] is the meta object id for the class [aEClass.name/].
@@ -57,13 +58,16 @@
 
 [/template]
 
-[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage )]
+[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage, imports : OclAny )]
 
 // Returns the meta object for the [anENamedElement.name.toUpperFirst()/]
-[anENamedElement.getReflectiveGetterName()/]() [aPackage.getMetaType(anENamedElement)/]
+[anENamedElement.getReflectiveGetterName()/]() [aPackage.getMetaType(anENamedElement,imports)/]
 [/template]
 
-[template public generatePackageInterface(anEPackage : EPackage) { className : String = anEPackage.getInterfaceName(); packageName : String = anEPackage.name; } ]
+[template public generatePackageInterface(anEPackage : EPackage) { 
+	className : String = anEPackage.getInterfaceName(); 
+	packageName : String = anEPackage.name; 
+}]
 [file (anEPackage.getInterfaceOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 

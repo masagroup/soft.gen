@@ -14,6 +14,7 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateElement/]
 [import soft::generator::go::generateModule/]
@@ -26,16 +27,16 @@
 [query public getMockExtends(aClass : EClass ) : Sequence(String) =
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
+		let ecore : EPackage = getEcorePackage() in
 		if ( aClass.isMapEntry() ) then
-			Sequence{'ecore.MockEObjectInternal', 'ecore.MockEMapEntry'}
-			
+			Sequence{ ecore.getQualifiedInterfaceIdentifier('MockEObjectInternal'), ecore.getQualifiedInterfaceIdentifier('MockEMapEntry')}
         else if ( aClass.name = 'EObject' ) then
-            Sequence{'ecore.MockENotifier'}
+            Sequence{ecore.getQualifiedInterfaceIdentifier('MockENotifier')}
         else
-            Sequence{'ecore.MockEObjectInternal'}
+            Sequence{ecore.getQualifiedInterfaceIdentifier('MockEObjectInternal')}
         endif endif
     else
-        Sequence{ extendsClass.getQualifiedMockName()}
+        Sequence{ extendsClass.getQualifiedMockIdentifier()}
     endif 
 /]
 

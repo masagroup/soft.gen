@@ -138,4 +138,13 @@
 	aPackage.getPackageIndexDirectory(3)
 /]
 
+[query public getPackageNameFromPath(path : String) : String =
+	let nameIndex : Integer = path.lastIndexOf('/') in
+	if nameIndex = -1 then
+		path
+	else
+		path.substring(nameIndex+1)
+	endif
+/]
+
 
