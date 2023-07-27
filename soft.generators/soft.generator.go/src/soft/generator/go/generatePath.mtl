@@ -147,27 +147,12 @@
 	endif
 /]
 
-[query public getPackageImports( o : EObject , packages : Sequence(String) ) : OclAny =
-	let nameToPaths : OclAny = o.getPackageNameToPaths(packages) in
-	nameToPaths.mapKeys()->iterate( key : OclAny ; res : OclAny = mapNew('getPackageImports' + o) |
-		let name : String = key.oclAsType(String) in
-		let paths : Sequence(String) = res.mapGet(key).asSequence()->collect(oclAsType(String)) in 
-		if paths.size() = 1 then
-			res.mapPut(paths.at(1), name)
-		else
-			paths->iterate(path : String; map : OclAny = res |
-				map
-			) 					
-		endif 	
-	)
+[query public getPackageImports( o : OclAny, packages : Set(String) ) : OclAny =
+	invoke('soft.generator.go.GeneratePath','getPackageImports',Sequence{packages})
 /]
 
-[query private getPackageNameToPaths(o : EObject , packages : Sequence(String)): OclAny =
-	packages->iterate( pack : String ; res : OclAny = mapNew('getPackageNameToPaths' + o) |
-		let name : String = getPackageNameFromPath(pack) in
-		let paths : Sequence(String) = res.mapGetOrDefault(name, Sequence{}).asSequence()->collect(oclAsType(String)) in
-		res.mapPut(name , paths->append(pack)) 
-	) 		
-/]
+
+
+
 
 
