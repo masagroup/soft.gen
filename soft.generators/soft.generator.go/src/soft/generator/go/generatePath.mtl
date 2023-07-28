@@ -148,7 +148,7 @@
 /]
 
 [query public getPackageImports( o : OclAny, packages : Set(String) ) : OclAny =
-	invoke('soft.generator.go.GeneratePath','getPackageImports',Sequence{packages})
+	invoke('soft.generator.go.GeneratePath','getPackageImports(java.util.Set)',Sequence{packages})
 /]
 
 
