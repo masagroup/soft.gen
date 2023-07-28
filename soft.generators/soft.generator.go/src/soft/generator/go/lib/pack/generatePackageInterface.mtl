@@ -64,62 +64,68 @@
 [anENamedElement.getReflectiveGetterName()/]() [aPackage.getMetaType(anENamedElement,imports)/]
 [/template]
 
-[template public generatePackageInterface(anEPackage : EPackage) { 
-	className : String = anEPackage.getInterfaceName(); 
-	packageName : String = anEPackage.name; 
+[template public generatePackageInterface(aPackage : EPackage) { 
+	className : String = aPackage.getInterfaceName();
+	ecore : EPackage = getEcorePackage();
 }]
-[file (anEPackage.getInterfaceOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
+[file (aPackage.getInterfaceOutputDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName()) , false, 'UTF-8')]
 [fileComment()/]
 
-package [packageName/]
+package [aPackage.getPackageNameFromPath(aPackage.getInterfacePackagePath())/]
 
-[if not anEPackage.isEcorePackage()]
-import "[getImportPathForPackage('ecore')/]"
-[/if]
+[let packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getPackagePath()} else Set{} endif]
+[let imports : OclAny = getPackageImports(packages)]
+[for (path : OclAny | imports.mapKeys())]
+[let name : OclAny = imports.mapGet(path)]
+import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
+[/let]
+[/for]
 
 const (
     // NAME is the package name. 
-    NAME = "[anEPackage.name/]"
+    NAME = "[aPackage.name/]"
 
     // NS_URI is the package URI.
-    NS_URI = "[anEPackage.nsURI/]"
+    NS_URI = "[aPackage.nsURI/]"
 
     // NS_PREFIX is the package prefix.
-    NS_PREFIX = "[anEPackage.nsPrefix/]"
+    NS_PREFIX = "[aPackage.nsPrefix/]"
 
-[for (aClass : EClass | anEPackage.getOrderedClasses())]
+[for (aClass : EClass | aPackage.getOrderedClasses())]
     [aClass.generateStaticClassID()/]
     [aClass.eAllStructuralFeatures.generateStaticFeatureID(aClass)/]
     [aClass.generateStaticFeatureCountID()/]
     [aClass.eAllOperations.generateStaticOperationID(aClass)/]
     [aClass.generateStaticOperationCountID()/]
 [/for]
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateStaticDataTypeID()/]
+    [aPackage.eAllContents(EDataType)->sortedBy(name).generateStaticDataTypeID()/]
 )
 
-// [className/] is The Metamodel Package for the [anEPackage.name/] metamodel. 
+// [className/] is The Metamodel Package for the [aPackage.name/] metamodel. 
 // This package is used to enable the reflection of model elements. 
 // It contains all model elements which were described in an ecore file.
 type [className/] interface {
-    [getShortQualifiedName('ecore.EPackage', packageName )/]
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-    [aClass.generateGetter(anEPackage)/]
-    [aClass.eAttributes->sortedBy(name).generateGetter(anEPackage)/]
-    [aClass.eReferences->sortedBy(name).generateGetter(anEPackage)/]
-    [aClass.eOperations->sortedBy(name).generateGetter(anEPackage)/]
+	[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EPackage') , imports)/]
+[for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
+    [aClass.generateGetter(aPackage,imports)/]
+    [aClass.eAttributes->sortedBy(name).generateGetter(aPackage,imports)/]
+    [aClass.eReferences->sortedBy(name).generateGetter(aPackage,imports)/]
+    [aClass.eOperations->sortedBy(name).generateGetter(aPackage,imports)/]
 [/for]
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(anEPackage)/]
+    [aPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(aPackage,imports)/]
 }
 
 var packageInstance [className/] 
 
 func GetPackage() [className/] {
     if packageInstance == nil {
-      packageInstance = new[anEPackage.getImplementationName().toUpperFirst()/]()
+      packageInstance = new[aPackage.getImplementationName().toUpperFirst()/]()
     }
     return packageInstance
 }
 
+[/let]
+[/let]
 
 [/file]
 [/template]

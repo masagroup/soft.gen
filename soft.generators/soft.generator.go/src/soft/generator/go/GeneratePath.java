@@ -62,8 +62,16 @@ public class GeneratePath {
         // build name for each package
         Map<String, String> result = new HashMap<String, String>();
         for (Map.Entry<String, List<String>> entry : aliases.entrySet()) {
+            String path = entry.getKey();
+            int i = path.lastIndexOf('/');
+            String defaultName = i == -1 ? path : path.substring(i + 1);
             String name = String.join("_", Lists.reverse(entry.getValue()));
-            result.put(entry.getKey(), name);
+            if (name.equals(defaultName)) {
+                result.put(entry.getKey(), null);
+            } else {
+                result.put(entry.getKey(), name);
+            }
+
         }
 
         return result;

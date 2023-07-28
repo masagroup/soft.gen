@@ -138,7 +138,7 @@
 	aPackage.getPackageIndexDirectory(3)
 /]
 
-[query public getPackageNameFromPath(path : String) : String =
+[query public getPackageNameFromPath(o : OclAny, path : String) : String =
 	let nameIndex : Integer = path.lastIndexOf('/') in
 	if nameIndex = -1 then
 		path
