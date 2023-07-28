@@ -182,9 +182,10 @@ p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataTyp
 
 package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
 
-[let packages : Set(String) = Set { if not aPackage.isEcorePackage() then Set{ecore.getInterfacePackagePath(), ecore.getImplementationPackagePath()} else Set{} endif
-								  , aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.getImplementationPackagePath()->asSet()
-								  }->flatten()]
+[let packages : Set(String) = Set { Set{ecore.getInterfacePackagePath(), ecore.getImplementationPackagePath()}
+								  , aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.getImplementationPackagePath()->asSet()}
+								  ->flatten()
+								  ->reject( p | p = aPackage.getImplementationPackagePath())]
 [let imports : OclAny = getPackageImports(packages)]
 [for (path : OclAny | imports.mapKeys())]
 [let name : OclAny = imports.mapGet(path)]
