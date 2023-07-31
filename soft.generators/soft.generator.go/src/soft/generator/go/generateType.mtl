@@ -73,7 +73,11 @@ anyType = type
 					p.substring(nameIndex+1) + '.' + o
 				endif
 			else
-				i.oclAsType(String) + '.' + o
+				if i = '' then
+					o
+				else
+					i.oclAsType(String) + '.' + o
+				endif
 			endif
 		endif
 	endif

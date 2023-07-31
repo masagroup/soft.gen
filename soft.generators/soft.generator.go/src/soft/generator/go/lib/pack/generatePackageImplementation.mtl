@@ -207,7 +207,7 @@ func new[className.toUpperFirst()/]() *[className/] {
     return p
 }
 
-func (p *[className/])Initialize(packageFactory [aPackage.getFactoryName()/],ecoreFactory [aPackage.getImportedIdentifier(ecore.getQualifiedInterfaceIdentifier('EcoreFactory'), imports)/] {
+func (p *[className/])Initialize(packageFactory [aPackage.getFactoryName()/],ecoreFactory [aPackage.getImportedIdentifier(ecore.getQualifiedInterfaceIdentifier('EcoreFactory'), imports)/]) {
 	p.EPackageExt.Initialize()
 	p.SetName(NAME)
     p.SetNsPrefix(NS_PREFIX)
