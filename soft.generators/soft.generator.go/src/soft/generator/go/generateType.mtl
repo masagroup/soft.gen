@@ -83,7 +83,14 @@ anyType = type
 	endif
 /] 
 
-
+[query public getPackagePathFromQualifiedIdentifier( qualifiedIdentifier : String ) : String =
+	let index : Integer = qualifiedIdentifier.indexOf('$') in
+	if index = -1 then
+		qualifiedIdentifier
+	else
+		qualifiedIdentifier.substring(1,index-1)
+	endif
+/]
 
 
 [template public generateEffectiveType(aElement : ETypedElement) post(trim())]

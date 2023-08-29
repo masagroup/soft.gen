@@ -26,37 +26,37 @@
 [import soft::generator::go::lib::generateStructuralFeature/]
 
 [template public generateInterface(aClass : EClass) { 
+	ecore : EPackage = getEcorePackage();	
 	aPackage : EPackage = aClass.ePackage;
 	interfaceName : String = aClass.getInterfaceName();
 	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
 	isDiamond : Boolean = aClass.eSuperTypes->size() > 1;
+	packages : Set(String) = Set{ if not aPackage.isEcorePackage() and ( isDiamond or aClass.requiresList() )then Set{ ecore.getPackagePath()} else Set{} endif
+								 , (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getReferencedTypes() endif)->collect( cls | cls.ePackage.getPackagePath())
+								 , interfaceExtends->collect( i | getPackagePathFromQualifiedIdentifier(i))
+								 }->flatten()
+								 ->reject( p | p = '' or p = aPackage.getInterfacePackagePath());
+	imports : OclAny = getPackageImports(packages);
 }]
 [file (aPackage.getInterfaceOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [aPackage.getPackageNameFromPath(aPackage.getInterfacePackagePath())/]
 
-[let referencedTypes : Set(EClassifier) = if isDiamond then aClass.eSuperTypes.getReferencedTypes()->asSet() else aClass.getReferencedTypes()->asSet() endif]
-[let ecoreImport : Set(String) = if not aPackage.isEcorePackage() and ( aClass.requiresList() or isDiamond ) then Set{ getEcorePackage().getPackagePath() } else Set{} endif]
-[let imports : OrderedSet(String) = Set { interfaceExtends->collect( extend | aPackage.getImportPathForType(extend))->asSet()
-                                        , referencedTypes->collect(cls | aPackage.getImportPath(cls))->asSet()
-										, ecoreImport
-                                        }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[for ( i : String | imports )]
-import "[i/]"
+[for (path : OclAny | imports.mapKeys())]
+[let name : OclAny = imports.mapGet(path)]
+import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
+[/let]
 [/for]
-[/let]
-[/let]
-[/let]
 
 
 // [interfaceName/] is the representation of the model object '[aClass.name/]'
 type [interfaceName/] interface {
 [if isDiamond]
-	[getShortQualifiedName('ecore.EObject', aPackage.name)/]
+	[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EObject') , imports)/]
 [else]
-[for ( qualifiedExtend : String | interfaceExtends )]
-    [getShortQualifiedName(qualifiedExtend, aPackage.name)/]
+[for ( qualifiedIdentifier : String | interfaceExtends )]
+    [aPackage.getImportedIdentifier( qualifiedIdentifier , imports)/]
 [/for]
 [/if]
 
@@ -74,11 +74,10 @@ type [interfaceName/] interface {
 [if references->notEmpty()]
     [references.generateDeclaration()/]
 [/if]
-[/let]
     // [protected (interfaceName)]
     // [/protected]
 }
-
+[/let]
 [/file]
 [/template]
 
