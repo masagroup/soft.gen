@@ -55,7 +55,7 @@ anyType = type
 /]
 
 [query public getImportedIdentifier( qualifiedName : String, packagePath : String, imports : OclAny ) : String =
-	let index : Integer = qualifiedName.indexOf('$') in
+	let index : Integer = qualifiedName.lastIndex('$') in
 	if index = -1 then
 		qualifiedName
 	else
