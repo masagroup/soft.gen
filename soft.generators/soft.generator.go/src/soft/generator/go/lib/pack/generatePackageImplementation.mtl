@@ -165,8 +165,8 @@ p.AddEEnumLiteral([aEnum.getPackageGetter()/], "[anEEnumLiteral.name/]", "[anEEn
 
 [/template]
 
-[template private generateInitialization(aDataType : EDataType,aPackage : EPackage)]
-p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataType.getInstanceTypeName()/]",[let defaultValue : String = aDataType.getDefaultValue(aPackage).replaceAll('\'|"', '')][if defaultValue = '' or defaultValue = 'nil']""[else]"[defaultValue/]"[/if][/let],[aDataType.serializable.toString()/])
+[template private generateInitialization(aDataType : EDataType,aPackage : EPackage, imports : OclAny)]
+p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataType.getInstanceTypeName()/]",[let defaultValue : String = aDataType.getDefaultValue(aPackage, imports).replaceAll('\'|"', '')][if defaultValue = '' or defaultValue = 'nil']""[else]"[defaultValue/]"[/if][/let],[aDataType.serializable.toString()/])
 
 [/template]
 
@@ -247,7 +247,7 @@ func (p *[className/])initializePackageContents(ecoreFactory [aPackage.getImport
 	[/for]
 [/if]
 [if allDataTypes->notEmpty()]
-	[allDataTypes.generateInitialization(aPackage)/]
+	[allDataTypes.generateInitialization(aPackage,imports)/]
 [/if]
 [if not aPackage.isEcorePackage()]
 

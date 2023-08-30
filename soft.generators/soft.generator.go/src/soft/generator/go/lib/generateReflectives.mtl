@@ -191,7 +191,7 @@
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/](nil)
     [else]
 		[let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
-		[let defaultValue : String = aAttribute.getDefaultValue(aClass.ePackage)]
+		[let defaultValue : String = aAttribute.getDefaultValue(aClass.ePackage,imports)]
 		[if defaultValue <> '']
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/]([defaultValue/])
         [else]
@@ -241,7 +241,7 @@
     [if isField()][aClass.generateGetAccessor(anStructFeature)/] != nil && [/if][aClass.generateGetAccessor(anStructFeature)/].Size() != 0
 [else]
     [if eType.oclIsKindOf(EEnum)]
-        [aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass)/]
+        [aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass,imports)/]
     [elseif eType.oclIsKindOf(EDataType)]
 		[let comparisonFunction : String = eType.oclAsType(EDataType).getComparisonFunction()]
 		[if comparisonFunction <> '']
@@ -251,11 +251,11 @@
 		[aClass.generateGetAccessor(anStructFeature)/].[comparisonFunction/]()
 		[/if]		
 		[else]
-        [aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass)/]
+        [aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass,imports)/]
         [/if]
         [/let]
 	[else]
-		[aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass)/]
+		[aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass,imports)/]
     [/if]
 [/if]
 [/let]
@@ -271,12 +271,12 @@
     [aClass.generateGetAccessor(anStructFeature)/]
     [/if]
 [else]
-	[aClass.generateGetAccessor(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(aClass)/]
+	[aClass.generateGetAccessor(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(aClass,imports)/]
 [/if]
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass, imports : OclAny) ? (eType.isAny()) post (trim())]
-[aClass.generateGetAccessor(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(aClass)/]
+[aClass.generateGetAccessor(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(aClass,imports)/]
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass, imports : OclAny) ]

@@ -79,7 +79,7 @@ type [mockName/] struct {
 type [mockName/]_Prototype struct {
 	mock *mock.Mock
 [for (mockExtend : String | mockExtends)]
-	[getShortQualifiedName(mockExtend ,aPackage.name)/]_Prototype
+	[aPackage.getImportedIdentifier( mockExtend, imports)/]_Prototype
 [/for]
 	[mockName/]_Prototype_Methods
 }
@@ -95,7 +95,7 @@ func (_mp *[mockName/]_Prototype) SetMock(mock *mock.Mock) {
 // [mockName/]_Expecter is the expecter implementation for all [interfaceName/] methods ( inherited and declared )
 type [mockName/]_Expecter struct {
 [for (mockExtend : String | mockExtends)]
-	[getShortQualifiedName(mockExtend ,aPackage.name)/]_Expecter
+	[aPackage.getImportedIdentifier( mockExtend, imports)/]_Expecter
 [/for]
 	[mockName/]_Expecter_Methods
 }

@@ -22,6 +22,7 @@
 [template public generateFactoryTests(ePackage : EPackage) { 
 	allClasses : OrderedSet(EClass) = ePackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
 	allDataTypes : Sequence(EDataType) = ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+	imports : OclAny;
  } ]
 [file (ePackage.getImplementationOutputDirectory() + '/' + ePackage.getFactoryTestFileName(ePackage.name), false, 'UTF-8')]
 [fileComment()/]
@@ -75,7 +76,7 @@ func TestFactoryCreate[aClass.name/](t *testing.T) {
 [for(aReference:EReference | ref->sortedBy(name))]
 func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]Container(t *testing.T) {
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
-	mockContainer := [aReference.eType.getTestValue(aClass.ePackage)/]
+	mockContainer := [aReference.eType.getTestValue(aClass.ePackage,imports)/]
 [if(aReference.eOpposite.upperBound <> 1)]
 	mockList := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEList(t)
 	mockList.EXPECT().Add(mock.Anything).Return(true).Once()
@@ -90,7 +91,7 @@ func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]Contain
 [if(aClass.getElementIDAccessorName().size() > 0)]
 func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]ContainerAndClassID(t *testing.T) {
 	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
-	mockContainer := [aReference.eType.getTestValue(aClass.ePackage)/]
+	mockContainer := [aReference.eType.getTestValue(aClass.ePackage,imports)/]
 [if(aReference.eOpposite.upperBound <> 1)]
 	mockList := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEList(t)
 	mockList.EXPECT().Add(mock.Anything).Return(true).Once()

@@ -41,7 +41,7 @@ import (
 	"github.com/stretchr/testify/assert"
 [let imports : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportPathForPackage('ecore') } else Set{} endif
 										, aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined() )->collect( cls | aPackage.getImportPath(cls) )->asSet()
-                                        , features->collect( f : EStructuralFeature | f.eType.getImportPathForTestValue(aPackage) )->asSet()
+                                        , features->collect( f : EStructuralFeature | f.eType.getImportPathForTestValue(aPackage,imports) )->asSet()
 										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
 [for ( i : String | imports )]
 	"[i/]"

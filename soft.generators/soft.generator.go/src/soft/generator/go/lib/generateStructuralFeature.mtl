@@ -128,7 +128,7 @@ nil
 [/template]
 
 [template public generateVariableInitialization(aAttribute : EAttribute, aClass : EClass , imports : OclAny) ]
-[let defaultValue : String = aAttribute.getDefaultValue(aClass)]
+[let defaultValue : String = aAttribute.getDefaultValue(aClass,imports)]
 [if defaultValue <> '']
 [aClass.getReceiverName()/].[aAttribute.getVariableName()/] = [defaultValue/]
 [/if]
@@ -147,7 +147,7 @@ nil
 [elseif isListType()]
     return [getListConstructor(aClass)/];
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
-    return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/];
+    return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass,imports)/];
 [else]
     panic("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
@@ -167,7 +167,7 @@ nil
     [receiverName/].[varName/] = [getListConstructor(aClass)/];
 [elseif isProxy()]
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
-    [receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/];
+    [receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass,imports)/];
 [else]
     panic("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
@@ -286,7 +286,7 @@ func (c *[mockCallName/]) Return([aStructuralFeature.getVariableName()/] [aStruc
 // [testMethodName/] tests method [getterMethodName/]
 func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
-	r := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	r := [aStructuralFeature.eType.getTestValue(aClass.ePackage,imports)/]
 	m := [ecorePrefix/]NewMockRun(t)
 	o.EXPECT().[getterMethodName/]().Return(r).Run(func() { m.Run() }).Once()
 	o.EXPECT().[getterMethodName/]().Call.Return(func() [aStructuralFeature.generateType(imports)/] { return r }).Once()
@@ -378,7 +378,7 @@ func [testMethodName/](t *testing.T) {
         [if lazy <> 'no']
             [if  lazy = 'function']
                 [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/] {
+    if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass,imports)/] {
                 [else]
     if [receiverName/].[varName/] == nil {
                 [/if]
@@ -428,7 +428,7 @@ basic[aStructuralFeature.getGetterName().toUpperFirst()/]() [aStructuralFeature.
     [if lazy <> 'no']
         [if  lazy = 'function']
             [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/] {
+    if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass,imports)/] {
             [else]
     if [receiverName/].[varName/] == nil {
             [/if]
@@ -498,7 +498,7 @@ func (c *[mockCallName/]) Return() *[mockCallName/] {
 // [testMethodName/] tests method [setterMethodName/]
 func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
-	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage)/]
+	v := [aStructuralFeature.eType.getTestValue(aClass.ePackage,imports)/]
 	m := [ecorePrefix/]NewMockRun(t,v)
 	o.EXPECT().[setterMethodName/](v).Return().Run(func(_p0 [aStructuralFeature.generateType(imports)/]) { m.Run(_p0) }).Once()
 	o.[setterMethodName/](v)
@@ -687,7 +687,7 @@ func [testMethodName/](t *testing.T) {
 		[let lazy : String = aStructuralFeature.getLazy()]
 	    [if lazy = 'function']
 	        [if aStructuralFeature.oclIsKindOf(EAttribute)]
-	if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/] {
+	if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass,imports)/] {
 		[else]
 	if [receiverName/].[varName/] != nil {
 		[/if]
@@ -719,7 +719,7 @@ func [testMethodName/](t *testing.T) {
 		[if aStructuralFeature.oclIsKindOf(EReference)]
 		[receiverName/].[varName/] = nil
 		[else]
-		[receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/]
+		[receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass,imports)/]
 		[/if]
 		if [receiverName/].ENotificationRequired() {
             [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getFeatureIDName(aStructuralFeature)/],[oldVarName/],nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))

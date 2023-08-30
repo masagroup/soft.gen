@@ -13,29 +13,31 @@
 [module generateFactoryInterface('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::generateModule/]
 [import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::generateCommon/]
 
-[template public generateFactoryInterface(anEPackage : EPackage) { 
-	className : String = anEPackage.getFactoryName(); 
-	packageName : String = anEPackage.name;
+[template public generateFactoryInterface(aPackage : EPackage) { 
+	className : String = aPackage.getFactoryName(); 
+	packageName : String = aPackage.name;
+	ecore : EPackage = getEcorePackage();	
 	imports : OclAny; 
 }]
-[file (anEPackage.getInterfaceOutputDirectory() + '/' + anEPackage.getInterfaceFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
+[file (aPackage.getInterfaceOutputDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-package [anEPackage.name/]
+package [aPackage.name/]
 
-[if not anEPackage.isEcorePackage()]
+[if not aPackage.isEcorePackage()]
 import "[getImportPathForPackage('ecore')/]"
 [/if]
 
 type [className/] interface {
-	[getShortQualifiedName('ecore.EFactory', packageName )/]
-[for (aEClass : EClass | anEPackage.eAllContents(EClass)->sortedBy(name))]
+	[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactory') , imports)/]
+[for (aEClass : EClass | aPackage.eAllContents(EClass)->sortedBy(name))]
 [if (aEClass.abstract = false)]
 	Create[aEClass.name/]() [aEClass.getInterfaceName()/]
 [let ref:OrderedSet(EReference) = aEClass.getAllContainers()]
@@ -52,11 +54,11 @@ type [className/] interface {
 
 var factoryInstance [className/]
 
-// GetFactory returns the factory for the model [anEPackage.name/]
+// GetFactory returns the factory for the model [aPackage.name/]
 func GetFactory() [className/] {
     if factoryInstance == nil {
-[let extension : Boolean = anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension']
-[let factoryName : String = if extension then anEPackage.getFactoryExtensionName() else anEPackage.getFactoryImplementationName() endif] 
+[let extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension']
+[let factoryName : String = if extension then aPackage.getFactoryExtensionName() else aPackage.getFactoryImplementationName() endif] 
 		factoryInstance = new[factoryName.toUpperFirst()/]()
 [/let]
 [/let]

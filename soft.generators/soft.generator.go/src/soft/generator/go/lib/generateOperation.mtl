@@ -125,7 +125,7 @@ func (c *[mockCallName/]) Return(_a0 [anEOperation.generateType(imports)/]) *[mo
 func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
 [for (aParameter : EParameter | aOperation.eParameters)]
-	[aParameter.name/] := [aParameter.eType.getTestValue(aClass.ePackage)/]
+	[aParameter.name/] := [aParameter.eType.getTestValue(aClass.ePackage,imports)/]
 [/for]
 	m := [ecorePrefix/]NewMockRun(t,[aOperation.generateParameterCall()/])
 	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Return().Run(func([aOperation.generateParameterList(imports,true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Once()	
@@ -145,10 +145,10 @@ func [testMethodName/](t *testing.T) {
 func [testMethodName/](t *testing.T) {
 	o := New[mockName/](t)
 [for (aParameter : EParameter | aOperation.eParameters)]
-	[aParameter.name/] := [aParameter.eType.getTestValue(aPackage)/]
+	[aParameter.name/] := [aParameter.eType.getTestValue(aPackage,imports)/]
 [/for]
 	m := [ecorePrefix/]NewMockRun(t,[aOperation.generateParameterCall()/])
-	r := [aOperation.eGenericType.eClassifier.getTestValue(aPackage)/]
+	r := [aOperation.eGenericType.eClassifier.getTestValue(aPackage,imports)/]
 	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Return(r).Run(func([aOperation.generateParameterList(imports,true)/]) { m.Run([aOperation.generateParameterCall()/]) }).Once()	
 	o.EXPECT().[methodName/]([aOperation.generateParameterCall()/]).Call.Return(func() [aOperation.generateType(imports)/] {
 		return r
