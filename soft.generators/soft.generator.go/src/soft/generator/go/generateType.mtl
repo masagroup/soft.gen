@@ -71,7 +71,7 @@ anyType = type
 			else
 				let i : OclAny = mapGet(imports,p) in		
 				if i.oclIsUndefined() then
-					let nameIndex : Integer = p.lastIndexOf('/') in
+					let nameIndex : Integer = p.lastIndex('/') in
 					if nameIndex = -1 then
 						p + '.' + o
 					else
@@ -90,7 +90,7 @@ anyType = type
 /] 
 
 [query public getPackagePathFromQualifiedIdentifier( qualifiedIdentifier : String ) : String =
-	let index : Integer = qualifiedIdentifier.indexOf('$') in
+	let index : Integer = qualifiedIdentifier.index('$') in
 	if index = -1 then
 		qualifiedIdentifier
 	else

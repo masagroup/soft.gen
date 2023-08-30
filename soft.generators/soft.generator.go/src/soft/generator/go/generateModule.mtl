@@ -42,7 +42,7 @@
 		let p : String = aPackage.getPackageProperty(packageProperty) in
 		let index : Integer = p.index('=') in 
         if index = -1 then
-			let moduleIndex : Integer = p.lastIndexOf('/') in
+			let moduleIndex : Integer = p.lastIndex('/') in
 			if moduleIndex = -1 then
 				''
 			else
@@ -100,7 +100,7 @@
         tokenized->iterate( import : String ; res : OclAny = packageToImportPath | (
         	let index : Integer = import.index('=') in 
             if index = -1 then
-				let importIndex : Integer = import.lastIndexOf('/') in
+				let importIndex : Integer = import.lastIndex('/') in
 				if importIndex = -1 then
 					res
 				else

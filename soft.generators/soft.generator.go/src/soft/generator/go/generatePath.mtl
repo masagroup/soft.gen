@@ -36,7 +36,7 @@
             if index = -1 then
 				let packIndex : Integer = p.index('#') in
 				let packPath : String = if packIndex = -1 then p else p.substring(1, packIndex-1) endif in
-				let nameIndex : Integer = packPath.lastIndexOf('/') in
+				let nameIndex : Integer = packPath.lastIndex('/') in
 				if nameIndex = -1 then
 					res
 				else
@@ -139,7 +139,7 @@
 /]
 
 [query public getPackageNameFromPath(o : OclAny, path : String) : String =
-	let nameIndex : Integer = path.lastIndexOf('/') in
+	let nameIndex : Integer = path.lastIndex('/') in
 	if nameIndex = -1 then
 		path
 	else
