@@ -19,7 +19,11 @@
 [import soft::generator::go::generateType/]
 [import soft::generator::go::generateCommon/]
 
-[template public generateFactoryInterface(anEPackage : EPackage) { className : String = anEPackage.getFactoryName(); packageName : String = anEPackage.name; }]
+[template public generateFactoryInterface(anEPackage : EPackage) { 
+	className : String = anEPackage.getFactoryName(); 
+	packageName : String = anEPackage.name;
+	imports : OclAny; 
+}]
 [file (anEPackage.getInterfaceOutputDirectory() + '/' + anEPackage.getInterfaceFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
@@ -36,9 +40,9 @@ type [className/] interface {
 	Create[aEClass.name/]() [aEClass.getInterfaceName()/]
 [let ref:OrderedSet(EReference) = aEClass.getAllContainers()]
 [for(aReference:EReference | ref->sortedBy(name))]
-	Create[aEClass.name/]FromContainer(eContainer [aReference.generateType()/]) [aEClass.getInterfaceName()/]
+	Create[aEClass.name/]FromContainer(eContainer [aReference.generateType(imports)/]) [aEClass.getInterfaceName()/]
 [if(aEClass.getElementIDAccessorName().size() > 0)]
-	Create[aEClass.name/]FromContainerAndClassID(eContainer [aReference.generateType()/], classID int) [aEClass.getInterfaceName()/]
+	Create[aEClass.name/]FromContainerAndClassID(eContainer [aReference.generateType(imports)/], classID int) [aEClass.getInterfaceName()/]
 [/if]
 [/for]
 [/let]

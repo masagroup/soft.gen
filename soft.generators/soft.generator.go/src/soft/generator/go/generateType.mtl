@@ -64,19 +64,23 @@ anyType = type
 		if p = packagePath then
 			o 
 		else
-			let i : OclAny = mapGet(imports,p) in		
-			if i.oclIsUndefined() then
-				let nameIndex : Integer = p.lastIndexOf('/') in
-				if nameIndex = -1 then
-					p + '.' + o
-				else
-					p.substring(nameIndex+1) + '.' + o
-				endif
+			if imports.oclIsUndefined() then
+				qualifiedName
 			else
-				if i = '' then
-					o
+				let i : OclAny = mapGet(imports,p) in		
+				if i.oclIsUndefined() then
+					let nameIndex : Integer = p.lastIndexOf('/') in
+					if nameIndex = -1 then
+						p + '.' + o
+					else
+						p.substring(nameIndex+1) + '.' + o
+					endif
 				else
-					i.oclAsType(String) + '.' + o
+					if i = '' then
+						o
+					else
+						i.oclAsType(String) + '.' + o
+					endif
 				endif
 			endif
 		endif
@@ -93,42 +97,32 @@ anyType = type
 /]
 
 
-[template public generateEffectiveType(aElement : ETypedElement) post(trim())]
-[let aPackage : EPackage = aElement.getEPackage()]
-[if (aElement.isMapType())]
-[getShortQualifiedName('ecore.EMap', aPackage.name )/]
-[elseif (aElement.isListType())]
-[getShortQualifiedName('ecore.EList', aPackage.name )/]
-[else]
-[aElement.eGenericType.generateType(aPackage)/]
-[/if]
-[/let]
-[/template]
-
-[template public generateType(aElement : ETypedElement) post (trim())]
+[template public generateType(aElement : ETypedElement, imports : OclAny) post (trim())]
 [if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
 [else]
     [let aPackage : EPackage = aElement.getEPackage()]
+	[let ecore : EPackage = getEcorePackage()]
 	[if (aElement.isMapType())]
-		[getShortQualifiedName('ecore.EMap', aPackage.name )/]
-    [elseif aElement.isListType()]
-        [getShortQualifiedName('ecore.EList', aPackage.name )/]
+		[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EMap'), imports)/]
+	[elseif aElement.isListType()]
+		[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EList'), imports)/]
     [else]
-        [aElement.eGenericType.generateType(aPackage)/]
+        [aElement.eGenericType.generateType(aPackage,imports)/]
     [/if]
     [/let]
+	[/let]
 [/if]
 [/template]
 
-[template public generateType(anEDataType : EGenericType, aPackage : EPackage ) post (trim())]
-[if (anEDataType.oclIsUndefined() or anEDataType.eClassifier.oclIsUndefined())]
+[template public generateType(aDataType : EGenericType, aPackage : EPackage, imports : OclAny) post (trim())]
+[if (aDataType.oclIsUndefined() or aDataType.eClassifier.oclIsUndefined())]
 [else]
-[getShortQualifiedName(anEDataType.eClassifier.getType(), aPackage.name )/]
+[aPackage.getImportedIdentifier( aDataType.eClassifier.getType(), imports)/]
 [/if]
 [/template]
 
-[template public generateParameterList(aOperation:EOperation, names : Boolean ) post(trim())]
-[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][if names][sParameter.name/] [/if][sParameter.generateType()/][/for]
+[template public generateParameterList(aOperation:EOperation, imports : OclAny, names : Boolean ) post(trim())]
+[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][if names][sParameter.name/] [/if][sParameter.generateType(imports)/][/for]
 [/template]
 
 [template public generateParameterCall(aOperation:EOperation) post(trim())]

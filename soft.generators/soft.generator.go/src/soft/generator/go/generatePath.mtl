@@ -22,9 +22,9 @@
 */]
 [query public getEcoreModulePath(aPackage : EPackage) : String = 'github.com/masagroup/soft.go/ecore' /]
 
-[query private getPackagePaths(aPackage : EPackage) : OclAny =
+[query private getAllPackagePaths(aPackage : EPackage) : OclAny =
 	let ecorePackage : EPackage = getEcorePackage() in
-	let packageToPaths : OclAny = mapNew('getPackageToPaths_' + aPackage.name)
+	let packageToPaths : OclAny = mapNew('getAllPackageToPaths_' + aPackage.name)
 									.mapPut('uri:'+ ecorePackage.nsURI, getEcoreModulePath()) in
     let packagesProperty : OclAny = getProperty('packages') in 
 	let packages : String = (if packagesProperty.oclIsUndefined() or packagesProperty = '' then '' else packagesProperty.oclAsType(String) endif) + 
@@ -51,7 +51,7 @@
     endif
 /]
 
-[query private getPackagePath(aPackage : EPackage, paths : String, index : Integer) : String =
+[query private getPath(aPackage : EPackage, paths : String, index : Integer) : String =
 	let tokenized : Sequence(String) = paths.tokenize('#') in
 	let size : Integer = tokenized->size() in 
 	if index > size then
@@ -62,14 +62,14 @@
 /]
 
 [query private getPackageIndexPath(aPackage : EPackage, index : Integer) : String =
-	let packageToPaths : OclAny = aPackage.getPackagePaths() in
+	let packageToPaths : OclAny = aPackage.getAllPackagePaths() in
 	let uriPath : OclAny = mapGet(packageToPaths, 'uri:' + aPackage.nsURI) in
 	if not uriPath.oclIsUndefined() then
-		aPackage.getPackagePath(uriPath.oclAsType(String),index)
+		aPackage.getPath(uriPath.oclAsType(String),index)
 	else
 		let namePath : OclAny = mapGet(packageToPaths, 'name:' + aPackage.name) in
 		if not namePath.oclIsUndefined() then
-			aPackage.getPackagePath(namePath.oclAsType(String),index)
+			aPackage.getPath(namePath.oclAsType(String),index)
 		else
 			aPackage.name
 		endif

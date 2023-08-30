@@ -49,6 +49,7 @@
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	mockName : String = aClass.getMockName();
 	interfaceName : String = aClass.getInterfaceName();
+	imports:OclAny;
 }]
 [file (aPackage.getMockOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
@@ -131,8 +132,8 @@ func (_mde *[mockName/]_Expecter_Methods) SetMock(mock *mock.Mock) {
 }
 
 
-[features.generateMock(aClass)/]
-[operations.generateMock(aClass)/]
+[features.generateMock(aClass,imports)/]
+[operations.generateMock(aClass,imports)/]
 
 type mockConstructorTestingTNew[mockName/] interface {
 	mock.TestingT
