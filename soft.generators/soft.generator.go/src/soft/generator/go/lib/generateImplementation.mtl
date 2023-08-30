@@ -15,11 +15,14 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
 [import soft::generator::common::generateStructuralFeature/]
+[import soft::generator::common::generateUtils/]
+
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateElement/]
 [import soft::generator::go::generateModule/]
 [import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
+
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::generateOperation/]
 [import soft::generator::go::lib::generateStructuralFeature/]
@@ -30,7 +33,8 @@
 /]
 
 [template public generateImplementation(aClass : EClass) { 
-	implementationName : String = aClass.getImplementationName(); 
+	implementationName : String = aClass.getImplementationName();
+	ecore : EPackage = getEcorePackage();	
 	aPackage : EPackage = aClass.ePackage; 
 	classExtend : String = aClass.getClassExtends();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
@@ -39,24 +43,27 @@
 	basicFeatures : Collection(EStructuralFeature) = features->select(not isReflectiveDelegation(aPackage) and (isBasicGet() or isBasicSet() or isBasicUnSet()));
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
-	imports : OclAny;
+	packages : Set(String) = Set{ Set{getPackagePathFromQualifiedIdentifier(classExtend)} 
+								 ,if not aPackage.isEcorePackage() then Set{ ecore.getPackagePath()} else Set{} endif
+								 ,if not aPackage.isEcorePackage() and aClass.getReferencedMapTypes()->exists( cls | cls.ePackage.isEcorePackage() ) then Set{ ecore.getPackagePath()} else Set{} endif
+								 ,aClass.getReferencedTypes()->collect( cls | cls.ePackage.getPackagePath() )->asSet()
+								 ,aClass.getInterfaceExtends()->collect( i | getPackagePathFromQualifiedIdentifier(i) )->asSet()
+								 }->flatten()
+								 ->reject( p | p.oclIsUndefined() or p = '' or p = aPackage.getImplementationPackagePath());
+	imports : OclAny = getPackageImports(packages);
 }]
 [file (aPackage.getImplementationOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
 
-[let importsAsString : OrderedSet(String) = Set { Set { aPackage.getImportPathForType(classExtend) }
-									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportPathForType( extend ) )->asSet()
-                                        , aClass.getReferencedTypes()->collect( cls | aPackage.getImportPath(cls) )->asSet()
-										, if not aPackage.isEcorePackage() then Set{ aPackage.getDefaultEcoreModulePath() } else Set{} endif
-										, if not aPackage.isEcorePackage() then aClass.getReferencedMapTypes()->collect( cls | if cls.ePackage.isEcorePackage() then aPackage.getEcoreModulePath() else '' endif) else Set{} endif
-										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
-[for ( i : String | importsAsString )]
-import "[i/]"
-[/for]
+[if not imports.oclIsUndefined()]
+[for (path : OclAny | imports.mapKeys())]
+[let name : OclAny = imports.mapGet(path)]
+import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
 [/let]
-
+[/for]
+[/if]
 
 // [implementationName/] is the implementation of the model object '[aClass.name/]'
 type [implementationName/] struct {
@@ -79,9 +86,9 @@ type [aClass.getBasicsInterface()/] interface {
 }
 [/if]
 
-// [aClass.getConstructorName()/] is the constructor of a [aClass.getImplementationName()/]
-func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
-    [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
+// [aClass.getConstructorName()/] is the constructor of a [implementationName/]
+func [aClass.getConstructorName()/]() *[implementationName/] {
+    [aClass.getReceiverName()/] := new([implementationName/])
 	[aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/])
 	[aClass.getReceiverName()/].Initialize()
     return [aClass.getReceiverName()/]
