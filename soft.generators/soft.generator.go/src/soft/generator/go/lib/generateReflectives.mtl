@@ -80,7 +80,7 @@
         }
     }
 [/for]  
-    return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EDerivedFeatureID(eContainer, featureID)
+    return [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EDerivedFeatureID(eContainer, featureID)
 }
 [/if]
 
@@ -97,7 +97,7 @@
         }
     }
 [/for]  
-    return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EDerivedOperationID(eContainer, operationID)
+    return [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EDerivedOperationID(eContainer, operationID)
 }
 [/if]
 [/let]
@@ -130,7 +130,7 @@
 	[/if]
     [/for]
     default:
-        return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EGetFromID(featureID, resolve)
+        return [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EGetFromID(featureID, resolve)
     }
 }
 [/let]
@@ -145,7 +145,7 @@
         return [anStructFeature.generateComparison(aClass,imports)/]
 [/for]
     default:
-        return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EIsSetFromID(featureID)
+        return [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EIsSetFromID(featureID)
     }
 }
 [/template]
@@ -172,7 +172,7 @@
     [/if]    
 [/for]
     default:
-        [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].ESetFromID(featureID, newValue)
+        [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].ESetFromID(featureID, newValue)
     }
 }
 [/let]
@@ -202,7 +202,7 @@
     [/if]
 [/for]
     default:
-        [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EUnsetFromID(featureID)
+        [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EUnsetFromID(featureID)
     }
 }
 [/template]
@@ -221,7 +221,7 @@
         [/if]
     [/for]
     default:
-        return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EInvokeFromID(operationID,arguments)
+        return [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EInvokeFromID(operationID,arguments)
     }
 }
 [/let]
@@ -320,7 +320,7 @@
     [/if]
 [/for]
     default:
-        return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EBasicInverseAdd(otherEnd, featureID, notifications)
+        return [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EBasicInverseAdd(otherEnd, featureID, notifications)
     }
 }
 [/let]
@@ -346,7 +346,7 @@
     [/if]
 [/for]
     default:
-        return [aClass.getReceiverName()/].[getUnQualifiedName(aClass.getClassExtends())/].EBasicInverseRemove(otherEnd, featureID, notifications)
+        return [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EBasicInverseRemove(otherEnd, featureID, notifications)
     }
 }
 [/let]

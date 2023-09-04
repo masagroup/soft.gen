@@ -53,21 +53,33 @@ anyType = type
 [query public getQualifiedMockIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedMockIdentifier( aClass.getMockName() ) /]
 
 [query public getImportedIdentifier( aPackage : EPackage, qualifiedName : String, imports : OclAny ) : String =
-	getImportedIdentifier(qualifiedName,aPackage.getPackagePath(), imports)
-/]
-
-[query public getImportedIdentifier( qualifiedName : String, packagePath : String, imports : OclAny ) : String =
-	let index : Integer = qualifiedName.lastIndex('$') in
-	if index = -1 then
+	if imports.oclIsUndefined() then
 		qualifiedName
 	else
-		let p : String = qualifiedName.substring(1, index-1) in
-		let o : String = qualifiedName.substring(index+1) in
-		if p = packagePath then
-			o 
-		else
-			if imports.oclIsUndefined() then
+		let indexDollar : Integer = qualifiedName.lastIndex('$') in
+		if indexDollar = -1 then
+			let indexDot : Integer = qualifiedName.lastIndex('.') in		
+			if indexDot = -1 then
 				qualifiedName
+			else
+				let a : String = qualifiedName.substring(1, indexDot-1) in
+				let o : String = qualifiedName.substring(indexDot+1) in
+				let p : OclAny = mapGetKey(imports,a) in
+				if p.oclIsUndefined() then
+					qualifiedName
+				else
+					if p = aPackage.getPackagePath() then
+						o
+					else
+						qualifiedName
+					endif
+				endif
+			endif
+		else
+			let p : String = qualifiedName.substring(1, indexDollar-1) in
+			let o : String = qualifiedName.substring(indexDollar+1) in
+			if p = aPackage.getPackagePath() then
+				o 
 			else
 				let i : OclAny = mapGet(imports,p) in		
 				if i.oclIsUndefined() then
@@ -87,9 +99,20 @@ anyType = type
 			endif
 		endif
 	endif
-/] 
+/]
 
-[query public getPackagePathFromQualifiedIdentifier( qualifiedIdentifier : String ) : String =
+
+[query public getSimpleIdentifier(qualifiedIdentifier : String ) : String = 
+	let index : Integer = qualifiedIdentifier.index('$') in
+	if index = -1 then
+		qualifiedIdentifier
+	else
+		qualifiedIdentifier.substring(index+1)
+	endif
+/]
+
+
+[query public getIdentifierPackagePath( qualifiedIdentifier : String ) : String =
 	let index : Integer = qualifiedIdentifier.index('$') in
 	if index = -1 then
 		qualifiedIdentifier

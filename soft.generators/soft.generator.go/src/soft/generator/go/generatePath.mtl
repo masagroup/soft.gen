@@ -40,10 +40,10 @@
 				if nameIndex = -1 then
 					res
 				else
-					res.mapPut('name:' +packPath.substring(nameIndex+1),p)
+					res.mapPut('name:'+packPath.substring(nameIndex+1),p)
 				endif
             else
-                res.mapPut('uri:'+p.substring(1,index-1),p.substring(index+1)) 
+                res.mapPut('uri:'+p.substring(1,index-1),p.substring(index+1))
             endif
 		))
     else

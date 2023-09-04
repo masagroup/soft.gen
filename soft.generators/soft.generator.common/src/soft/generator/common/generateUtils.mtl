@@ -38,4 +38,6 @@
 
 [query public mapContainsKey( map : OclAny , key: OclAny) : Boolean = invoke('soft.generator.common.GenerateUtils','mapContainsKey(java.util.Map,java.lang.Object)',Sequence{map,key}) /]
 
+[query public mapGetKey( map : OclAny , value: OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapGetKey(java.util.Map,java.lang.Object)',Sequence{map,value}) /]
+
 [query public asSequence( o : OclAny ) : Sequence(OclAny) = invoke('soft.generator.common.GenerateUtils','asSequence(java.lang.Object)',Sequence{o}) /]

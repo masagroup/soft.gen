@@ -162,6 +162,15 @@ public class GenerateUtils {
         return map.containsKey(key);
     }
 
+    public Object mapGetKey(Map<Object, Object> map, Object value) {
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
+            if (value.equals(entry.getValue())) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     public List<Object> asSequence(Object obj) {
         return (List<Object>) obj;

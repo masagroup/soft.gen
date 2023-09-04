@@ -87,7 +87,7 @@ type [mockName/]_Prototype struct {
 func (_mp *[mockName/]_Prototype) SetMock(mock *mock.Mock) {
 	_mp.mock = mock
 [for (mockExtend : String | mockExtends)]
-	_mp.[getUnQualifiedName(mockExtend)/]_Prototype.SetMock(mock)
+	_mp.[getSimpleIdentifier(mockExtend)/]_Prototype.SetMock(mock)
 [/for]
 	_mp.[mockName/]_Prototype_Methods.SetMock(mock)
 }
@@ -102,7 +102,7 @@ type [mockName/]_Expecter struct {
 
 func (_me *[mockName/]_Expecter) SetMock(mock *mock.Mock) {
 [for (mockExtend : String | mockExtends)]
-	_me.[getUnQualifiedName(mockExtend)/]_Expecter.SetMock(mock)
+	_me.[getSimpleIdentifier(mockExtend)/]_Expecter.SetMock(mock)
 [/for]
 	_me.[mockName/]_Expecter_Methods.SetMock(mock)
 }

@@ -33,9 +33,8 @@
 	isDiamond : Boolean = aClass.eSuperTypes->size() > 1;
 	packages : Set(String) = Set{ if not aPackage.isEcorePackage() and ( isDiamond or aClass.requiresList() )then Set{ ecore.getPackagePath()} else Set{} endif
 								 , (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getReferencedTypes() endif)->collect( cls | cls.ePackage.getPackagePath())
-								 , interfaceExtends->collect( i | getPackagePathFromQualifiedIdentifier(i))
-								 }->flatten()
-								 ->reject( p | p = '' or p = aPackage.getInterfacePackagePath());
+								 , interfaceExtends->collect( i | getIdentifierPackagePath(i))
+								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
 [file (aPackage.getInterfaceOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
@@ -44,9 +43,11 @@
 package [aPackage.getPackageNameFromPath(aPackage.getInterfacePackagePath())/]
 
 [for (path : OclAny | imports.mapKeys())]
+[if path <> aPackage.getInterfacePackagePath()]
 [let name : OclAny = imports.mapGet(path)]
 import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
 [/let]
+[/if]
 [/for]
 
 
