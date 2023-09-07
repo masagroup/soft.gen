@@ -142,6 +142,7 @@ anyType = type
 
 [comment {ecore types..., go type, default value, test value, comparison operator}/]
 [query private getAllDataTypes(aPackage : EPackage) : Sequence( Sequence( String ) ) =
+	let ecore : EPackage = getEcorePackage() in
 	let anyType : String = aPackage.getAnyType() in 
     Sequence {
         Sequence{ 'java.lang.Boolean', 'boolean', 'bool', 'false' , 'true', ''},
@@ -154,22 +155,22 @@ anyType = type
 		Sequence{ 'java.lang.Class' , 'reflect.Type', 'nil', 'reflect.TypeOf("")', ''},
 		Sequence{ 'java.lang.Object', anyType, 'nil', 'nil', ''},
 		Sequence{ 'java.lang.Long' , 'java.math.BigInteger', 'long' , 'int64' , '0', '45' , ''},
-        Sequence{ 'java.util.Map' , 'ecore.EMap', 'nil', 'nil' , ''},
-        Sequence{ 'java.util.Map$Entry' , 'ecore.EMapEntry', 'nil' , 'nil', ''},
+        Sequence{ 'java.util.Map' , ecore.getQualifiedInterfaceIdentifier('EMap'), 'nil', 'nil' , ''},
+        Sequence{ 'java.util.Map$Entry' , ecore.getQualifiedInterfaceIdentifier('EMapEntry'), 'nil' , 'nil', ''},
 		Sequence{ 'java.lang.Short' , 'short' , 'int16' , '0', '2' , ''},
         Sequence{ 'java.lang.String' , 'string', '""' , '"Test String"', ''},
 		Sequence{ 'java.lang.Error' , 'error', 'nil' , 'errors.New("Error")', ''},
 
 		Sequence{ 'com.google.common.primitives.UnsignedLong' , 'uint64', '0' , '1', ''},
 
-		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', 'ecore.EDiagnosticChain', 'nil', 'nil', '' },
-		Sequence{ 'org.eclipse.emf.common.util.EList', 'ecore.EList', 'nil', 'ecore.NewEmptyBasicEList()', '' },
+		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', ecore.getQualifiedInterfaceIdentifier('EDiagnosticChain'), 'nil', 'nil', '' },
+		Sequence{ 'org.eclipse.emf.common.util.EList', ecore.getQualifiedInterfaceIdentifier('EList'), 'nil', 'ecore.NewEmptyBasicEList()', '' },
 		Sequence{ 'org.eclipse.emf.common.util.Enumerator', anyType, 'nil', 'nil', ''},		        
 		Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap', anyType, 'nil', 'nil', ''},
         Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap$Entry', anyType, 'nil', 'nil', ''},
-        Sequence{ 'org.eclipse.emf.ecore.resource.Resource', 'ecore.EResource', 'nil' , 'nil', '' },
-        Sequence{ 'org.eclipse.emf.ecore.resource.ResourceSet', 'ecore.EResourceSet', 'nil' , 'nil', '' },
-		Sequence{ 'org.eclipse.emf.common.util.TreeIterator', 'ecore.EIterator', 'nil' , 'nil', '' }
+        Sequence{ 'org.eclipse.emf.ecore.resource.Resource', ecore.getQualifiedInterfaceIdentifier('EResource'), 'nil' , 'nil', '' },
+        Sequence{ 'org.eclipse.emf.ecore.resource.ResourceSet', ecore.getQualifiedInterfaceIdentifier('EResourceSet'), 'nil' , 'nil', '' },
+		Sequence{ 'org.eclipse.emf.common.util.TreeIterator', ecore.getQualifiedInterfaceIdentifier('EIterator'), 'nil' , 'nil', '' }
     }
 /]
 
