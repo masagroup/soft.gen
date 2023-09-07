@@ -43,31 +43,35 @@
 [query public getMockExpecterExtends(aClass : EClass ) : String = aClass.getMockExtends()+'_Expecter'/]
 
 [template public generateMock(aClass : EClass) { 
+	ecore : EPackage = getEcorePackage();
 	aPackage : EPackage = aClass.ePackage;
 	mockExtends : Sequence(String) = aClass.getMockExtends();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	mockName : String = aClass.getMockName();
 	interfaceName : String = aClass.getInterfaceName();
-	imports:OclAny;
+	packages : Set(String) = Set{ Set{'github.com/stretchr/testify/mock'}
+								, if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ ecore.getPackagePath()} else Set{} endif
+								, mockExtends->collect( i | getIdentifierPackagePath( i ) )->asSet()
+								, aClass.getReferencedTypes()->collect( cls | cls.ePackage.getPackagePath() )->asSet()
+								, aClass.getInterfaceExtends()->collect( i | getIdentifierPackagePath(i) )->asSet()
+								}->flatten();
+	imports : OclAny = getPackageImports(packages);
 }]
 [file (aPackage.getMockOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [aPackage.getPackageNameFromPath(aPackage.getMockPackagePath())/]
 
-[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ aPackage.getImportPathForPackage('ecore') } else Set{} endif
-										, mockExtends->collect( extend | aPackage.getImportPathForType( extend ) )->asSet()
-									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportPathForType( extend ) )->asSet()
-                                        , aClass.getReferencedTypes()->collect( cls | aPackage.getImportPath(cls) )->asSet()
-                                        }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
-import (
-	 "github.com/stretchr/testify/mock"
-[for ( i : String | imports )]
-	"[i/]"
-[/for]
-)
+[if not imports.oclIsUndefined()]
+[for (path : OclAny | imports.mapKeys())]
+[if path <> aPackage.getImplementationPackagePath()]
+[let name : OclAny = imports.mapGet(path)]
+import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
 [/let]
+[/if]
+[/for]
+[/if]
 
 // [mockName/] is an mock type for the [aClass.getInterfaceName()/] type
 type [mockName/] struct {
