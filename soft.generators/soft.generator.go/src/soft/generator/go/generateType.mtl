@@ -87,7 +87,7 @@ anyType = type
 
 
 [query public getSimpleIdentifier(qualifiedIdentifier : String ) : String = 
-	let index : Integer = qualifiedIdentifier.index('.') in
+	let index : Integer = qualifiedIdentifier.lastIndex('.') in
 	if index = -1 then
 		qualifiedIdentifier
 	else
@@ -97,7 +97,7 @@ anyType = type
 
 
 [query public getIdentifierPackagePath( qualifiedIdentifier : String ) : String =
-	let index : Integer = qualifiedIdentifier.index('.') in
+	let index : Integer = qualifiedIdentifier.lastIndex('.') in
 	if index = -1 then
 		qualifiedIdentifier
 	else
