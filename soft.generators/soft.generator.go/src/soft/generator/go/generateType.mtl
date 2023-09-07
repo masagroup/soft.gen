@@ -34,7 +34,7 @@ let anyType : String = aPackage.getAnyType() in
 anyType = type
 /]
 
-[query private getQualifiedIdentifier( qualification : String, identifier : String ) : String = qualification + '$' + identifier/] 
+[query private getQualifiedIdentifier( qualification : String, identifier : String ) : String = qualification + '.' + identifier/] 
 
 [query public getQualifiedInterfaceIdentifier( aPackage : EPackage, identifier : String ) : String = getQualifiedIdentifier(aPackage.getInterfacePackagePath(),identifier)/]
 
@@ -56,28 +56,12 @@ anyType = type
 	if imports.oclIsUndefined() then
 		qualifiedName
 	else
-		let indexDollar : Integer = qualifiedName.lastIndex('$') in
-		if indexDollar = -1 then
-			let indexDot : Integer = qualifiedName.lastIndex('.') in		
-			if indexDot = -1 then
-				qualifiedName
-			else
-				let a : String = qualifiedName.substring(1, indexDot-1) in
-				let o : String = qualifiedName.substring(indexDot+1) in
-				let p : OclAny = mapGetKey(imports,a) in
-				if p.oclIsUndefined() then
-					qualifiedName
-				else
-					if p = aPackage.getPackagePath() then
-						o
-					else
-						qualifiedName
-					endif
-				endif
-			endif
+		let indexDot : Integer = qualifiedName.lastIndex('.') in
+		if indexDot = -1 then
+			qualifiedName
 		else
-			let p : String = qualifiedName.substring(1, indexDollar-1) in
-			let o : String = qualifiedName.substring(indexDollar+1) in
+			let p : String = qualifiedName.substring(1, indexDot-1) in
+			let o : String = qualifiedName.substring(indexDot+1) in
 			if p = aPackage.getPackagePath() then
 				o 
 			else
@@ -103,7 +87,7 @@ anyType = type
 
 
 [query public getSimpleIdentifier(qualifiedIdentifier : String ) : String = 
-	let index : Integer = qualifiedIdentifier.index('$') in
+	let index : Integer = qualifiedIdentifier.index('.') in
 	if index = -1 then
 		qualifiedIdentifier
 	else
@@ -113,7 +97,7 @@ anyType = type
 
 
 [query public getIdentifierPackagePath( qualifiedIdentifier : String ) : String =
-	let index : Integer = qualifiedIdentifier.index('$') in
+	let index : Integer = qualifiedIdentifier.index('.') in
 	if index = -1 then
 		qualifiedIdentifier
 	else
