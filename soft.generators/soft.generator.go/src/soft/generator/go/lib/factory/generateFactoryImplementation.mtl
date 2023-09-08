@@ -13,6 +13,7 @@
 [module generateFactoryImplementation('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateModule/]
 [import soft::generator::go::generatePath/]
@@ -27,26 +28,21 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 [query private getTypeFromReference(aRef : EReference) : String = aRef.eClass().name /]
 
 
-[template public generateFactoryImplementation(aPackage : EPackage) { 
+[template public generateFactoryImplementation(aPackage : EPackage) {
+	ecore : EPackage = getEcorePackage(); 
 	className : String = aPackage.getFactoryImplementationName(); 
 	dataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+	packages : Set(String) = Set{ Set{'strconv'}
+								, if not aPackage.isEcorePackage() then Set{ecore.getPackagePath()} else Set{} endif
+								, dataTypes->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
+								}->flatten();
+	imports : OclAny = getPackageImports(packages);
 }]
 
 [file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.name/]
-
-import "strconv"
-[if not aPackage.isEcorePackage()]
-import "[aPackage.getDefaultEcoreModulePath()/]"
-[if not aPackage.isDefaultEcoreModule()]
-import "[aPackage.getEcoreModulePath()/]"
-[/if]
-[/if]
-[if dataTypes->exists( getType() = '*time.Time')]
-import "time"
-[/if]
 
 type [aPackage.getFactoryInternalName()/] interface {
 [for (aDataType : EDataType | dataTypes)]

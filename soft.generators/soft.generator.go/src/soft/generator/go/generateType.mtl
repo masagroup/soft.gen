@@ -97,11 +97,17 @@ anyType = type
 
 
 [query public getIdentifierPackagePath( qualifiedIdentifier : String ) : String =
-	let index : Integer = qualifiedIdentifier.lastIndex('.') in
+	let identifier : String =  
+		if qualifiedIdentifier.size() > 0 and qualifiedIdentifier.first(1) = '*' then 
+			qualifiedIdentifier.substring(2) 
+		else 
+			qualifiedIdentifier 
+		endif in
+	let index : Integer = identifier.lastIndex('.') in
 	if index = -1 then
-		qualifiedIdentifier
+		''
 	else
-		qualifiedIdentifier.substring(1,index-1)
+		identifier.substring(1,index-1)
 	endif
 /]
 
