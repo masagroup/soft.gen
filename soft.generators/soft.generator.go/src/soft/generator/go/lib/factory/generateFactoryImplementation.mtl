@@ -45,6 +45,8 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 
 package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
 
+[generateImports(imports,aPackage.getImplementationPackagePath())/]
+
 type [aPackage.getFactoryInternalName()/] interface {
 [for (aDataType : EDataType | dataTypes)]
     create[aDataType.name/]FromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/]

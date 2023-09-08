@@ -32,13 +32,7 @@
 
 package [aPackage.getPackageNameFromPath(aPackage.getInterfacePackagePath())/]
 
-[for (path : OclAny | imports.mapKeys())]
-[if path <> aPackage.getInterfacePackagePath()]
-[let name : OclAny = imports.mapGet(path)]
-import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
-[/let]
-[/if]
-[/for]
+[generateImports(imports,aPackage.getInterfacePackagePath())/]
 
 type [className/] interface {
 	[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactory') , imports)/]

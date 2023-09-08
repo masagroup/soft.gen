@@ -67,19 +67,16 @@
 [template public generatePackageInterface(aPackage : EPackage) { 
 	className : String = aPackage.getInterfaceName();
 	ecore : EPackage = getEcorePackage();
+	packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getPackagePath()} else Set{} endif;
+	imports : OclAny = getPackageImports(packages);
+
 }]
 [file (aPackage.getInterfaceOutputDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName()) , false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.getPackageNameFromPath(aPackage.getInterfacePackagePath())/]
 
-[let packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getPackagePath()} else Set{} endif]
-[let imports : OclAny = getPackageImports(packages)]
-[for (path : OclAny | imports.mapKeys())]
-[let name : OclAny = imports.mapGet(path)]
-import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
-[/let]
-[/for]
+[generateImports(imports,aPackage.getInterfacePackagePath())/]
 
 const (
     // NAME is the package name. 
@@ -123,9 +120,6 @@ func GetPackage() [className/] {
     }
     return packageInstance
 }
-
-[/let]
-[/let]
 
 [/file]
 [/template]

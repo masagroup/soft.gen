@@ -56,15 +56,7 @@
 
 package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
 
-[if not imports.oclIsUndefined()]
-[for (path : OclAny | imports.mapKeys())]
-[if path <> aPackage.getImplementationPackagePath()]
-[let name : OclAny = imports.mapGet(path)]
-import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
-[/let]
-[/if]
-[/for]
-[/if]
+[generateImports(imports,aPackage.getImplementationPackagePath())/]
 
 // [implementationName/] is the implementation of the model object '[aClass.name/]'
 type [implementationName/] struct {

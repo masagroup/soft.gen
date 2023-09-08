@@ -176,22 +176,18 @@ p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataTyp
 	allDataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 	annotationSources : OrderedSet(String) = aPackage.getAnnotationSources();
 	ecore : EPackage = getEcorePackage();
+	packages : Set(String) = Set { Set{ecore.getInterfacePackagePath(), ecore.getImplementationPackagePath()}
+								 , aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.getImplementationPackagePath()->asSet()
+								 }->flatten();
+	imports : OclAny = getPackageImports(packages);
+
 }]
 [file (aPackage.getImplementationOutputDirectory() + '/'+ aPackage.getImplementationFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
 package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
 
-[let packages : Set(String) = Set { Set{ecore.getInterfacePackagePath(), ecore.getImplementationPackagePath()}
-								  , aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.getImplementationPackagePath()->asSet()}
-								  ->flatten()
-								  ->reject( p | p = aPackage.getImplementationPackagePath())]
-[let imports : OclAny = getPackageImports(packages)]
-[for (path : OclAny | imports.mapKeys())]
-[let name : OclAny = imports.mapGet(path)]
-import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
-[/let]
-[/for]
+[generateImports(imports,aPackage.getImplementationPackagePath())/]
 
 // [className/] is the [aPackage.getInterfaceName()/] implementation
 type [className/] struct {
@@ -277,7 +273,5 @@ func (p *[className/])initialize[getAnnotationSourceIdentifier(aAnnotationSource
 [/for]
 [/if]
 
-[/let]
-[/let]	
 [/file]
 [/template]
