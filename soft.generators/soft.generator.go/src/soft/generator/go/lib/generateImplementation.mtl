@@ -19,7 +19,6 @@
 
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateElement/]
-[import soft::generator::go::generateModule/]
 [import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 

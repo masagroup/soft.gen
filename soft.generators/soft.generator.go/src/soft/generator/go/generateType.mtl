@@ -388,6 +388,24 @@ anyType = type
 	)
 /]
 
+[query public getImportPath( aPackage : EPackage , aClassifier : EClassifier ) : String = 
+    if aClassifier.oclIsUndefined() then 
+        ''
+    else if aClassifier.oclIsKindOf(EDataType) then
+			let aDataType : EDataType = aClassifier.oclAsType(EDataType) in
+			let goType : String = aDataType.getInstanceTypeName() in
+			if goType.size() > 0 and goType.first(1) = '*' then
+        		aPackage.getPackageNameFromPath(goType.substring(2))
+			else
+				aPackage.getPackageNameFromPath(goType)
+			endif
+		 else
+			aClassifier.ePackage.getPackagePath()
+		 endif
+	endif
+/]
+
+
 [template public generateImports(imports : OclAny, packagePath : String)]
 [if not imports.oclIsUndefined()]
 [for (path : OclAny | imports.mapKeys()->sortedBy(oclAsType(String)))]
