@@ -32,6 +32,7 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 	ecore : EPackage = getEcorePackage(); 
 	className : String = aPackage.getFactoryImplementationName(); 
 	dataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
 	packages : Set(String) = Set{ Set{'strconv'}
 								, if not aPackage.isEcorePackage() then Set{ecore.getPackagePath()} else Set{} endif
 								, dataTypes->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
@@ -42,19 +43,19 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 [file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
 
 type [aPackage.getFactoryInternalName()/] interface {
 [for (aDataType : EDataType | dataTypes)]
-    create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/]
+    create[aDataType.name/]FromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/]
 [/for]
 [for (aDataType : EDataType | dataTypes)]
-    convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue [aPackage.getAnyType()/]) string
+    convert[aDataType.name/]ToString(eDataType [ecorePrefix/]EDataType, literalValue [aPackage.getAnyType()/]) string
 [/for]
 }
 
 type [className/] struct {
-	[if not aPackage.isEcorePackage()][aPackage.getEcoreModuleName()/].[/if]EFactoryExt
+	[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactoryExt') , imports)/]
 }
 
 func new[className.toUpperFirst()/]() *[className/] {
@@ -73,7 +74,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 }
 
 
-[aPackage.generateFactoryImplementationMember()/] Create(eClass [if not aPackage.isEcorePackage()]ecore.[/if]EClass) [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
+[aPackage.generateFactoryImplementationMember()/] Create(eClass [ecorePrefix/]EClass) [ecorePrefix/]EObject {
 	classID := eClass.GetClassifierID()
 	switch classID {
     [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
@@ -105,7 +106,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 [/for]
 [/let]
 [/for]
-[aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
+[aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [ecorePrefix/], literalValue string) [aPackage.getAnyType()/] {
 	classID  := eDataType.GetClassifierID()
 	switch classID {
     [for (aDataType : EDataType | dataTypes)]
@@ -117,7 +118,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 	}
 }
 
-[aPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
+[aPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType [ecorePrefix/]EDataType, instanceValue [aPackage.getAnyType()/]) string {
     classID := eDataType.GetClassifierID()
     switch classID {
 [for (aDataType : EDataType | dataTypes)]
