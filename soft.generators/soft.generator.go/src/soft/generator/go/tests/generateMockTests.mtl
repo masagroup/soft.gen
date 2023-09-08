@@ -14,6 +14,7 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateElement/]
 [import soft::generator::go::generateModule/]
@@ -29,25 +30,19 @@
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() );
-	imports : OclAny;
+	ecore : EPackage = getEcorePackage();
+	packages : Set(String) = Set{ Set { 'testing' , 'github.com/stretchr/testify/assert'}
+								, if requiresEcore then Set{ ecore.getPackagePath() } else Set{} endif
+								, aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined() )->collect( cls | cls.ePackage.getPackagePath() )->asSet()
+								}->flatten();
+	imports : OclAny = getPackageImports(packages);
 }]
 [file (aPackage.getMockOutputDirectory() + '/' + aClass.getMockTestFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [aPackage.getPackageNameFromPath(aPackage.getMockPackagePath())/]
 
-import (
-	"testing"
-	"github.com/stretchr/testify/assert"
-[let imports : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportPathForPackage('ecore') } else Set{} endif
-										, aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined() )->collect( cls | aPackage.getImportPath(cls) )->asSet()
-                                        , features->collect( f : EStructuralFeature | f.eType.getImportPathForTestValue(aPackage,imports) )->asSet()
-										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
-[for ( i : String | imports )]
-	"[i/]"
-[/for]
-[/let]
-)
+[generateImports(imports,aPackage.getMockPackagePath())/]
 
 func discard[mockName.toUpperFirst()/]() {
 	_ = assert.Equal
