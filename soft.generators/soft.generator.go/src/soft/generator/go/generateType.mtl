@@ -390,7 +390,7 @@ anyType = type
 
 [template public generateImports(imports : OclAny, packagePath : String)]
 [if not imports.oclIsUndefined()]
-[for (path : OclAny | imports.mapKeys())]
+[for (path : OclAny | imports.mapKeys()->sortedBy(oclAsType(String)))]
 [if path <> packagePath]
 [let name : OclAny = imports.mapGet(path)]
 import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
