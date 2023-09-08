@@ -65,7 +65,7 @@ package [aPackage.getPackageNameFromPath(aPackage.getMockPackagePath())/]
 
 [if not imports.oclIsUndefined()]
 [for (path : OclAny | imports.mapKeys())]
-[if path <> aPackage.getImplementationPackagePath()]
+[if path <> aPackage.getMockPackagePath()]
 [let name : OclAny = imports.mapGet(path)]
 import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
 [/let]
