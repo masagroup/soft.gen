@@ -26,7 +26,7 @@
 [import soft::generator::go::lib::generateStructuralFeature/]
 
 [template public generateInterface(aClass : EClass) { 
-	ecore : EPackage = getEcorePackage();	
+	ecore : EPackage = getEcorePackage();
 	aPackage : EPackage = aClass.ePackage;
 	interfaceName : String = aClass.getInterfaceName();
 	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();

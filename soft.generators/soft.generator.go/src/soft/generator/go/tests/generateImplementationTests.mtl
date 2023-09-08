@@ -43,32 +43,24 @@
 	implementationName : String = aClass.getImplementationName();
 	implementedFeatures : Set(EStructuralFeature) = aClass.getImplementedFeatures();
 	aPackage : EPackage = aClass.ePackage;
+	ecore : EPackage = getEcorePackage();
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.getImplementedFeatures()->notEmpty() or aClass.requiresList() );
-	imports : OclAny;
+	packages : Set(String) = Set{ Set { 'testing' , 'github.com/stretchr/testify/assert', 'github.com/stretchr/testify/mock'}
+								, if requiresEcore then Set{ ecore.getPackagePath() } else Set{} endif
+								, OrderedSet{ aClass.eSuperTypes
+              								, implementedFeatures.eType
+											, implementedFeatures->collect( getMapTypes() )->flatten()
+											}->flatten()->select( not oclIsUndefined() )->collect( cls | cls.ePackage.getPackagePath() )->asSet()
+								 , aClass.eAllContents(EDataType)->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
+								 }->flatten();
+	imports : OclAny = getPackageImports(packages);
 }]
 [file (aPackage.getImplementationOutputDirectory() + '/' + aClass.getImplementationTestFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
 
-
-
-import (
-	"testing"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-[let importsAsString : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportPathForPackage('ecore') } else Set{} endif
-										, OrderedSet{aClass.eSuperTypes
-              									    ,implementedFeatures.eType
-													,implementedFeatures->collect( getMapTypes() )->flatten()
-													}->flatten()->select( not oclIsUndefined() )->collect( cls | aPackage.getImportPath(cls) )->asSet()
-										, implementedFeatures->collect( f : EStructuralFeature | f.eType.getImportPathForTestValue(aPackage,imports) )->asSet()
-										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
-[for ( i : String | importsAsString )]
-	"[i/]"
-[/for]
-[/let]
-)
+[generateImports(imports,aPackage.getImplementationPackagePath())/]
 
 func discard[name.toUpperFirst()/]() {
 	_ = assert.Equal
