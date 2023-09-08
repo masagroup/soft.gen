@@ -51,7 +51,6 @@
               								, implementedFeatures.eType
 											, implementedFeatures->collect( getMapTypes() )->flatten()
 											}->flatten()->select( not oclIsUndefined() )->collect( cls | cls.ePackage.getPackagePath() )->asSet()
-								 , aClass.eAllContents(EDataType)->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
