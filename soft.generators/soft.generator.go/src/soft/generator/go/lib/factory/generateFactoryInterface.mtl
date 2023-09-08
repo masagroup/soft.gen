@@ -24,16 +24,21 @@
 	className : String = aPackage.getFactoryName(); 
 	packageName : String = aPackage.name;
 	ecore : EPackage = getEcorePackage();	
-	imports : OclAny; 
+	packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getPackagePath()} else Set{} endif;
+	imports : OclAny = getPackageImports(packages);
 }]
 [file (aPackage.getInterfaceOutputDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [aPackage.getPackageNameFromPath(aPackage.getInterfacePackagePath())/]
 
-[if not aPackage.isEcorePackage()]
-import "[getImportPathForPackage('ecore')/]"
+[for (path : OclAny | imports.mapKeys())]
+[if path <> aPackage.getInterfacePackagePath()]
+[let name : OclAny = imports.mapGet(path)]
+import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
+[/let]
 [/if]
+[/for]
 
 type [className/] interface {
 	[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactory') , imports)/]
