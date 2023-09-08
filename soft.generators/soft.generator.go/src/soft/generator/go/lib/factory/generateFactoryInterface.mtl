@@ -23,7 +23,7 @@
 [template public generateFactoryInterface(aPackage : EPackage) { 
 	className : String = aPackage.getFactoryName(); 
 	packageName : String = aPackage.name;
-	ecore : EPackage = getEcorePackage();	
+	ecore : EPackage = getEcorePackage();
 	packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getPackagePath()} else Set{} endif;
 	imports : OclAny = getPackageImports(packages);
 }]
