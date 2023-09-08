@@ -108,7 +108,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 [/for]
 [/let]
 [/for]
-[aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [ecorePrefix/], literalValue string) [aPackage.getAnyType()/] {
+[aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/] {
 	classID  := eDataType.GetClassifierID()
 	switch classID {
     [for (aDataType : EDataType | allDataTypes)]
