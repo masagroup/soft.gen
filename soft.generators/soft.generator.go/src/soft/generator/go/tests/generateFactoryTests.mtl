@@ -197,6 +197,12 @@ func TestFactoryConvert(t *testing.T) {
 }
 [/template]
 
+[template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = 'reflect.Type')]
+{
+	_ = reflect.Ptr
+}
+[/template]
+
 [template private generateCreateFrom(aPackage : EPackage , aDataType : EDataType) ? (aDataType.getType() = '*time.Time')]
 {
 	mockEDataType := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEDataType(t)

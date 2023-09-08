@@ -239,6 +239,14 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'reflect.Type')]
+[aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
+   	_ = reflect.Ptr
+	panic("NotImplementedException")
+}
+
+[/template]
+
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '*time.Time')]
 const (
 	dateFormat string = "2006-01-02T15:04:05.999Z"
