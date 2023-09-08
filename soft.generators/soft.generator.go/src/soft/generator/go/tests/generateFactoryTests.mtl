@@ -18,32 +18,27 @@
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
 
-[template public generateFactoryTests(ePackage : EPackage) { 
-	allClasses : OrderedSet(EClass) = ePackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
-	allDataTypes : Sequence(EDataType) = ePackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
-	imports : OclAny;
+[template public generateFactoryTests(aPackage : EPackage) {
+	ecore : EPackage = getEcorePackage(); 
+	allClasses : OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	allDataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+	packages : Set(String) = Set{ Set{'testing', 'github.com/stretchr/testify/assert', 'github.com/stretchr/testify/mock'}
+								, if not aPackage.isEcorePackage() then Set{ecore.getPackagePath()} else Set{} endif
+								, allDataTypes->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
+								}->flatten();
+	imports : OclAny = getPackageImports(packages);
  } ]
-[file (ePackage.getImplementationOutputDirectory() + '/' + ePackage.getFactoryTestFileName(ePackage.name), false, 'UTF-8')]
+[file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getFactoryTestFileName(aPackage.name), false, 'UTF-8')]
 [fileComment()/]
 
-package [ePackage.name/]
+package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-[if not ePackage.isEcorePackage()]
-	"[getImportPathForPackage('ecore')/]"
-[/if]
-[if allDataTypes->exists( getType() = '*time.Time')]
-	"time"
-[/if]
-)
+[generateImports(imports,aPackage.getImplementationPackagePath())/]
 
 func TestFactoryAs(t *testing.T) {
-	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	factory := new[aPackage.name.toUpperFirst()/]FactoryImpl()
 	assert.Equal(t, factory, factory.AsInternal())
 	assert.Equal(t, factory, factory.AsEFactory())
 }
@@ -51,15 +46,15 @@ func TestFactoryAs(t *testing.T) {
 
 func TestFactoryCreateFromEClass(t *testing.T) {
 	_ = mock.Anything
-	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	factory := new[aPackage.name.toUpperFirst()/]FactoryImpl()
 	{
-		mockEClass := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEClass(t)
+		mockEClass := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEClass(t)
 		mockEClass.EXPECT().GetClassifierID().Return(-1).Once()
 		assert.Panics(t, func() { factory.Create(mockEClass) })
 	}
     [for (aClass : EClass | allClasses) ? (aClass.abstract=false)]
 	{
-		mockEClass := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEClass(t)
+		mockEClass := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEClass(t)
 		mockEClass.EXPECT().GetClassifierID().Return([aClass.getClassifierIDName()/]).Once()
 		assert.NotNil(t, factory.Create(mockEClass))
 	}
@@ -68,17 +63,17 @@ func TestFactoryCreateFromEClass(t *testing.T) {
 
 [for (aClass : EClass | allClasses) ? (aClass.abstract=false)]
 func TestFactoryCreate[aClass.name/](t *testing.T) {
-	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	factory := new[aPackage.name.toUpperFirst()/]FactoryImpl()
 	assert.NotNil(t, factory.Create[aClass.name/]())
 }
 
 [let ref : OrderedSet(EReference) = aClass.getAllContainers()]
 [for(aReference:EReference | ref->sortedBy(name))]
 func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]Container(t *testing.T) {
-	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	factory := new[aPackage.name.toUpperFirst()/]FactoryImpl()
 	mockContainer := [aReference.eType.getTestValue(aClass.ePackage,imports)/]
 [if(aReference.eOpposite.upperBound <> 1)]
-	mockList := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEList(t)
+	mockList := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEList(t)
 	mockList.EXPECT().Add(mock.Anything).Return(true).Once()
     mockContainer.EXPECT().Get[aReference.eOpposite.name.toUpperFirst()/]().Return(mockList).Once()
 [else]
@@ -90,10 +85,10 @@ func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]Contain
 
 [if(aClass.getElementIDAccessorName().size() > 0)]
 func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]ContainerAndClassID(t *testing.T) {
-	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	factory := new[aPackage.name.toUpperFirst()/]FactoryImpl()
 	mockContainer := [aReference.eType.getTestValue(aClass.ePackage,imports)/]
 [if(aReference.eOpposite.upperBound <> 1)]
-	mockList := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEList(t)
+	mockList := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEList(t)
 	mockList.EXPECT().Add(mock.Anything).Return(true).Once()
     mockContainer.EXPECT().Get[aReference.eOpposite.name.toUpperFirst()/]().Return(mockList).Once()
 [else]
@@ -109,24 +104,24 @@ func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]Contain
 [/for]
 
 func TestFactoryConvert(t *testing.T) {
-	factory := new[ePackage.name.toUpperFirst()/]FactoryImpl()
+	factory := new[aPackage.name.toUpperFirst()/]FactoryImpl()
 	{
-		mockEDataType := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEDataType(t)
+		mockEDataType := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEDataType(t)
 		mockEDataType.EXPECT().GetClassifierID().Return(-1).Once()
 		mockEDataType.EXPECT().GetName().Return("dataType").Once()
 		assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
 		mockEDataType.AssertExpectations(t)
 	}
 	{
-		mockEDataType := [if not ePackage.isEcorePackage()]ecore.[/if]NewMockEDataType(t)
+		mockEDataType := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEDataType(t)
 		mockEDataType.EXPECT().GetClassifierID().Return(-1).Once()
 		mockEDataType.EXPECT().GetName().Return("dataType").Once()
 		assert.Panics(t, func() { factory.ConvertToString(mockEDataType, nil) })
 		mockEDataType.AssertExpectations(t)
 	}
 [for (aDataType : EDataType | allDataTypes)]
-	[ePackage.generateCreateFrom(aDataType)/]
-	[ePackage.generateConvertTo(aDataType)/]
+	[aPackage.generateCreateFrom(aDataType)/]
+	[aPackage.generateConvertTo(aDataType)/]
 [/for]	
 }
 [/file]
