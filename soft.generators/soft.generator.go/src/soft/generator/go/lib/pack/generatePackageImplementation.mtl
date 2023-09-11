@@ -22,29 +22,27 @@
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::pack::generateCommon/]
 
-[query private getPackageInstance(aClassifier : EClassifier, aPackage : EPackage) : String = 
-	let packageName : String = if aClassifier.ePackage.isEcorePackage() then aPackage.getEcoreModuleName() else aClassifier.ePackage.name endif in
-	let packagePrefix : String = if packageName = aPackage.name then '' else packageName + '.' endif in
-	packagePrefix + 'GetPackage()'
+[query private getPackageInstance(aClassifier : EClassifier, aPackage: EPackage, imports : OclAny ) : String = 
+	aPackage.getImportedIdentifier( aClassifier.ePackage.getPackagePath() + '.GetPackage()', imports )
 /]
 
-[query private getPackageGetter(aModelElement : EModelElement) : String =
+[query private getPackageGetter(aModelElement : EModelElement, imports : OclAny) : String =
 	if aModelElement.oclIsKindOf(EPackage) then  
 		'p'
 	else if aModelElement.oclIsKindOf(EEnumLiteral) then 
 		let aEnumLiteral : EEnumLiteral = aModelElement.oclAsType(EEnumLiteral) in 
-		aEnumLiteral.eEnum.getPackageGetter() + '.GetEEnumLiteralByName("' + aEnumLiteral.name +'")' 
+		aEnumLiteral.eEnum.getPackageGetter(imports) + '.GetEEnumLiteralByName("' + aEnumLiteral.name +'")' 
 	else if aModelElement.oclIsKindOf(ENamedElement) then 
-		aModelElement.oclAsType(ENamedElement).getPackageGetter()
+		aModelElement.oclAsType(ENamedElement).getPackageGetter(imports)
 	else 
 		'nil' 
 	endif endif endif/]
-[query private getPackageGetter(aNamedElement : ENamedElement) : String = if oclIsUndefined() then 'nil' else 'p.' + aNamedElement.getReflectiveGetterName() + '()' endif/]
-[query private getPackageGetter(aEClassifier : EClassifier, aStruct : EStructuralFeature) : String = getPackageGetter(aEClassifier,aStruct.eContainingClass) /]
-[query private getPackageGetter(aEClass : EClass, supertype : EClass) : String = getPackageGetter(supertype.oclAsType(EClassifier),aEClass.oclAsType(EClassifier)) /]
-[query private getPackageGetter(aEClassifier1 : EClassifier, aEClassifier2 : EClassifier) : String = getPackageInstance(aEClassifier1, aEClassifier2) + '.' + aEClassifier1.getReflectiveGetterName() + '()' /]
-[query private getPackageInstance(aClassifier1 : EClassifier ,aClassifier2 : EClassifier ) : String = if(aClassifier1.ePackage.name = aClassifier2.ePackage.name ) then 'p' else aClassifier1.getPackageInstance(aClassifier2.ePackage) endif/]
-[query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'nil' else getPackageInstance(anEClassifier, anOperation.eContainingClass) + '.' +anEClassifier.getReflectiveGetterName() + '()' endif/]
+[query private getPackageGetter(aNamedElement : ENamedElement, imports : OclAny) : String = if oclIsUndefined() then 'nil' else 'p.' + aNamedElement.getReflectiveGetterName() + '()' endif/]
+[query private getPackageGetter(aEClassifier : EClassifier, aStruct : EStructuralFeature, imports : OclAny) : String = getPackageGetter(aEClassifier,aStruct.eContainingClass,imports) /]
+[query private getPackageGetter(aEClass : EClass, supertype : EClass, imports : OclAny) : String = getPackageGetter(supertype.oclAsType(EClassifier),aEClass.oclAsType(EClassifier),imports) /]
+[query private getPackageGetter(aEClassifier1 : EClassifier, aEClassifier2 : EClassifier, imports : OclAny) : String = getPackageInstance(aEClassifier1, aEClassifier2,imports) + '.' + aEClassifier1.getReflectiveGetterName() + '()' /]
+[query private getPackageInstance(aClassifier1 : EClassifier ,aClassifier2 : EClassifier , imports : OclAny) : String = if(aClassifier1.ePackage.name = aClassifier2.ePackage.name ) then 'p' else aClassifier1.getPackageInstance(aClassifier2.ePackage,imports) endif/]
+[query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation, imports : OclAny) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'nil' else getPackageInstance(anEClassifier, anOperation.eContainingClass,imports) + '.' +anEClassifier.getReflectiveGetterName() + '()' endif/]
 
 
 [template private generateDataMember(anENamedElement : ENamedElement, aPackage : EPackage, imports : OclAny)] 
@@ -126,24 +124,24 @@ p.[aEClass.getElementInstanceName()/].GetESuperTypes().Add([aEClass.getPackageGe
 p.InitEClass(p.[aEClass.getElementInstanceName()/],"[aEClass.name/]","[aEClass.getInstanceTypeName()/]",[aEClass.abstract.toString()/],[aEClass.interface.toString()/])
 [/template]
 
-[template private generateInitialization(anEAttribute : EAttribute)]
-p.InitEAttribute([anEAttribute.getPackageGetter()/],[anEAttribute.eType.oclAsType(EDataType).getPackageGetter(anEAttribute)/],"[anEAttribute.name/]","[anEAttribute.defaultValueLiteral/]",[anEAttribute.lowerBound/],[anEAttribute.upperBound/],[anEAttribute.transient.toString()/],[anEAttribute.volatile.toString()/],[anEAttribute.changeable.toString()/],[anEAttribute.unsettable.toString()/],[anEAttribute.unique.toString()/],[anEAttribute.derived.toString()/],[anEAttribute.ordered.toString()/],[anEAttribute.iD.toString()/])
+[template private generateInitialization(anEAttribute : EAttribute, imports : OclAny)]
+p.InitEAttribute([anEAttribute.getPackageGetter(imports)/],[anEAttribute.eType.oclAsType(EDataType).getPackageGetter(anEAttribute)/],"[anEAttribute.name/]","[anEAttribute.defaultValueLiteral/]",[anEAttribute.lowerBound/],[anEAttribute.upperBound/],[anEAttribute.transient.toString()/],[anEAttribute.volatile.toString()/],[anEAttribute.changeable.toString()/],[anEAttribute.unsettable.toString()/],[anEAttribute.unique.toString()/],[anEAttribute.derived.toString()/],[anEAttribute.ordered.toString()/],[anEAttribute.iD.toString()/])
 
 [/template]
 
-[template private generateInitialization(anEReference : EReference)]
-p.InitEReference([anEReference.getPackageGetter()/],[anEReference.eGenericType.eClassifier.getPackageGetter(anEReference)/],[if anEReference.eOpposite.oclIsUndefined()]nil[else][anEReference.eOpposite.getPackageGetter()/][/if],"[anEReference.name/]","[anEReference.defaultValueLiteral/]",[anEReference.lowerBound/],[anEReference.upperBound/],[anEReference.transient.toString()/],[anEReference.volatile.toString()/],[anEReference.changeable.toString()/],[anEReference.containment.toString()/],[anEReference.resolveProxies.toString()/],[anEReference.unsettable.toString()/],[anEReference.unique.toString()/],[anEReference.derived.toString()/],[anEReference.ordered.toString()/])
+[template private generateInitialization(anEReference : EReference, imports : OclAny)]
+p.InitEReference([anEReference.getPackageGetter(imports)/],[anEReference.eGenericType.eClassifier.getPackageGetter(anEReference)/],[if anEReference.eOpposite.oclIsUndefined()]nil[else][anEReference.eOpposite.getPackageGetter(imports)/][/if],"[anEReference.name/]","[anEReference.defaultValueLiteral/]",[anEReference.lowerBound/],[anEReference.upperBound/],[anEReference.transient.toString()/],[anEReference.volatile.toString()/],[anEReference.changeable.toString()/],[anEReference.containment.toString()/],[anEReference.resolveProxies.toString()/],[anEReference.unsettable.toString()/],[anEReference.unique.toString()/],[anEReference.derived.toString()/],[anEReference.ordered.toString()/])
 
 [/template]
 
-[template private generateInitialization(anEOperation : EOperation) ? (anEOperation.eParameters->isEmpty())]
-p.InitEOperation([anEOperation.getPackageGetter()/],[anEOperation.eType.getPackageGetter(anEOperation)/],"[anEOperation.name.toString()/]",[anEOperation.lowerBound/],[anEOperation.upperBound/],[anEOperation.unique.toString()/],[anEOperation.ordered.toString()/])
+[template private generateInitialization(anEOperation : EOperation, imports : OclAny) ? (anEOperation.eParameters->isEmpty())]
+p.InitEOperation([anEOperation.getPackageGetter(imports)/],[anEOperation.eType.getPackageGetter(anEOperation)/],"[anEOperation.name.toString()/]",[anEOperation.lowerBound/],[anEOperation.upperBound/],[anEOperation.unique.toString()/],[anEOperation.ordered.toString()/])
 
 [/template]
 
-[template private generateInitialization(anEOperation : EOperation) ? (anEOperation.eParameters->notEmpty())]
+[template private generateInitialization(anEOperation : EOperation, imports : OclAny) ? (anEOperation.eParameters->notEmpty())]
 {
-	operation := [anEOperation.getPackageGetter()/]
+	operation := [anEOperation.getPackageGetter(imports)/]
 	p.InitEOperation(operation,[anEOperation.eType.getPackageGetter(anEOperation)/],"[anEOperation.name.toString()/]",[anEOperation.lowerBound/],[anEOperation.upperBound/],[anEOperation.unique.toString()/],[anEOperation.ordered.toString()/])
 	[for (anEParameter : EParameter | anEOperation.eParameters)]
 	p.AddEParameter(operation,[anEParameter.eType.getPackageGetter(anEParameter.eOperation)/],"[anEParameter.name/]",0,1,[anEParameter.unique.toString()/],[anEParameter.ordered.toString()/])
@@ -153,19 +151,19 @@ p.InitEOperation([anEOperation.getPackageGetter()/],[anEOperation.eType.getPacka
 [/template]
 
 
-[template private generateInitialization(aTypedElement : ETypedElement)]
+[template private generateInitialization(aTypedElement : ETypedElement, imports : OclAny)]
 [/template]
 
-[template private generateInitialization(aEnum : EEnum,aPackage : EPackage)]
-p.InitEEnum([aEnum.getPackageGetter()/], "[aEnum.name/]","[if aEnum.instanceTypeName.oclIsUndefined()]int32[else][aEnum.getInstanceTypeName()/][/if]")
+[template private generateInitialization(aEnum : EEnum,aPackage : EPackage, imports : OclAny)]
+p.InitEEnum([aEnum.getPackageGetter(imports)/], "[aEnum.name/]","[if aEnum.instanceTypeName.oclIsUndefined()]int32[else][aEnum.getInstanceTypeName()/][/if]")
 [for (anEEnumLiteral : EEnumLiteral | aEnum.eLiterals)]
-p.AddEEnumLiteral([aEnum.getPackageGetter()/], "[anEEnumLiteral.name/]", "[anEEnumLiteral.literal/]", [anEEnumLiteral.value.toString()/])
+p.AddEEnumLiteral([aEnum.getPackageGetter(imports)/], "[anEEnumLiteral.name/]", "[anEEnumLiteral.literal/]", [anEEnumLiteral.value.toString()/])
 [/for]
 
 [/template]
 
 [template private generateInitialization(aDataType : EDataType,aPackage : EPackage, imports : OclAny)]
-p.InitEDataType([aDataType.getPackageGetter()/], "[aDataType.name/]", "[aDataType.getInstanceTypeName()/]",[let defaultValue : String = aDataType.getDefaultValue(aPackage, imports).replaceAll('\'|"', '')][if defaultValue = '' or defaultValue = 'nil']""[else]"[defaultValue/]"[/if][/let],[aDataType.serializable.toString()/])
+p.InitEDataType([aDataType.getPackageGetter(imports)/], "[aDataType.name/]", "[aDataType.getInstanceTypeName()/]",[let defaultValue : String = aDataType.getDefaultValue(aPackage, imports).replaceAll('\'|"', '')][if defaultValue = '' or defaultValue = 'nil']""[else]"[defaultValue/]"[/if][/let],[aDataType.serializable.toString()/])
 
 [/template]
 
@@ -238,7 +236,7 @@ func (p *[className/])initializePackageContents(ecoreFactory [aPackage.getImport
 
 	[for (aClass : EClass | allClasses)]
 	[aClass.generateInitialization()/]
-	[Sequence{ aClass.eAttributes, aClass.eReferences, aClass.eOperations}->flatten().generateInitialization()/]	   
+	[Sequence{ aClass.eAttributes, aClass.eReferences, aClass.eOperations}->flatten().generateInitialization(imports)/]	   
 	[/for]
 [/if]
 [if allDataTypes->notEmpty()]
@@ -258,7 +256,7 @@ func (p *[className/])initialize[getAnnotationSourceIdentifier(aAnnotationSource
 	source := "[aAnnotationSource/]"
 	[for (eAnnotation : EAnnotation | aPackage.eAllContents(EAnnotation)->select( a | a.source = aAnnotationSource))]
 	{
-		eAnnotation := ecoreFactory.CreateEAnnotationFromContainer([eAnnotation.eModelElement.getPackageGetter()/])
+		eAnnotation := ecoreFactory.CreateEAnnotationFromContainer([eAnnotation.eModelElement.getPackageGetter(imports)/])
 		eAnnotation.SetSource(source)
 		[for (eEntry : EStringToStringMapEntry | eAnnotation.details)]
 		[let value : String = if eEntry.value.oclIsUndefined() then '' else eEntry.value endif]

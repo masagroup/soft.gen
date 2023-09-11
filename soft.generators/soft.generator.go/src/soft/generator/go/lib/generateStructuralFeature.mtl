@@ -15,8 +15,10 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateStructuralFeature/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
+
 
 [query public isInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
 
@@ -24,10 +26,8 @@
 
 [query public getBasicsInterface( aClass : EClass ) : String = aClass.getInterfaceName().toLowerFirst() + 'Basics'/]
 
-[query private getPackageInstance(aClassifier : EClassifier, aPackage : EPackage) : String = 
-	let packageName : String = if aClassifier.ePackage.isEcorePackage() then aPackage.getEcoreModuleName() else aClassifier.ePackage.name endif in
-	let packagePrefix : String = if packageName = aPackage.name then '' else packageName + '.' endif in
-	packagePrefix + 'GetPackage()'
+[query private getPackageInstance(aClassifier : EClassifier, aPackage: EPackage, imports : OclAny ) : String = 
+	aPackage.getImportedIdentifier( aClassifier.ePackage.getPackagePath() + '.GetPackage()', imports )
 /]
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature, imports : OclAny)]
@@ -55,13 +55,13 @@
 [aStructuralFeature.getUnSetterName()/]()
 [/template]
 
-[template private getMapConstructor( anStructuralFeature : EStructuralFeature, aClass : EClass) post(trim())]
+[template private getMapConstructor( anStructuralFeature : EStructuralFeature, aClass : EClass, imports : OclAny) post(trim())]
 [/template]
 
-[template private getMapConstructor( anEReference : EReference, aClass : EClass) post(trim()){
+[template private getMapConstructor( anEReference : EReference, aClass : EClass, imports : OclAny) post(trim()){
 	aPackage : EPackage = aClass.ePackage;
 	receiverName : String = aClass.getReceiverName();
-	packageInstance : String = anEReference.eType.getPackageInstance(aPackage);
+	packageInstance : String = anEReference.eType.getPackageInstance(aPackage, imports);
 }]
 [if anEReference.eOpposite.oclIsUndefined() ]
 [if not aPackage.isEcorePackage()]ecore.[/if]NewBasicEObjectMap([packageInstance/].[anEReference.eType.getReflectiveGetterName()/](),[receiverName/].AsEObjectInternal(),[aClass.getFeatureIDName(anEReference)/],-1,[anEReference.isUnSettable()/] )
@@ -142,7 +142,7 @@ nil
 [template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass, imports : OclAny) ? ( aStructuralFeature.getLazy() = 'function' )]
 [aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getInitializationMethodName()/]() [aStructuralFeature.generateType(imports)/] {
 [if isMapType()]
-	return [getMapConstructor(aClass)/];
+	return [getMapConstructor(aClass,imports)/];
 [elseif isListType()]
     return [getListConstructor(aClass)/];
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
@@ -161,7 +161,7 @@ nil
 }]
 [aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getInitializationMethodName()/]() {
 [if isMapType()]
-	[receiverName/].[varName/] = [getMapConstructor(aClass)/];
+	[receiverName/].[varName/] = [getMapConstructor(aClass,imports)/];
 [elseif isListType()]
     [receiverName/].[varName/] = [getListConstructor(aClass)/];
 [elseif isProxy()]
@@ -390,7 +390,7 @@ func [testMethodName/](t *testing.T) {
         [/let]
 	[elseif aStructuralFeature.isMapType()]
 	if [receiverName/].[varName/] == nil {
-		[receiverName/].[varName/] = [aStructuralFeature.getMapConstructor(aClass)/];
+		[receiverName/].[varName/] = [aStructuralFeature.getMapConstructor(aClass,imports)/];
 	}
 	[elseif aStructuralFeature.isListType()]
 	if [receiverName/].[varName/] == nil {
