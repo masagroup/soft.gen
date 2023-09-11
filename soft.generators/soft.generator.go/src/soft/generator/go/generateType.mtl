@@ -388,17 +388,13 @@ anyType = type
 	)
 /]
 
-[query public getImportPath( aPackage : EPackage , aClassifier : EClassifier ) : String = 
+[query public getPackagePath( aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then 
         ''
     else if aClassifier.oclIsKindOf(EDataType) then
 			let aDataType : EDataType = aClassifier.oclAsType(EDataType) in
 			let goType : String = aDataType.getInstanceTypeName() in
-			if goType.size() > 0 and goType.first(1) = '*' then
-        		aPackage.getPackageNameFromPath(goType.substring(2))
-			else
-				aPackage.getPackageNameFromPath(goType)
-			endif
+			getIdentifierPackagePath(goType)
 		 else
 			aClassifier.ePackage.getPackagePath()
 		 endif

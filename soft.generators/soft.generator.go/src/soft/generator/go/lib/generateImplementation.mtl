@@ -45,7 +45,7 @@
 	packages : Set(String) = Set{ Set{getIdentifierPackagePath(classExtend)} 
 								 ,if not aPackage.isEcorePackage() then Set{ ecore.getPackagePath()} else Set{} endif
 								 ,if not aPackage.isEcorePackage() and aClass.getReferencedMapTypes()->exists( cls | cls.ePackage.isEcorePackage() ) then Set{ ecore.getPackagePath()} else Set{} endif
-								 ,aClass.getReferencedTypes()->collect( cls | cls.ePackage.getPackagePath() )->asSet()
+								 ,aClass.getReferencedTypes()->collect( cls | cls.getPackagePath() )->asSet()
 								 ,aClass.getInterfaceExtends()->collect( i | getIdentifierPackagePath(i) )->asSet()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);

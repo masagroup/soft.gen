@@ -49,7 +49,7 @@
 								, OrderedSet{ aClass.eSuperTypes
               								, implementedFeatures.eType
 											, implementedFeatures->collect( getMapTypes() )->flatten()
-											}->flatten()->select( not oclIsUndefined() )->collect( cls | cls.ePackage.getPackagePath() )->asSet()
+											}->flatten()->select( not oclIsUndefined() )->collect( cls | cls.getPackagePath() )->asSet()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
