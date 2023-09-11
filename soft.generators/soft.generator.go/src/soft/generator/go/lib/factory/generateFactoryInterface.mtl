@@ -22,6 +22,7 @@
 [template public generateFactoryInterface(aPackage : EPackage) { 
 	className : String = aPackage.getFactoryName(); 
 	packageName : String = aPackage.name;
+	packagePath : String = aPackage.getInterfacePackagePath();
 	ecore : EPackage = getEcorePackage();
 	packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getPackagePath()} else Set{} endif;
 	imports : OclAny = getPackageImports(packages);
@@ -29,20 +30,20 @@
 [file (aPackage.getInterfaceOutputDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(aPackage.getInterfacePackagePath())/]
+package [aPackage.getPackageNameFromPath(packagePath)/]
 
-[generateImports(imports,aPackage.getInterfacePackagePath())/]
+[generateImports(imports,packagePath)/]
 
 type [className/] interface {
-	[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactory') , imports)/]
+	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactory') , packagePath,imports)/]
 [for (aEClass : EClass | aPackage.eAllContents(EClass)->sortedBy(name))]
 [if (aEClass.abstract = false)]
 	Create[aEClass.name/]() [aEClass.getInterfaceName()/]
 [let ref:OrderedSet(EReference) = aEClass.getAllContainers()]
 [for(aReference:EReference | ref->sortedBy(name))]
-	Create[aEClass.name/]FromContainer(eContainer [aReference.generateType(imports)/]) [aEClass.getInterfaceName()/]
+	Create[aEClass.name/]FromContainer(eContainer [aReference.generateType(packagePath,imports)/]) [aEClass.getInterfaceName()/]
 [if(aEClass.getElementIDAccessorName().size() > 0)]
-	Create[aEClass.name/]FromContainerAndClassID(eContainer [aReference.generateType(imports)/], classID int) [aEClass.getInterfaceName()/]
+	Create[aEClass.name/]FromContainerAndClassID(eContainer [aReference.generateType(packagePath,imports)/], classID int) [aEClass.getInterfaceName()/]
 [/if]
 [/for]
 [/let]

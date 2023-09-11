@@ -19,7 +19,7 @@
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateType/]
 
-[template public generateReflectivesDefinition(aClass : EClass, imports : OclAny)]
+[template public generateReflectivesDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
 [if not aClass.isReflectiveDelegation()]
 [if aClass.hasElementID() or
 	aClass.getEGetFeatures()->notEmpty() or
@@ -30,41 +30,41 @@
     aClass.getEInverseAddFeatures()->notEmpty() or
     aClass.getEInverseRemoveFeatures()->notEmpty()]
 [if aClass.hasElementID()]
-[aClass.generateElementIDDefinition(imports)/]
+[aClass.generateElementIDDefinition(packagePath,imports)/]
 
 [/if]
 [if aClass.getEGetFeatures()->notEmpty()]
-[aClass.generateEGetDefinition(imports)/]
+[aClass.generateEGetDefinition(packagePath,imports)/]
 
 [/if]
 [if aClass.getESetFeatures()->notEmpty()]
-[aClass.generateESetDefinition(imports)/]
+[aClass.generateESetDefinition(packagePath,imports)/]
 
 [/if]
 [if aClass.getEUnSetFeatures()->notEmpty()]
-[aClass.generateEUnSetDefinition(imports)/]
+[aClass.generateEUnSetDefinition(packagePath,imports)/]
 
 [/if]
 [if aClass.getEIsSetFeatures()->notEmpty()]
-[aClass.generateEIsSetDefinition(imports)/]
+[aClass.generateEIsSetDefinition(packagePath,imports)/]
 
 [/if]
 [if aClass.getEInvokeOperations()->notEmpty()]
-[aClass.generateEInvokeDefinition(imports)/]
+[aClass.generateEInvokeDefinition(packagePath,imports)/]
 
 [/if]
 [if aClass.getEInverseAddFeatures()->notEmpty()]
-[aClass.generateEInverseAddDefinition(imports)/]
+[aClass.generateEInverseAddDefinition(packagePath,imports)/]
 
 [/if]
 [if aClass.getEInverseRemoveFeatures()->notEmpty()]
-[aClass.generateEInverseRemoveDefinition(imports)/]
+[aClass.generateEInverseRemoveDefinition(packagePath,imports)/]
 [/if]
 [/if]
 [/if]
 [/template]
 
-[template private generateElementIDDefinition(aClass : EClass, imports : OclAny)]
+[template private generateElementIDDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
 [let aPackage : EPackage = aClass.ePackage]
 [let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
 [if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())] 
@@ -104,7 +104,7 @@
 [/let]
 [/template]
 
-[template private generateEGetDefinition(aClass : EClass, imports : OclAny)]
+[template private generateEGetDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
 [let aPackage : EPackage = aClass.ePackage]
 [aClass.generateFunctionImplementationReceiver()/] EGetFromID(featureID int, resolve bool) [aPackage.getAnyType()/] {
     switch featureID {
@@ -137,12 +137,12 @@
 [/template]
 
 
-[template private generateEIsSetDefinition(aClass : EClass, imports : OclAny)]
+[template private generateEIsSetDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
 [aClass.generateFunctionImplementationReceiver()/] EIsSetFromID(featureID int) bool {
     switch featureID {
 [for (anStructFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
     case [aClass.getQualifiedIDName(anStructFeature)/]:
-        return [anStructFeature.generateComparison(aClass,imports)/]
+        return [anStructFeature.generateComparison(aClass,packagePath,imports)/]
 [/for]
     default:
         return [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EIsSetFromID(featureID)
@@ -150,7 +150,7 @@
 }
 [/template]
 
-[template private generateESetDefinition(aClass : EClass, imports : OclAny)]
+[template private generateESetDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
 [let aPackage : EPackage = aClass.ePackage]
 [aClass.generateFunctionImplementationReceiver()/] ESetFromID(featureID int, newValue [aPackage.getAnyType()/]) {
     switch featureID {
@@ -163,12 +163,12 @@
     [elseif anStructFeature.isListType()]
 		list := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
         list.Clear()
-        list.AddAll(newValue.([anStructFeature.generateType(imports)/]))
+        list.AddAll(newValue.([anStructFeature.generateType(packagePath,imports)/]))
     [elseif anStructFeature.oclIsKindOf(EReference)]
-		newValueOrNil , _ :=  newValue.([anStructFeature.generateType(imports)/])
+		newValueOrNil , _ :=  newValue.([anStructFeature.generateType(packagePath,imports)/])
 		[aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValueOrNil) 
 	[else]
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue[if not aPackage.isAnyType(anStructFeature.eType.getType())].([anStructFeature.generateType(imports)/])[/if])
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue[if not aPackage.isAnyType(anStructFeature.eType.getType())].([anStructFeature.generateType(packagePath,imports)/])[/if])
     [/if]    
 [/for]
     default:
@@ -178,7 +178,7 @@
 [/let]
 [/template]
 
-[template private generateEUnSetDefinition(aClass : EClass, imports : OclAny)]
+[template private generateEUnSetDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
 [aClass.generateFunctionImplementationReceiver()/] EUnsetFromID(featureID int) {
     switch featureID {
 [for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
@@ -191,7 +191,7 @@
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/](nil)
     [else]
 		[let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
-		[let defaultValue : String = aAttribute.getDefaultValue(aClass.ePackage,imports)]
+		[let defaultValue : String = aAttribute.getDefaultValue(packagePath,imports)]
 		[if defaultValue <> '']
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/]([defaultValue/])
         [else]
@@ -207,17 +207,17 @@
 }
 [/template]
 
-[template private generateEInvokeDefinition(aClass : EClass, imports : OclAny)]
+[template private generateEInvokeDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
 [let aPackage : EPackage = aClass.ePackage]
 [aClass.generateFunctionImplementationReceiver()/] EInvokeFromID(operationID int, arguments [if not aPackage.isEcorePackage()]ecore.[/if]EList) [aPackage.getAnyType()/] {
     switch operationID {
     [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy( getOperationName() ) )]
     case [aClass.getQualifiedIDName(eOperation)/]:
         [if eOperation.isVoid() ]
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[eOperation.generateOperationInvoke(imports)/]
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[eOperation.generateOperationInvoke(packagePath,imports)/]
         return nil
         [else]
-        return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[eOperation.generateOperationInvoke(imports)/] 
+        return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[eOperation.generateOperationInvoke(packagePath,imports)/] 
         [/if]
     [/for]
     default:
@@ -227,21 +227,21 @@
 [/let]
 [/template]
 
-[template private generateOperationInvoke(eOperation : EOperation , imports : OclAny)]
-[eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]arguments.Get([i-1/])[if needCast].([eParameter.generateType(imports)/])[/if][/let][/for])
+[template private generateOperationInvoke(eOperation : EOperation , packagePath : String, imports : OclAny)]
+[eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]arguments.Get([i-1/])[if needCast].([eParameter.generateType(packagePath,imports)/])[/if][/let][/for])
 [/template]
 
 [template private generateGetAccessor(aClass : EClass,anStructFeature : EStructuralFeature) post (trim())]
 [aClass.getReceiverName()/].[if anStructFeature.isField()][anStructFeature.getVariableName()/][else]as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()[/if]
 [/template]
 
-[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass, imports : OclAny) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
+[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass, packagePath : String, imports : OclAny) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
 [let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
 [if isListType()]
     [if isField()][aClass.generateGetAccessor(anStructFeature)/] != nil && [/if][aClass.generateGetAccessor(anStructFeature)/].Size() != 0
 [else]
     [if eType.oclIsKindOf(EEnum)]
-        [aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass,imports)/]
+        [aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(packagePath,imports)/]
     [elseif eType.oclIsKindOf(EDataType)]
 		[let comparisonFunction : String = eType.oclAsType(EDataType).getComparisonFunction()]
 		[if comparisonFunction <> '']
@@ -251,17 +251,17 @@
 		[aClass.generateGetAccessor(anStructFeature)/].[comparisonFunction/]()
 		[/if]		
 		[else]
-        [aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass,imports)/]
+        [aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(packagePath,imports)/]
         [/if]
         [/let]
 	[else]
-		[aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(aClass,imports)/]
+		[aClass.generateGetAccessor(anStructFeature)/] != [aAttribute.getDefaultValue(packagePath,imports)/]
     [/if]
 [/if]
 [/let]
 [/template]
 
-[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass, imports : OclAny) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
+[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass, packagePath : String, imports : OclAny) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
 [if isListType()]
     [if isField()][aClass.generateGetAccessor(anStructFeature)/] != nil && [/if][aClass.generateGetAccessor(anStructFeature)/].Size() != 0
 [elseif anStructFeature.oclAsType(EReference).isBackReference() ]
@@ -271,15 +271,15 @@
     [aClass.generateGetAccessor(anStructFeature)/]
     [/if]
 [else]
-	[aClass.generateGetAccessor(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(aClass,imports)/]
+	[aClass.generateGetAccessor(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(packagePath,imports)/]
 [/if]
 [/template]
 
-[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass, imports : OclAny) ? (eType.isAny()) post (trim())]
-[aClass.generateGetAccessor(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(aClass,imports)/]
+[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass, packagePath : String, imports : OclAny) ? (eType.isAny()) post (trim())]
+[aClass.generateGetAccessor(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(packagePath,imports)/]
 [/template]
 
-[template public generateEInverseAddDefinition(aClass : EClass, imports : OclAny) ]
+[template public generateEInverseAddDefinition(aClass : EClass, packagePath : String, imports : OclAny) ]
 [let aPackage : EPackage = aClass.ePackage]
 [aClass.generateFunctionImplementationReceiver()/] EBasicInverseAdd(otherEnd [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
@@ -296,7 +296,7 @@
             msgs = [aClass.getReceiverName()/].EBasicRemoveFromContainer(msgs)
         }
         [if aFeature.isBasicSet()]
-        return [aClass.getReceiverName()/].asBasics().basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType(imports)/]), msgs)
+        return [aClass.getReceiverName()/].asBasics().basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType(packagePath,imports)/]), msgs)
         [else]
         return [aClass.getReceiverName()/].EBasicSetContainer(otherEnd, [aClass.getQualifiedIDName(aFeature)/], msgs)
         [/if]
@@ -316,7 +316,7 @@
                 [/let]
             [/if]
         }
-        return [aClass.getReceiverName()/].asBasics().basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType(imports)/]) ,msgs)
+        return [aClass.getReceiverName()/].asBasics().basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType(packagePath,imports)/]) ,msgs)
     [/if]
 [/for]
     default:
@@ -326,7 +326,7 @@
 [/let]
 [/template]
 
-[template public generateEInverseRemoveDefinition(aClass : EClass, imports : OclAny) ? (aClass.getEInverseRemoveFeatures()->notEmpty()) ]
+[template public generateEInverseRemoveDefinition(aClass : EClass, packagePath : String, imports : OclAny) ? (aClass.getEInverseRemoveFeatures()->notEmpty()) ]
 [let aPackage : EPackage = aClass.ePackage]
 [aClass.generateFunctionImplementationReceiver()/] EBasicInverseRemove(otherEnd  [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {

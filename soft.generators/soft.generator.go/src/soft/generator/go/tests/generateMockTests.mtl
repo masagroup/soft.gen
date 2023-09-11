@@ -25,6 +25,7 @@
 
 [template public generateMockTests(aClass : EClass) { 
 	aPackage : EPackage = aClass.ePackage;
+	packagePath : String = aPackage.getMockPackagePath();
 	mockName : String = aClass.getMockName();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
@@ -39,9 +40,9 @@
 [file (aPackage.getMockOutputDirectory() + '/' + aClass.getMockTestFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(aPackage.getMockPackagePath())/]
+package [aPackage.getPackageNameFromPath(packagePath)/]
 
-[generateImports(imports,aPackage.getMockPackagePath())/]
+[generateImports(imports,packagePath)/]
 
 func discard[mockName.toUpperFirst()/]() {
 	_ = assert.Equal
@@ -51,8 +52,8 @@ func discard[mockName.toUpperFirst()/]() {
 [/if]
 }
 
-[features.generateMockTests(aClass,imports)/]
-[operations.generateMockTests(aClass,imports)/]
+[features.generateMockTests(aClass,packagePath,imports)/]
+[operations.generateMockTests(aClass,packagePath,imports)/]
 
 [/file]
 [/template]

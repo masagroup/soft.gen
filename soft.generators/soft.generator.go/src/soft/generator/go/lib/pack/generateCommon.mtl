@@ -14,7 +14,7 @@
 
 [import soft::generator::go::generateType/]
 
-[query public getMetaType(aPackage : EPackage , anENamedElement : ENamedElement, imports : OclAny) : String =
-	aPackage.getImportedIdentifier(anENamedElement.eClass().getQualifiedInterfaceIdentifier(),imports) 
+[query public getMetaType(anENamedElement : ENamedElement, packagePath : String ,imports : OclAny) : String =
+	getImportedIdentifier(anENamedElement.eClass().getQualifiedInterfaceIdentifier(),packagePath, imports) 
 /]
 

@@ -20,6 +20,7 @@
 [import soft::generator::common::generateUtils/]
 
 [template public generateFactoryTests(aPackage : EPackage) {
+	packagePath : String = aPackage.getImplementationPackagePath();
 	ecore : EPackage = getEcorePackage(); 
 	allClasses : OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
 	allDataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
@@ -32,9 +33,9 @@
 [file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getFactoryTestFileName(aPackage.name), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
+package [aPackage.getPackageNameFromPath(packagePath)/]
 
-[generateImports(imports,aPackage.getImplementationPackagePath())/]
+[generateImports(imports,packagePath)/]
 
 func TestFactoryAs(t *testing.T) {
 	factory := new[aPackage.name.toUpperFirst()/]FactoryImpl()
@@ -70,7 +71,7 @@ func TestFactoryCreate[aClass.name/](t *testing.T) {
 [for(aReference:EReference | ref->sortedBy(name))]
 func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]Container(t *testing.T) {
 	factory := new[aPackage.name.toUpperFirst()/]FactoryImpl()
-	mockContainer := [aReference.eType.getTestValue(aClass.ePackage,imports)/]
+	mockContainer := [aReference.eType.getTestValue(packagePath,imports)/]
 [if(aReference.eOpposite.upperBound <> 1)]
 	mockList := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEList(t)
 	mockList.EXPECT().Add(mock.Anything).Return(true).Once()
@@ -85,7 +86,7 @@ func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]Contain
 [if(aClass.getElementIDAccessorName().size() > 0)]
 func TestFactoryCreate[aClass.name/]From[aReference.name.toUpperFirst()/]ContainerAndClassID(t *testing.T) {
 	factory := new[aPackage.name.toUpperFirst()/]FactoryImpl()
-	mockContainer := [aReference.eType.getTestValue(aClass.ePackage,imports)/]
+	mockContainer := [aReference.eType.getTestValue(packagePath,imports)/]
 [if(aReference.eOpposite.upperBound <> 1)]
 	mockList := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEList(t)
 	mockList.EXPECT().Add(mock.Anything).Return(true).Once()

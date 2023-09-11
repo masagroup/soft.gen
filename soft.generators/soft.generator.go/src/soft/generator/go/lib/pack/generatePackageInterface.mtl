@@ -57,25 +57,25 @@
 
 [/template]
 
-[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage, imports : OclAny )]
+[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage, packagePath : String, imports : OclAny )]
 
 // Returns the meta object for the [anENamedElement.name.toUpperFirst()/]
-[anENamedElement.getReflectiveGetterName()/]() [aPackage.getMetaType(anENamedElement,imports)/]
+[anENamedElement.getReflectiveGetterName()/]() [getMetaType(anENamedElement,packagePath,imports)/]
 [/template]
 
 [template public generatePackageInterface(aPackage : EPackage) { 
 	className : String = aPackage.getInterfaceName();
+	packagePath : String = aPackage.getInterfacePackagePath();
 	ecore : EPackage = getEcorePackage();
 	packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getPackagePath()} else Set{} endif;
 	imports : OclAny = getPackageImports(packages);
-
 }]
 [file (aPackage.getInterfaceOutputDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName()) , false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(aPackage.getInterfacePackagePath())/]
+package [aPackage.getPackageNameFromPath(packagePath)/]
 
-[generateImports(imports,aPackage.getInterfacePackagePath())/]
+[generateImports(imports,packagePath)/]
 
 const (
     // NAME is the package name. 
@@ -101,14 +101,14 @@ const (
 // This package is used to enable the reflection of model elements. 
 // It contains all model elements which were described in an ecore file.
 type [className/] interface {
-	[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EPackage') , imports)/]
+	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EPackage') ,packagePath, imports)/]
 [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-    [aClass.generateGetter(aPackage,imports)/]
-    [aClass.eAttributes->sortedBy(name).generateGetter(aPackage,imports)/]
-    [aClass.eReferences->sortedBy(name).generateGetter(aPackage,imports)/]
-    [aClass.eOperations->sortedBy(name).generateGetter(aPackage,imports)/]
+    [aClass.generateGetter(aPackage,packagePath,imports)/]
+    [aClass.eAttributes->sortedBy(name).generateGetter(aPackage,packagePath,imports)/]
+    [aClass.eReferences->sortedBy(name).generateGetter(aPackage,packagePath,imports)/]
+    [aClass.eOperations->sortedBy(name).generateGetter(aPackage,packagePath,imports)/]
 [/for]
-    [aPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(aPackage,imports)/]
+    [aPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(aPackage,packagePath,imports)/]
 }
 
 var packageInstance [className/] 

@@ -44,6 +44,7 @@
 [template public generateMock(aClass : EClass) { 
 	ecore : EPackage = getEcorePackage();
 	aPackage : EPackage = aClass.ePackage;
+	packagePath : String = aPackage.getMockPackagePath(); 
 	mockExtends : Sequence(String) = aClass.getMockExtends();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
@@ -60,9 +61,9 @@
 [file (aPackage.getMockOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(aPackage.getMockPackagePath())/]
+package [aPackage.getPackageNameFromPath(packagePath)/]
 
-[generateImports(imports,aPackage.getMockPackagePath())/]
+[generateImports(imports,packagePath)/]
 
 // [mockName/] is an mock type for the [aClass.getInterfaceName()/] type
 type [mockName/] struct {
@@ -74,7 +75,7 @@ type [mockName/] struct {
 type [mockName/]_Prototype struct {
 	mock *mock.Mock
 [for (mockExtend : String | mockExtends)]
-	[aPackage.getImportedIdentifier( mockExtend, imports)/]_Prototype
+	[getImportedIdentifier( mockExtend,packagePath, imports)/]_Prototype
 [/for]
 	[mockName/]_Prototype_Methods
 }
@@ -90,7 +91,7 @@ func (_mp *[mockName/]_Prototype) SetMock(mock *mock.Mock) {
 // [mockName/]_Expecter is the expecter implementation for all [interfaceName/] methods ( inherited and declared )
 type [mockName/]_Expecter struct {
 [for (mockExtend : String | mockExtends)]
-	[aPackage.getImportedIdentifier( mockExtend, imports)/]_Expecter
+	[getImportedIdentifier( mockExtend, packagePath, imports)/]_Expecter
 [/for]
 	[mockName/]_Expecter_Methods
 }
@@ -127,8 +128,8 @@ func (_mde *[mockName/]_Expecter_Methods) SetMock(mock *mock.Mock) {
 }
 
 
-[features.generateMock(aClass,imports)/]
-[operations.generateMock(aClass,imports)/]
+[features.generateMock(aClass,packagePath,imports)/]
+[operations.generateMock(aClass,packagePath,imports)/]
 
 type mockConstructorTestingTNew[mockName/] interface {
 	mock.TestingT

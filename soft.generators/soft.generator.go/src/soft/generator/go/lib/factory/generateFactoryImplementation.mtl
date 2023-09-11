@@ -28,6 +28,7 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 
 
 [template public generateFactoryImplementation(aPackage : EPackage) {
+	packagePath : String = aPackage.getImplementationPackagePath();
 	className : String = aPackage.getFactoryImplementationName(); 
 	ecore : EPackage = getEcorePackage(); 
 	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
@@ -42,9 +43,9 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 [file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
+package [aPackage.getPackageNameFromPath(packagePath)/]
 
-[generateImports(imports,aPackage.getImplementationPackagePath())/]
+[generateImports(imports,packagePath)/]
 
 type [aPackage.getFactoryInternalName()/] interface {
 [for (aDataType : EDataType | allDataTypes)]
@@ -56,7 +57,7 @@ type [aPackage.getFactoryInternalName()/] interface {
 }
 
 type [className/] struct {
-	[aPackage.getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactoryExt') , imports)/]
+	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactoryExt') ,packagePath, imports)/]
 }
 
 func new[className.toUpperFirst()/]() *[className/] {
