@@ -170,7 +170,7 @@ anyType = type
 		Sequence{ 'com.google.common.primitives.UnsignedLong' , 'uint64', '0' , '1', ''},
 
 		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', ecore.getQualifiedInterfaceIdentifier('EDiagnosticChain'), 'nil', 'nil', '' },
-		Sequence{ 'org.eclipse.emf.common.util.EList', ecore.getQualifiedInterfaceIdentifier('EList'), 'nil', 'ecore.NewEmptyBasicEList()', '' },
+		Sequence{ 'org.eclipse.emf.common.util.EList', ecore.getQualifiedInterfaceIdentifier('EList'), 'nil', ecore.getQualifiedInterfaceIdentifier('NewEmptyBasicEList()'), '' },
 		Sequence{ 'org.eclipse.emf.common.util.Enumerator', anyType, 'nil', 'nil', ''},		        
 		Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap', anyType, 'nil', 'nil', ''},
         Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap$Entry', anyType, 'nil', 'nil', ''},
