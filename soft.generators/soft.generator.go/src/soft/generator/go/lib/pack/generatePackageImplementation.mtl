@@ -183,7 +183,7 @@ p.InitEDataType([aDataType.getPackageGetter(packagePath,imports)/], "[aDataType.
 [file (aPackage.getImplementationOutputDirectory() + '/'+ aPackage.getImplementationFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(packagePath)/]
+package [getPackageNameFromPath(packagePath)/]
 
 [generateImports(imports,packagePath)/]
 

@@ -33,7 +33,7 @@
 [file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getFactoryTestFileName(aPackage.name), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(packagePath)/]
+package [getPackageNameFromPath(packagePath)/]
 
 [generateImports(imports,packagePath)/]
 

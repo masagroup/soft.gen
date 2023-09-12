@@ -30,7 +30,7 @@
 [file (aPackage.getInterfaceOutputDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(packagePath)/]
+package [getPackageNameFromPath(packagePath)/]
 
 [generateImports(imports,packagePath)/]
 

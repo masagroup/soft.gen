@@ -43,7 +43,7 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 [file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(packagePath)/]
+package [getPackageNameFromPath(packagePath)/]
 
 [generateImports(imports,packagePath)/]
 

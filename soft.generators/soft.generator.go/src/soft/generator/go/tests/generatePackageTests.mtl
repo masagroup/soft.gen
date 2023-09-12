@@ -25,7 +25,7 @@
 [file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getPackageTestFileName(aPackage.name), false, 'UTF-8') ]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
+package [getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
 
 import (
 	"testing"

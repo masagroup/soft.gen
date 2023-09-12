@@ -54,7 +54,7 @@
 [file (aPackage.getImplementationOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(packagePath)/]
+package [getPackageNameFromPath(packagePath)/]
 
 [generateImports(imports,aPackage.getImplementationPackagePath())/]
 

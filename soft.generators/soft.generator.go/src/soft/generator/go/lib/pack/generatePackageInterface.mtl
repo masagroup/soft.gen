@@ -73,7 +73,7 @@
 [file (aPackage.getInterfaceOutputDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName()) , false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.getPackageNameFromPath(packagePath)/]
+package [getPackageNameFromPath(packagePath)/]
 
 [generateImports(imports,packagePath)/]
 
