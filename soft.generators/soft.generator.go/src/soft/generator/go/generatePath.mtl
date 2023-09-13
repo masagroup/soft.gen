@@ -20,12 +20,10 @@
 [**
  * Returns Ecore module default path
 */]
-[query public getEcoreModulePath(aPackage : EPackage) : String = 'github.com/masagroup/soft.go/ecore' /]
-
 [query private getAllPackagePaths(aPackage : EPackage) : OclAny =
 	let ecorePackage : EPackage = getEcorePackage() in
 	let packageToPaths : OclAny = mapNew('getAllPackageToPaths_' + aPackage.name)
-									.mapPut('uri:'+ ecorePackage.nsURI, getEcoreModulePath()) in
+									.mapPut('uri:'+ ecorePackage.nsURI, 'github.com/masagroup/soft.go/ecore/ecore') in
     let packagesProperty : OclAny = getProperty('packages') in 
 	let packages : String = (if packagesProperty.oclIsUndefined() or packagesProperty = '' then '' else packagesProperty.oclAsType(String) endif) + 
 							(if aPackage.hasKey('packages') then ';' + aPackage.valueKey('packages') else '' endif) in
@@ -38,7 +36,7 @@
 				let packPath : String = if packIndex = -1 then p else p.substring(1, packIndex-1) endif in
 				let nameIndex : Integer = packPath.lastIndex('/') in
 				if nameIndex = -1 then
-					res
+					res.mapPut('name:'+packPath,p)
 				else
 					res.mapPut('name:'+packPath.substring(nameIndex+1),p)
 				endif
@@ -61,7 +59,7 @@
 	endif
 /]
 
-[query private getPackageIndexPath(aPackage : EPackage, index : Integer) : String =
+[query private getIndexPath(aPackage : EPackage, index : Integer) : String =
 	let packageToPaths : OclAny = aPackage.getAllPackagePaths() in
 	let uriPath : OclAny = mapGet(packageToPaths, 'uri:' + aPackage.nsURI) in
 	if not uriPath.oclIsUndefined() then
@@ -71,25 +69,25 @@
 		if not namePath.oclIsUndefined() then
 			aPackage.getPath(namePath.oclAsType(String),index)
 		else
-			aPackage.name
+			aPackage.name + '/' + aPackage.name
 		endif
 	endif 	
 /] 
 
 [query public getPackagePath(aPackage : EPackage) : String =
-	aPackage.getPackageIndexPath(1)
+	aPackage.getIndexPath(1)
 /]
 
 [query public getInterfacePackagePath(aPackage : EPackage) : String =
-	aPackage.getPackageIndexPath(1)
+	aPackage.getIndexPath(1)
 /]
 
 [query public getImplementationPackagePath(aPackage : EPackage) : String =
-	aPackage.getPackageIndexPath(2)
+	aPackage.getIndexPath(2)
 /]
 
 [query public getMockPackagePath(aPackage : EPackage) : String =
-	aPackage.getPackageIndexPath(3)
+	aPackage.getIndexPath(3)
 /]
 
 
@@ -104,16 +102,17 @@
 [**
  * Returns package output directory
  */]
-[query private getPackageIndexDirectory(aPackage : EPackage, index : Integer) : String =
+[query private getOutputDirectory(aPackage : EPackage, index : Integer) : String =
 	if aPackage.hasModulePath() then
 		let modulePath : String = aPackage.getModulePath() in
-		let packagePath : String = aPackage.getPackageIndexPath(index) in
-		if packagePath = modulePath then
+		let packagePath : String = aPackage.getIndexPath(index) in
+		let packageDirectory : String = getPackageDirectoryFromPath(packagePath) in
+		if packageDirectory = modulePath then
 			''
 		else 
-			if packagePath.size() > modulePath.size() then
-				if packagePath.startsWith(modulePath) then
-					packagePath.substring(modulePath.size() + 1)
+			if packageDirectory.size() > modulePath.size() then
+				if packageDirectory.startsWith(modulePath) then
+					packageDirectory.substring(modulePath.size() + 1)
 				else
 					aPackage.name
 				endif
@@ -127,23 +126,32 @@
 /]
 
 [query public getInterfaceOutputDirectory(aPackage : EPackage) : String =
-	aPackage.getPackageIndexDirectory(1)
+	aPackage.getOutputDirectory(1)
 /]
 
 [query public getImplementationOutputDirectory(aPackage : EPackage) : String =
-	aPackage.getPackageIndexDirectory(2)
+	aPackage.getOutputDirectory(2)
 /]
 
 [query public getMockOutputDirectory(aPackage : EPackage) : String =
-	aPackage.getPackageIndexDirectory(3)
+	aPackage.getOutputDirectory(3)
+/]
+
+[query public getPackageDirectoryFromPath(path : String) : String =
+	let slashIndex : Integer = path.lastIndex('/') in
+	if slashIndex = -1 then
+		''
+	else
+		path.substring(1,slashIndex-1)
+	endif	
 /]
 
 [query public getPackageNameFromPath(path : String) : String =
-	let nameIndex : Integer = path.lastIndex('/') in
-	if nameIndex = -1 then
+	let slashIndex : Integer = path.lastIndex('/') in
+	if slashIndex = -1 then
 		path
 	else
-		path.substring(nameIndex+1)
+		path.substring(slashIndex+1)
 	endif
 /]
 
