@@ -239,7 +239,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'reflect.Type')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'reflect/reflect.Type')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    	_ = reflect.Ptr
 	panic("NotImplementedException")
@@ -247,7 +247,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '*time.Time')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '*time/time.Time')]
 const (
 	dateFormat string = "2006-01-02T15:04:05.999Z"
 )
@@ -368,7 +368,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '*time.Time')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '*time/time.Time')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string { 
 	t , _ := instanceValue.(*time.Time)
 	return t.Format(dateFormat)

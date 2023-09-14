@@ -52,16 +52,19 @@ anyType = type
 
 [query public getQualifiedMockIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedMockIdentifier( aClass.getMockName() ) /]
 
-[query public getImportedIdentifier( qualifiedName : String, packagePath : String, imports : OclAny ) : String =
+[query public getImportedIdentifier( qualifiedIdentifier : String, packagePath : String, imports : OclAny ) : String =
 	if imports.oclIsUndefined() then
-		qualifiedName
+		qualifiedIdentifier
 	else
-		let indexDot : Integer = qualifiedName.lastIndex('.') in
+		let indexDot : Integer = qualifiedIdentifier.lastIndex('.') in
 		if indexDot = -1 then
-			qualifiedName
+			qualifiedIdentifier
 		else
-			let p : String = qualifiedName.substring(1, indexDot-1) in
-			let o : String = qualifiedName.substring(indexDot+1) in
+			let q : String = qualifiedIdentifier.substring(1, indexDot-1) in
+			let o : String = qualifiedIdentifier.substring(indexDot+1) in
+			let isPtr : Boolean = q.size() > 0 and q.first(1) = '*' in
+			let ptr : String = if isPtr then '*' else '' endif in
+			let p : String = if isPtr then q.substring(2) else q endif in
 			if p = packagePath then
 				o 
 			else
@@ -69,15 +72,15 @@ anyType = type
 				if i.oclIsUndefined() then
 					let nameIndex : Integer = p.lastIndex('/') in
 					if nameIndex = -1 then
-						p + '.' + o
+						ptr + p + '.' + o
 					else
-						p.substring(nameIndex+1) + '.' + o
+						ptr + p.substring(nameIndex+1) + '.' + o
 					endif
 				else
 					if i = '' then
-						o
+						ptr + o
 					else
-						i.oclAsType(String) + '.' + o
+						ptr + i.oclAsType(String) + '.' + o
 					endif
 				endif
 			endif
@@ -392,7 +395,11 @@ anyType = type
 [for (path : OclAny | imports.mapKeys()->sortedBy(oclAsType(String)))]
 [if path <> packagePath]
 [let name : OclAny = imports.mapGet(path)]
-import [if not name.oclIsUndefined()][name.oclAsType(String)/][/if] "[path.oclAsType(String)/]" 
+[let dir : String = getPackageDirectoryFromPath(path.oclAsType(String))]
+[let default : String = getPackageNameFromPath(dir)]
+import "[dir/]"
+[/let]
+[/let]
 [/let]
 [/if]
 [/for]

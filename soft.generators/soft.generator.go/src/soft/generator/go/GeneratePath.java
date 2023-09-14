@@ -1,6 +1,7 @@
 package soft.generator.go;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class GeneratePath {
                                                         .collect(Collectors.toMap(Function.identity(), pack -> {
                                                             int i = index[0];
                                                             String[] path = splitted.computeIfAbsent(pack,
-                                                                                                     p -> reverseArray(p.split("/")));
+                                                                                                     p -> splitPath(p));
                                                             return path.length > i ? path[i] : null;
                                                         }));
 
@@ -59,22 +60,29 @@ public class GeneratePath {
             index[0]++;
         }
 
-        // build name for each package
+        // build alias for each package
         Map<String, String> result = new HashMap<String, String>();
         for (Map.Entry<String, List<String>> entry : aliases.entrySet()) {
             String path = entry.getKey();
-            int i = path.lastIndexOf('/');
-            String defaultName = i == -1 ? path : path.substring(i + 1);
-            String name = String.join("_", Lists.reverse(entry.getValue()));
-            if (name.equals(defaultName)) {
-                result.put(entry.getKey(), null);
-            } else {
-                result.put(entry.getKey(), name);
-            }
-
+            String alias = String.join("_", Lists.reverse(entry.getValue()));
+            result.put(path, alias);
         }
 
         return result;
+    }
+
+    private String[] splitPath(String path) {
+        String[] splitted = path.split("/");
+        String[] simplified = new String[splitted.length];
+        String last = null;
+        int j = 0;
+        for (int i = 0; i < splitted.length; i++) {
+            String s = splitted[i];
+            if (!s.equals(last))
+                simplified[j++] = s;
+            last = s;
+        }
+        return reverseArray(Arrays.copyOf(simplified, j));
     }
 
     private String[] reverseArray(String[] a) {
