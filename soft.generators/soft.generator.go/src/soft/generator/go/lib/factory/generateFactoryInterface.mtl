@@ -14,10 +14,12 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
-[import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::lib::factory::generateFactoryInstance/]
+
 
 [template public generateFactoryInterface(aPackage : EPackage) { 
 	className : String = aPackage.getFactoryName(); 
@@ -51,19 +53,9 @@ type [className/] interface {
 [/for]
 }
 
-var factoryInstance [className/]
-
-// GetFactory returns the factory for the model [aPackage.name/]
-func GetFactory() [className/] {
-    if factoryInstance == nil {
-[let extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension']
-[let factoryName : String = if extension then aPackage.getFactoryExtensionName() else aPackage.getFactoryImplementationName() endif] 
-		factoryInstance = new[factoryName.toUpperFirst()/]()
-[/let]
-[/let]
-    }
-    return factoryInstance
-}
+[if aPackage.getImplementationPackagePath() = packagePath]
+[aPackage.generateFactoryInstance(packagePath,imports)/]
+[/if]
 
 [/file]
 [/template]

@@ -18,6 +18,7 @@
 [import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::lib::factory::generateFactoryInstance/]
 
 [template private generateFactoryImplementationMember(anEPackage : EPackage)]
 func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementationName()/])
@@ -66,6 +67,10 @@ func new[className.toUpperFirst()/]() *[className/] {
 	factory.Initialize()
     return factory 
 }
+
+[if aPackage.getInterfacePackagePath() <> packagePath]
+[aPackage.generateFactoryInstance(packagePath,imports)/]
+[/if]
 
 [aPackage.generateFactoryImplementationMember()/] AsInternal() [aPackage.getFactoryInternalName()/] {
 	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryInternalName()/])

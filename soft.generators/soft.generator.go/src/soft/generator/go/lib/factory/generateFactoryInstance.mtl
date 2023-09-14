@@ -1,0 +1,38 @@
+[**
+ * This file is part of soft.generator.go, a project for go code 
+ * generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
+[comment encoding = UTF-8 /]
+[module generateFactoryInstance('http://www.eclipse.org/emf/2002/Ecore')]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::go::generatePath/]
+[import soft::generator::go::generateType/]
+[import soft::generator::go::generateCommon/]
+
+[template public generateFactoryInstance(aPackage : EPackage, packagePath : String , imports : OclAny) {
+	qualifiedClassName : String = aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName());
+	importedClassName : String = getImportedIdentifier(qualifiedClassName, packagePath, imports) ;
+}]
+var factoryInstance [importedClassName/]
+
+// GetFactory returns the factory for the model [aPackage.name/]
+func GetFactory() [importedClassName/] {
+    if factoryInstance == nil {
+[let extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension']
+[let factoryName : String = if extension then aPackage.getFactoryExtensionName() else aPackage.getFactoryImplementationName() endif] 
+		factoryInstance = new[factoryName.toUpperFirst()/]()
+[/let]
+[/let]
+    }
+    return factoryInstance
+}
+[/template]
+ 
