@@ -45,7 +45,7 @@
 	packagePath : String = aPackage.getImplementationPackagePath();
 	ecore : EPackage = getEcorePackage();
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.getImplementedFeatures()->notEmpty() or aClass.requiresList() );
-	packages : Set(String) = Set{ Set { 'testing' , 'github.com/stretchr/testify/assert', 'github.com/stretchr/testify/mock'}
+	packages : Set(String) = Set{ Set { 'testing/testing' , 'github.com/stretchr/testify/assert/assert', 'github.com/stretchr/testify/mock/mock'}
 								, if requiresEcore then Set{ ecore.getPackagePath() } else Set{} endif
 								, OrderedSet{ aClass.eSuperTypes
               								, implementedFeatures.eType

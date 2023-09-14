@@ -33,7 +33,7 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 	ecore : EPackage = getEcorePackage(); 
 	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
 	allDataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
-	packages : Set(String) = Set{ Set{'strconv'}
+	packages : Set(String) = Set{ Set{'strconv/strconv'}
 								, if not aPackage.isEcorePackage() then Set{ecore.getPackagePath()} else Set{} endif
 								, allDataTypes->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
 								}->flatten();
