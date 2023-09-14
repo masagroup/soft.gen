@@ -30,11 +30,14 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 
 [template public generateFactoryImplementation(aPackage : EPackage) {
 	packagePath : String = aPackage.getImplementationPackagePath();
+	interfacePath : String = aPackage.getInterfacePackagePath();
 	className : String = aPackage.getFactoryImplementationName(); 
 	ecore : EPackage = getEcorePackage(); 
 	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
 	allDataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+	isFactoryInstance : Boolean = interfacePath <> packagePath;
 	packages : Set(String) = Set{ Set{'strconv/strconv'}
+								, if isFactoryInstance then Set{ interfacePath } else Set{} endif
 								, if not aPackage.isEcorePackage() then Set{ecore.getPackagePath()} else Set{} endif
 								, allDataTypes->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
 								}->flatten();
@@ -68,7 +71,7 @@ func new[className.toUpperFirst()/]() *[className/] {
     return factory 
 }
 
-[if aPackage.getInterfacePackagePath() <> packagePath]
+[if isFactoryInstance]
 [aPackage.generateFactoryInstance(packagePath,imports)/]
 [/if]
 
@@ -76,10 +79,11 @@ func new[className.toUpperFirst()/]() *[className/] {
 	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryInternalName()/])
 }
 
-[aPackage.generateFactoryImplementationMember()/] AsEFactory()  [aPackage.getFactoryName()/] {
-	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryName()/])
+[let factoryName : String = getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName()), packagePath, imports)]
+[aPackage.generateFactoryImplementationMember()/] AsEFactory()  [factoryName/] {
+	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([factoryName/])
 }
-
+[/let]
 
 [aPackage.generateFactoryImplementationMember()/] Create(eClass [ecorePrefix/]EClass) [ecorePrefix/]EObject {
 	classID := eClass.GetClassifierID()
