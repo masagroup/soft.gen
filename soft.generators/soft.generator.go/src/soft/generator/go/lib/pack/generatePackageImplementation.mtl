@@ -126,7 +126,7 @@ p.[aEnum.getElementInstanceName()/] = ecoreFactory.CreateEEnumFromContainerAndCl
 [template private generateCreation(anEDatatype : EDataType, packagePath : String, imports : OclAny) {
 	aPackage : EPackage = anEDatatype.ePackage;
 }]
-p.[anEDatatype.getElementInstanceName()/] = ecoreFactory.CreateEDataTypeFromContainerAndClassID(p, [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(anEDatatype.getClassifierIDName()), packagePath,imports)/]/])
+p.[anEDatatype.getElementInstanceName()/] = ecoreFactory.CreateEDataTypeFromContainerAndClassID(p, [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(anEDatatype.getClassifierIDName()), packagePath,imports)/])
 
 [/template]
 
