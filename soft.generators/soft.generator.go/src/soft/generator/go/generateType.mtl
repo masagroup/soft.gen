@@ -376,7 +376,7 @@ anyType = type
 	)
 /]
 
-[query public getPackagePath( aClassifier : EClassifier ) : String = 
+[query public getInterfacePackagePath( aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then 
         ''
     else if aClassifier.oclIsKindOf(EDataType) then

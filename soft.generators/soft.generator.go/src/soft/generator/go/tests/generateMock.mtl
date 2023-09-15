@@ -53,7 +53,7 @@
 	packages : Set(String) = Set{ Set{'github.com/stretchr/testify/mock/mock'}
 								, if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ ecore.getInterfacePackagePath()} else Set{} endif
 								, mockExtends->collect( i | getIdentifierPackagePath( i ) )->asSet()
-								, aClass.getReferencedTypes()->collect( cls | cls.getPackagePath() )->asSet()
+								, aClass.getReferencedTypes()->collect( cls | cls.getInterfacePackagePath() )->asSet()
 								}->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
