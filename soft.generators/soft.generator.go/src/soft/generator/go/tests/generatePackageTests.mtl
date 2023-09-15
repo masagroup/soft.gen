@@ -21,23 +21,23 @@
 [template public generatePackageTests(aPackage : EPackage){
 	allClasses : OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
 	allDataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
+	packagePath : String = aPackage.getImplementationPackagePath();
+	packages : Set(String) = Set{ 'testing/testing' , 'github.com/stretchr/testify/assert/assert', aPackage.getInterfacePackagePath()}->flatten();
+	imports : OclAny = getPackageImports(packages);
 }]
 [file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getPackageTestFileName(aPackage.name), false, 'UTF-8') ]
 [fileComment()/]
 
-package [getPackageNameFromPath(aPackage.getImplementationPackagePath())/]
+package [getPackageNameFromPath(packagePath)/]
 
-import (
-	"testing"
-	"github.com/stretchr/testify/assert"
-)
+[generateImports(imports,packagePath)/]
 
 func TestPackageInstance(t *testing.T) {
 	p := GetPackage()
 	assert.NotNil(t , p )
-	assert.Equal(t, NAME , p.GetName() )
-	assert.Equal(t, NS_URI, p.GetNsURI() )
-	assert.Equal(t, NS_PREFIX, p.GetNsPrefix() )
+	assert.Equal(t, [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NAME'),packagePath,imports)/] , p.GetName() )
+	assert.Equal(t, [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NS_URI'),packagePath,imports)/] , p.GetNsURI() )
+	assert.Equal(t, [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NS_PREFIX'),packagePath,imports)/] , p.GetNsPrefix() )
 
 }
 
