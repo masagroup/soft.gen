@@ -74,7 +74,7 @@
     if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
         switch featureID {
 [for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
-            case [aMixinClass.getQualifiedIDName(aFeature)/] : return [aClass.getQualifiedIDName(aFeature)/]
+            case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aMixinClass.getQualifiedIDName(aFeature)), packagePath,imports)/]: return [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(aFeature)), packagePath,imports)/]
 [/for]
             default: return -1
         }
@@ -91,7 +91,7 @@
     if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
         switch operationID {
 [for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
-            case [aMixinClass.getQualifiedIDName(aOperation)/] : return [aClass.getQualifiedIDName(aOperation)/]
+            case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aMixinClass.getQualifiedIDName(aOperation)), packagePath,imports)/]: return [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(aOperation)), packagePath,imports)/]
 [/for]
             default: return -1
         }
@@ -109,7 +109,7 @@
 [aClass.generateFunctionImplementationReceiver()/] EGetFromID(featureID int, resolve bool) [aPackage.getAnyType()/] {
     switch featureID {
     [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name))]
-    case [aClass.getQualifiedIDName(anStructFeature)/]:
+    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(anStructFeature)), packagePath,imports)/]:
 	[if anStructFeature.isProxy()]
 		[if anStructFeature.isListType()]
 		list := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]();
@@ -137,11 +137,13 @@
 [/template]
 
 
-[template private generateEIsSetDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
+[template private generateEIsSetDefinition(aClass : EClass, packagePath : String, imports : OclAny) {
+	aPackage : EPackage = aClass.ePackage;
+}]
 [aClass.generateFunctionImplementationReceiver()/] EIsSetFromID(featureID int) bool {
     switch featureID {
 [for (anStructFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
-    case [aClass.getQualifiedIDName(anStructFeature)/]:
+    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(anStructFeature)), packagePath,imports)/]:
         return [anStructFeature.generateComparison(aClass,packagePath,imports)/]
 [/for]
     default:
@@ -155,7 +157,7 @@
 [aClass.generateFunctionImplementationReceiver()/] ESetFromID(featureID int, newValue [aPackage.getAnyType()/]) {
     switch featureID {
 [for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
-    case [aClass.getQualifiedIDName(anStructFeature)/]:
+    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(anStructFeature)), packagePath,imports)/]:
 	[if anStructFeature.isMapType()]
 		m := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
 		m.Clear()
@@ -178,11 +180,13 @@
 [/let]
 [/template]
 
-[template private generateEUnSetDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
+[template private generateEUnSetDefinition(aClass : EClass, packagePath : String, imports : OclAny){
+	aPackage : EPackage = aClass.ePackage;
+}]
 [aClass.generateFunctionImplementationReceiver()/] EUnsetFromID(featureID int) {
     switch featureID {
 [for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
-    case [aClass.getQualifiedIDName(aStructFeature)/]:
+    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(aStructFeature)), packagePath,imports)/]:
     [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getGetterName()/]().Clear()
     [elseif aStructFeature.isUnSet() ]
@@ -212,7 +216,7 @@
 [aClass.generateFunctionImplementationReceiver()/] EInvokeFromID(operationID int, arguments [if not aPackage.isEcorePackage()]ecore.[/if]EList) [aPackage.getAnyType()/] {
     switch operationID {
     [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy( getOperationName() ) )]
-    case [aClass.getQualifiedIDName(eOperation)/]:
+	case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(eOperation)), packagePath,imports)/]:
         [if eOperation.isVoid() ]
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[eOperation.generateOperationInvoke(packagePath,imports)/]
         return nil
@@ -284,8 +288,8 @@
 [aClass.generateFunctionImplementationReceiver()/] EBasicInverseAdd(otherEnd [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
-    case [aClass.getQualifiedIDName(aFeature)/]:
-	[if aFeature.isMapType()]
+	case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(aFeature)), packagePath,imports)/]:
+    [if aFeature.isMapType()]
 		return notifications
     [elseif aFeature.isListType()]
         list := [aClass.getReceiverName()/].[aFeature.getGetterName()/]().([if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList)
@@ -331,7 +335,7 @@
 [aClass.generateFunctionImplementationReceiver()/] EBasicInverseRemove(otherEnd  [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
-    case [aClass.getQualifiedIDName(aFeature)/]:
+	case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(aFeature)), packagePath,imports)/]:    
 	[if aFeature.isMapType()]
 		return notifications
     [elseif aFeature.isListType()]

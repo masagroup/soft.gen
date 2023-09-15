@@ -323,7 +323,7 @@ func [testMethodName/](t *testing.T) {
 // [aStructuralFeature.getGetterName()/] get the value of [aStructuralFeature.getVariableName()/]
 [aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getGetterName()/]() [aStructuralFeature.generateType(packagePath,imports)/] {
 [if isReflectiveDelegation()]
-	result, _ := [receiverName/].EGetFromID([aClass.getFeatureIDName(aStructuralFeature)/] , true)[if not aPackage.isAnyType(aStructuralFeature.eType.getType())].([aStructuralFeature.generateType(packagePath,imports)/])[/if]
+	result, _ := [receiverName/].EGetFromID([getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getFeatureIDName(aStructuralFeature)),packagePath,imports)/], true)[if not aPackage.isAnyType(aStructuralFeature.eType.getType())].([aStructuralFeature.generateType(packagePath,imports)/])[/if]
 	return result 
 [elseif isContainer()]
     if [receiverName/].EContainerFeatureID() == [aClass.getFeatureIDName(aStructuralFeature)/] {
@@ -517,7 +517,7 @@ func [testMethodName/](t *testing.T) {
 // [methodName/] set the value of [varName/]
 [aClass.generateFunctionImplementationReceiver()/] [methodName/]( [newVarName/] [aStructuralFeature.generateType(packagePath,imports)/] ) {
 [if isReflectiveDelegation()]
-	[receiverName/].ESetFromID([aClass.getFeatureIDName(aStructuralFeature)/],[newVarName/])
+	[receiverName/].ESetFromID([getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getFeatureIDName(aStructuralFeature)),packagePath,imports)/],[newVarName/])
 [elseif not isVolatile()]
     [if isContainer()]
     if ( [newVarName/] != [receiverName/].EInternalContainer() || ([newVarName/] != nil && [receiverName/].EContainerFeatureID() !=  [aClass.getFeatureIDName(aStructuralFeature)/])) {
@@ -680,7 +680,7 @@ func [testMethodName/](t *testing.T) {
 // [aStructuralFeature.getUnSetterName()/] unset the value of [varName/]
 [aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getUnSetterName()/]() {
 [if isReflectiveDelegation()]
-	[receiverName/].EUnsetFromID([aClass.getFeatureIDName(aStructuralFeature)/])
+	[receiverName/].EUnsetFromID([getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getFeatureIDName(aStructuralFeature)),packagePath,imports)/])
 [elseif not isVolatile()]
     [if isListType()]
 		[let lazy : String = aStructuralFeature.getLazy()]
