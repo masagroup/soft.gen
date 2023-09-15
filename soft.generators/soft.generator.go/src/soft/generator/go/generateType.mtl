@@ -228,7 +228,7 @@ anyType = type
 
 [query private getTestValue( aClass : EClass ,packagePath : String , imports : OclAny) : String =
 	let ecore : EPackage = getEcorePackage() in 
-	let qualifiedMockConstructorName : String = if aClass.name='EObject' then ecore.getQualifiedInterfaceIdentifier('NewMockEObjectInternal') else aClass.ePackage.getQualifiedInterfaceIdentifier('New' + aClass.getMockName()) endif in 
+	let qualifiedMockConstructorName : String = if aClass.name='EObject' then ecore.getQualifiedMockIdentifier('NewMockEObjectInternal') else aClass.ePackage.getQualifiedMockIdentifier('New' + aClass.getMockName()) endif in 
 	getImportedIdentifier( qualifiedMockConstructorName, packagePath, imports)+'(t)'
 /]
 
