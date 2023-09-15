@@ -36,7 +36,7 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
 	allDataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
 	isFactoryInstance : Boolean = interfacePath <> packagePath;
-	packages : Set(String) = Set{ Set{'strconv/strconv'}
+	packages : Set(String) = Set{ Set{'strconv/strconv',interfacePath}
 								, if isFactoryInstance then Set{ interfacePath } else Set{} endif
 								, if not aPackage.isEcorePackage() then Set{ecore.getInterfacePackagePath()} else Set{} endif
 								, allDataTypes->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
@@ -124,7 +124,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 	classID  := eDataType.GetClassifierID()
 	switch classID {
     [for (aDataType : EDataType | allDataTypes)]
-    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aDataType.getClassifierIDName()), packagePath, imports) /]:
+    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aDataType.getClassifierIDName()), packagePath, imports)/]:
         return [aPackage.getFactoryReceiverName()/].AsInternal().create[aDataType.name/]FromString(eDataType, literalValue)
     [/for]
     default:
