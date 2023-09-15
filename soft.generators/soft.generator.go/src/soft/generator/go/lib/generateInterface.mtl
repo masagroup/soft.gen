@@ -32,7 +32,7 @@
 	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
 	isDiamond : Boolean = aClass.eSuperTypes->size() > 1;
 	packages : Set(String) = Set{ if not aPackage.isEcorePackage() and ( isDiamond or aClass.requiresList() )then Set{ ecore.getPackagePath()} else Set{} endif
-								 , (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getReferencedTypes() endif)->collect( cls | cls.getPackagePath())
+								 , (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getAllReferencedTypes() endif)->collect( cls | cls.getPackagePath())
 								 , interfaceExtends->collect( i | getIdentifierPackagePath(i))
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);

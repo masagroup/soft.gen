@@ -54,7 +54,6 @@
 								, if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ ecore.getPackagePath()} else Set{} endif
 								, mockExtends->collect( i | getIdentifierPackagePath( i ) )->asSet()
 								, aClass.getReferencedTypes()->collect( cls | cls.getPackagePath() )->asSet()
-								, aClass.getInterfaceExtends()->collect( i | getIdentifierPackagePath(i) )->asSet()
 								}->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]

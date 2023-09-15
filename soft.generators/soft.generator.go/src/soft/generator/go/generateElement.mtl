@@ -14,7 +14,12 @@
 
 [import soft::generator::common::generateElement/]
 
-[query public getReferencedTypes(aClass : EClass) : Set(EClassifier) = 
+[query public getAllReferencedTypes(aClass : EClass) : Set(EClassifier) = 
 	OrderedSet{aClass.eSuperTypes
-              ,aClass.getImplementedFeatures()->select(feature : EStructuralFeature | not feature.many ).eType
-              ,aClass.getImplementedOperations().getReferencedTypes()}->flatten()->select( cls | not cls.oclIsUndefined() ) /]
+              ,aClass.getReferencedTypes()}->flatten()->select( cls | not cls.oclIsUndefined() )/]
+
+
+[query public getReferencedTypes(aClass : EClass) : Set(EClassifier) = 
+	OrderedSet{aClass.getImplementedFeatures()->select(feature : EStructuralFeature | not feature.many ).eType
+              ,aClass.getImplementedOperations().getReferencedTypes()}->flatten()->select( cls | not cls.oclIsUndefined() )/]
+
