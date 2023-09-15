@@ -19,6 +19,7 @@
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::pack::generateCommon/]
+[import soft::generator::go::lib::pack::generatePackageInstance/]
 
 [template private generateStaticClassID(aEClass : EClass)]
 // [aEClass.getClassifierIDName()/] is the meta object id for the class [aEClass.name/].
@@ -111,14 +112,9 @@ type [className/] interface {
     [aPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(aPackage,packagePath,imports)/]
 }
 
-var packageInstance [className/] 
-
-func GetPackage() [className/] {
-    if packageInstance == nil {
-      packageInstance = new[aPackage.getImplementationName().toUpperFirst()/]()
-    }
-    return packageInstance
-}
+[if aPackage.getImplementationPackagePath() = packagePath]
+[aPackage.generatePackageInstance(packagePath,imports)/]
+[/if]
 
 [/file]
 [/template]

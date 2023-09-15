@@ -51,6 +51,10 @@ package [getPackageNameFromPath(packagePath)/]
 
 [generateImports(imports,packagePath)/]
 
+[if isFactoryInstance]
+[aPackage.generateFactoryInstance(packagePath,imports)/]
+[/if]
+
 type [aPackage.getFactoryInternalName()/] interface {
 [for (aDataType : EDataType | allDataTypes)]
     create[aDataType.name/]FromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/]
@@ -71,9 +75,6 @@ func new[className.toUpperFirst()/]() *[className/] {
     return factory 
 }
 
-[if isFactoryInstance]
-[aPackage.generateFactoryInstance(packagePath,imports)/]
-[/if]
 
 [aPackage.generateFactoryImplementationMember()/] AsInternal() [aPackage.getFactoryInternalName()/] {
 	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryInternalName()/])

@@ -21,6 +21,7 @@
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::pack::generateCommon/]
+[import soft::generator::go::lib::pack::generatePackageInstance/]
 
 [query private getPackageInstance(aClassifier : EClassifier, packagePath : String, imports : OclAny ) : String = 
 	getImportedIdentifier( aClassifier.ePackage.getPackagePath() + '.GetPackage()',packagePath, imports )
@@ -168,17 +169,19 @@ p.InitEDataType([aDataType.getPackageGetter(packagePath,imports)/], "[aDataType.
 [/template]
 
 [template public generatePackageImplementation(aPackage : EPackage){
-	packagePath : String = aPackage.getImplementationPackagePath(); 
+	packagePath : String = aPackage.getImplementationPackagePath();
+	interfacePath : String = aPackage.getInterfacePackagePath(); 
 	className : String = aPackage.getImplementationName();
 	allClasses :  OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
 	allDataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 	annotationSources : OrderedSet(String) = aPackage.getAnnotationSources();
 	ecore : EPackage = getEcorePackage();
-	packages : Set(String) = Set { Set{ecore.getInterfacePackagePath(), ecore.getImplementationPackagePath()}
+	isPackageInstance : Boolean = interfacePath <> packagePath;
+	packages : Set(String) = Set { if isPackageInstance then Set{ interfacePath } else Set{} endif
+								 , Set{ecore.getInterfacePackagePath(), ecore.getImplementationPackagePath()}
 								 , aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.getImplementationPackagePath()->asSet()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
-
 }]
 [file (aPackage.getImplementationOutputDirectory() + '/'+ aPackage.getImplementationFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
@@ -186,6 +189,10 @@ p.InitEDataType([aDataType.getPackageGetter(packagePath,imports)/], "[aDataType.
 package [getPackageNameFromPath(packagePath)/]
 
 [generateImports(imports,packagePath)/]
+
+[if isPackageInstance]
+[aPackage.generatePackageInstance(packagePath,imports)/]
+[/if]
 
 // [className/] is the [aPackage.getInterfaceName()/] implementation
 type [className/] struct {
