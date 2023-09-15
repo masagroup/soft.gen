@@ -389,6 +389,39 @@ anyType = type
 	endif
 /]
 
+[query public getTestPackagePath( aClassifier : EClassifier ) : String = 
+    if aClassifier.oclIsKindOf(EDataType) then aClassifier.oclAsType(EDataType).getTestPackagePath()
+	else if aClassifier.oclIsKindOf(EEnum) then aClassifier.oclAsType(EEnum).getTestPackagePath()
+	else if aClassifier.oclIsKindOf(EClass) then aClassifier.oclAsType(EClass).getTestPackagePath()
+	else ''
+	endif endif endif
+/]
+
+[query private getTestPackagePath(aDataType : EDataType) : String =
+	if hasKey(aDataType, 'testValue') then
+		''
+	else
+		let typeName : String = aDataType.getInstanceTypeName() in
+		if typeName.size() > 0 and typeName.first(1) = '*' then
+			''
+		else
+			let aPackage : EPackage = aDataType.ePackage in 
+			aPackage.getAllDataTypes()->iterate( s ; res : String = '' |
+		    if res = '' then
+		        if s->exists(n : String | n = typeName) then
+					getIdentifierPackagePath( s->at( s->size() - 1 ) )
+				else
+					res
+		        endif
+		    else 
+		        res 
+		    endif
+		 	) 
+	endif endif 
+/]
+[query private getTestPackagePath(aEnum : EEnum) : String = aEnum.ePackage.getInterfacePackagePath()/]
+[query private getTestPackagePath(aClass : EClass) : String = aClass.ePackage.getMockPackagePath()/]
+
 
 [template public generateImports(imports : OclAny, packagePath : String)]
 [if not imports.oclIsUndefined()]
