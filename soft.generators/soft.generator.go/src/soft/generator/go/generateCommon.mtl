@@ -243,13 +243,7 @@ methodName.toUpperFirst()
     any.getQualificationSep(aQualifiedName, '.') 
 /]
 
-[query public getQualifiedIDName( aClass : EClass, aStructuralFeature : EStructuralFeature ) : String =
-    aClass.getFeatureIDName( aStructuralFeature )
-/]
 
-[query public getQualifiedIDName( aClass : EClass, aOperation : EOperation ) : String =
-    aClass.getOperationIDName( aOperation )
-/]
 
 [query public isConstantsQualified( aEEnum  : EEnum ) : Boolean = 
 	let aPackage : EPackage = aEEnum.ePackage in

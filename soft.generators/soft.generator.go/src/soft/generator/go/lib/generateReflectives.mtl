@@ -74,7 +74,7 @@
     if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
         switch featureID {
 [for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
-            case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aMixinClass.getQualifiedIDName(aFeature)), packagePath,imports)/]: return [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(aFeature)), packagePath,imports)/]
+            case [aMixinClass.getImportedIDName(aFeature, packagePath,imports)/]: return [aClass.getImportedIDName(aFeature, packagePath,imports)/]
 [/for]
             default: return -1
         }
@@ -91,7 +91,7 @@
     if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
         switch operationID {
 [for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
-            case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aMixinClass.getQualifiedIDName(aOperation)), packagePath,imports)/]: return [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(aOperation)), packagePath,imports)/]
+            case [aMixinClass.getImportedIDName(aOperation, packagePath,imports)/]: return [aClass.getImportedIDName(aOperation, packagePath,imports)/]
 [/for]
             default: return -1
         }
@@ -108,11 +108,11 @@
 [let aPackage : EPackage = aClass.ePackage]
 [aClass.generateFunctionImplementationReceiver()/] EGetFromID(featureID int, resolve bool) [aPackage.getAnyType()/] {
     switch featureID {
-    [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name))]
-    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(anStructFeature)), packagePath,imports)/]:
-	[if anStructFeature.isProxy()]
-		[if anStructFeature.isListType()]
-		list := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]();
+    [for (aFeature : EStructuralFeature | aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name))]
+    case [aClass.getImportedIDName(aFeature, packagePath,imports)/]:
+	[if aFeature.isProxy()]
+		[if aFeature.isListType()]
+		list := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getGetterName()/]();
 		if !resolve {
 			if objects , _ := list.([if not aClass.ePackage.isEcorePackage()]ecore.[/if]EObjectList); objects != nil {
 				return objects.GetUnResolvedList()
@@ -121,12 +121,12 @@
 		return list
 		[else]
 		if resolve {
-			return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
+			return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getGetterName()/]()
 		}
-		return  [aClass.getReceiverName()/].asBasics().basic[anStructFeature.getGetterName().toUpperFirst()/]()
+		return  [aClass.getReceiverName()/].asBasics().basic[aFeature.getGetterName().toUpperFirst()/]()
 		[/if]		
 	[else] 
-        return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
+        return [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getGetterName()/]()
 	[/if]
     [/for]
     default:
@@ -142,9 +142,9 @@
 }]
 [aClass.generateFunctionImplementationReceiver()/] EIsSetFromID(featureID int) bool {
     switch featureID {
-[for (anStructFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
-    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(anStructFeature)), packagePath,imports)/]:
-        return [anStructFeature.generateComparison(aClass,packagePath,imports)/]
+[for (aFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
+    case [aClass.getImportedIDName(aFeature, packagePath,imports)/]:
+        return [aFeature.generateComparison(aClass,packagePath,imports)/]
 [/for]
     default:
         return [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EIsSetFromID(featureID)
@@ -156,21 +156,21 @@
 [let aPackage : EPackage = aClass.ePackage]
 [aClass.generateFunctionImplementationReceiver()/] ESetFromID(featureID int, newValue [aPackage.getAnyType()/]) {
     switch featureID {
-[for (anStructFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
-    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(anStructFeature)), packagePath,imports)/]:
-	[if anStructFeature.isMapType()]
-		m := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
+[for (aFeature : EStructuralFeature | aClass.getESetFeatures()->sortedBy(name))]
+    case [aClass.getImportedIDName(aFeature, packagePath,imports)/]:
+	[if aFeature.isMapType()]
+		m := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getGetterName()/]()
 		m.Clear()
 		m.AddAll(newValue.([if not aClass.ePackage.isEcorePackage()]ecore.[/if]EList))
-    [elseif anStructFeature.isListType()]
-		list := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getGetterName()/]()
+    [elseif aFeature.isListType()]
+		list := [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getGetterName()/]()
         list.Clear()
-        list.AddAll(newValue.([anStructFeature.generateType(packagePath,imports)/]))
-    [elseif anStructFeature.oclIsKindOf(EReference)]
-		newValueOrNil , _ :=  newValue.([anStructFeature.generateType(packagePath,imports)/])
-		[aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValueOrNil) 
+        list.AddAll(newValue.([aFeature.generateType(packagePath,imports)/]))
+    [elseif aFeature.oclIsKindOf(EReference)]
+		newValueOrNil , _ :=  newValue.([aFeature.generateType(packagePath,imports)/])
+		[aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getSetterName()/](newValueOrNil) 
 	[else]
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[anStructFeature.getSetterName()/](newValue[if not aPackage.isAnyType(anStructFeature.eType.getType())].([anStructFeature.generateType(packagePath,imports)/])[/if])
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getSetterName()/](newValue[if not aPackage.isAnyType(aFeature.eType.getType())].([aFeature.generateType(packagePath,imports)/])[/if])
     [/if]    
 [/for]
     default:
@@ -185,21 +185,21 @@
 }]
 [aClass.generateFunctionImplementationReceiver()/] EUnsetFromID(featureID int) {
     switch featureID {
-[for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
-    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(aStructFeature)), packagePath,imports)/]:
-    [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getGetterName()/]().Clear()
-    [elseif aStructFeature.isUnSet() ]
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getUnSetterName()/]()
-    [elseif aStructFeature.oclIsKindOf(EReference)]
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/](nil)
+[for (aFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
+    case [aClass.getImportedIDName(aFeature, packagePath,imports)/]:
+    [if aFeature.isListType() and not aFeature.isUnSettable()]
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getGetterName()/]().Clear()
+    [elseif aFeature.isUnSet() ]
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getUnSetterName()/]()
+    [elseif aFeature.oclIsKindOf(EReference)]
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getSetterName()/](nil)
     [else]
-		[let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
+		[let aAttribute : EAttribute = aFeature.oclAsType(EAttribute)]
 		[let defaultValue : String = aAttribute.getDefaultValue(packagePath,imports)]
 		[if defaultValue <> '']
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/]([defaultValue/])
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getSetterName()/]([defaultValue/])
         [else]
-        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aStructFeature.getSetterName()/]([aAttribute.eType.getType()/]{})
+        [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getSetterName()/]([aAttribute.eType.getType()/]{})
         [/if]
         [/let]
         [/let]
@@ -216,7 +216,7 @@
 [aClass.generateFunctionImplementationReceiver()/] EInvokeFromID(operationID int, arguments [if not aPackage.isEcorePackage()]ecore.[/if]EList) [aPackage.getAnyType()/] {
     switch operationID {
     [for ( eOperation : EOperation | aClass.getEInvokeOperations()->sortedBy( getOperationName() ) )]
-	case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(eOperation)), packagePath,imports)/]:
+	case [aClass.getImportedIDName(eOperation, packagePath,imports)/]:
         [if eOperation.isVoid() ]
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[eOperation.generateOperationInvoke(packagePath,imports)/]
         return nil
@@ -288,7 +288,7 @@
 [aClass.generateFunctionImplementationReceiver()/] EBasicInverseAdd(otherEnd [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseAddFeatures()->sortedBy(name) )]
-	case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(aFeature)), packagePath,imports)/]:
+	case [aClass.getImportedIDName(aFeature, packagePath,imports)/]:
     [if aFeature.isMapType()]
 		return notifications
     [elseif aFeature.isListType()]
@@ -302,7 +302,7 @@
         [if aFeature.isBasicSet()]
         return [aClass.getReceiverName()/].asBasics().basic[aFeature.getSetterName().toUpperFirst()/](otherEnd.([aFeature.generateType(packagePath,imports)/]), msgs)
         [else]
-        return [aClass.getReceiverName()/].EBasicSetContainer(otherEnd, [aClass.getQualifiedIDName(aFeature)/], msgs)
+        return [aClass.getReceiverName()/].EBasicSetContainer(otherEnd, [aClass.getImportedIDName(aFeature, packagePath,imports)/], msgs)
         [/if]
     [else]
         msgs := notifications
@@ -313,10 +313,10 @@
 		[/if]
         if [aFeature.name/] != nil {
             [if aFeature.isContains()]
-            msgs = [aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aFeature)/], msgs)
+            msgs = [aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aFeature, packagePath,imports)/], msgs)
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-            msgs = [aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/], msgs)
+            msgs = [aFeature.name/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove([aClass.getReceiverName()/].AsEObject(), [reverseFeature.eContainingClass.getImportedIDName(reverseFeature, packagePath,imports)/], msgs)
                 [/let]
             [/if]
         }
@@ -335,14 +335,14 @@
 [aClass.generateFunctionImplementationReceiver()/] EBasicInverseRemove(otherEnd  [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int, notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain)  [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
     switch featureID {
 [for ( aFeature : EStructuralFeature | aClass.getEInverseRemoveFeatures()->sortedBy(name) )]
-	case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getQualifiedIDName(aFeature)), packagePath,imports)/]:    
+	case [aClass.getImportedIDName(aFeature, packagePath,imports)/]:    
 	[if aFeature.isMapType()]
 		return notifications
     [elseif aFeature.isListType()]
         list := [aClass.getReceiverName()/].[aFeature.getGetterName()/]().([if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList)
         return list.RemoveWithNotification(otherEnd, notifications)
     [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
-        return [aClass.getReceiverName()/].EBasicSetContainer(nil, [aClass.getQualifiedIDName(aFeature)/], notifications)
+        return [aClass.getReceiverName()/].EBasicSetContainer(nil, [aClass.getImportedIDName(aFeature, packagePath,imports)/], notifications)
     [elseif aFeature.isUnSet()]
         return [aClass.getReceiverName()/].asBasics().basic[aFeature.getUnSetterName().toUpperFirst()/](notifications)
     [else]

@@ -115,6 +115,18 @@ anyType = type
 /]
 
 
+[query public getImportedIDName( aClass : EClass, aFeature : EStructuralFeature, packagePath : String, imports : OclAny) : String =
+	getImportedIdentifier(aClass.ePackage.getQualifiedInterfaceIdentifier(aClass.getFeatureIDName(aFeature)), packagePath,imports)
+/]
+
+[query public getImportedIDName( aClass : EClass, aOperation : EOperation, packagePath : String, imports : OclAny) : String =
+	getImportedIdentifier(aClass.ePackage.getQualifiedInterfaceIdentifier(aClass.getOperationIDName(aOperation)), packagePath,imports)
+/]
+
+[query public getImportedIDName( aClassifier : EClassifier, packagePath : String, imports : OclAny) : String = 
+	getImportedIdentifier(aClassifier.ePackage.getQualifiedInterfaceIdentifier(aClassifier.getClassifierIDName()), packagePath,imports)
+/]
+
 [template public generateType(aElement : ETypedElement, packagePath : String, imports : OclAny) post (trim())]
 [if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
 [else]

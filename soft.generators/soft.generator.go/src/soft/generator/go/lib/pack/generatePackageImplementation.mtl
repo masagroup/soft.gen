@@ -83,50 +83,41 @@ func (p *[aPackage.getImplementationName()/]) [aOperation.getReflectiveGetterNam
 
 [/template]
 
-[template private generateCreation(aEClass : EClass, packagePath : String, imports : OclAny) {
-	aPackage : EPackage = aEClass.ePackage;
-}]
-p.[aEClass.getElementInstanceName()/] = ecoreFactory.CreateEClassFromContainerAndClassID(p, [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aEClass.getClassifierIDName()), packagePath,imports)/])
+[template private generateCreation(aEClass : EClass, packagePath : String, imports : OclAny) ]
+p.[aEClass.getElementInstanceName()/] = ecoreFactory.CreateEClassFromContainerAndClassID(p, [aEClass.getImportedIDName(packagePath, imports)/])
 [/template]
 
 [template private generateCreation(aAttribute : EAttribute, packagePath : String, imports : OclAny) {
 	aClass : EClass = aAttribute.eContainingClass;
-	aPackage : EPackage = aClass.ePackage;
 }]
-ecoreFactory.CreateEAttributeFromContainerAndClassID(p.[aClass.getElementInstanceName()/], [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getFeatureIDName(aAttribute)), packagePath,imports)/])
+ecoreFactory.CreateEAttributeFromContainerAndClassID(p.[aClass.getElementInstanceName()/], [aClass.getImportedIDName(aAttribute,packagePath, imports)/])
 
 [/template]
 
 [template private generateCreation(aReference : EReference, packagePath : String, imports : OclAny) {
 	aClass : EClass = aReference.eContainingClass;
-	aPackage : EPackage = aClass.ePackage;
 }]
-ecoreFactory.CreateEReferenceFromContainerAndClassID(p.[aClass.getElementInstanceName()/], [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getFeatureIDName(aReference)), packagePath,imports)/])
+ecoreFactory.CreateEReferenceFromContainerAndClassID(p.[aClass.getElementInstanceName()/], [aClass.getImportedIDName(aReference,packagePath, imports)/])
 
 [/template]
 
 [template private generateCreation(anEOperation : EOperation, packagePath : String, imports : OclAny) {
 	aClass : EClass = anEOperation.eContainingClass;
-	aPackage : EPackage = aClass.ePackage;
 }]
-ecoreFactory.CreateEOperationFromContainerAndClassID(p.[aClass.getElementInstanceName()/], [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getOperationIDName(anEOperation)), packagePath,imports)/])
+ecoreFactory.CreateEOperationFromContainerAndClassID(p.[aClass.getElementInstanceName()/], [aClass.getImportedIDName(anEOperation,packagePath, imports)/])
 
 [/template]
 
 [template private generateCreation(aTypedElement : ETypedElement, packagePath : String, imports : OclAny)]
 [/template]
 
-[template private generateCreation(aEnum : EEnum, packagePath : String, imports : OclAny) {
-	aPackage : EPackage = aEnum.ePackage;
-}]
-p.[aEnum.getElementInstanceName()/] = ecoreFactory.CreateEEnumFromContainerAndClassID(p, [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aEnum.getClassifierIDName()), packagePath,imports)/])
+[template private generateCreation(aEnum : EEnum, packagePath : String, imports : OclAny)]
+p.[aEnum.getElementInstanceName()/] = ecoreFactory.CreateEEnumFromContainerAndClassID(p, [aEnum.getImportedIDName(packagePath, imports)/])
 
 [/template]
 
-[template private generateCreation(anEDatatype : EDataType, packagePath : String, imports : OclAny) {
-	aPackage : EPackage = anEDatatype.ePackage;
-}]
-p.[anEDatatype.getElementInstanceName()/] = ecoreFactory.CreateEDataTypeFromContainerAndClassID(p, [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(anEDatatype.getClassifierIDName()), packagePath,imports)/])
+[template private generateCreation(anEDatatype : EDataType, packagePath : String, imports : OclAny)]
+p.[anEDatatype.getElementInstanceName()/] = ecoreFactory.CreateEDataTypeFromContainerAndClassID(p, [anEDatatype.getImportedIDName(packagePath, imports)/])
 
 [/template]
 
