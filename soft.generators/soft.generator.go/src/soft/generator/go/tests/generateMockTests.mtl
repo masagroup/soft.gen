@@ -32,7 +32,7 @@
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() );
 	ecore : EPackage = getEcorePackage();
 	packages : Set(String) = Set{ Set { 'testing/testing' , 'github.com/stretchr/testify/assert/assert'}
-								, if requiresEcore then Set{ ecore.getPackagePath() } else Set{} endif
+								, if requiresEcore then Set{ ecore.getInterfacePackagePath() } else Set{} endif
 								, aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined() )->collect( cls | cls.getPackagePath() )->asSet()
 								}->flatten();
 	imports : OclAny = getPackageImports(packages);

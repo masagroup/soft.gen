@@ -384,7 +384,7 @@ anyType = type
 			let goType : String = aDataType.getInstanceTypeName() in
 			getIdentifierPackagePath(goType)
 		 else
-			aClassifier.ePackage.getPackagePath()
+			aClassifier.ePackage.getInterfacePackagePath()
 		 endif
 	endif
 /]

@@ -38,7 +38,7 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 	isFactoryInstance : Boolean = interfacePath <> packagePath;
 	packages : Set(String) = Set{ Set{'strconv/strconv'}
 								, if isFactoryInstance then Set{ interfacePath } else Set{} endif
-								, if not aPackage.isEcorePackage() then Set{ecore.getPackagePath()} else Set{} endif
+								, if not aPackage.isEcorePackage() then Set{ecore.getInterfacePackagePath()} else Set{} endif
 								, allDataTypes->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
 								}->flatten();
 	imports : OclAny = getPackageImports(packages);

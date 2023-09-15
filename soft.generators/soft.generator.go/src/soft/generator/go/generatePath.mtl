@@ -74,10 +74,6 @@
 	endif 	
 /] 
 
-[query public getPackagePath(aPackage : EPackage) : String =
-	aPackage.getIndexPath(1)
-/]
-
 [query public getInterfacePackagePath(aPackage : EPackage) : String =
 	aPackage.getIndexPath(1)
 /]

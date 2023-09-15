@@ -39,18 +39,17 @@
 /]
 
 [template public generateImplementationTests(aClass : EClass) { 
-	implementationName : String = aClass.getImplementationName();
 	implementedFeatures : Set(EStructuralFeature) = aClass.getImplementedFeatures();
-	aPackage : EPackage = aClass.ePackage;
-	packagePath : String = aPackage.getImplementationPackagePath();
-	ecore : EPackage = getEcorePackage();
-	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.getImplementedFeatures()->notEmpty() or aClass.requiresList() );
-	packages : Set(String) = Set{ Set { 'testing/testing' , 'github.com/stretchr/testify/assert/assert', 'github.com/stretchr/testify/mock/mock'}
-								, if requiresEcore then Set{ ecore.getPackagePath() } else Set{} endif
-								, OrderedSet{ aClass.eSuperTypes
+	referencedTypes : Set(EClassifier) = OrderedSet{ aClass.eSuperTypes
               								, implementedFeatures.eType
 											, implementedFeatures->collect( getMapTypes() )->flatten()
-											}->flatten()->select( not oclIsUndefined() )->collect( cls | cls.getPackagePath() )->asSet()
+											}->flatten()->select( not oclIsUndefined() );
+	aPackage : EPackage = aClass.ePackage;
+	packagePath : String = aPackage.getImplementationPackagePath();
+	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.getImplementedFeatures()->notEmpty() or aClass.requiresList() );
+	packages : Set(String) = Set{ Set { 'testing/testing' , 'github.com/stretchr/testify/assert/assert', 'github.com/stretchr/testify/mock/mock'}
+								, if requiresEcore then Set{ getEcorePackage().getInterfacePackagePath() } else Set{} endif
+								, referencedTypes->collect( cls | cls.getPackagePath() )->asSet()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]

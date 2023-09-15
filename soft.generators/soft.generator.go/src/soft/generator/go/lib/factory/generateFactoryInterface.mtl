@@ -26,7 +26,7 @@
 	packageName : String = aPackage.name;
 	packagePath : String = aPackage.getInterfacePackagePath();
 	ecore : EPackage = getEcorePackage();
-	packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getPackagePath()} else Set{} endif;
+	packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getInterfacePackagePath()} else Set{} endif;
 	imports : OclAny = getPackageImports(packages);
 }]
 [file (aPackage.getInterfaceOutputDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]

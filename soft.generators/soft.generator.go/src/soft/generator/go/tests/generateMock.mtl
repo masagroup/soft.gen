@@ -51,7 +51,7 @@
 	mockName : String = aClass.getMockName();
 	interfaceName : String = aClass.getInterfaceName();
 	packages : Set(String) = Set{ Set{'github.com/stretchr/testify/mock/mock'}
-								, if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ ecore.getPackagePath()} else Set{} endif
+								, if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ ecore.getInterfacePackagePath()} else Set{} endif
 								, mockExtends->collect( i | getIdentifierPackagePath( i ) )->asSet()
 								, aClass.getReferencedTypes()->collect( cls | cls.getPackagePath() )->asSet()
 								}->flatten();
