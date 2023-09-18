@@ -47,7 +47,7 @@
 	aPackage : EPackage = aClass.ePackage;
 	packagePath : String = aPackage.getImplementationPackagePath();
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.getImplementedFeatures()->notEmpty() or aClass.requiresList() );
-	packages : Set(String) = Set{ Set { 'testing/testing' , 'github.com/stretchr/testify/assert/assert', 'github.com/stretchr/testify/mock/mock'}
+	packages : Set(String) = Set{ Set { 'testing/testing' , 'github.com/stretchr/testify/assert/assert', 'github.com/stretchr/testify/mock/mock' , aPackage.getMockPackagePath()}
 								, if requiresEcore then Set{ getEcorePackage().getInterfacePackagePath() } else Set{} endif
 								, referencedTypes->collect( cls | cls.getTestPackagePath())->asSet()
 								, referencedTypes->collect( cls | cls.getInterfacePackagePath())->asSet()
@@ -65,6 +65,7 @@ func discard[name.toUpperFirst()/]() {
 	_ = assert.Equal
 	_ = mock.Anything
 	_ = testing.Coverage
+	_ = [getImportedIdentifier(aPackage.getQualifiedMockIdentifier('New'+aClass.getMockName()),packagePath,imports)/]
 [if requiresEcore]
 	_ = ecore.ADD
 [/if]
