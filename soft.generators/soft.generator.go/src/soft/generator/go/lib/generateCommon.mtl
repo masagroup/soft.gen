@@ -24,7 +24,7 @@
 
 [query public isReflectiveDelegation(anFeature : EStructuralFeature ) : Boolean = anFeature.eContainingClass.isReflectiveDelegation()/]
 
-[query public getReceiverName(aClass : EClass) : String = aClass.name.toLowerFirst()/]
+[query public getReceiverName(aClass : EClass) : String = aClass.name.first(1).toLower()/]
 
 [template public generateFunctionImplementationReceiver(aClass : EClass)]
 func ([aClass.getReceiverName()/] *[aClass.getImplementationName()/])
