@@ -442,7 +442,7 @@ anyType = type
 [let name : OclAny = imports.mapGet(path)]
 [let dir : String = getPackageDirectoryFromPath(path.oclAsType(String))]
 [let default : String = getPackageNameFromPath(dir)]
-import "[dir/]"
+import [if name <> default][name/] [/if]"[dir/]"
 [/let]
 [/let]
 [/let]
