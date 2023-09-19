@@ -250,16 +250,16 @@ nil
 func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype_Methods) [methodName/]() [aStructuralFeature.generateType(packagePath,imports)/] {
 	ret := [aClass.getReceiverName()/].mock.Called()
 
-	var r [aStructuralFeature.generateType(packagePath,imports)/]
+	var res [aStructuralFeature.generateType(packagePath,imports)/]
 	if rf, ok := ret.Get(0).(func() [aStructuralFeature.generateType(packagePath,imports)/]); ok {
-		r = rf()
+		res = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r = ret.Get(0).([aStructuralFeature.generateType(packagePath,imports)/])
+			res = ret.Get(0).([aStructuralFeature.generateType(packagePath,imports)/])
 		}
 	}
 
-	return r
+	return res
 }
 
 type [mockCallName/] struct {

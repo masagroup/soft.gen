@@ -76,16 +76,16 @@ func (c *[mockCallName/]) Return() *[mockCallName/] {
 func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype_Methods) [methodName/]([anEOperation.generateParameterList(packagePath,imports,true)/]) [anEOperation.generateType(packagePath,imports)/] {
 	ret := [aClass.getReceiverName()/].mock.Called([anEOperation.generateParameterCall()/])
 
-	var r [anEOperation.generateType(packagePath,imports)/]
+	var res [anEOperation.generateType(packagePath,imports)/]
 	if rf, ok := ret.Get(0).(func() [anEOperation.generateType(packagePath,imports)/]); ok {
-		r = rf()
+		res = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r = ret.Get(0)[if needCast].([anEOperation.generateType(packagePath,imports)/])[/if]
+			res = ret.Get(0)[if needCast].([anEOperation.generateType(packagePath,imports)/])[/if]
 		}
 	}
 
-	return r
+	return res
 }
 
 type [mockCallName/] struct {
