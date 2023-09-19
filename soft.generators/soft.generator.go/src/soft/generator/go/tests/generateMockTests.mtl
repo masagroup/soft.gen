@@ -31,9 +31,11 @@
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() );
 	ecore : EPackage = getEcorePackage();
+	referencedTypes : Set(EClassifier) = aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined()); 
 	packages : Set(String) = Set{ Set { 'testing/testing' , 'github.com/stretchr/testify/assert/assert'}
 								, if requiresEcore then Set{ ecore.getInterfacePackagePath() } else Set{} endif
-								, aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined() )->collect( cls | cls.getInterfacePackagePath() )->asSet()
+								, referencedTypes->collect( cls | cls.getInterfacePackagePath() )->asSet()
+								, referencedTypes->collect( cls | cls.getTestPackagePath() )->asSet()
 								}->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
