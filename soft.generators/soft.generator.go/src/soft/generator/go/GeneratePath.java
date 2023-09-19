@@ -19,6 +19,7 @@ public class GeneratePath {
         int[] index = new int[1];
 
         // for each remaining paths
+        packages.removeIf(p -> p == null || p.length() == 0);
         List<String> paths = new ArrayList<String>(packages);
         while (!paths.isEmpty()) {
             // compute all package names
@@ -27,7 +28,7 @@ public class GeneratePath {
                                                             int i = index[0];
                                                             String[] path = splitted.computeIfAbsent(pack,
                                                                                                      p -> splitPath(p));
-                                                            return path.length > i ? path[i] : null;
+                                                            return path.length > i ? path[i] : "";
                                                         }));
 
             // compute path names
@@ -64,7 +65,7 @@ public class GeneratePath {
         Map<String, String> result = new HashMap<String, String>();
         for (Map.Entry<String, List<String>> entry : aliases.entrySet()) {
             String path = entry.getKey();
-            String alias = String.join("_", Lists.reverse(entry.getValue()));
+            String alias = String.join("_", Lists.reverse(entry.getValue())).replace('.', '_');
             result.put(path, alias);
         }
 
