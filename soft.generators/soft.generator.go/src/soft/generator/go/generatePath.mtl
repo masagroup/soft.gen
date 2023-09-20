@@ -20,13 +20,14 @@
 [**
  * Returns Ecore module default path
 */]
-[query private getAllPackagePaths(aPackage : EPackage) : OclAny =
+[query private getAllPackagePaths(any : OclAny) : OclAny =
 	let ecorePackage : EPackage = getEcorePackage() in
-	let packageToPaths : OclAny = mapNew('getAllPackageToPaths_' + aPackage.name)
+	let currentPackage : EPackage = getCurrentPackage() in
+	let packageToPaths : OclAny = mapNew('getAllPackageToPaths_' + currentPackage.name)
 									.mapPut('uri:'+ ecorePackage.nsURI, 'github.com/masagroup/soft.go/ecore/ecore') in
     let packagesProperty : OclAny = getProperty('packages') in 
 	let packages : String = (if packagesProperty.oclIsUndefined() or packagesProperty = '' then '' else packagesProperty.oclAsType(String) endif) + 
-							(if aPackage.hasKey('packages') then ';' + aPackage.valueKey('packages') else '' endif) in
+							(if currentPackage.hasKey('packages') then ';' + currentPackage.valueKey('packages') else '' endif) in
 	if packages <> '' then
 		let tokenized : Sequence(String) = packages.tokenize('; \r\n') in
         tokenized->iterate( p : String ; res : OclAny = packageToPaths | (
@@ -49,7 +50,7 @@
     endif
 /]
 
-[query private getPath(aPackage : EPackage, paths : String, index : Integer) : String =
+[query private getPath(paths : String, index : Integer) : String =
 	let tokenized : Sequence(String) = paths.tokenize('#') in
 	let size : Integer = tokenized->size() in 
 	if index > size then
@@ -60,14 +61,14 @@
 /]
 
 [query private getIndexPath(aPackage : EPackage, index : Integer) : String =
-	let packageToPaths : OclAny = aPackage.getAllPackagePaths() in
+	let packageToPaths : OclAny = getAllPackagePaths() in
 	let uriPath : OclAny = mapGet(packageToPaths, 'uri:' + aPackage.nsURI) in
 	if not uriPath.oclIsUndefined() then
-		aPackage.getPath(uriPath.oclAsType(String),index)
+		getPath(uriPath.oclAsType(String),index)
 	else
 		let namePath : OclAny = mapGet(packageToPaths, 'name:' + aPackage.name) in
 		if not namePath.oclIsUndefined() then
-			aPackage.getPath(namePath.oclAsType(String),index)
+			getPath(namePath.oclAsType(String),index)
 		else
 			aPackage.name + '/' + aPackage.name
 		endif

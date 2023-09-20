@@ -21,18 +21,57 @@
 [query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
 [query private isShared(aReference : EReference) : Boolean = if (aReference.hasKey('aggregation')) then aReference.valueKey('aggregation')='shared' else false endif/]
 
-[query public getAnyType(aPackage : EPackage) : String =
-if compareVersion(aPackage.getGoVersion() , '1.18') >= 0 then
+[**
+ * Version
+*/]
+[query private getGoVersion(any : OclAny) : String =
+	let currentPackage : EPackage = getCurrentPackage() in 
+	if currentPackage.hasPackageProperty('goVersion') then 
+		currentPackage.getPackageProperty('goVersion') 
+	else 
+		'1.19' 
+	endif
+/]
+
+[query private compareVersion(aAny : OclAny, v1 : String, v2 : String) : Integer =
+	let v1Tokenized : Sequence(String) = v1.tokenize('.') in
+    let v2Tokenized : Sequence(String) = v2.tokenize('.') in
+	let v1Parts : Sequence(String) = if v1Tokenized->size() >= v2Tokenized->size() then v1Tokenized else v2Tokenized endif in
+	let v2Parts : Sequence(String) = if v1Tokenized->size() >= v2Tokenized->size() then v2Tokenized else v1Tokenized endif in
+	let order : Integer = if v1Tokenized->size() >= v2Tokenized->size() then 1 else -1 endif in
+ 	Sequence{1..v1Parts->size()}->iterate( index ; res : Integer = -2 |
+        if res = -2 then
+			if index > v2Parts->size() then
+            	order 
+        	else
+				let p1 : String = v1Parts->at(index) in
+	        	let p2 : String = v2Parts->at(index) in
+				let c : Integer = p1.strcmp(p2) in
+				if c <> 0 then
+					order*c
+				else
+					if index = v1Parts->size() then
+						0
+					else  
+	            		res
+					endif
+				endif
+			endif
+		else
+			res
+        endif
+	)
+/]
+
+[query public getAnyType(any : OclAny) : String =
+if compareVersion(getGoVersion() , '1.18') >= 0 then
 'any'
 else
 'interface{}'
 endif
 /]
 
-[query public isAnyType(aPackage : EPackage, type : String) : Boolean =
-let anyType : String = aPackage.getAnyType() in
-anyType = type
-/]
+[query public isAnyType(type : String) : Boolean = getAnyType() = type/]
 
 [query private getQualifiedIdentifier( qualification : String, identifier : String ) : String = qualification + '.' + identifier/] 
 
