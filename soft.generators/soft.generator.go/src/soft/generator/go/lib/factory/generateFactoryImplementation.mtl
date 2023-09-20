@@ -20,12 +20,15 @@
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::factory::generateFactoryInstance/]
 
+[query private getFactoryReceiverName(anEPackage : EPackage) : String = anEPackage.getFactoryImplementationName().toLowerFirst() /]
+
+[query private isFactoryImplemented( type : String ) : Boolean = 
+	Sequence{'string','bool','int','int64','int32','int16','int8','byte','[]byte','float64','float32','reflect/reflect.Type','*time/time.Time'}->exists( s | s = type)
+/]
+
 [template private generateFactoryImplementationMember(anEPackage : EPackage)]
 func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementationName()/])
 [/template]
-
-[query private getFactoryReceiverName(anEPackage : EPackage) : String = anEPackage.getFactoryImplementationName().toLowerFirst() /]
-[query private getTypeFromReference(aRef : EReference) : String = aRef.eClass().name /]
 
 
 [template public generateFactoryImplementation(aPackage : EPackage) {
@@ -34,12 +37,16 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 	className : String = aPackage.getFactoryImplementationName(); 
 	ecore : EPackage = getEcorePackage(); 
 	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
-	allDataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+	dataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
 	isFactoryInstance : Boolean = interfacePath <> packagePath;
 	packages : Set(String) = Set{ Set{'strconv/strconv',interfacePath}
 								, if isFactoryInstance then Set{ interfacePath } else Set{} endif
 								, if not aPackage.isEcorePackage() then Set{ecore.getInterfacePackagePath()} else Set{} endif
-								, allDataTypes->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
+								, dataTypes->collect(getInstanceTypeName())
+										   ->select(t | isFactoryImplemented(t))
+										   ->collect(t | getIdentifierPackagePath(t))
+										   ->select(s | s <> '' )
+										   ->asSet()
 								}->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
@@ -56,10 +63,10 @@ package [getPackageNameFromPath(packagePath)/]
 [/if]
 
 type [aPackage.getFactoryInternalName()/] interface {
-[for (aDataType : EDataType | allDataTypes)]
+[for (aDataType : EDataType | dataTypes)]
     create[aDataType.name/]FromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/]
 [/for]
-[for (aDataType : EDataType | allDataTypes)]
+[for (aDataType : EDataType | dataTypes)]
     convert[aDataType.name/]ToString(eDataType [ecorePrefix/]EDataType, literalValue [aPackage.getAnyType()/]) string
 [/for]
 }
@@ -123,7 +130,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 [aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/] {
 	classID  := eDataType.GetClassifierID()
 	switch classID {
-    [for (aDataType : EDataType | allDataTypes)]
+    [for (aDataType : EDataType | dataTypes)]
     case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aDataType.getClassifierIDName()), packagePath, imports)/]:
         return [aPackage.getFactoryReceiverName()/].AsInternal().create[aDataType.name/]FromString(eDataType, literalValue)
     [/for]
@@ -135,7 +142,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 [aPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType [ecorePrefix/]EDataType, instanceValue [aPackage.getAnyType()/]) string {
     classID := eDataType.GetClassifierID()
     switch classID {
-[for (aDataType : EDataType | allDataTypes)]
+[for (aDataType : EDataType | dataTypes)]
     case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aDataType.getClassifierIDName()), packagePath, imports) /]:
         return [aPackage.getFactoryReceiverName()/].AsInternal().convert[aDataType.name/]ToString(eDataType, instanceValue)
 [/for]
@@ -143,7 +150,7 @@ func new[className.toUpperFirst()/]() *[className/] {
         panic("The datatype '" + eDataType.GetName() + "' is not a valid classifier")
     }
 }
-[for (aDataType : EDataType | allDataTypes)]
+[for (aDataType : EDataType | dataTypes)]
 [aPackage.generateCreateFromString(aDataType,packagePath,imports)/]
 [aPackage.generateConvertToString(aDataType,packagePath,imports)/]
 [/for]

@@ -195,7 +195,6 @@ anyType = type
     }
 /]
 
-
 [query public getInstanceTypeName( aClassifier : EClassifier ) : String =
 	let instanceTypeName : String = 
 	if hasKey(aClassifier, 'instanceTypeName') then

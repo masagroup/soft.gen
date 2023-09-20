@@ -19,15 +19,23 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 
+[query private isFactoryImplemented( type : String ) : Boolean = 
+	Sequence{'string','bool','int','int64','int32','int16','int8','byte','[]byte','float64','float32','reflect/reflect.Type','*time/time.Time'}->exists( s | s = type)
+/]
+
 [template public generateFactoryTests(aPackage : EPackage) {
 	packagePath : String = aPackage.getImplementationPackagePath();
 	interfacePath : String = aPackage.getInterfacePackagePath();
 	ecore : EPackage = getEcorePackage(); 
 	allClasses : OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
-	allDataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+	dataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
 	packages : Set(String) = Set{ Set{'testing/testing', 'github.com/stretchr/testify/assert/assert', 'github.com/stretchr/testify/mock/mock', interfacePath}
 								, if not aPackage.isEcorePackage() then Set{ecore.getInterfacePackagePath()} else Set{} endif
-								, allDataTypes->collect( d | getIdentifierPackagePath(d.getInstanceTypeName()))->select(s | s <> '' )->asSet()
+								, dataTypes->collect(getInstanceTypeName())
+										   ->select(t | isFactoryImplemented(t))
+										   ->collect(t | getIdentifierPackagePath(t))
+										   ->select(s | s <> '' )
+										   ->asSet()
 								}->flatten();
 	imports : OclAny = getPackageImports(packages);
  } ]
@@ -120,7 +128,7 @@ func TestFactoryConvert(t *testing.T) {
 		assert.Panics(t, func() { factory.ConvertToString(mockEDataType, nil) })
 		mockEDataType.AssertExpectations(t)
 	}
-[for (aDataType : EDataType | allDataTypes)]
+[for (aDataType : EDataType | dataTypes)]
 	[aPackage.generateCreateFrom(aDataType,packagePath,imports)/]
 	[aPackage.generateConvertTo(aDataType,packagePath,imports)/]
 [/for]	
