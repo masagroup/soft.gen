@@ -32,6 +32,12 @@ public class GenerateUtils {
         return EcorePackage.eINSTANCE;
     }
 
+    static EPackage currentPackage;
+
+    public EPackage getCurrentPackage() {
+        return currentPackage;
+    }
+
     public String lowerCamelToUpperUnderscore(String s) {
         return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, s);
     }

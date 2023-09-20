@@ -14,6 +14,8 @@
 
 [query public getEcorePackage(o : OclAny) : EPackage = invoke('soft.generator.common.GenerateUtils','getEcorePackage()',Sequence{})/]
 
+[query public getCurrentPackage(o : OclAny) : EPackage = invoke('soft.generator.common.GenerateUtils','getCurrentPackage()',Sequence{})/]
+
 [query public lowerCamelToUpperUnderscore( eEObject : EObject , s : String ) : String = invoke('soft.generator.common.GenerateUtils','lowerCamelToUpperUnderscore(java.lang.String)',Sequence{s}) /]
 
 [query public upperCamelToUpperUnderscore( eEObject : EObject , s : String ) : String = invoke('soft.generator.common.GenerateUtils','upperCamelToUpperUnderscore(java.lang.String)',Sequence{s}) /]
