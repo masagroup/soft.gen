@@ -27,7 +27,7 @@
 [query public getBasicsInterface( aClass : EClass ) : String = aClass.getInterfaceName().toLowerFirst() + 'Basics'/]
 
 [query private getPackageInstance(aClassifier : EClassifier, packagePath : String , imports : OclAny ) : String = 
-	getImportedIdentifier( aClassifier.ePackage.getInterfacePackagePath() + '.GetPackage()', packagePath, imports )
+	getImportedIdentifier( aClassifier.ePackage.getImplementationPackagePath() + '.GetPackage()', packagePath, imports )
 /]
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature, packagePath : String, imports : OclAny)]

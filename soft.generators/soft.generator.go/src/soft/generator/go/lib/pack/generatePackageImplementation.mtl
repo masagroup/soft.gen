@@ -24,7 +24,7 @@
 [import soft::generator::go::lib::pack::generatePackageInstance/]
 
 [query private getPackageInstance(aClassifier : EClassifier, packagePath : String, imports : OclAny ) : String = 
-	getImportedIdentifier( aClassifier.ePackage.getInterfacePackagePath() + '.GetPackage()',packagePath, imports )
+	getImportedIdentifier( aClassifier.ePackage.getImplementationPackagePath() + '.GetPackage()',packagePath, imports )
 /]
 
 [query private getPackageGetter(aModelElement : EModelElement, packagePath : String, imports : OclAny) : String =
