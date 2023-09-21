@@ -429,14 +429,15 @@ endif
 [query public getInterfacePackagePath( aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then 
         ''
-    else if aClassifier.oclIsKindOf(EDataType) then
-			let aDataType : EDataType = aClassifier.oclAsType(EDataType) in
-			let goType : String = aDataType.getInstanceTypeName() in
-			getIdentifierPackagePath(goType)
-		 else
-			aClassifier.ePackage.getInterfacePackagePath()
-		 endif
-	endif
+	else if aClassifier.oclIsKindOf(EEnum) then
+		aClassifier.ePackage.getInterfacePackagePath()
+	else if aClassifier.oclIsKindOf(EDataType) then
+		let aDataType : EDataType = aClassifier.oclAsType(EDataType) in
+		let goType : String = aDataType.getInstanceTypeName() in
+		getIdentifierPackagePath(goType)
+	else
+		aClassifier.ePackage.getInterfacePackagePath()
+	endif endif endif
 /]
 
 [query public getTestPackagePath( aClassifier : EClassifier ) : String = 
