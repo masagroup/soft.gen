@@ -15,9 +15,13 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
 [import soft::generator::common::generateStructuralFeature/]
+[import soft::generator::common::generateUtils/]
+
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateElement/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
+
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::generateOperation/]
 [import soft::generator::go::lib::generateStructuralFeature/]
@@ -28,8 +32,10 @@
 /]
 
 [template public generateImplementation(aClass : EClass) { 
-	implementationName : String = aClass.getImplementationName(); 
+	implementationName : String = aClass.getImplementationName();
+	ecore : EPackage = getEcorePackage();	
 	aPackage : EPackage = aClass.ePackage; 
+	packagePath : String = aPackage.getImplementationPackagePath();
 	classExtend : String = aClass.getClassExtends();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
 	variableFeatures : Collection(EStructuralFeature) = features->select(isField());
@@ -37,48 +43,45 @@
 	basicFeatures : Collection(EStructuralFeature) = features->select(not isReflectiveDelegation(aPackage) and (isBasicGet() or isBasicSet() or isBasicUnSet()));
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
+	packages : Set(String) = Set{ Set{getIdentifierPackagePath(classExtend) , aPackage.getInterfacePackagePath() } 
+								 ,if not aPackage.isEcorePackage() then Set{ ecore.getInterfacePackagePath()} else Set{} endif
+								 ,if not aPackage.isEcorePackage() and aClass.getReferencedMapTypes()->exists( cls | cls.ePackage.isEcorePackage() ) then Set{ ecore.getInterfacePackagePath()} else Set{} endif
+								 ,aClass.getAllReferencedTypes()->collect( cls | cls.getInterfacePackagePath() )->asSet()
+								 ,aClass.getInterfaceExtends()->collect( i | getIdentifierPackagePath(i) )->asSet()
+								 }->flatten();
+	imports : OclAny = getPackageImports(packages);
 }]
-[file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getImplementationOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [getPackageNameFromPath(packagePath)/]
 
-[let imports : OrderedSet(String) = Set { Set { aPackage.getImportForType(classExtend) }
-									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
-                                        , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
-										, if not aPackage.isEcorePackage() then Set{ aPackage.getDefaultEcoreModulePath() } else Set{} endif
-										, if not aPackage.isEcorePackage() then aClass.getReferencedMapTypes()->collect( cls | if cls.ePackage.isEcorePackage() then aPackage.getEcoreModulePath() else '' endif) else Set{} endif
-										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
-[for ( i : String | imports )]
-import "[i/]"
-[/for]
-[/let]
-
+[generateImports(imports,aPackage.getImplementationPackagePath())/]
 
 // [implementationName/] is the implementation of the model object '[aClass.name/]'
 type [implementationName/] struct {
-    [getShortQualifiedName( classExtend ,aPackage.name)/]
+	[getImportedIdentifier( classExtend ,packagePath, imports)/]
 [if not aClass.isReflectiveDelegation()]
 [let dataDeclarationFeatures : OrderedSet(EStructuralFeature) = features->select( isField() )]
-    [ dataDeclarationFeatures.generateVariableDeclaration()/]
+    [ dataDeclarationFeatures.generateVariableDeclaration(packagePath,imports)/]
 [/let]
 [/if]
 }
 [if initializerFeatures->notEmpty()]
 type [aClass.getInitializersInterface()/] interface {
-    [initializerFeatures.generateVariableInitializationMethodDeclaration()/]
+    [initializerFeatures.generateVariableInitializationMethodDeclaration(packagePath,imports)/]
 }
 [/if]
 
 [if basicFeatures->notEmpty()]
 type [aClass.getBasicsInterface()/] interface {
-    [basicFeatures.generateBasicsMethodDeclaration(aClass)/]
+    [basicFeatures.generateBasicsMethodDeclaration(aClass,packagePath,imports)/]
 }
 [/if]
 
-// [aClass.getConstructorName()/] is the constructor of a [aClass.getImplementationName()/]
-func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
-    [aClass.getReceiverName()/] := new([aClass.getImplementationName()/])
+// [aClass.getConstructorName()/] is the constructor of a [implementationName/]
+func [aClass.getConstructorName()/]() *[implementationName/] {
+    [aClass.getReceiverName()/] := new([implementationName/])
 	[aClass.getReceiverName()/].SetInterfaces([aClass.getReceiverName()/])
 	[aClass.getReceiverName()/].Initialize()
     return [aClass.getReceiverName()/]
@@ -86,13 +89,13 @@ func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
 
 [if variableFeatures->notEmpty() and not aClass.isReflectiveDelegation()]
 [aClass.generateFunctionImplementationReceiver()/] Initialize() {
-	[aClass.getReceiverName()/].[getUnQualifiedName(classExtend)/].Initialize()
-	[variableFeatures.generateVariableInitialization(aClass)/]
+	[aClass.getReceiverName()/].[getSimpleIdentifier(classExtend)/].Initialize()
+	[variableFeatures.generateVariableInitialization(aClass,packagePath,imports)/]
 }
 [/if]
 
-[let interfaceName : String = aClass.getInterfaceName()]
-[aClass.generateFunctionImplementationReceiver()/] as[interfaceName/]() [interfaceName/] {
+[let interfaceName : String = getImportedIdentifier( aClass.getQualifiedInterfaceIdentifier() , packagePath,imports)]
+[aClass.generateFunctionImplementationReceiver()/] as[aClass.getInterfaceName()/]() [interfaceName/] {
 	return [aClass.getReceiverName()/].GetInterfaces().([interfaceName/])
 }
 [/let]
@@ -128,7 +131,7 @@ func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
 [if keyFeature.isListType()]
 	[aClass.getReceiverName()/].[keyFeature.getGetterName()/]().AddAll(key.([ecorePrefix/]EList))
 [else]
-    [aClass.getReceiverName()/].[keyFeature.getSetterName()/](key[if not aPackage.isAnyType(keyFeature.eType.getType())].([keyFeature.generateType()/])[/if])
+    [aClass.getReceiverName()/].[keyFeature.getSetterName()/](key[if not aPackage.isAnyType(keyFeature.eType.getType())].([keyFeature.generateType(packagePath,imports)/])[/if])
 [/if]
 }
 
@@ -142,16 +145,16 @@ func [aClass.getConstructorName()/]() *[aClass.getImplementationName()/] {
 	l.Clear()
 	l.AddAll(value.([ecorePrefix/]EList))
 [else]
-    [aClass.getReceiverName()/].[valueFeature.getSetterName()/](value[if not aPackage.isAnyType(valueFeature.eType.getType())].([valueFeature.generateType()/])[/if])
+    [aClass.getReceiverName()/].[valueFeature.getSetterName()/](value[if not aPackage.isAnyType(valueFeature.eType.getType())].([valueFeature.generateType(packagePath,imports)/])[/if])
 [/if]
 }
 [/let]
 [/let]
 [/if]
 
-[operations.generateImplementation(aClass)/]
-[features.generateImplementation(aClass)/]
-[initializerFeatures.generateVariableInitializationMethodDefinition(aClass)/]
-[aClass.generateReflectivesDefinition()/]
+[operations.generateImplementation(aClass,packagePath,imports)/]
+[features.generateImplementation(aClass,packagePath,imports)/]
+[initializerFeatures.generateVariableInitializationMethodDefinition(aClass,packagePath,imports)/]
+[aClass.generateReflectivesDefinition(packagePath,imports)/]
 [/file]
 [/template]

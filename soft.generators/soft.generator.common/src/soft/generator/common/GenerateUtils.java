@@ -22,10 +22,21 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EcorePackage;
 
 import com.google.common.base.CaseFormat;
 
 public class GenerateUtils {
+
+    public EPackage getEcorePackage() {
+        return EcorePackage.eINSTANCE;
+    }
+
+    static EPackage currentPackage;
+
+    public EPackage getCurrentPackage() {
+        return currentPackage;
+    }
 
     public String lowerCamelToUpperUnderscore(String s) {
         return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, s);
@@ -155,6 +166,15 @@ public class GenerateUtils {
 
     public boolean mapContainsKey(Map<Object, Object> map, Object key) {
         return map.containsKey(key);
+    }
+
+    public Object mapGetKey(Map<Object, Object> map, Object value) {
+        for (Map.Entry<Object, Object> entry : map.entrySet()) {
+            if (value.equals(entry.getValue())) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")

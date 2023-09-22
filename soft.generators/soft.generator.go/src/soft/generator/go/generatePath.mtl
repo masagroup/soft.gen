@@ -1,0 +1,163 @@
+[**
+ * This file is part of soft.generator.go, a project for go code 
+ * generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
+[comment encoding = UTF-8 /]
+[module generatePath('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
+[import soft::generator::go::generateCommon/]
+
+
+[**
+ * Returns Ecore module default path
+*/]
+[query private getAllPackagePaths(any : OclAny) : OclAny =
+	let ecorePackage : EPackage = getEcorePackage() in
+	let currentPackage : EPackage = getCurrentPackage() in
+	let packageToPaths : OclAny = mapNew('getAllPackageToPaths_' + currentPackage.name)
+									.mapPut('uri:'+ ecorePackage.nsURI, 'github.com/masagroup/soft.go/ecore/ecore') in
+    let packagesProperty : OclAny = getProperty('packages') in 
+	let packages : String = (if packagesProperty.oclIsUndefined() or packagesProperty = '' then '' else packagesProperty.oclAsType(String) endif) + 
+							(if currentPackage.hasKey('packages') then ';' + currentPackage.valueKey('packages') else '' endif) in
+	if packages <> '' then
+		let tokenized : Sequence(String) = packages.tokenize('; \r\n') in
+        tokenized->iterate( p : String ; res : OclAny = packageToPaths | (
+        	let index : Integer = p.index('=') in 
+            if index = -1 then
+				let packIndex : Integer = p.index('#') in
+				let packPath : String = if packIndex = -1 then p else p.substring(1, packIndex-1) endif in
+				let nameIndex : Integer = packPath.lastIndex('/') in
+				if nameIndex = -1 then
+					res.mapPut('name:'+packPath,p)
+				else
+					res.mapPut('name:'+packPath.substring(nameIndex+1),p)
+				endif
+            else
+                res.mapPut('uri:'+p.substring(1,index-1),p.substring(index+1))
+            endif
+		))
+    else
+        packageToPaths
+    endif
+/]
+
+[query private getPath(paths : String, index : Integer) : String =
+	let tokenized : Sequence(String) = paths.tokenize('#') in
+	let size : Integer = tokenized->size() in 
+	if index > size then
+		tokenized->at( size )
+	else
+		tokenized->at(index)
+	endif
+/]
+
+[query private getIndexPath(aPackage : EPackage, index : Integer) : String =
+	let packageToPaths : OclAny = getAllPackagePaths() in
+	let uriPath : OclAny = mapGet(packageToPaths, 'uri:' + aPackage.nsURI) in
+	if not uriPath.oclIsUndefined() then
+		getPath(uriPath.oclAsType(String),index)
+	else
+		let namePath : OclAny = mapGet(packageToPaths, 'name:' + aPackage.name) in
+		if not namePath.oclIsUndefined() then
+			getPath(namePath.oclAsType(String),index)
+		else
+			aPackage.name + '/' + aPackage.name
+		endif
+	endif 	
+/] 
+
+[query public getInterfacePackagePath(aPackage : EPackage) : String =
+	aPackage.getIndexPath(1)
+/]
+
+[query public getImplementationPackagePath(aPackage : EPackage) : String =
+	aPackage.getIndexPath(2)
+/]
+
+[query public getMockPackagePath(aPackage : EPackage) : String =
+	aPackage.getIndexPath(3)
+/]
+
+
+[query private hasModulePath(aPackage : EPackage) : Boolean =
+	aPackage.hasPackageProperty('module')
+/]
+
+[query private getModulePath(aPackage : EPackage) : String =
+	aPackage.getPackageProperty('module')
+/]
+
+[**
+ * Returns package output directory
+ */]
+[query private getOutputDirectory(aPackage : EPackage, index : Integer) : String =
+	if aPackage.hasModulePath() then
+		let modulePath : String = aPackage.getModulePath() in
+		let packagePath : String = aPackage.getIndexPath(index) in
+		let packageDirectory : String = getPackageDirectoryFromPath(packagePath) in
+		if packageDirectory = modulePath then
+			''
+		else 
+			if packageDirectory.size() > modulePath.size() then
+				if packageDirectory.startsWith(modulePath) then
+					packageDirectory.substring(modulePath.size() + 1)
+				else
+					aPackage.name
+				endif
+			else 
+				aPackage.name
+			endif
+		endif
+	else 
+		aPackage.name 
+	endif
+/]
+
+[query public getInterfaceOutputDirectory(aPackage : EPackage) : String =
+	aPackage.getOutputDirectory(1)
+/]
+
+[query public getImplementationOutputDirectory(aPackage : EPackage) : String =
+	aPackage.getOutputDirectory(2)
+/]
+
+[query public getMockOutputDirectory(aPackage : EPackage) : String =
+	aPackage.getOutputDirectory(3)
+/]
+
+[query public getPackageDirectoryFromPath(path : String) : String =
+	let slashIndex : Integer = path.lastIndex('/') in
+	if slashIndex = -1 then
+		''
+	else
+		path.substring(1,slashIndex-1)
+	endif	
+/]
+
+[query public getPackageNameFromPath(path : String) : String =
+	let slashIndex : Integer = path.lastIndex('/') in
+	if slashIndex = -1 then
+		path
+	else
+		path.substring(slashIndex+1)
+	endif
+/]
+
+[query public getPackageImports( o : OclAny, packages : Set(String) ) : OclAny =
+	invoke('soft.generator.go.GeneratePath','getPackageImports(java.util.Set)',Sequence{packages})
+/]
+
+
+
+
+
+

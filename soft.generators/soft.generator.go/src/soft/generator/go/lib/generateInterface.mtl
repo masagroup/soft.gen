@@ -15,67 +15,63 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateElement/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::generateOperation/]
 [import soft::generator::go::lib::generateStructuralFeature/]
 
 [template public generateInterface(aClass : EClass) { 
-	interfaceName : String = aClass.getInterfaceName(); 
-	aPackage : EPackage = aClass.ePackage; 
+	ecore : EPackage = getEcorePackage();
+	aPackage : EPackage = aClass.ePackage;
+	packagePath : String = aPackage.getInterfacePackagePath();
+	interfaceName : String = aClass.getInterfaceName();
 	interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
 	isDiamond : Boolean = aClass.eSuperTypes->size() > 1;
+	packages : Set(String) = Set{ if not aPackage.isEcorePackage() and ( isDiamond or aClass.requiresList() )then Set{ ecore.getInterfacePackagePath()} else Set{} endif
+								 , (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getAllReferencedTypes() endif)->collect( cls | cls.getInterfacePackagePath())
+								 , interfaceExtends->collect( i | getIdentifierPackagePath(i))
+								 }->flatten();
+	imports : OclAny = getPackageImports(packages);
 }]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getInterfaceOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [getPackageNameFromPath(packagePath)/]
 
-[let refTypes : Set(EClassifier) = if isDiamond then aClass.eSuperTypes.getReferencedTypes()->asSet() else aClass.getReferencedTypes()->asSet() endif]
-[let ecorePackage : Set(String) = if not aPackage.isEcorePackage() and ( aClass.requiresList() or isDiamond ) then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif]
-[let imports : OrderedSet(String) = Set { interfaceExtends->collect( extend | aPackage.getImportForType(extend))->asSet()
-                                        , refTypes->collect(cls | aPackage.getImport(cls))->asSet()
-										, ecorePackage
-                                        }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[for ( i : String | imports )]
-import "[i/]"
-[/for]
-[/let]
-[/let]
-[/let]
-
+[generateImports(imports,aPackage.getInterfacePackagePath())/]
 
 // [interfaceName/] is the representation of the model object '[aClass.name/]'
 type [interfaceName/] interface {
 [if isDiamond]
-	[getShortQualifiedName('ecore.EObject', aPackage.name)/]
+	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EObject') ,packagePath, imports)/]
 [else]
-[for ( qualifiedExtend : String | interfaceExtends )]
-    [getShortQualifiedName(qualifiedExtend, aPackage.name)/]
+[for ( qualifiedIdentifier : String | interfaceExtends )]
+    [getImportedIdentifier( qualifiedIdentifier ,packagePath, imports)/]
 [/for]
 [/if]
 
 [let operations : OrderedSet(EOperation) = if isDiamond then aClass.eAllOperations else aClass.eOperations endif]
 [if operations->notEmpty()]
-    [operations.generateDeclaration()/]
+    [operations.generateDeclaration(packagePath,imports)/]
 [/if]
 [/let]
 [let attributes : OrderedSet(EAttribute) = (if isDiamond then aClass.eAllAttributes else aClass.eAttributes endif)->select( isGet() or isSet() )]
 [if attributes->notEmpty()]
-    [attributes.generateDeclaration()/]
+    [attributes.generateDeclaration(packagePath,imports)/]
 [/if]
 [/let]
 [let references : OrderedSet(EAttribute) = (if isDiamond then aClass.eAllReferences else aClass.eReferences endif)->select( isGet() or isSet() )]
 [if references->notEmpty()]
-    [references.generateDeclaration()/]
+    [references.generateDeclaration(packagePath,imports)/]
 [/if]
-[/let]
     // [protected (interfaceName)]
     // [/protected]
 }
-
+[/let]
 [/file]
 [/template]
 

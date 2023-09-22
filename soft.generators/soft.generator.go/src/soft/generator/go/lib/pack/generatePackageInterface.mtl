@@ -15,69 +15,106 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::pack::generateCommon/]
+[import soft::generator::go::lib::pack::generatePackageInstance/]
 
-[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage )]
+[template private generateStaticClassID(aEClass : EClass)]
+// [aEClass.getClassifierIDName()/] is the meta object id for the class [aEClass.name/].
+[aEClass.getClassifierIDName()/] = [aEClass.getClassifierIDValue()/]
 
-// Returns the meta object for the [anENamedElement.name.toUpperFirst()/]
-[anENamedElement.getReflectiveGetterName()/]() [aPackage.getMetaType(anENamedElement)/]
 [/template]
 
-[template public generatePackageInterface(anEPackage : EPackage) { className : String = anEPackage.getInterfaceName(); packageName : String = anEPackage.name; } ]
-[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getInterfaceFileName(anEPackage.getPackageName() ) , false, 'UTF-8')]
+[template private generateStaticFeatureID(anStructFeature : EStructuralFeature,anEClass : EClass )]
+// [anEClass.getFeatureIDName(anStructFeature)/] is the feature id for the [anEClass.name/] '[anStructFeature.name.toUpperFirst()/]' [anStructFeature.getFeatureKind()/].
+[anEClass.getFeatureIDName(anStructFeature)/] = [anEClass.getFeatureIDValue(anStructFeature)/]
+
+
+[/template]
+
+[template private generateStaticFeatureCountID(anEClass : EClass )]
+// [anEClass.getFeatureCountIDName()/] is the number of structural features of the class [anEClass.name/].
+[anEClass.getFeatureCountIDName()/] = [anEClass.getFeatureCountIDValue()/]
+
+[/template]
+
+[template private generateStaticOperationID(aOperation : EOperation , aClass : EClass )]
+// [aClass.getOperationIDName(aOperation)/] is the operation id for the '[aOperation.name/]' operation.
+[aClass.getOperationIDName(aOperation)/] = [aClass.getOperationIDValue(aOperation)/];
+
+[/template]
+
+[template private generateStaticOperationCountID(anEClass : EClass )]
+// [anEClass.getOperationCountIDName()/] is the number of [anEClass.getOperationCountIDName()/]
+[anEClass.getOperationCountIDName()/] = [anEClass.getOperationCountIDValue()/];
+
+[/template]
+
+[template private generateStaticDataTypeID(aEDatatype : EDataType )]
+// [aEDatatype.getClassifierIDName()/] The meta object id for the [if aEDatatype.oclIsKindOf(EEnum)]enum[else]data type[/if] [aEDatatype.name/].
+[aEDatatype.getClassifierIDName()/] = [aEDatatype.getClassifierIDValue()/];
+
+[/template]
+
+[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage, packagePath : String, imports : OclAny )]
+
+// Returns the meta object for the [anENamedElement.name.toUpperFirst()/]
+[anENamedElement.getReflectiveGetterName()/]() [getMetaType(anENamedElement,packagePath,imports)/]
+[/template]
+
+[template public generatePackageInterface(aPackage : EPackage) { 
+	className : String = aPackage.getInterfaceName();
+	packagePath : String = aPackage.getInterfacePackagePath();
+	ecore : EPackage = getEcorePackage();
+	packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getInterfacePackagePath()} else Set{} endif;
+	imports : OclAny = getPackageImports(packages);
+}]
+[file (aPackage.getInterfaceOutputDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName()) , false, 'UTF-8')]
 [fileComment()/]
 
-package [packageName/]
+package [getPackageNameFromPath(packagePath)/]
 
-[if not anEPackage.isEcorePackage()]
-import "[getImportForPackage('ecore')/]"
-[/if]
+[generateImports(imports,packagePath)/]
 
 const (
     // NAME is the package name. 
-    NAME = "[anEPackage.name/]"
+    NAME = "[aPackage.name/]"
 
     // NS_URI is the package URI.
-    NS_URI = "[anEPackage.nsURI/]"
+    NS_URI = "[aPackage.nsURI/]"
 
     // NS_PREFIX is the package prefix.
-    NS_PREFIX = "[anEPackage.nsPrefix/]"
+    NS_PREFIX = "[aPackage.nsPrefix/]"
 
-[for (aClass : EClass | anEPackage.getOrderedClasses())]
+[for (aClass : EClass | aPackage.getOrderedClasses())]
     [aClass.generateStaticClassID()/]
     [aClass.eAllStructuralFeatures.generateStaticFeatureID(aClass)/]
     [aClass.generateStaticFeatureCountID()/]
     [aClass.eAllOperations.generateStaticOperationID(aClass)/]
     [aClass.generateStaticOperationCountID()/]
 [/for]
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateStaticDataTypeID()/]
+    [aPackage.eAllContents(EDataType)->sortedBy(name).generateStaticDataTypeID()/]
 )
 
-// [className/] is The Metamodel Package for the [anEPackage.name/] metamodel. 
+// [className/] is The Metamodel Package for the [aPackage.name/] metamodel. 
 // This package is used to enable the reflection of model elements. 
 // It contains all model elements which were described in an ecore file.
 type [className/] interface {
-    [getShortQualifiedName('ecore.EPackage', packageName )/]
-[for (aClass : EClass | anEPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-    [aClass.generateGetter(anEPackage)/]
-    [aClass.eAttributes->sortedBy(name).generateGetter(anEPackage)/]
-    [aClass.eReferences->sortedBy(name).generateGetter(anEPackage)/]
-    [aClass.eOperations->sortedBy(name).generateGetter(anEPackage)/]
+	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EPackage') ,packagePath, imports)/]
+[for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
+    [aClass.generateGetter(aPackage,packagePath,imports)/]
+    [aClass.eAttributes->sortedBy(name).generateGetter(aPackage,packagePath,imports)/]
+    [aClass.eReferences->sortedBy(name).generateGetter(aPackage,packagePath,imports)/]
+    [aClass.eOperations->sortedBy(name).generateGetter(aPackage,packagePath,imports)/]
 [/for]
-    [anEPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(anEPackage)/]
+    [aPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(aPackage,packagePath,imports)/]
 }
 
-var packageInstance [className/] 
-
-func GetPackage() [className/] {
-    if packageInstance == nil {
-      packageInstance = new[anEPackage.getImplementationName().toUpperFirst()/]()
-    }
-    return packageInstance
-}
-
+[if aPackage.getImplementationPackagePath() = packagePath]
+[aPackage.generatePackageInstance(packagePath,imports)/]
+[/if]
 
 [/file]
 [/template]

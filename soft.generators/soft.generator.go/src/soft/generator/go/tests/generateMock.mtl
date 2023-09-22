@@ -14,8 +14,10 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateElement/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::generateStructuralFeature/]
@@ -24,46 +26,43 @@
 [query public getMockExtends(aClass : EClass ) : Sequence(String) =
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
+		let ecore : EPackage = getEcorePackage() in
 		if ( aClass.isMapEntry() ) then
-			Sequence{'ecore.MockEObjectInternal', 'ecore.MockEMapEntry'}
-			
+			Sequence{ ecore.getQualifiedInterfaceIdentifier('MockEObjectInternal'), ecore.getQualifiedInterfaceIdentifier('MockEMapEntry')}
         else if ( aClass.name = 'EObject' ) then
-            Sequence{'ecore.MockENotifier'}
+            Sequence{ecore.getQualifiedInterfaceIdentifier('MockENotifier')}
         else
-            Sequence{'ecore.MockEObjectInternal'}
+            Sequence{ecore.getQualifiedInterfaceIdentifier('MockEObjectInternal')}
         endif endif
     else
-        Sequence{ extendsClass.getQualifiedMockName()}
+        Sequence{ extendsClass.getQualifiedMockIdentifier()}
     endif 
 /]
 
 [query public getMockExpecterExtends(aClass : EClass ) : String = aClass.getMockExtends()+'_Expecter'/]
 
 [template public generateMock(aClass : EClass) { 
+	ecore : EPackage = getEcorePackage();
 	aPackage : EPackage = aClass.ePackage;
+	packagePath : String = aPackage.getMockPackagePath(); 
 	mockExtends : Sequence(String) = aClass.getMockExtends();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	mockName : String = aClass.getMockName();
 	interfaceName : String = aClass.getInterfaceName();
+	packages : Set(String) = Set{ Set{'github.com/stretchr/testify/mock/mock'}
+								, if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ ecore.getInterfacePackagePath()} else Set{} endif
+								, mockExtends->collect( i | getIdentifierPackagePath( i ) )->asSet()
+								, aClass.getReferencedTypes()->collect( cls | cls.getInterfacePackagePath() )->asSet()
+								}->flatten();
+	imports : OclAny = getPackageImports(packages);
 }]
-[file (ePackage.getOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
+[file (aPackage.getMockOutputDirectory() + '/' + aClass.getMockFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [getPackageNameFromPath(packagePath)/]
 
-[let imports : OrderedSet(String) = Set { if not aPackage.isEcorePackage() and aClass.requiresList() then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
-										, mockExtends->collect( extend | aPackage.getImportForType( extend ) )->asSet()
-									    , aClass.getInterfaceExtends()->collect( extend | aPackage.getImportForType( extend ) )->asSet()
-                                        , aClass.getReferencedTypes()->collect( cls | aPackage.getImport(cls) )->asSet()
-                                        }->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
-import (
-	 "github.com/stretchr/testify/mock"
-[for ( i : String | imports )]
-	"[i/]"
-[/for]
-)
-[/let]
+[generateImports(imports,packagePath)/]
 
 // [mockName/] is an mock type for the [aClass.getInterfaceName()/] type
 type [mockName/] struct {
@@ -75,7 +74,7 @@ type [mockName/] struct {
 type [mockName/]_Prototype struct {
 	mock *mock.Mock
 [for (mockExtend : String | mockExtends)]
-	[getShortQualifiedName(mockExtend ,aPackage.name)/]_Prototype
+	[getImportedIdentifier( mockExtend,packagePath, imports)/]_Prototype
 [/for]
 	[mockName/]_Prototype_Methods
 }
@@ -83,7 +82,7 @@ type [mockName/]_Prototype struct {
 func (_mp *[mockName/]_Prototype) SetMock(mock *mock.Mock) {
 	_mp.mock = mock
 [for (mockExtend : String | mockExtends)]
-	_mp.[getUnQualifiedName(mockExtend)/]_Prototype.SetMock(mock)
+	_mp.[getSimpleIdentifier(mockExtend)/]_Prototype.SetMock(mock)
 [/for]
 	_mp.[mockName/]_Prototype_Methods.SetMock(mock)
 }
@@ -91,14 +90,14 @@ func (_mp *[mockName/]_Prototype) SetMock(mock *mock.Mock) {
 // [mockName/]_Expecter is the expecter implementation for all [interfaceName/] methods ( inherited and declared )
 type [mockName/]_Expecter struct {
 [for (mockExtend : String | mockExtends)]
-	[getShortQualifiedName(mockExtend ,aPackage.name)/]_Expecter
+	[getImportedIdentifier( mockExtend, packagePath, imports)/]_Expecter
 [/for]
 	[mockName/]_Expecter_Methods
 }
 
 func (_me *[mockName/]_Expecter) SetMock(mock *mock.Mock) {
 [for (mockExtend : String | mockExtends)]
-	_me.[getUnQualifiedName(mockExtend)/]_Expecter.SetMock(mock)
+	_me.[getSimpleIdentifier(mockExtend)/]_Expecter.SetMock(mock)
 [/for]
 	_me.[mockName/]_Expecter_Methods.SetMock(mock)
 }
@@ -128,8 +127,8 @@ func (_mde *[mockName/]_Expecter_Methods) SetMock(mock *mock.Mock) {
 }
 
 
-[features.generateMock(aClass)/]
-[operations.generateMock(aClass)/]
+[features.generateMock(aClass,packagePath,imports)/]
+[operations.generateMock(aClass,packagePath,imports)/]
 
 type mockConstructorTestingTNew[mockName/] interface {
 	mock.TestingT

@@ -14,8 +14,10 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateElement/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generateElement/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::lib::generateStructuralFeature/]
@@ -23,28 +25,26 @@
 
 [template public generateMockTests(aClass : EClass) { 
 	aPackage : EPackage = aClass.ePackage;
+	packagePath : String = aPackage.getMockPackagePath();
 	mockName : String = aClass.getMockName();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( name );
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.eStructuralFeatures->notEmpty() or aClass.requiresList() );
+	ecore : EPackage = getEcorePackage();
+	referencedTypes : Set(EClassifier) = aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined()); 
+	packages : Set(String) = Set{ Set { 'testing/testing' , 'github.com/stretchr/testify/assert/assert'}
+								, if requiresEcore then Set{ ecore.getInterfacePackagePath() } else Set{} endif
+								, referencedTypes->collect( cls | cls.getInterfacePackagePath() )->asSet()
+								, referencedTypes->collect( cls | cls.getTestPackagePath() )->asSet()
+								}->flatten();
+	imports : OclAny = getPackageImports(packages);
 }]
-[file (ePackage.getOutputDirectory() + '/' + aClass.getMockTestFileName(aClass.name), false, 'UTF-8')]
+[file (aPackage.getMockOutputDirectory() + '/' + aClass.getMockTestFileName(aClass.name), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [getPackageNameFromPath(packagePath)/]
 
-import (
-	"testing"
-	"github.com/stretchr/testify/assert"
-[let imports : OrderedSet(String) = Set { if requiresEcore then Set{ aPackage.getImportForPackage('ecore') } else Set{} endif
-										, aClass.getReferencedTypes()->select( cls | not cls.oclIsUndefined() )->collect( cls | aPackage.getImport(cls) )->asSet()
-                                        , features->collect( f : EStructuralFeature | f.eType.getTestValueImport(aPackage) )->asSet()
-										}->flatten()->select( s | s <> '')->asOrderedSet()->sortedBy( s | s) ]
-[for ( i : String | imports )]
-	"[i/]"
-[/for]
-[/let]
-)
+[generateImports(imports,packagePath)/]
 
 func discard[mockName.toUpperFirst()/]() {
 	_ = assert.Equal
@@ -54,8 +54,8 @@ func discard[mockName.toUpperFirst()/]() {
 [/if]
 }
 
-[features.generateMockTests(aClass)/]
-[operations.generateMockTests(aClass)/]
+[features.generateMockTests(aClass,packagePath,imports)/]
+[operations.generateMockTests(aClass,packagePath,imports)/]
 
 [/file]
 [/template]

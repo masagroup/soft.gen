@@ -13,7 +13,9 @@
 [module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 
 [query public isReflectiveDelegation(anPackage : EPackage ) : Boolean = anPackage.hasPackageProperty('featureDelegation') and anPackage.getPackageProperty('featureDelegation') = 'Reflective'/]
@@ -22,16 +24,7 @@
 
 [query public isReflectiveDelegation(anFeature : EStructuralFeature ) : Boolean = anFeature.eContainingClass.isReflectiveDelegation()/]
 
-[query public getOutputDirectory( anPackage : EPackage ) : String = 
-    let property : OclAny = getProperty('library.output.dir') in 
-    if property.oclIsUndefined() or property = '' then 
-        anPackage.name 
-    else 
-        property 
-    endif
-/]
-
-[query public getReceiverName(aClass : EClass) : String = aClass.name.toLowerFirst()/]
+[query public getReceiverName(aClass : EClass) : String = aClass.name.first(1).toLower()/]
 
 [template public generateFunctionImplementationReceiver(aClass : EClass)]
 func ([aClass.getReceiverName()/] *[aClass.getImplementationName()/])
@@ -41,40 +34,42 @@ func ([aClass.getReceiverName()/] *[aClass.getImplementationName()/])
  * Classes Onthology
 */]
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
-	let aPackage : EPackage = aClass.ePackage in 
+	let ecore : EPackage = getEcorePackage() in
 	if ( aClass.isMapEntry() ) then
-		Sequence{'ecore.EObject', 'ecore.EMapEntry'}
+		Sequence{ ecore.getQualifiedInterfaceIdentifier('EObject'), ecore.getQualifiedInterfaceIdentifier('EMapEntry')}
     else if ( aClass.eSuperTypes->isEmpty() ) then
-        if ( aClass.name = 'EObject' ) then
-            Sequence{'ecore.ENotifier'}
+		let aPackage : EPackage = aClass.ePackage in 
+	    if ( aClass.name = 'EObject' ) then
+            Sequence{ecore.getQualifiedInterfaceIdentifier('ENotifier')}
         else if ( aPackage.hasPackageProperty('rootExtendsInterface') ) then
 			Sequence{aPackage.getPackageProperty('rootExtendsInterface')}
 		else
-            Sequence{'ecore.EObject'}
+            Sequence{ecore.getQualifiedInterfaceIdentifier('EObject')}
         endif endif
     else
-        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceName()))
+        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceIdentifier()))
     endif endif
 /]
 
 [query public getClassExtends(aClass : EClass ) : String =
-    let aPackage : EPackage = aClass.ePackage in 
-    let extendsClass : EClass = aClass.getClassExtendsClass() in
+	let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
-        if ( aClass.name = 'EObject' ) then
-            'ecore.BasicEObjectImpl'
-		else if ( aPackage.hasPackageProperty('rootExtendsClass') ) then
+		let aPackage : EPackage = aClass.ePackage in 
+        let ecore : EPackage = getEcorePackage() in
+    	if ( aClass.name = 'EObject' ) then
+			 ecore.getQualifiedImplementationIdentifier('BasicEObjectImpl')
+        else if ( aPackage.hasPackageProperty('rootExtendsClass') ) then
 			aPackage.getPackageProperty('rootExtendsClass')
 		else if ( aPackage.isReflectiveDelegation() ) then
-			aPackage.getEcoreModuleNamespace() + '.ReflectiveEObjectImpl'
+			ecore.getQualifiedImplementationIdentifier('ReflectiveEObjectImpl')
 		else
-            aPackage.getEcoreModuleNamespace() + '.EObjectImpl'
+			ecore.getQualifiedImplementationIdentifier('EObjectImpl')
         endif endif endif 
     else
         if ( extendsClass.hasExtension() ) then
-            extendsClass.getQualifiedExtensionName()
+            extendsClass.getQualifiedExtensionIdentifier()
         else
-            extendsClass.getQualifiedImplementationName()
+            extendsClass.getQualifiedImplementationIdentifier()
         endif
     endif
 /]

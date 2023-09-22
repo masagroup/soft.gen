@@ -13,30 +13,39 @@
 [module generateFactoryInterface('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
-[import soft::generator::go::lib::generateCommon/]
+[import soft::generator::common::generateUtils/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::lib::factory::generateFactoryInstance/]
 
-[template public generateFactoryInterface(anEPackage : EPackage) { className : String = anEPackage.getFactoryName(); packageName : String = anEPackage.name; }]
-[file (anEPackage.getOutputDirectory() + '/' + anEPackage.getInterfaceFileName(anEPackage.getFactoryName() ), false, 'UTF-8')]
+
+[template public generateFactoryInterface(aPackage : EPackage) { 
+	className : String = aPackage.getFactoryName(); 
+	packageName : String = aPackage.name;
+	packagePath : String = aPackage.getInterfacePackagePath();
+	ecore : EPackage = getEcorePackage();
+	packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getInterfacePackagePath()} else Set{} endif;
+	imports : OclAny = getPackageImports(packages);
+}]
+[file (aPackage.getInterfaceOutputDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-package [anEPackage.name/]
+package [getPackageNameFromPath(packagePath)/]
 
-[if not anEPackage.isEcorePackage()]
-import "[getImportForPackage('ecore')/]"
-[/if]
+[generateImports(imports,packagePath)/]
 
 type [className/] interface {
-	[getShortQualifiedName('ecore.EFactory', packageName )/]
-[for (aEClass : EClass | anEPackage.eAllContents(EClass)->sortedBy(name))]
+	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactory') , packagePath,imports)/]
+[for (aEClass : EClass | aPackage.eAllContents(EClass)->sortedBy(name))]
 [if (aEClass.abstract = false)]
 	Create[aEClass.name/]() [aEClass.getInterfaceName()/]
 [let ref:OrderedSet(EReference) = aEClass.getAllContainers()]
 [for(aReference:EReference | ref->sortedBy(name))]
-	Create[aEClass.name/]FromContainer(eContainer [aReference.generateType()/]) [aEClass.getInterfaceName()/]
+	Create[aEClass.name/]FromContainer(eContainer [aReference.generateType(packagePath,imports)/]) [aEClass.getInterfaceName()/]
 [if(aEClass.getElementIDAccessorName().size() > 0)]
-	Create[aEClass.name/]FromContainerAndClassID(eContainer [aReference.generateType()/], classID int) [aEClass.getInterfaceName()/]
+	Create[aEClass.name/]FromContainerAndClassID(eContainer [aReference.generateType(packagePath,imports)/], classID int) [aEClass.getInterfaceName()/]
 [/if]
 [/for]
 [/let]
@@ -44,19 +53,9 @@ type [className/] interface {
 [/for]
 }
 
-var factoryInstance [className/]
-
-// GetFactory returns the factory for the model [anEPackage.name/]
-func GetFactory() [className/] {
-    if factoryInstance == nil {
-[let extension : Boolean = anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension']
-[let factoryName : String = if extension then anEPackage.getFactoryExtensionName() else anEPackage.getFactoryImplementationName() endif] 
-		factoryInstance = new[factoryName.toUpperFirst()/]()
-[/let]
-[/let]
-    }
-    return factoryInstance
-}
+[if aPackage.getImplementationPackagePath() = packagePath]
+[aPackage.generateFactoryInstance(packagePath,imports)/]
+[/if]
 
 [/file]
 [/template]

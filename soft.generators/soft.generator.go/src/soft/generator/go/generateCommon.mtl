@@ -15,7 +15,6 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 
-
 [**
  * package property
 */]
@@ -34,97 +33,6 @@
 		anPackage.valueKey(aProperty)
 	else
 		property
-	endif
-/]
-
-[**
- * Version
-*/]
-[query public getGoVersion(aPackage : EPackage) : String = if aPackage.hasPackageProperty('goVersion') then aPackage.getPackageProperty('goVersion') else '1.19' endif/]
-
-[query public compareVersion(aAny : OclAny, v1 : String, v2 : String) : Integer =
-	let v1Tokenized : Sequence(String) = v1.tokenize('.') in
-    let v2Tokenized : Sequence(String) = v2.tokenize('.') in
-	let v1Parts : Sequence(String) = if v1Tokenized->size() >= v2Tokenized->size() then v1Tokenized else v2Tokenized endif in
-	let v2Parts : Sequence(String) = if v1Tokenized->size() >= v2Tokenized->size() then v2Tokenized else v1Tokenized endif in
-	let order : Integer = if v1Tokenized->size() >= v2Tokenized->size() then 1 else -1 endif in
- 	Sequence{1..v1Parts->size()}->iterate( index ; res : Integer = -2 |
-        if res = -2 then
-			if index > v2Parts->size() then
-            	order 
-        	else
-				let p1 : String = v1Parts->at(index) in
-	        	let p2 : String = v2Parts->at(index) in
-				let c : Integer = p1.strcmp(p2) in
-				if c <> 0 then
-					order*c
-				else
-					if index = v1Parts->size() then
-						0
-					else  
-	            		res
-					endif
-				endif
-			endif
-		else
-			res
-        endif
-	)
-/]
-
-[**
- * Returns true if ecore module is the default one
-*/]
-[query public isDefaultEcoreModule(aPackage : EPackage) : Boolean =
-	aPackage.getEcoreModulePath() = 'github.com/masagroup/soft.go/ecore' 
-/]
-
-[**
- * Get Ecore module default path
-*/]
-[query public getDefaultEcoreModulePath(aPackage : EPackage) : String = 'github.com/masagroup/soft.go/ecore' /]
-
-[**
- * Get Ecore module default namespace
-*/]
-[query public getDefaultEcoreModuleNamespace(aPackage : EPackage) : String = 'ecore' /]
-
-[**
- * Get Ecore module path
-*/]
-[query public getEcoreModulePath(aPackage : EPackage) : String =
-	 if aPackage.hasPackageProperty('ecoreModule') then 
-		let p : String = aPackage.getPackageProperty('ecoreModule') in
-		let index : Integer = p.index('=') in 
-        if index = -1 then
-			p
-		else
-            p.substring(index+1) 
-        endif
-	else 
-		aPackage.getDefaultEcoreModulePath()
-	endif
-/]
-
-[**
- * Get Ecore module namespace
-*/]
-[query public getEcoreModuleNamespace(aPackage : EPackage) : String =
-	if aPackage.hasPackageProperty('ecoreModule') then
-		let p : String = aPackage.getPackageProperty('ecoreModule') in
-		let index : Integer = p.index('=') in 
-        if index = -1 then
-			let namespaceIndex : Integer = p.lastIndexOf('/') in
-			if namespaceIndex = -1 then
-				''
-			else
-				p.substring(namespaceIndex+1)
-			endif
-		else
-            p.substring(1,index-1)
-        endif
-	else 
-		aPackage.getDefaultEcoreModuleNamespace()
 	endif
 /]
 
@@ -223,9 +131,6 @@ endif endif endif
 [query public getInterfaceName( aPackage : EPackage ) : String = aPackage.getInterfaceName( getPackageName() )/]
 [query private getInterfaceName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceName').toUpperFirst() /]
 
-[query public getQualifiedInterfaceName( aClass : EClass ) : String = aClass.ePackage.name + '.'  + aClass.getInterfaceName()/]
-[query public getQualifiedInterfaceName( aPackage : EPackage ) : String = aPackage.name + '.' + aPackage.getInterfaceName()/]
-
 [** Implementation Names **/]
 [query public getImplementationName( aClass : EClass ) : String = aClass.getImplementationName( aClass.name )/]
 [query public getImplementationName( aPackage : EPackage ) : String = aPackage.getImplementationName( getPackageName() ) /]
@@ -233,8 +138,6 @@ endif endif endif
     let name : String = aNamedElement.getElementName( aName, 'implementationName', '$1Impl') in
     if  aNamedElement.isExported() then name.toUpperFirst()
     else name.toLowerFirst() endif/]
-
-[query public getQualifiedImplementationName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getImplementationName()/]
 
 [** Extension Names **/]
 [query public getExtensionName( aClass : EClass ) : String = aClass.getExtensionName(aClass.name )/]
@@ -247,10 +150,6 @@ endif endif endif
 [** Mock Names **/]
 [query public getMockName( aClass : EClass ) : String = aClass.getMockName(aClass.name )/]
 [query private getMockName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'mockName', 'Mock$1')/]
-[query public getQualifiedMockName( aClass : EClass ) : String = aClass.ePackage.name + '.'  + aClass.getMockName()/]
-
-
-[query public getQualifiedExtensionName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getExtensionName()/]
 
 [** FileNames **/]
 [query public getInterfaceFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceFileName', '$1.go').toLower()/]
@@ -295,12 +194,8 @@ methodName.toUpperFirst()
 
 [query public getOperationName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' ).toUpperFirst()/]
 
-[query public getMetaType(aPackage : EPackage , anENamedElement : ENamedElement) : String = getShortQualifiedName( anENamedElement.eClass().getQualifiedInterfaceName(), aPackage.name ) /]
-
 [** Name Qualification **]
-[query public getShortQualifiedName( aQualifiedName : String , aNamespaceName : String ) : String =
-    aQualifiedName.getShortQualifiedNameSep(aNamespaceName, '.')
-/]
+
 
 [query public getUnQualifiedName( aQualifiedName : String ) : String =
     aQualifiedName.getUnQualifiedNameSep('.')
@@ -310,13 +205,7 @@ methodName.toUpperFirst()
     any.getQualificationSep(aQualifiedName, '.') 
 /]
 
-[query public getQualifiedIDName( aClass : EClass, aStructuralFeature : EStructuralFeature ) : String =
-    aClass.getFeatureIDName( aStructuralFeature )
-/]
 
-[query public getQualifiedIDName( aClass : EClass, aOperation : EOperation ) : String =
-    aClass.getOperationIDName( aOperation )
-/]
 
 [query public isConstantsQualified( aEEnum  : EEnum ) : Boolean = 
 	let aPackage : EPackage = aEEnum.ePackage in
@@ -342,9 +231,7 @@ methodName.toUpperFirst()
 	}
 /]
 
-[query public getPackageInstance(aClassifier : EClassifier, aPackage : EPackage) : String = 
-	let packageNamespace : String = if aClassifier.ePackage.isEcorePackage() then aPackage.getEcoreModuleNamespace() else aClassifier.ePackage.name endif in
-	let packagePrefix : String = if packageNamespace = aPackage.name then '' else packageNamespace + '.' endif in
-	packagePrefix + 'GetPackage()'
-/]
+
+
+
 

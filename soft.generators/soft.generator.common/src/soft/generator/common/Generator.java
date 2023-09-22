@@ -38,7 +38,9 @@ import org.eclipse.acceleo.engine.service.AcceleoService;
 import org.eclipse.acceleo.model.mtl.Module;
 import org.eclipse.acceleo.model.mtl.resource.AcceleoResourceFactoryRegistry;
 import org.eclipse.acceleo.model.mtl.resource.AcceleoResourceSetImpl;
+import org.eclipse.emf.common.util.Monitor;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.plugin.EcorePlugin;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.Resource.Factory;
@@ -204,6 +206,11 @@ public class Generator extends AbstractAcceleoGenerator {
             commandLine.getParameterExceptionHandler().handleParseException(pe, args);
             return false;
         }
+    }
+
+    public Map<String, String> generate(Monitor monitor, boolean recursive) throws IOException {
+        GenerateUtils.currentPackage = (EPackage) getModel();
+        return super.generate(monitor, recursive);
     }
 
     public void initialize() throws IOException {

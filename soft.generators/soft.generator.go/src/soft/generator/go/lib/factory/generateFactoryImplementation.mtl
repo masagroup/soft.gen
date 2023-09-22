@@ -13,42 +13,66 @@
 [module generateFactoryImplementation('http://www.eclipse.org/emf/2002/Ecore')]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
-[import soft::generator::go::lib::factory::generateCommon/]
+[import soft::generator::go::lib::factory::generateFactoryInstance/]
 
-[template public generateFactoryImplementation(aPackage : EPackage) { 
+[query private getFactoryReceiverName(anEPackage : EPackage) : String = anEPackage.getFactoryImplementationName().toLowerFirst() /]
+
+[query private isFactoryImplemented( type : String ) : Boolean = 
+	Sequence{'string','bool','int','int64','int32','int16','int8','byte','[]byte','float64','float32','reflect/reflect.Type','*time/time.Time'}->exists( s | s = type)
+/]
+
+[template private generateFactoryImplementationMember(anEPackage : EPackage)]
+func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementationName()/])
+[/template]
+
+
+[template public generateFactoryImplementation(aPackage : EPackage) {
+	packagePath : String = aPackage.getImplementationPackagePath();
+	interfacePath : String = aPackage.getInterfacePackagePath();
 	className : String = aPackage.getFactoryImplementationName(); 
+	ecore : EPackage = getEcorePackage(); 
+	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
 	dataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
+	isFactoryInstance : Boolean = interfacePath <> packagePath;
+	packages : Set(String) = Set{ Set{'strconv/strconv',interfacePath}
+								, if isFactoryInstance then Set{ interfacePath } else Set{} endif
+								, if not aPackage.isEcorePackage() then Set{ecore.getInterfacePackagePath()} else Set{} endif
+								, dataTypes->collect(getInstanceTypeName())
+										   ->select(t | isFactoryImplemented(t))
+										   ->collect(t | getIdentifierPackagePath(t))
+										   ->select(s | s <> '' )
+										   ->asSet()
+								}->flatten();
+	imports : OclAny = getPackageImports(packages);
 }]
-[file (aPackage.getOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
+
+[file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-package [aPackage.name/]
+package [getPackageNameFromPath(packagePath)/]
 
-import "strconv"
-[if not aPackage.isEcorePackage()]
-import "[aPackage.getDefaultEcoreModulePath()/]"
-[if not aPackage.isDefaultEcoreModule()]
-import "[aPackage.getEcoreModulePath()/]"
-[/if]
-[/if]
-[if dataTypes->exists( getType() = '*time.Time')]
-import "time"
+[generateImports(imports,packagePath)/]
+
+[if isFactoryInstance]
+[aPackage.generateFactoryInstance(packagePath,imports)/]
 [/if]
 
 type [aPackage.getFactoryInternalName()/] interface {
 [for (aDataType : EDataType | dataTypes)]
-    create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/]
+    create[aDataType.name/]FromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/]
 [/for]
 [for (aDataType : EDataType | dataTypes)]
-    convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue [aPackage.getAnyType()/]) string
+    convert[aDataType.name/]ToString(eDataType [ecorePrefix/]EDataType, literalValue [aPackage.getAnyType()/]) string
 [/for]
 }
 
 type [className/] struct {
-	[if not aPackage.isEcorePackage()][aPackage.getEcoreModuleNamespace()/].[/if]EFactoryExt
+	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactoryExt') ,packagePath, imports)/]
 }
 
 func new[className.toUpperFirst()/]() *[className/] {
@@ -58,20 +82,22 @@ func new[className.toUpperFirst()/]() *[className/] {
     return factory 
 }
 
+
 [aPackage.generateFactoryImplementationMember()/] AsInternal() [aPackage.getFactoryInternalName()/] {
 	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryInternalName()/])
 }
 
-[aPackage.generateFactoryImplementationMember()/] AsEFactory()  [aPackage.getFactoryName()/] {
-	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryName()/])
+[let factoryName : String = getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName()), packagePath, imports)]
+[aPackage.generateFactoryImplementationMember()/] AsEFactory()  [factoryName/] {
+	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([factoryName/])
 }
+[/let]
 
-
-[aPackage.generateFactoryImplementationMember()/] Create(eClass [if not aPackage.isEcorePackage()]ecore.[/if]EClass) [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
+[aPackage.generateFactoryImplementationMember()/] Create(eClass [ecorePrefix/]EClass) [ecorePrefix/]EObject {
 	classID := eClass.GetClassifierID()
 	switch classID {
     [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
-    case [aClass.getClassifierIDName()/]:
+    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getClassifierIDName()), packagePath, imports) /]:
         return [aPackage.getFactoryReceiverName()/].AsEFactory().Create[aClass.name/]()
     [/for]
     default:
@@ -80,30 +106,32 @@ func new[className.toUpperFirst()/]() *[className/] {
 }
 
 [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name)) ? (aClass.abstract=false)]
-[aPackage.generateFactoryImplementationMember()/] Create[aClass.name/]() [aClass.getInterfaceName()/] {
+[let className : String = getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getInterfaceName()), packagePath, imports)]
+[aPackage.generateFactoryImplementationMember()/] Create[aClass.name/]() [className/] {
 	return [if aClass.hasExtension()][aClass.getConstructorExtensionName()/][else][aClass.getConstructorName()/][/if]()
 }
 
 [let ref : OrderedSet(EReference) = aClass.getAllContainers()]
 [for(aReference:EReference | ref->sortedBy(name))]
-[aPackage.generateFactoryImplementationMember()/] Create[aClass.name/]FromContainer(eContainer [aReference.eGenericType.eClassifier.name/]) [aClass.getInterfaceName()/] {
+[aPackage.generateFactoryImplementationMember()/] Create[aClass.name/]FromContainer(eContainer [aReference.eGenericType.eClassifier.name/]) [className/] {
     [aPackage.generateCreateFunctionContent(aClass, aReference, false)/]
 }
 
 [if(aClass.getElementIDAccessorName().size() > 0)]
-[aPackage.generateFactoryImplementationMember()/] Create[aClass.name/]FromContainerAndClassID(eContainer [aReference.eGenericType.eClassifier.name/], classID int) [aClass.getInterfaceName()/] {
+[aPackage.generateFactoryImplementationMember()/] Create[aClass.name/]FromContainerAndClassID(eContainer [aReference.eGenericType.eClassifier.name/], classID int) [className/] {
     [aPackage.generateCreateFunctionContent(aClass, aReference, true)/]
 }
 [/if]
 
 [/for]
 [/let]
+[/let]
 [/for]
-[aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
+[aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/] {
 	classID  := eDataType.GetClassifierID()
 	switch classID {
     [for (aDataType : EDataType | dataTypes)]
-    case [aDataType.getClassifierIDName()/]:
+    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aDataType.getClassifierIDName()), packagePath, imports)/]:
         return [aPackage.getFactoryReceiverName()/].AsInternal().create[aDataType.name/]FromString(eDataType, literalValue)
     [/for]
     default:
@@ -111,11 +139,11 @@ func new[className.toUpperFirst()/]() *[className/] {
 	}
 }
 
-[aPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
+[aPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType [ecorePrefix/]EDataType, instanceValue [aPackage.getAnyType()/]) string {
     classID := eDataType.GetClassifierID()
     switch classID {
 [for (aDataType : EDataType | dataTypes)]
-    case [aDataType.getClassifierIDName()/]:
+    case [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aDataType.getClassifierIDName()), packagePath, imports) /]:
         return [aPackage.getFactoryReceiverName()/].AsInternal().convert[aDataType.name/]ToString(eDataType, instanceValue)
 [/for]
     default:
@@ -123,17 +151,17 @@ func new[className.toUpperFirst()/]() *[className/] {
     }
 }
 [for (aDataType : EDataType | dataTypes)]
-[aPackage.generateCreateFromString(aDataType)/]
-[aPackage.generateConvertToString(aDataType)/]
+[aPackage.generateCreateFromString(aDataType,packagePath,imports)/]
+[aPackage.generateConvertToString(aDataType,packagePath,imports)/]
 [/for]
 [/file]
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType, packagePath : String, imports : OclAny ) ? (aDataType.oclIsTypeOf(EEnum))]
 [let enumTypeName : String = aDataType.name ]
 [let varName : String = enumTypeName.toLowerFirst() ]
 [aPackage.generateFactoryImplementationMember()/] create[enumTypeName/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
-    var [varName/] [aDataType.name/] 
+    var [varName/] [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aDataType.name), packagePath, imports)/]
 	[varName/].FromString(literalValue)
 	return [varName/]
 }
@@ -141,14 +169,14 @@ func new[className.toUpperFirst()/]() *[className/] {
 [/let]
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'string')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny ) ? (aDataType.getType() = 'string')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    return literalValue
 }
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'bool')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'bool')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    value, _ := strconv.ParseBool(literalValue)
 	return value
@@ -156,7 +184,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'int')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'int')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    value, _ := strconv.Atoi(literalValue)
    return value
@@ -164,7 +192,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'int64')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'int64')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    value, _ := strconv.ParseInt(literalValue, 10, 64)
    return value
@@ -172,7 +200,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'int32')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'int32')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    value, _ := strconv.ParseInt(literalValue, 10, 32)
    return int32(value)
@@ -180,7 +208,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'int16')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'int16')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    value, _ := strconv.ParseInt(literalValue, 10, 16)
    return int16(value)
@@ -188,7 +216,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'int8')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'int8')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    value, _ := strconv.ParseInt(literalValue, 10, 8)
    return int8(value)
@@ -196,7 +224,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'byte')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'byte')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    	if len(literalValue) == 0 {
 		return "golang\u0000"
@@ -207,14 +235,14 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '[]byte')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = '[]byte')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    	return ['['/][']'/]byte(literalValue)
 }
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'float64')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'float64')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    	value, _ := strconv.ParseFloat(literalValue, 64)
 	return value
@@ -222,7 +250,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'float32')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'float32')]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    	value, _ := strconv.ParseFloat(literalValue, 32)
 	return float32(value)
@@ -230,7 +258,15 @@ func new[className.toUpperFirst()/]() *[className/] {
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '*time.Time')]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'reflect/reflect.Type')]
+[aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
+   	_ = reflect.Ptr
+	panic("NotImplementedException")
+}
+
+[/template]
+
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = '*time/time.Time')]
 const (
 	dateFormat string = "2006-01-02T15:04:05.999Z"
 )
@@ -242,18 +278,18 @@ const (
 
 [/template]
 
-[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType )]
+[template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny)]
 [aPackage.generateFactoryImplementationMember()/] create[aDataType.name/]FromString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue string) [aPackage.getAnyType()/] {
    panic("NotImplementedException")
 }
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.oclIsTypeOf(EEnum))]
 [let enumTypeName : String = aDataType.name ]
 [let varName : String = enumTypeName.toLowerFirst() ]
 [aPackage.generateFactoryImplementationMember()/] convert[enumTypeName/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string { 
-	[varName/], ok:= instanceValue.([enumTypeName/])
+	[varName/], ok:= instanceValue.([getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(enumTypeName), packagePath, imports)/])
 	if !ok {
 		return ""
 	}
@@ -263,7 +299,7 @@ const (
 [/let]
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'string')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'string')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v , _ := instanceValue.(string) 
 	return v
@@ -271,7 +307,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'bool')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'bool')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v, _ := instanceValue.(bool)
 	return strconv.FormatBool(v)
@@ -279,7 +315,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'int')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'int')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v, _ := instanceValue.(int)
 	return strconv.Itoa(v)
@@ -287,7 +323,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'int64')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'int64')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v, _ := instanceValue.(int64)
 	return strconv.FormatInt(v, 10)
@@ -295,7 +331,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'int32')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'int32')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v, _ := instanceValue.(int32)
 	return strconv.FormatInt(int64(v), 10)
@@ -303,7 +339,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'int16')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'int16')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v, _ := instanceValue.(int16)
 	return strconv.FormatInt(int64(v), 10)
@@ -311,7 +347,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'int8')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'int8')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v, _ := instanceValue.(int8)
 	return strconv.FormatInt(int64(v), 10)
@@ -319,7 +355,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'byte')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'byte')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	b := instanceValue.(byte)
 	return string(['['/][']'/]byte{b})
@@ -327,7 +363,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '[]byte')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = '[]byte')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	b := instanceValue.(['['/][']'/]byte)
 	return string(b)
@@ -335,7 +371,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'float64')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'float64')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v, _ := instanceValue.(float64)
 	return strconv.FormatFloat(v, 'f', -1, 64)
@@ -343,7 +379,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'float32')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'float32')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v, _ := instanceValue.(float32)
 	return strconv.FormatFloat(float64(v), 'f', -1, 32)
@@ -351,7 +387,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = '*time.Time')]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = '*time/time.Time')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string { 
 	t , _ := instanceValue.(*time.Time)
 	return t.Format(dateFormat)
@@ -359,7 +395,7 @@ const (
 
 [/template]
 
-[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )]
+[template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny)]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string { 
 	panic("NotImplementedException")
 }
