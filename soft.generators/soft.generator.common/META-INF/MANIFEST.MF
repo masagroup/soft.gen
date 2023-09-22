@@ -4,7 +4,7 @@ Created-By: 13.0.2+8 (Oracle Corporation)
 Bundle-ManifestVersion: 2
 Bundle-Name: Soft Generator Common
 Bundle-SymbolicName: soft.generator.common
-Bundle-Version: 1.3.0
+Bundle-Version: 1.4.0
 Export-Package: soft.generator.common
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: soft.generator.common
