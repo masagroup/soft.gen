@@ -32,7 +32,7 @@ public class GeneratePath {
                                                         }));
 
             // compute path names
-            List<String> names = paths.stream().map(p -> packagesNames.get(p)).toList();
+            List<String> names = paths.stream().map(p -> packagesNames.get(p)).collect(Collectors.toList());
 
             // for each name, check if there is another one which is equal
             for (int i = names.size() - 1; i >= 0; i--) {
