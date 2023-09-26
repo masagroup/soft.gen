@@ -4,7 +4,7 @@ Created-By: 13.0.2+8 (Oracle Corporation)
 Bundle-ManifestVersion: 2
 Bundle-Name: Soft Generator Go
 Bundle-SymbolicName: soft.generator.go
-Bundle-Version: 1.8.0
+Bundle-Version: 1.8.1
 Export-Package: soft.generator.go,soft.generator.go.lib,soft.generator
  .go.lib.factory,soft.generator.go.lib.pack,soft.generator.go.tests
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

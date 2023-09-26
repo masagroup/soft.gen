@@ -8,7 +8,7 @@
       <version>1.6.0</version>
    </parent>
    <artifactId>soft.generator.go</artifactId>
-   <version>1.8.0</version>
+   <version>1.8.1</version>
    <dependencies>
       <dependency>
          <groupId>soft.generators</groupId>
