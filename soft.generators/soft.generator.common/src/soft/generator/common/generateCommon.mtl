@@ -348,4 +348,4 @@ and (not aClass.getEStructuralFeature('value').oclIsUndefined())/]
 	templates->includes(aTemplateName)
 /]
 
- 
+[query public isDebug(any : OclAny) : Boolean = getProperty('debug') = 'true'/] 

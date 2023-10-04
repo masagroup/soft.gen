@@ -78,6 +78,11 @@ func discard[name.toUpperFirst()/]() {
 [/if]
 }
 
+[if isDebug()]
+// [for (implementedFeatures) before ('features: ') separator (', ') after (';')][self.name/]-[self.isMapFeature()/][/for]
+// [for (referencedFeatures) before ('referenced: ') separator (', ') after (';')][self.name/][/for]
+[/if]
+
 func Test[aClass.name.toUpperFirst()/]As[aClass.name.toUpperFirst()/](t *testing.T) {
 	o := [aClass.getConstructorName()/]()
 	assert.Equal(t, o , o.as[aClass.getInterfaceName()/]())
