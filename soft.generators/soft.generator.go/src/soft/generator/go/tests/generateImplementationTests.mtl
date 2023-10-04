@@ -38,18 +38,24 @@
 	endif
 /]
 
-[template public generateImplementationTests(aClass : EClass) { 
-	implementedFeatures : Set(EStructuralFeature) = aClass.getImplementedFeatures();
-	referencedTypes : Set(EClassifier) = OrderedSet{ aClass.eSuperTypes
-              								, implementedFeatures.eType
-											, implementedFeatures->collect( getMapTypes() )->flatten()
-											}->flatten()->select( not oclIsUndefined() );
+[query private isMapFeature(aStructuralFeature : EStructuralFeature) : Boolean =
+	aStructuralFeature.eContainingClass.isReflectiveDelegation() and aStructuralFeature.isMapType()
+/]
+
+[template public generateImplementationTests(aClass : EClass) {
 	aPackage : EPackage = aClass.ePackage;
 	packagePath : String = aPackage.getImplementationPackagePath();
+	requiresInterface : Boolean = not aClass.isReflectiveDelegation();
 	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.getImplementedFeatures()->notEmpty() or aClass.requiresList() );
+	implementedFeatures : Set(EStructuralFeature) = aClass.getImplementedFeatures();
+	referencedFeatures : Set(EStructuralFeature) = implementedFeatures->reject(isMapFeature());
+	referencedTypes : Set(EClassifier) = OrderedSet{ aClass.eSuperTypes
+              								, referencedFeatures.eType
+											, referencedFeatures->collect( getMapTypes() )->flatten()
+											}->flatten()->select( not oclIsUndefined() );
 	packages : Set(String) = Set{ Set { 'testing/testing' , 'github.com/stretchr/testify/assert/assert', 'github.com/stretchr/testify/mock/mock' , aPackage.getMockPackagePath()}
 								, if requiresEcore then Set{ getEcorePackage().getInterfacePackagePath() } else Set{} endif
-								, if not aClass.isReflectiveDelegation() then Set { aPackage.getInterfacePackagePath() } else Set{} endif
+								, if requiresInterface then Set { aPackage.getInterfacePackagePath() } else Set{} endif
 								, referencedTypes->collect( cls | cls.getTestPackagePath())->asSet()
 								, referencedTypes->collect( cls | cls.getInterfacePackagePath())->asSet()
 								 }->flatten();
