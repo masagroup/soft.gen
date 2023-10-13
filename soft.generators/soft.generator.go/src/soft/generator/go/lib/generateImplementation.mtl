@@ -118,7 +118,7 @@ func [aClass.getConstructorName()/]() *[implementationName/] {
 }
 
 [aClass.generateFunctionImplementationReceiver()/] EStaticFeatureCount() int {
-    return [if aClass.isReflectiveDelegation()]0[else][aClass.getFeatureCountIDName()/][/if]
+    return [if aClass.isReflectiveDelegation()]0[else][getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getFeatureCountIDName()), packagePath, imports)/][/if]
 }
 [if aClass.isMapEntry()]
 [let keyFeature : EStructuralFeature = aClass.getEStructuralFeature('key')]

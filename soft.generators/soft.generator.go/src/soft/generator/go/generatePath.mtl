@@ -29,7 +29,7 @@
 	let packages : String = (if packagesProperty.oclIsUndefined() or packagesProperty = '' then '' else packagesProperty.oclAsType(String) endif) + 
 							(if currentPackage.hasKey('packages') then ';' + currentPackage.valueKey('packages') else '' endif) in
 	if packages <> '' then
-		let tokenized : Sequence(String) = packages.tokenize('; \r\n') in
+		let tokenized : Sequence(String) = packages.tokenize(',; \r\n') in
         tokenized->iterate( p : String ; res : OclAny = packageToPaths | (
         	let index : Integer = p.index('=') in 
             if index = -1 then
