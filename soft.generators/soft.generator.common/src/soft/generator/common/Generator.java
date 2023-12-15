@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.acceleo.common.IAcceleoConstants;
@@ -215,27 +214,7 @@ public class Generator extends AbstractAcceleoGenerator {
 
     public void initialize() throws IOException {
         // templates
-        templates = Lists.newArrayList(defaultTemplates);
-        if (command.templates != null) {
-            for (String template : command.templates) {
-                // check if pattern is excluded
-                boolean exclude = false;
-                if (template.charAt(0) == '!') {
-                    exclude = true;
-                    template = template.substring(1);
-                }
-
-                // check for all defined templates if they got
-                // to be excluded or not
-                Iterator<String> it = templates.iterator();
-                while (it.hasNext()) {
-                    boolean match = Pattern.matches(template, it.next());
-                    if ((match && exclude) || (!match && !exclude))
-                        it.remove();
-                }
-
-            }
-        }
+        templates = command.templates != null ? command.templates : Lists.newArrayList(defaultTemplates);
 
         // properties
         properties.put("nsURI", nsURI);
