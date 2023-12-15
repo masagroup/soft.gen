@@ -137,6 +137,10 @@ public class GenerateUtils {
         return new HashMap<>();
     }
 
+    public boolean mapIsEmpty(Map<Object, Object> map) {
+        return map.isEmpty();
+    }
+
     public Map<Object, Object> mapPut(Map<Object, Object> map, Object key, Object value) {
         map.put(key, value);
         return map;

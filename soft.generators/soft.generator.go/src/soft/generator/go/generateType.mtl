@@ -476,17 +476,21 @@ endif
 
 [template public generateImports(imports : OclAny, packagePath : String)]
 [if not imports.oclIsUndefined()]
-[for (path : OclAny | imports.mapKeys()->sortedBy(oclAsType(String)))]
-[if path <> packagePath]
+[let paths : OrderedSet(String) = imports.mapKeys()->select(p | p <> packagePath)->sortedBy(oclAsType(String))]
+[if not paths->isEmpty()]
+import (
+[for (path : String | paths)]
 [let name : OclAny = imports.mapGet(path)]
 [let dir : String = getPackageDirectoryFromPath(path.oclAsType(String))]
 [let default : String = getPackageNameFromPath(dir)]
-import [if name <> default][name/] [/if]"[dir/]"
+	[if name <> default][name/] [/if]"[dir/]"
 [/let]
 [/let]
 [/let]
-[/if]
 [/for]
+)
+[/if]
+[/let]
 [/if]
 [/template]
 
