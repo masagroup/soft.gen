@@ -122,7 +122,7 @@ p.[anEDatatype.getElementInstanceName()/] = ecoreFactory.CreateEDataTypeFromCont
 [/template]
 
 [template public initSuperTypes(aEClass : EClass,packagePath : String, imports : OclAny)]
-[for (superClass : EClass | aEClass.eSuperTypes->asOrderedSet()->sortedBy(name))]
+[for (superClass : EClass | aEClass.eSuperTypes)]
 p.[aEClass.getElementInstanceName()/].GetESuperTypes().Add([aEClass.getPackageGetter(superClass,packagePath,imports)/])
 [/for]
 [/template]
