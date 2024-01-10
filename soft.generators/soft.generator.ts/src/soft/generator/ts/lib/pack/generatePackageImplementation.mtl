@@ -250,7 +250,7 @@ this.[anEDatatype.getInstanceName()/] = factory.createEDataTypeFromContainerAndC
 /]
 
 [template public initSuperTypes(aEClass : EClass)]
-[for (superClass : EClass | aEClass.eSuperTypes->asOrderedSet()->sortedBy(name))]
+[for (superClass : EClass | aEClass.eSuperTypes)]
 this.[aEClass.getInstanceName()/].eSuperTypes.add([superClass.getGetter(aEClass.ePackage)/]);
 [/for]
 [/template]
