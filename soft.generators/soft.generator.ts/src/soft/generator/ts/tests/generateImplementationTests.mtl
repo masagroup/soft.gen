@@ -46,7 +46,7 @@ import { anything , capture, instance, mock, reset, verify, when } from "ts-mock
                                         , if features->exists(requiresNotification()) then Set{'ecore.ENotification','ecore.ENotificationChain','ecore.EventType','ecore.Notification','ecore.EOPPOSITE_FEATURE_BASE', aPackage.getQualifiedConstantsName() } else Set{} endif
                                         , if features->exists(isContainer()) then Set{aPackage.getQualifiedConstantsName()} else Set{} endif
                                         , Set {aClass.getQualifiedImplementationName(), aPackage.name + '.' + 'get'+ aPackage.getInterfaceName()}
-                                        , Set {'ecore.EResource', 'ecore.EResourceSet', 'ecore.EAdapter'}
+                                        , Set {'ecore.EResource', 'ecore.EResourceSet', 'ecore.EAdapter', 'ecore.URI'}
                                         }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
 [aPackage.generateImports(allTypes,aClass.getImplementationTestFileName( aClass.name ))/]
 [/let]
@@ -188,7 +188,7 @@ test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
 	verify(mockValue.eIsProxy()).once()
 
 	// get a resolved value
-	let mockURI = new URL("test:///file.t");
+	let mockURI = new [ecorePrefix/]URI("test:///uri");
 	let mockResolved = mock<[getShortQualifiedName( eRefType.getQualifiedInterfaceName() + 'Internal' , aClass.ePackage.name )/]>();
 	let resolved = instance(mockResolved);
 	when(mockResolved.eProxyURI()).thenReturn(null)
