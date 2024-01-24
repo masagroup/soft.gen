@@ -66,7 +66,7 @@ protected [aStructuralFeature.getInitializationMethodName()/](): [aStructuralFea
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
     return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/]
 [else]
-    throw new Error("[aStructuralFeature.getInitializationMethodName()/] not implemented");
+    throw new Error("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
 }
 
@@ -198,7 +198,7 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
         this.[varName/] = [aStructuralFeature.getListConstructor(aClass)/]
     }
     [/if]
-    return this.[varName/];
+    return this.[varName/]
 [elseif hasKey('getterBody')]
     [valueKey('getterBody')/]
 [else]
