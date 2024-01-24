@@ -17,7 +17,7 @@
 [import soft::generator::ts::generateType/]
 
 [template public generateDeclaration(aOperation : EOperation)]
-[aOperation.getOperationName()/]([aOperation.generateParameterList()/]) : [aOperation.generateType()/];
+[aOperation.getOperationName()/]([aOperation.generateParameterList()/]) : [aOperation.generateType()/]
 
 [/template]
 
@@ -28,7 +28,7 @@
 
 [template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? ( anEOperation.isDefault() )]
 // [anEOperation.getOperationName()/] default implementation
-[anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) : [anEOperation.generateType()/] {
+[anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]): [anEOperation.generateType()/] {
     throw new Error("[anEOperation.getOperationName()/] not implemented")
 }
 

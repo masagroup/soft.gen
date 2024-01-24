@@ -56,7 +56,7 @@ import { anything , capture, instance, mock, reset, verify, when } from "ts-mock
 [let mockTypes : OrderedSet(EClass) = features->select(oclIsKindOf(EReference) and eType.oclIsKindOf(EClass) and eType.name <> 'EObject')
 											  ->collect(eType.oclAsType(EClass))->asOrderedSet()->sortedBy(name)]
 [for (mockType: EClass | mockTypes)]
-interface [mockType.getInterfaceName()/]Internal extends [getShortQualifiedName(mockType.getQualifiedInterfaceName(),aPackage.name)/], [ecorePrefix/]EObjectInternal {} 
+interface [mockType.getInterfaceName()/]Internal extends [getShortQualifiedName(mockType.getQualifiedInterfaceName(),aPackage.name)/], [ecorePrefix/]EObjectInternal {}
 [/for]
 [/let]
 [/let]
@@ -66,7 +66,7 @@ describe("[className/]", () => {
 	test("eStaticClass", () => {
         let o = new [className/]()
 		expect(o.eStaticClass()).toBe(get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]())
-    });
+    })
 
 	[aClass.getImplementedFeatures()->sortedBy( getVariableName() ).generateTestFeature(aClass)/]
 	[aClass.getImplementedOperations()->sortedBy( getOperationName() )->select(isDefault()).generateTestOperation(aClass)/]

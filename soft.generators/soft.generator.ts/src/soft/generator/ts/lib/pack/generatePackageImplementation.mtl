@@ -49,11 +49,11 @@
 
 export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EPackageExt implements [aPackage.getInterfaceName()/] {
 
-    private static _instance : [className/] = null
+    private static _instance: [className/] = null
     [allClasses.generateDataMember(aPackage)/]
     [allDataTypes.generateDataMember(aPackage)/]
 
-    public static getInstance() : [className/] {
+    public static getInstance(): [className/] {
         if (!this._instance) {
             this._instance = new [className/]()
         }
@@ -80,7 +80,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     [allDataTypes.generateGetter(aPackage)/]
 
 
-    private createPackageContents() : void {
+    private createPackageContents(): void {
 [if allClasses->notEmpty() or allDataTypes->notEmpty()]
         let factory = [getShortQualifiedName('ecore.getEcoreFactory', aPackage.name)/]();
 [for (aClass : EClass | allClasses)]
@@ -93,7 +93,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 [/if]
     }
 
-    private initializePackageContents() : void {
+    private initializePackageContents(): void {
 
 [if allClasses->notEmpty()]
         [allClasses.initSuperTypes()/]
@@ -116,7 +116,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
 [if not aPackage.isEcorePackage()]
 [for (aAnnotationSource : String | annotationSources)]
-    private initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations() : void {
+    private initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations(): void {
         let source = "[aAnnotationSource/]"
         let factory = [getShortQualifiedName('ecore.getEcoreFactory', aPackage.name)/]()
         [for (eAnnotation : EAnnotation | aPackage.eAllContents(EAnnotation)->select( a | a.source = aAnnotationSource))]
@@ -256,30 +256,30 @@ this.[aEClass.getInstanceName()/].eSuperTypes.add([superClass.getGetter(aEClass.
 [/template]
 
 [template private generateInitialization(aEClass : EClass)]
-this.initEClass(this.[aEClass.getInstanceName()/],"[aEClass.name/]","[aEClass.getInstanceTypeName()/]",[aEClass.abstract.toString()/],[aEClass.interface.toString()/])
+this.initEClass(this.[aEClass.getInstanceName()/], "[aEClass.name/]", "[aEClass.getInstanceTypeName()/]", [aEClass.abstract.toString()/], [aEClass.interface.toString()/])
 [/template]
 
 [template private generateInitialization(anEAttribute : EAttribute, aPackage : EPackage )]
-this.initEAttribute([anEAttribute.getPackageGetter()/],[anEAttribute.eType.oclAsType(EDataType).getPackageGetter(anEAttribute)/],"[anEAttribute.name/]","[anEAttribute.defaultValueLiteral/]",[anEAttribute.lowerBound/],[anEAttribute.upperBound/],[anEAttribute.transient.toString()/],[anEAttribute.volatile.toString()/],[anEAttribute.changeable.toString()/],[anEAttribute.unsettable.toString()/],[anEAttribute.unique.toString()/],[anEAttribute.derived.toString()/],[anEAttribute.ordered.toString()/],[anEAttribute.iD.toString()/])
+this.initEAttribute([anEAttribute.getPackageGetter()/], [anEAttribute.eType.oclAsType(EDataType).getPackageGetter(anEAttribute)/], "[anEAttribute.name/]", "[anEAttribute.defaultValueLiteral/]", [anEAttribute.lowerBound/], [anEAttribute.upperBound/], [anEAttribute.transient.toString()/], [anEAttribute.volatile.toString()/], [anEAttribute.changeable.toString()/], [anEAttribute.unsettable.toString()/], [anEAttribute.unique.toString()/], [anEAttribute.derived.toString()/], [anEAttribute.ordered.toString()/], [anEAttribute.iD.toString()/])
 
 [/template]
 
 [template private generateInitialization(anEReference : EReference, aPackage : EPackage )]
-this.initEReference([anEReference.getPackageGetter()/],[anEReference.eGenericType.eClassifier.getPackageGetter(anEReference)/],[if anEReference.eOpposite.oclIsUndefined()]null[else][anEReference.eOpposite.getPackageGetter()/][/if],"[anEReference.name/]","[anEReference.defaultValueLiteral/]",[anEReference.lowerBound/],[anEReference.upperBound/],[anEReference.transient.toString()/],[anEReference.volatile.toString()/],[anEReference.changeable.toString()/],[anEReference.containment.toString()/],[anEReference.resolveProxies.toString()/],[anEReference.unsettable.toString()/],[anEReference.unique.toString()/],[anEReference.derived.toString()/],[anEReference.ordered.toString()/])
+this.initEReference([anEReference.getPackageGetter()/], [anEReference.eGenericType.eClassifier.getPackageGetter(anEReference)/], [if anEReference.eOpposite.oclIsUndefined()]null[else][anEReference.eOpposite.getPackageGetter()/][/if], "[anEReference.name/]", "[anEReference.defaultValueLiteral/]", [anEReference.lowerBound/], [anEReference.upperBound/], [anEReference.transient.toString()/], [anEReference.volatile.toString()/], [anEReference.changeable.toString()/], [anEReference.containment.toString()/], [anEReference.resolveProxies.toString()/], [anEReference.unsettable.toString()/], [anEReference.unique.toString()/], [anEReference.derived.toString()/], [anEReference.ordered.toString()/])
 
 [/template]
 
 [template private generateInitialization(anEOperation : EOperation , aPackage : EPackage )? (anEOperation.eParameters->isEmpty())]
-this.initEOperation([anEOperation.getPackageGetter()/],[anEOperation.eType.getPackageGetter(anEOperation)/],"[anEOperation.name.toString()/]",[anEOperation.lowerBound/],[anEOperation.upperBound/],[anEOperation.unique.toString()/],[anEOperation.ordered.toString()/])
+this.initEOperation([anEOperation.getPackageGetter()/], [anEOperation.eType.getPackageGetter(anEOperation)/], "[anEOperation.name.toString()/]", [anEOperation.lowerBound/], [anEOperation.upperBound/], [anEOperation.unique.toString()/], [anEOperation.ordered.toString()/])
 
 [/template]
 
 [template private generateInitialization(anEOperation : EOperation , aPackage : EPackage )? (anEOperation.eParameters->notEmpty())]
 {
     let operation = [anEOperation.getPackageGetter()/]
-    this.initEOperation(operation,[anEOperation.eType.getPackageGetter(anEOperation)/],"[anEOperation.name.toString()/]",[anEOperation.lowerBound/],[anEOperation.upperBound/],[anEOperation.unique.toString()/],[anEOperation.ordered.toString()/])
+    this.initEOperation(operation, [anEOperation.eType.getPackageGetter(anEOperation)/], "[anEOperation.name.toString()/]", [anEOperation.lowerBound/], [anEOperation.upperBound/], [anEOperation.unique.toString()/], [anEOperation.ordered.toString()/])
     [for (anEParameter : EParameter | anEOperation.eParameters)]
-    this.addEParameter(operation,[anEParameter.eType.getPackageGetter(anEParameter.eOperation)/],"[anEParameter.name/]",0,1,[anEParameter.unique.toString()/],[anEParameter.ordered.toString()/])
+    this.addEParameter(operation, [anEParameter.eType.getPackageGetter(anEParameter.eOperation)/], "[anEParameter.name/]", 0, 1, [anEParameter.unique.toString()/], [anEParameter.ordered.toString()/])
     [/for]
 }
 

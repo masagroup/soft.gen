@@ -49,7 +49,7 @@ export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/
     [aPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(aPackage)/]
 }
 
-export function get[className/]() : [className/] {
+export function get[className/](): [className/] {
     return [aPackage.getImplementationName()/].getInstance()
 }
 

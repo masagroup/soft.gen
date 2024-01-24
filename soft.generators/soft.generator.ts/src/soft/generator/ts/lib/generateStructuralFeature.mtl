@@ -29,15 +29,15 @@
 [/template]
 
 [template private generatePropertyDeclaration(aStructuralFeature : EStructuralFeature)]
-[if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/] : [aStructuralFeature.generateType()/]
+[if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/]: [aStructuralFeature.generateType()/]
 [/template]
 
 [template private generateUnSetDeclaration(aStructuralFeature : EStructuralFeature)]
-[aStructuralFeature.getUnSetterName()/]() : void
+[aStructuralFeature.getUnSetterName()/](): void
 [/template]
 
 [template public generateVariableDeclaration(aStructuralFeature : EStructuralFeature)]
-protected [aStructuralFeature.getVariableName()/] : [aStructuralFeature.generateType()/]
+protected [aStructuralFeature.getVariableName()/]: [aStructuralFeature.generateType()/]
 
 [/template]
 
@@ -58,7 +58,7 @@ this.[aAttribute.getVariableName()/] = [defaultValue/]
 [/template]
 
 [template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'function' )]
-protected [aStructuralFeature.getInitializationMethodName()/]() : [aStructuralFeature.generateType()/] {
+protected [aStructuralFeature.getInitializationMethodName()/](): [aStructuralFeature.generateType()/] {
 [if isMapType()]
     return [getMapConstructor(aClass)/]
 [elseif isListType()]
@@ -73,7 +73,7 @@ protected [aStructuralFeature.getInitializationMethodName()/]() : [aStructuralFe
 [/template]
 
 [template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'action' )]
-protected [aStructuralFeature.getInitializationMethodName()/]() : void {
+protected [aStructuralFeature.getInitializationMethodName()/](): void {
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isMapType()]
     this.[varName/] = [getMapConstructor(aClass)/]
@@ -123,7 +123,7 @@ protected [aStructuralFeature.getInitializationMethodName()/]() : void {
 
 [template public generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 // get the value of [aStructuralFeature.getPropertyName()/]
-get [aStructuralFeature.getPropertyName()/]() : [aStructuralFeature.generateType()/] {
+get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType()/] {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
@@ -211,7 +211,7 @@ get [aStructuralFeature.getPropertyName()/]() : [aStructuralFeature.generateType
 
 [template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
 // get the basic value of [aStructuralFeature.getPropertyName()/] with no proxy resolution
-basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/]() : [aStructuralFeature.generateType()/] {
+basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFeature.generateType()/] {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
@@ -326,10 +326,9 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst()]
-basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]( [newVarName/] : [aStructuralFeature.generateType()/] , msgs : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain ) : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain 
-{
+basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [aStructuralFeature.generateType()/] , msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain ): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
 [if isContainer()]
-    return this.eBasicSetContainer([newVarName/],[aClass.getQualifiedIDName(aStructuralFeature)/],msgs)
+    return this.eBasicSetContainer([newVarName/], [aClass.getQualifiedIDName(aStructuralFeature)/], msgs)
 [elseif not isVolatile()]
     [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
     let [oldVarName/] = this.[varName/]
@@ -384,7 +383,7 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectMap<[aType.generate
 
 [template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
 [let aPackage : EPackage = aClass.ePackage]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEDataTypeList<[anEAttribute.eGenericType.generateType(aPackage)/]>(this,[aClass.getQualifiedIDName(anEAttribute)/])
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEDataTypeList<[anEAttribute.eGenericType.generateType(aPackage)/]>(this, [aClass.getQualifiedIDName(anEAttribute)/])
 [/let]
 [/template]
 
@@ -398,21 +397,21 @@ null
 [let aType : String = anEReference.eGenericType.generateType(aPackage)]
 [if (anEReference.containment)]
     [if anEReference.eOpposite.oclIsUndefined() ]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this , [aClass.getQualifiedIDName(anEReference)/] , -1, true , true , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getQualifiedIDName(anEReference)/] , -1, true, true, false, [anEReference.isProxy()/], [anEReference.isUnSettable()/])
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this , [aClass.getQualifiedIDName(anEReference)/] ,[reverseClass.getQualifiedIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getQualifiedIDName(anEReference)/] ,[reverseClass.getQualifiedIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
         [/let]
         [/let]
     [/if]
 [else]
     [if anEReference.eOpposite.oclIsUndefined() ]     
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this , [anEReference.eContainingClass.getQualifiedIDName( anEReference )/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [anEReference.eContainingClass.getQualifiedIDName( anEReference )/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this , [aClass.getQualifiedIDName(anEReference)/] , [reverseClass.getQualifiedIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getQualifiedIDName(anEReference)/] , [reverseClass.getQualifiedIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
         [/let]
         [/let]
     [/if]
@@ -447,10 +446,10 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
     if (this.[varName/] != null) {
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
         [if not isBidirectional()]
-        notifications = (this.[varName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove( this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/] , notifications )
+        notifications = (this.[varName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/] , notifications )
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
-        notifications = (this.[varName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove( this,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/] , notifications )
+        notifications = (this.[varName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/] , notifications )
             [/let]
         [/if]
         notifications = basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](notifications)
@@ -480,7 +479,7 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName()]    
 [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
-basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( msgs : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain )  : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
+basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain ): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
 [if not isVolatile()]
     let [oldVarName/] = this.[varName/]
     let notifications = msgs

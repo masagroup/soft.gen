@@ -28,7 +28,7 @@ void
 	[let aDataType : EGenericType = aElement.eGenericType]
     [let aPackage : EPackage = aElement.getEPackage()]
     [if aElement.isMapType()]
-		[getShortQualifiedName('ecore.EMap', aPackage.name )/]<[aDataType.generateMapKeyType(aPackage)/],[aDataType.generateMapValueType(aPackage)/]>
+		[getShortQualifiedName('ecore.EMap', aPackage.name )/]<[aDataType.generateMapKeyType(aPackage)/], [aDataType.generateMapValueType(aPackage)/]>
 	[elseif aElement.isListType()]
         [getShortQualifiedName('ecore.EList', aPackage.name )/]<[aDataType.generateListTypeParameters(aPackage)/]>
     [else]
@@ -40,7 +40,7 @@ void
 [/template]
 
 [template public generateMapTypeParameters(anEDataType : EGenericType, aPackage : EPackage ) post(trim())]
-[anEDataType.generateMapKeyType(aPackage)/],[anEDataType.generateMapValueType(aPackage)/]	
+[anEDataType.generateMapKeyType(aPackage)/], [anEDataType.generateMapValueType(aPackage)/]	
 [/template]
 
 [template public generateListTypeParameters(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
@@ -83,7 +83,7 @@ void
 [/template]
 
 [template public generateParameterList(aOperation:EOperation ) post(trim())]
-[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterName()/] : [sParameter.generateType()/][/for]
+[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterName()/]: [sParameter.generateType()/][/for]
 [/template]
 
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
