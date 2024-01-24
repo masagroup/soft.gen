@@ -21,7 +21,7 @@
 [template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage )]
 
 // Returns the meta object for the [anENamedElement.name.toUpperFirst()/]
-[anENamedElement.getReflectiveGetterName()/]() : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/];
+[anENamedElement.getReflectiveGetterName()/]() : [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/]
 [/template]
 
 [template public generatePackageInterface(aPackage : EPackage) {className : String = aPackage.getInterfaceName();}]
@@ -50,7 +50,7 @@ export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/
 }
 
 export function get[className/]() : [className/] {
-    return [aPackage.getImplementationName()/].getInstance();
+    return [aPackage.getImplementationName()/].getInstance()
 }
 
 

@@ -65,7 +65,7 @@ describe("[className/]", () => {
 	
 	test("eStaticClass", () => {
         let o = new [className/]()
-		expect(o.eStaticClass()).toBe(get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]());
+		expect(o.eStaticClass()).toBe(get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]())
     });
 
 	[aClass.getImplementedFeatures()->sortedBy( getVariableName() ).generateTestFeature(aClass)/]
@@ -107,7 +107,7 @@ describe("[className/]", () => {
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isVolatile())]
 test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
 	let o = new [aClass.getImplementationName()/]()
-	expect(() => o.[aStructuralFeature.getPropertyName()/]).toThrow(Error);
+	expect(() => o.[aStructuralFeature.getPropertyName()/]).toThrow(Error)
 })
 [/template]
 
@@ -115,44 +115,44 @@ test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
 [let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
 	// default
-	let o = new [aClass.getImplementationName()/]();
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull();
+	let o = new [aClass.getImplementationName()/]()
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull()
 
 	// set a mock container
-	let mockContainer = mock<[ecorePrefix/]EObject>();
+	let mockContainer = mock<[ecorePrefix/]EObject>()
 	let container = instance(mockContainer)
-	o.eSetInternalContainer(container,[aClass.getQualifiedIDName(aStructuralFeature)/]);
+	o.eSetInternalContainer(container,[aClass.getQualifiedIDName(aStructuralFeature)/])
 	
 	// no proxy
-	when(mockContainer.eIsProxy()).thenReturn(false);
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(container);
-	verify(mockContainer.eIsProxy()).once();
+	when(mockContainer.eIsProxy()).thenReturn(false)
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(container)
+	verify(mockContainer.eIsProxy()).once()
 })
 [/let]
 [/template]
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isMapType())]
 test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
-	expect(o.[aStructuralFeature.getPropertyName()/]).not.toBeNull();
+	let o = new [aClass.getImplementationName()/]()
+	expect(o.[aStructuralFeature.getPropertyName()/]).not.toBeNull()
 })
 [/template]
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (isListType())]
 test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	[if aStructuralFeature.eType.name = 'EFeatureMapEntry']
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull();
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull()
 	[else]
-	expect(o.[aStructuralFeature.getPropertyName()/]).not.toBeNull();
+	expect(o.[aStructuralFeature.getPropertyName()/]).not.toBeNull()
 	[/if]
 })
 [/template]
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EReference) and isLazy())]
 test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
-	expect(() => o.[aStructuralFeature.getPropertyName()/]).toThrow(Error);
+	let o = new [aClass.getImplementationName()/]()
+	expect(() => o.[aStructuralFeature.getPropertyName()/]).toThrow(Error)
 })
 [/template]
 
@@ -160,43 +160,43 @@ test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
 [let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 [let eRefType : EClass = aStructuralFeature.eType.oclAsType(EClass)]
 test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	
 	// get default value
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull();
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull()
 	
 	// initialize object with a mock value
-	let mockValue = mock<[getShortQualifiedName( eRefType.getQualifiedInterfaceName() + 'Internal' , aClass.ePackage.name )/]>();
-	let value = instance(mockValue);
-	o.[aStructuralFeature.getPropertyName()/] = value;
+	let mockValue = mock<[getShortQualifiedName( eRefType.getQualifiedInterfaceName() + 'Internal' , aClass.ePackage.name )/]>()
+	let value = instance(mockValue)
+	o.[aStructuralFeature.getPropertyName()/] = value
 	
 	// events
-	let mockAdapter = mock<[ecorePrefix/]EAdapter>();
-	let adapter = instance(mockAdapter);
-	o.eAdapters.add(adapter);
+	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
+	let adapter = instance(mockAdapter)
+	o.eAdapters.add(adapter)
 	
 	// set object resource
-	let mockResourceSet = mock<[ecorePrefix/]EResourceSet>();
-	let resourceSet = instance(mockResourceSet);
-	let mockResource = mock<[ecorePrefix/]EResource>();
-	let resource = instance(mockResource);
-	o.eSetInternalResource(resource);
+	let mockResourceSet = mock<[ecorePrefix/]EResourceSet>()
+	let resourceSet = instance(mockResourceSet)
+	let mockResource = mock<[ecorePrefix/]EResource>()
+	let resource = instance(mockResource)
+	o.eSetInternalResource(resource)
 
 	// get non resolved value
 	when(mockValue.eIsProxy()).thenReturn(false)
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(value);
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(value)
 	verify(mockValue.eIsProxy()).once()
 
 	// get a resolved value
-	let mockURI = new [ecorePrefix/]URI("test:///uri");
-	let mockResolved = mock<[getShortQualifiedName( eRefType.getQualifiedInterfaceName() + 'Internal' , aClass.ePackage.name )/]>();
-	let resolved = instance(mockResolved);
+	let mockURI = new [ecorePrefix/]URI("test:///uri")
+	let mockResolved = mock<[getShortQualifiedName( eRefType.getQualifiedInterfaceName() + 'Internal' , aClass.ePackage.name )/]>()
+	let resolved = instance(mockResolved)
 	when(mockResolved.eProxyURI()).thenReturn(null)
 	when(mockResource.eResourceSet()).thenReturn(resourceSet)
 	when(mockResourceSet.getEObject(mockURI,true)).thenReturn(resolved)
 	when(mockValue.eIsProxy()).thenReturn(true)
 	when(mockValue.eProxyURI()).thenReturn(mockURI)
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(resolved);
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(resolved)
 })
 [/let]
 [/let]
@@ -204,23 +204,23 @@ test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EReference))]
 test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	
 	// get default value
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull();
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull()
 })
 [/template]
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ? (oclIsKindOf(EAttribute))]
 test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	// get default value
 	[let aAttribute : EAttribute = aStructuralFeature.oclAsType(EAttribute)]
 	[let aDefaultValue : String = aAttribute.getDefaultValue(aClass)]
 	[if aDefaultValue = '']
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull();
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull()
 	[else]
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBe([aDefaultValue/]);
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe([aDefaultValue/])
 	[/if]
 	[/let]
 	[/let]
@@ -233,9 +233,9 @@ test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
 
 [template private generateSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ?(isVolatile())]
 test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]	
-	expect(() => o.[aStructuralFeature.getPropertyName()/] = value).toThrow(Error);
+	expect(() => o.[aStructuralFeature.getPropertyName()/] = value).toThrow(Error)
 })
 [/template]
 
@@ -244,52 +244,52 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
 [let reverseClass : EClass = reverseFeature.eContainingClass]
 test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
-	let mockResource = mock<[ecorePrefix/]EResource>();
-	let resource = instance(mockResource);
+	let o = new [aClass.getImplementationName()/]()
+	let mockResource = mock<[ecorePrefix/]EResource>()
+	let resource = instance(mockResource)
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
 
 	// add listener
-	let mockAdapter = mock<[ecorePrefix/]EAdapter>();
-	let adapter = instance(mockAdapter);
-	o.eAdapters.add(adapter);
+	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
+	let adapter = instance(mockAdapter)
+	o.eAdapters.add(adapter)
 	
 	// set value
-	when(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
-	when(mockValue.eResource()).thenReturn(resource);
-	o.[aStructuralFeature.getPropertyName()/] = value;
-	verify(mockResource.attached(o)).once();
-	verify(mockAdapter.notifyChanged(anything())).once(); 
-	let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
+	when(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
+	when(mockValue.eResource()).thenReturn(resource)
+	o.[aStructuralFeature.getPropertyName()/] = value
+	verify(mockResource.attached(o)).once()
+	verify(mockAdapter.notifyChanged(anything())).once() 
+	let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
 	expect(notification.notifier).toBe(o)
-	expect(notification.oldValue).toBeNull();
-	expect(notification.newValue).toBe(value);
+	expect(notification.oldValue).toBeNull()
+	expect(notification.newValue).toBe(value)
 	
 	// set with the same value
-	reset(mockAdapter);
-	o.[aStructuralFeature.getPropertyName()/] = value;
-	verify(mockAdapter.notifyChanged(anything())).once();
+	reset(mockAdapter)
+	o.[aStructuralFeature.getPropertyName()/] = value
+	verify(mockAdapter.notifyChanged(anything())).once()
 
 	// set with another value in a different resource
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'other')/]
-	let mockOtherResource = mock<[ecorePrefix/]EResource>();
+	let mockOtherResource = mock<[ecorePrefix/]EResource>()
 	let otherResource = instance(mockOtherResource)
-	reset(mockAdapter);
-	reset(mockValue);
-	reset(mockResource);	
-	when(mockValue.eInverseRemove(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
-	when(mockValue.eResource()).thenReturn(resource);
-	when(mockOther.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
-	when(mockOther.eResource()).thenReturn(otherResource);
-	o.[aStructuralFeature.getPropertyName()/] = other;
-	verify(mockResource.detached(o)).once();
-	verify(mockOtherResource.attached(o)).once();
-	verify(mockAdapter.notifyChanged(anything())).once();
-	['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
+	reset(mockAdapter)
+	reset(mockValue)
+	reset(mockResource)	
+	when(mockValue.eInverseRemove(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
+	when(mockValue.eResource()).thenReturn(resource)
+	when(mockOther.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
+	when(mockOther.eResource()).thenReturn(otherResource)
+	o.[aStructuralFeature.getPropertyName()/] = other
+	verify(mockResource.detached(o)).once()
+	verify(mockOtherResource.attached(o)).once()
+	verify(mockAdapter.notifyChanged(anything())).once()
+	['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
 	expect(notification.notifier).toBe(o)
-	expect(notification.oldValue).toBe(value);
-	expect(notification.newValue).toBe(other);
-	expect(notification.position).toBe(-1);
+	expect(notification.oldValue).toBe(value)
+	expect(notification.newValue).toBe(other)
+	expect(notification.position).toBe(-1)
 })
 [/let]
 [/let]
@@ -301,36 +301,36 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
 [let reverseClass : EClass = reverseFeature.eContainingClass]
 test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	
 	// add listener
-	let mockAdapter = mock<[ecorePrefix/]EAdapter>();
-	let adapter = instance(mockAdapter);
-	o.eAdapters.add(adapter);
+	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
+	let adapter = instance(mockAdapter)
+	o.eAdapters.add(adapter)
 	
 	// first value
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
-	when(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
-	o.[aStructuralFeature.getPropertyName()/] = value;
-	verify(mockAdapter.notifyChanged(anything())).once(); 
-	let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
+	when(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
+	o.[aStructuralFeature.getPropertyName()/] = value
+	verify(mockAdapter.notifyChanged(anything())).once() 
+	let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
 	expect(notification.notifier).toBe(o)
-	expect(notification.oldValue).toBeNull();
-	expect(notification.newValue).toBe(value);
+	expect(notification.oldValue).toBeNull()
+	expect(notification.newValue).toBe(value)
 	
 	// set with other value
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'other')/]
-	reset(mockAdapter);
-	reset(mockValue);
-	when(mockValue.eInverseRemove(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
-	when(mockOther.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
-	o.[aStructuralFeature.getPropertyName()/] = other;
-	verify(mockAdapter.notifyChanged(anything())).once();
-	['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
+	reset(mockAdapter)
+	reset(mockValue)
+	when(mockValue.eInverseRemove(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
+	when(mockOther.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
+	o.[aStructuralFeature.getPropertyName()/] = other
+	verify(mockAdapter.notifyChanged(anything())).once()
+	['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
 	expect(notification.notifier).toBe(o)
-	expect(notification.oldValue).toBe(value);
-	expect(notification.newValue).toBe(other);
-	expect(notification.position).toBe(-1);
+	expect(notification.oldValue).toBe(value)
+	expect(notification.newValue).toBe(other)
+	expect(notification.position).toBe(-1)
 })
 [/let]
 [/let]
@@ -341,30 +341,30 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 [let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 [let aPackage : EPackage = aClass.ePackage ]
 test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	[aStructuralFeature.eType.generateTestValue(aPackage,'value')/]
 
 	// add listener
-	let mockAdapter = mock<[ecorePrefix/]EAdapter>();
-	let adapter = instance(mockAdapter);
-	o.eAdapters.add(adapter);
+	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
+	let adapter = instance(mockAdapter)
+	o.eAdapters.add(adapter)
 
 	// set value
-	o.[aStructuralFeature.getPropertyName()/] = value;
+	o.[aStructuralFeature.getPropertyName()/] = value
 
 	// checks
-	verify(mockAdapter.notifyChanged(anything())).once();
-	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
+	verify(mockAdapter.notifyChanged(anything())).once()
+	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
 	expect(notification.notifier).toBe(o)
 [let defaultValue : String = aStructuralFeature.getDefaultValue(aClass)]
 [if defaultValue = 'null']
-	expect(notification.oldValue).toBeNull();
+	expect(notification.oldValue).toBeNull()
 [else]
-	expect(notification.oldValue).toBe([defaultValue/]);
+	expect(notification.oldValue).toBe([defaultValue/])
 [/if]
 [/let]
-	expect(notification.newValue).toBe(value);
-	expect(notification.position).toBe(-1);
+	expect(notification.newValue).toBe(value)
+	expect(notification.position).toBe(-1)
 })
 [/let]
 [/let]
@@ -375,40 +375,40 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 [let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 [let aPackage : EPackage = aClass.ePackage ]
 test("basicSet[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	[aStructuralFeature.eType.generateTestValue(aPackage,'value')/]
 
 	// add listener
-	let mockAdapter = mock<[ecorePrefix/]EAdapter>();
-	let adapter = instance(mockAdapter);
-	o.eAdapters.add(adapter);
+	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
+	let adapter = instance(mockAdapter)
+	o.eAdapters.add(adapter)
 
 	// notification chain
-	let mockNotifications = mock<[ecorePrefix/]ENotificationChain>();
-	let notifications = instance(mockNotifications);
+	let mockNotifications = mock<[ecorePrefix/]ENotificationChain>()
+	let notifications = instance(mockNotifications)
 
 	// set value
 [if isContainer()]
 	when(mockValue.eResource()).thenReturn(null)
 [/if]
 	when(mockNotifications.add(anything())).thenReturn(true)
-	o.basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/](value,notifications);
+	o.basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/](value,notifications)
 
 	// checks
-	verify(mockNotifications.add(anything())).once();
-	const ['['/]notification[']'/] = capture(mockNotifications.add).last();
+	verify(mockNotifications.add(anything())).once()
+	const ['['/]notification[']'/] = capture(mockNotifications.add).last()
 	expect(notification.notifier).toBe(o)
-	expect(notification.eventType).toBe([ecorePrefix/]EventType.SET);
-	expect(notification.featureID).toBe([aClass.getQualifiedIDName(aStructuralFeature)/]);
+	expect(notification.eventType).toBe([ecorePrefix/]EventType.SET)
+	expect(notification.featureID).toBe([aClass.getQualifiedIDName(aStructuralFeature)/])
 [let defaultValue : String = aStructuralFeature.getDefaultValue(aClass)]
 [if defaultValue = 'null']
-	expect(notification.oldValue).toBeNull();
+	expect(notification.oldValue).toBeNull()
 [else]
-	expect(notification.oldValue).toBe([defaultValue/]);
+	expect(notification.oldValue).toBe([defaultValue/])
 [/if]
 [/let]
-	expect(notification.newValue).toBe(value);
-	expect(notification.position).toBe(-1);
+	expect(notification.newValue).toBe(value)
+	expect(notification.position).toBe(-1)
 })
 [/let]
 [/let]
@@ -416,43 +416,43 @@ test("basicSet[aStructuralFeature.name.toUpperFirst()/]", () => {
 
 [template private generateUnSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ?(isVolatile())]
 test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
-	expect(() => o.[aStructuralFeature.getUnSetterName()/]()).toThrow(Error);
+	let o = new [aClass.getImplementationName()/]()
+	expect(() => o.[aStructuralFeature.getUnSetterName()/]()).toThrow(Error)
 })
 [/template]
 
 [template private generateUnSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass) ?(isListType())]
 test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
-	o.[aStructuralFeature.getUnSetterName()/]();
-	expect(o.[aStructuralFeature.getPropertyName()/].isEmpty()).toBeTruthy();
+	let o = new [aClass.getImplementationName()/]()
+	o.[aStructuralFeature.getUnSetterName()/]()
+	expect(o.[aStructuralFeature.getPropertyName()/].isEmpty()).toBeTruthy()
 })
 [/template]
 
 [template private generateUnSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass)]
 [let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	
 	// add listener
-	let mockAdapter = mock<[ecorePrefix/]EAdapter>();
-	let adapter = instance(mockAdapter);
-	o.eAdapters.add(adapter);
+	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
+	let adapter = instance(mockAdapter)
+	o.eAdapters.add(adapter)
 
 	// unset
-	o.[aStructuralFeature.getUnSetterName()/]();
+	o.[aStructuralFeature.getUnSetterName()/]()
 
 	// checks
-	verify(mockAdapter.notifyChanged(anything())).once();
-	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last();
+	verify(mockAdapter.notifyChanged(anything())).once()
+	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
 	expect(notification.notifier).toBe(o)
-	expect(notification.eventType).toBe([ecorePrefix/]EventType.UNSET);
-	expect(notification.featureID).toBe([aClass.getQualifiedIDName(aStructuralFeature)/]);	
+	expect(notification.eventType).toBe([ecorePrefix/]EventType.UNSET)
+	expect(notification.featureID).toBe([aClass.getQualifiedIDName(aStructuralFeature)/])	
 [let defaultValue : String = aStructuralFeature.getDefaultValue(aClass)]
 [if defaultValue = 'null']
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull();
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBeNull()
 [else]
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBe([defaultValue/]);
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe([defaultValue/])
 [/if]
 [/let]
 })
@@ -461,16 +461,16 @@ test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
 
 
 [template private generateTestValue(aClass : EClass, aPackage : EPackage , varname : String )]
-let mock[varname.toUpperFirst()/] = mock<[aClass.getInterfaceName()/]Internal>();
-let [varname/] = instance(mock[varname.toUpperFirst()/]);
+let mock[varname.toUpperFirst()/] = mock<[aClass.getInterfaceName()/]Internal>()
+let [varname/] = instance(mock[varname.toUpperFirst()/])
 [/template]
 
 [template private generateTestValue(aDataType : EDataType, aPackage : EPackage , varname : String)]
-let [varname/] = [aDataType.getTestValue(aPackage)/];
+let [varname/] = [aDataType.getTestValue(aPackage)/]
 [/template]
 
 [template private generateTestValue(aEEnum : EEnum, aPackage : EPackage , varname : String)]
-let [varname/] = [aEEnum.getTestValue(aPackage)/];
+let [varname/] = [aEEnum.getTestValue(aPackage)/]
 [/template]
 
 [template private generateTestValue(aClassifier : EClassifier, aPackage : EPackage , varname : String )]
@@ -480,7 +480,7 @@ let [varname/] = null
 [template private generateTestOperation(anEOperation : EOperation, aClass : EClass )]
 test("[anEOperation.getOperationName()/]", () => {
 	let o = new([aClass.getImplementationName()/])
-	expect(() => o.[anEOperation.getOperationName()/]([for (eClassifier : EClassifier | anEOperation.eParameters.eType) separator(',')][eClassifier.getDefaultValue(aClass)/][/for])).toThrow(Error);
+	expect(() => o.[anEOperation.getOperationName()/]([for (eClassifier : EClassifier | anEOperation.eParameters.eType) separator(',')][eClassifier.getDefaultValue(aClass)/][/for])).toThrow(Error)
 })
 
 [/template]
@@ -490,18 +490,18 @@ test("[anEOperation.getOperationName()/]", () => {
 [let mixinClasses : Set(EClass) = aClass.getMixinClasses()]
 [if mixinClasses->exists( c : EClass | c.getImplementedFeatures()->notEmpty())]
 test("eDerivedFeatureID", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	{
-		let mockClass = mock<[ecorePrefix/]EClass>();
-		let cls = instance(mockClass);
-		expect(o.eDerivedFeatureID(cls,1)).toBe(1);
+		let mockClass = mock<[ecorePrefix/]EClass>()
+		let cls = instance(mockClass)
+		expect(o.eDerivedFeatureID(cls,1)).toBe(1)
 	}
 [for (aMixinClass : EClass | mixinClasses)]
 	{
-		let cls = get[aClass.ePackage.getInterfaceName()/]().get[aMixinClass.getElementAccessorName()/]();
-		expect(o.eDerivedFeatureID(cls,-1)).toBe(-1);
+		let cls = get[aClass.ePackage.getInterfaceName()/]().get[aMixinClass.getElementAccessorName()/]()
+		expect(o.eDerivedFeatureID(cls,-1)).toBe(-1)
 	[for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
-		expect(o.eDerivedFeatureID(cls,[aMixinClass.getQualifiedIDName(aFeature)/])).toBe([aClass.getQualifiedIDName(aFeature)/]);
+		expect(o.eDerivedFeatureID(cls,[aMixinClass.getQualifiedIDName(aFeature)/])).toBe([aClass.getQualifiedIDName(aFeature)/])
 	[/for]
 	}
 [/for]
@@ -510,18 +510,18 @@ test("eDerivedFeatureID", () => {
 
 [if mixinClasses->exists( c : EClass | c.getImplementedOperations()->notEmpty())]
 test("eDerivedOperationID", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	{
-		let mockClass = mock<[ecorePrefix/]EClass>();
-		let cls = instance(mockClass);
-		expect(o.eDerivedOperationID(cls,1)).toBe(1);
+		let mockClass = mock<[ecorePrefix/]EClass>()
+		let cls = instance(mockClass)
+		expect(o.eDerivedOperationID(cls,1)).toBe(1)
 	}
 [for (aMixinClass : EClass | mixinClasses)]
 	{
-		let cls = get[aClass.ePackage.getInterfaceName()/]().get[aMixinClass.getElementAccessorName()/]();
-		expect(o.eDerivedOperationID(cls,-1)).toBe(-1);
+		let cls = get[aClass.ePackage.getInterfaceName()/]().get[aMixinClass.getElementAccessorName()/]()
+		expect(o.eDerivedOperationID(cls,-1)).toBe(-1)
 	[for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
-		expect(o.eDerivedOperationID(cls,[aMixinClass.getQualifiedIDName(aOperation)/])).toBe([aClass.getQualifiedIDName(aOperation)/]);
+		expect(o.eDerivedOperationID(cls,[aMixinClass.getQualifiedIDName(aOperation)/])).toBe([aClass.getQualifiedIDName(aOperation)/])
 	[/for]
 	}
 [/for]
@@ -536,21 +536,21 @@ test("eDerivedOperationID", () => {
 [let features : OrderedSet(EStructuralFeature) = aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 test("eGetFromID", () => {
-	let o = new [aClass.getImplementationName()/]();
-	expect(() => o.eGetFromID(-1,true)).toThrow(Error);
+	let o = new [aClass.getImplementationName()/]()
+	expect(() => o.eGetFromID(-1,true)).toThrow(Error)
 	[for (anStructFeature : EStructuralFeature | features )]
 	[if anStructFeature.isVolatile() or ( anStructFeature.hasInitializationMethod() and anStructFeature.oclIsKindOf(EReference) and not anStructFeature.isListType() and not anStructFeature.isProxy() )  ]
-	expect(() => o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],true)).toThrow(Error);
-	expect(() => o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],false)).toThrow(Error);
+	expect(() => o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],true)).toThrow(Error)
+	expect(() => o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],false)).toThrow(Error)
 	[else]
-	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],true)).toStrictEqual(o.[anStructFeature.getPropertyName()/]);
+	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],true)).toStrictEqual(o.[anStructFeature.getPropertyName()/])
 	[if (not anStructFeature.isMapType() and anStructFeature.isListType() and anStructFeature.oclIsKindOf(EReference))]
 	expect(
 		deepEqual(
 			o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/],false),
 			(o.[anStructFeature.getPropertyName()/] as [ecorePrefix/]EObjectList<[anStructFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>).getUnResolvedList()
 		)
-	).toBeTruthy();
+	).toBeTruthy()
 	[/if]
 	[/if]
     [/for]
@@ -561,7 +561,7 @@ test("eGetFromID", () => {
 [/template]
 
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isVolatile())]
-expect(() => o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/],null)).toThrow(Error);
+expect(() => o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/],null)).toThrow(Error)
 
 [/template]
 
@@ -570,14 +570,14 @@ expect(() => o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/],null
 [let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
 [let reverseClass : EClass = reverseFeature.eContainingClass]
 	[anStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
-	when(mockValue.eIsProxy()).thenReturn(false);
-	when(mockValue.eResource()).thenReturn(null);
-	when(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
-	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], value);
-	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false)).toBe(value);
-	verify(mockValue.eIsProxy()).once();
-	verify(mockValue.eResource()).once();
-	verify(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).once();
+	when(mockValue.eIsProxy()).thenReturn(false)
+	when(mockValue.eResource()).thenReturn(null)
+	when(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
+	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], value)
+	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false)).toBe(value)
+	verify(mockValue.eIsProxy()).once()
+	verify(mockValue.eResource()).once()
+	verify(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).once()
 [/let]
 [/let]	
 }
@@ -591,20 +591,20 @@ expect(() => o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/],null
 [let aMapClass : EClass = anStructuralFeature.eType.oclAsType(EClass)]
 [let keyFeature : EStructuralFeature = aMapClass.getEStructuralFeature('key')]
 [let valueFeature : EStructuralFeature = aMapClass.getEStructuralFeature('value')]
-	let mockMap = mock<[ecorePrefix/]EMap<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>>();
-	let map = instance(mockMap);
-	let mockIterator = mock<Iterator<[ecorePrefix/]EMapEntry<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>>>();
-	let iterator = instance(mockIterator);
-	let mockEntry = mock<[ecorePrefix/]EMapEntry<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>>();
-	let entry = instance(mockEntry);
+	let mockMap = mock<[ecorePrefix/]EMap<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>>()
+	let map = instance(mockMap)
+	let mockIterator = mock<Iterator<[ecorePrefix/]EMapEntry<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>>>()
+	let iterator = instance(mockIterator)
+	let mockEntry = mock<[ecorePrefix/]EMapEntry<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>>()
+	let entry = instance(mockEntry)
 	[keyFeature.eType.generateTestValue(aPackage,'key')/]
 	[valueFeature.eType.generateTestValue(aPackage,'value')/]
-	when(mockMap['['/]Symbol.iterator[']'/]()).thenReturn(iterator);
-	when(mockIterator.next()).thenReturn({ value: entry, done: false } ).thenReturn({ value: undefined, done: true });
-	when(mockEntry.key).thenReturn(key);
-	when(mockEntry.value).thenReturn(value);
-	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], map);
-	expect(o.[anStructuralFeature.getPropertyName()/].toMap()).toEqual(new Map<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>(['['/]['['/]key,value[']'/][']'/]));
+	when(mockMap['['/]Symbol.iterator[']'/]()).thenReturn(iterator)
+	when(mockIterator.next()).thenReturn({ value: entry, done: false } ).thenReturn({ value: undefined, done: true })
+	when(mockEntry.key).thenReturn(key)
+	when(mockEntry.value).thenReturn(value)
+	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], map)
+	expect(o.[anStructuralFeature.getPropertyName()/].toMap()).toEqual(new Map<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>(['['/]['['/]key,value[']'/][']'/]))
 [/let]
 [/let]
 [/let]
@@ -622,16 +622,16 @@ expect(() => o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/],null
 {
 	// list with a value
 	[anStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
-	let l = new [ecorePrefix/]ImmutableEList<[anStructuralFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>(['['/]value[']'/]);
+	let l = new [ecorePrefix/]ImmutableEList<[anStructuralFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>(['['/]value[']'/])
 [if anStructuralFeature.isProxy()]
-	when(mockValue.eIsProxy()).thenReturn(false);
+	when(mockValue.eIsProxy()).thenReturn(false)
 [/if]
 	[anStructuralFeature.generateFeatureMockAddedExpectations('mockValue',aClass)/]
 	// set list with new contents
-	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], l);
+	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], l)
 	// checks
-	expect(o.[anStructuralFeature.getPropertyName()/].size()).toBe(1);
-	expect(o.[anStructuralFeature.getPropertyName()/].get(0)).toBe(value);
+	expect(o.[anStructuralFeature.getPropertyName()/].size()).toBe(1)
+	expect(o.[anStructuralFeature.getPropertyName()/].get(0)).toBe(value)
 	[anStructuralFeature.generateFeatureMockAddedVerifications('mockValue',aClass)/]
 }
 
@@ -642,11 +642,11 @@ expect(() => o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/],null
 [if anStructuralFeature.isContains()]
 	[let anEReference : EReference = anStructuralFeature.oclAsType(EReference)]
 	[if anEReference.eOpposite.oclIsUndefined()]
-when([mockName/].eInverseAdd(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],anything())).thenReturn(null);
+when([mockName/].eInverseAdd(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],anything())).thenReturn(null)
 	[else]
 	[let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
 	[let reverseClass : EClass = reverseFeature.eContainingClass]
-when([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],anything())).thenReturn(null); 
+when([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],anything())).thenReturn(null) 
 	[/let]
 	[/let]
 	[/if]
@@ -657,7 +657,7 @@ when([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/
 	[else]
 	[let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
 	[let reverseClass : EClass = reverseFeature.eContainingClass]
-when([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],anything())).thenReturn(null); 
+when([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],anything())).thenReturn(null) 
 	[/let]
 	[/let]
 	[/if]
@@ -670,11 +670,11 @@ when([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/
 [if anStructuralFeature.isContains()]
 	[let anEReference : EReference = anStructuralFeature.oclAsType(EReference)]
 	[if anEReference.eOpposite.oclIsUndefined()]
-verify([mockName/].eInverseAdd(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],anything())).once();
+verify([mockName/].eInverseAdd(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],anything())).once()
 	[else]
 	[let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
 	[let reverseClass : EClass = reverseFeature.eContainingClass]
-verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],anything())).once();
+verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],anything())).once()
 	[/let]
 	[/let]
 	[/if]
@@ -685,7 +685,7 @@ verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature
 	[else]
 	[let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
 	[let reverseClass : EClass = reverseFeature.eContainingClass]
-verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],anything())).once();
+verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],anything())).once()
 	[/let]
 	[/let]
 	[/if]
@@ -696,9 +696,9 @@ verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isListType())]
 [let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 {
-	let l = new [ecorePrefix/]ImmutableEList<[anStructuralFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>();
+	let l = new [ecorePrefix/]ImmutableEList<[anStructuralFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>()
 	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], l)
-	expect(o.[anStructuralFeature.getPropertyName()/].isEmpty()).toBeTruthy();
+	expect(o.[anStructuralFeature.getPropertyName()/].isEmpty()).toBeTruthy()
 }
 [/let]
 
@@ -709,10 +709,10 @@ verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature
 [let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
 [let reverseClass : EClass = reverseFeature.eContainingClass]
 	[anStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
-	when(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);	
-	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], value);
-	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false)).toBe(value);
-	verify(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).once();
+	when(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)	
+	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], value)
+	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false)).toBe(value)
+	verify(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).once()
 [/let]
 [/let]
 }
@@ -722,10 +722,10 @@ verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass) ? (isContains())]
 {
 	[anStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
-	when(mockValue.eInverseAdd(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],anything())).thenReturn(null);
-	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], value);
-	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false)).toBe(value);
-	verify(mockValue.eInverseAdd(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],anything())).once();
+	when(mockValue.eInverseAdd(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],anything())).thenReturn(null)
+	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], value)
+	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false)).toBe(value)
+	verify(mockValue.eInverseAdd(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(anStructuralFeature)/],anything())).once()
 }
 
 [/template]
@@ -733,8 +733,8 @@ verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass)]
 {
 	[anStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]	
-	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], value);
-	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false)).toBe(value);
+	o.eSetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], value)
+	expect(o.eGetFromID([aClass.getQualifiedIDName(anStructuralFeature)/], false)).toBe(value)
 }
 
 [/template]
@@ -744,8 +744,8 @@ verify([mockName/].eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature
 [let features : OrderedSet(EStructuralFeature) = aClass.getESetFeatures()->select(not isFeatureMap())->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 test("eSetFromID", () => {
-	let o = new [aClass.getImplementationName()/]();
-	expect(() => o.eSetFromID(-1,null)).toThrow(Error);
+	let o = new [aClass.getImplementationName()/]()
+	expect(() => o.eSetFromID(-1,null)).toThrow(Error)
 	[features.generateFeatureESetFromIDTestImplementation(aClass)/]
 })
 [/if]
@@ -757,13 +757,13 @@ test("eSetFromID", () => {
 [let features : OrderedSet(EStructuralFeature) = aClass.getEIsSetFeatures()->select(not isFeatureMap())->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 test("eIsSetFromID", () => {
-	let o = new [aClass.getImplementationName()/]();
-	expect(() => o.eIsSetFromID(-1)).toThrow(Error);
+	let o = new [aClass.getImplementationName()/]()
+	expect(() => o.eIsSetFromID(-1)).toThrow(Error)
 	[for (anStructFeature : EStructuralFeature | features)]
 		[if anStructFeature.isVolatile()]
-		expect(() => o.eIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/])).toThrow(Error);
+		expect(() => o.eIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/])).toThrow(Error)
 		[else]
-		expect(o.eIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/])).toBeFalsy();
+		expect(o.eIsSetFromID([aClass.getQualifiedIDName(anStructFeature)/])).toBeFalsy()
 		[/if]		
 	[/for]
 })
@@ -776,30 +776,30 @@ test("eIsSetFromID", () => {
 [let features : OrderedSet(EStructuralFeature) = aClass.getEUnSetFeatures()->select(not isFeatureMap())->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 test("eUnsetFromID", () => {
-	let o = new [aClass.getImplementationName()/]();
-	expect(() => o.eUnsetFromID(-1)).toThrow(Error);
+	let o = new [aClass.getImplementationName()/]()
+	expect(() => o.eUnsetFromID(-1)).toThrow(Error)
 	[for (anStructFeature : EStructuralFeature | features)]
 	{
 	[if anStructFeature.isVolatile()]
-		expect(() => o.eUnsetFromID([aClass.getQualifiedIDName(anStructFeature)/])).toThrow(Error);
+		expect(() => o.eUnsetFromID([aClass.getQualifiedIDName(anStructFeature)/])).toThrow(Error)
 	[else]
-		o.eUnsetFromID([aClass.getQualifiedIDName(anStructFeature)/]);
+		o.eUnsetFromID([aClass.getQualifiedIDName(anStructFeature)/])
 		[if anStructFeature.isListType()]
-		let v = o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false);
-		expect(v).not.toBeNull();
-		let l = v as [if not aClass.ePackage.isEcorePackage()]ecore.[/if]EList<[anStructFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>; 
-		expect(l.isEmpty()).toBeTruthy();
+		let v = o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false)
+		expect(v).not.toBeNull()
+		let l = v as [if not aClass.ePackage.isEcorePackage()]ecore.[/if]EList<[anStructFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]> 
+		expect(l.isEmpty()).toBeTruthy()
 		[elseif anStructFeature.oclIsKindOf(EReference)]
-		expect(o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false)).toBeNull();
+		expect(o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false)).toBeNull()
 		[else]
 			[let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
 			[let defaultValue : String = aAttribute.getDefaultValue(aClass)]
 			[if defaultValue <> '']
-		let v = o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false);
+		let v = o.eGetFromID([aClass.getQualifiedIDName(anStructFeature)/], false)
 			[if defaultValue = 'nil']
-		expect(v).toBeNull();
+		expect(v).toBeNull()
 			[else]
-		expect(v).toBe([defaultValue/]);
+		expect(v).toBe([defaultValue/])
 			[/if]	
 			[else]
 			[/if]
@@ -819,13 +819,13 @@ test("eUnsetFromID", () => {
 [let features : OrderedSet(EStructuralFeature) = aClass.getEInverseAddFeatures()->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 test("eBasicInverseAdd", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	{
-		let mockObject = mock<[ecorePrefix/]EObject>();
-		let object = instance(mockObject);
-		let mockNotifications = mock<[ecorePrefix/]ENotificationChain>(); 
-		let notifications = instance(mockNotifications);
-		expect(o.eBasicInverseAdd(object,-1,notifications)).toBe(notifications);
+		let mockObject = mock<[ecorePrefix/]EObject>()
+		let object = instance(mockObject)
+		let mockNotifications = mock<[ecorePrefix/]ENotificationChain>() 
+		let notifications = instance(mockNotifications)
+		expect(o.eBasicInverseAdd(object,-1,notifications)).toBe(notifications)
 	}
 	[features.generateFeatureEInverseAddTestImplementation(aClass)/]
 })
@@ -840,8 +840,8 @@ test("eBasicInverseAdd", () => {
 [template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isListType())]
 {
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
-	o.eBasicInverseAdd(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
-	expect(o.[aStructuralFeature.getPropertyName()/].contains(value)).toBeTruthy();
+	o.eBasicInverseAdd(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null)
+	expect(o.[aStructuralFeature.getPropertyName()/].contains(value)).toBeTruthy()
 }
 
 [/template]
@@ -849,25 +849,25 @@ test("eBasicInverseAdd", () => {
 [template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isContainer())]
 {
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
-	when(mockValue.eResource()).thenReturn(null);
-	when(mockValue.eIsProxy()).thenReturn(false);
-	o.eBasicInverseAdd(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(value);
+	when(mockValue.eResource()).thenReturn(null)
+	when(mockValue.eIsProxy()).thenReturn(false)
+	o.eBasicInverseAdd(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null)
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(value)
 
-	reset(mockValue);
+	reset(mockValue)
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'other')/]
-	when(mockOther.eResource()).thenReturn(null);
-	when(mockOther.eIsProxy()).thenReturn(false);
-	when(mockValue.eResource()).thenReturn(null);
+	when(mockOther.eResource()).thenReturn(null)
+	when(mockOther.eIsProxy()).thenReturn(false)
+	when(mockValue.eResource()).thenReturn(null)
 [if aStructuralFeature.isContains()]
-	when(mockValue.eInverseRemove(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],null)).thenReturn(null);
+	when(mockValue.eInverseRemove(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],null)).thenReturn(null)
 [else]
 	[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
-	when(mockValue.eInverseRemove(o,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
+	when(mockValue.eInverseRemove(o,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
 	[/let]
 [/if]
-	o.eBasicInverseAdd(other,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(other);
+	o.eBasicInverseAdd(other,[aClass.getQualifiedIDName(aStructuralFeature)/],null)
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(other)
 }
 
 [/template]
@@ -876,25 +876,25 @@ test("eBasicInverseAdd", () => {
 {
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
 [if aStructuralFeature.isProxy()]
-	when(mockValue.eIsProxy()).thenReturn(false);
+	when(mockValue.eIsProxy()).thenReturn(false)
 [/if]
-	o.eBasicInverseAdd(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(value);
+	o.eBasicInverseAdd(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null)
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(value)
 
-	reset(mockValue);
+	reset(mockValue)
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'other')/]
 [if aStructuralFeature.isProxy()]
-	when(mockOther.eIsProxy()).thenReturn(false);
+	when(mockOther.eIsProxy()).thenReturn(false)
 [/if]
 [if aStructuralFeature.isContains()]
-	when(mockValue.eInverseRemove(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],null)).thenReturn(null);
+	when(mockValue.eInverseRemove(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/],null)).thenReturn(null)
 [else]
 	[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
-	when(mockValue.eInverseRemove(o,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null);
+	when(mockValue.eInverseRemove(o,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
 	[/let]
 [/if]
-	o.eBasicInverseAdd(other,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
-	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(other);
+	o.eBasicInverseAdd(other,[aClass.getQualifiedIDName(aStructuralFeature)/],null)
+	expect(o.[aStructuralFeature.getPropertyName()/]).toBe(other)
 }
 
 [/template]
@@ -905,13 +905,13 @@ test("eBasicInverseAdd", () => {
 [let features : OrderedSet(EStructuralFeature) = aClass.getEInverseRemoveFeatures()->asOrderedSet()->sortedBy(name)]
 [if features->notEmpty()]
 test("eBasicInverseRemove", () => {
-	let o = new [aClass.getImplementationName()/]();
+	let o = new [aClass.getImplementationName()/]()
 	{
-		let mockObject = mock<[ecorePrefix/]EObject>();
-		let object = instance(mockObject);
-		let mockNotifications = mock<[ecorePrefix/]ENotificationChain>(); 
-		let notifications = instance(mockNotifications);
-		expect(o.eBasicInverseRemove(object,-1,notifications)).toBe(notifications);
+		let mockObject = mock<[ecorePrefix/]EObject>()
+		let object = instance(mockObject)
+		let mockNotifications = mock<[ecorePrefix/]ENotificationChain>() 
+		let notifications = instance(mockNotifications)
+		expect(o.eBasicInverseRemove(object,-1,notifications)).toBe(notifications)
 	}
 	[features.generateFeatureEInverseRemoveTestImplementation(aClass)/]
 })
@@ -923,7 +923,7 @@ test("eBasicInverseRemove", () => {
 [template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass ) ?(isMapType())]
 {
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
-	o.eBasicInverseRemove(mockValue,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
+	o.eBasicInverseRemove(mockValue,[aClass.getQualifiedIDName(aStructuralFeature)/],null)
 	expect(o.[aStructuralFeature.getPropertyName()/].isEmpty())
 }
 
@@ -934,13 +934,13 @@ test("eBasicInverseRemove", () => {
 	// initialize list with a mock object
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
 	[aStructuralFeature.generateFeatureMockAddedExpectations('mockValue',aClass)/]
-	o.[aStructuralFeature.getPropertyName()/].add(value);
+	o.[aStructuralFeature.getPropertyName()/].add(value)
 
 	// basic inverse remove
-	o.eBasicInverseRemove(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null);
+	o.eBasicInverseRemove(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null)
 
 	// check it was removed
-	expect(o.[aStructuralFeature.getPropertyName()/].contains(value)).toBeFalsy();
+	expect(o.[aStructuralFeature.getPropertyName()/].contains(value)).toBeFalsy()
 }
 
 [/template]
@@ -948,7 +948,7 @@ test("eBasicInverseRemove", () => {
 [template private generateFeatureEInverseRemoveTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass )]
 {
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
-	o.eBasicInverseRemove(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null);	
+	o.eBasicInverseRemove(value,[aClass.getQualifiedIDName(aStructuralFeature)/],null)	
 }
 
 [/template]
@@ -957,10 +957,10 @@ test("eBasicInverseRemove", () => {
 [let operations : OrderedSet(EOperation) = aClass.getEInvokeOperations()->asOrderedSet()->sortedBy( o | o.eContainingClass.getOperationIDName(o))]
 [if aClass.name <> 'EObject' and operations->notEmpty()]
 test("eInvokeFromID", () => {
-	let o = new [aClass.getImplementationName()/]();
-	expect(() => o.eInvokeFromID(-1,null)).toThrow(Error);
+	let o = new [aClass.getImplementationName()/]()
+	expect(() => o.eInvokeFromID(-1,null)).toThrow(Error)
 	[for ( eOperation : EOperation | operations )]
-	expect(() => o.eInvokeFromID([eOperation.eContainingClass.getQualifiedIDName(eOperation)/],null)).toThrow(Error);
+	expect(() => o.eInvokeFromID([eOperation.eContainingClass.getQualifiedIDName(eOperation)/],null)).toThrow(Error)
 	[/for]
 })
 [/if]

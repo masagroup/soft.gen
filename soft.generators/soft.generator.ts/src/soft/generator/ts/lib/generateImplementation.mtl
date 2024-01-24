@@ -56,7 +56,7 @@ export class [className/] extends [getShortQualifiedName(classExtend, aPackage.n
 [/let]
 
     constructor() {
-        super();
+        super()
         [variableFeatures.generateVariableInitialization(aClass)/]
     }
 

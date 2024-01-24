@@ -29,7 +29,7 @@
 [template public generateImplementation(anEOperation : EOperation, aClass : EClass ) ? ( anEOperation.isDefault() )]
 // [anEOperation.getOperationName()/] default implementation
 [anEOperation.getOperationName()/]([anEOperation.generateParameterList()/]) : [anEOperation.generateType()/] {
-    throw new Error("[anEOperation.getOperationName()/] not implemented");
+    throw new Error("[anEOperation.getOperationName()/] not implemented")
 }
 
 

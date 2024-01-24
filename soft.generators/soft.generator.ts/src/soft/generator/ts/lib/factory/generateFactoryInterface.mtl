@@ -36,12 +36,12 @@ export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/
 [for (aEClass : EClass | aPackage.eAllContents(EClass)->sortedBy(name))]
 [if (aEClass.abstract = false)]
 
-    create[aEClass.name/]() : [aEClass.getInterfaceName()/];
+    create[aEClass.name/]() : [aEClass.getInterfaceName()/]
 [let ref:OrderedSet(EReference) = aEClass.getAllContainers()]
 [for(aReference:EReference | ref->sortedBy(name))]
-    create[aEClass.name/]FromContainer(eContainer: [aReference.generateType()/]): [aEClass.getInterfaceName()/];
+    create[aEClass.name/]FromContainer(eContainer: [aReference.generateType()/]): [aEClass.getInterfaceName()/]
 [if(aEClass.getElementIDAccessorName().size() > 0)]
-    create[aEClass.name/]FromContainerAndClassID(eContainer: [aReference.generateType()/],classID: number ): [aEClass.getInterfaceName()/];
+    create[aEClass.name/]FromContainerAndClassID(eContainer: [aReference.generateType()/],classID: number ): [aEClass.getInterfaceName()/]
 [/if]
 [/for]
 [/let]
@@ -50,7 +50,7 @@ export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/
 }
 
 export function get[className/]() : [className/] {
-    return [factoryName/].getInstance();
+    return [factoryName/].getInstance()
 }
 
 [/file]
