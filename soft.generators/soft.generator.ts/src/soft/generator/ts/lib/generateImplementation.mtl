@@ -49,7 +49,7 @@
 [aPackage.generateImports(allTypes,className)/]
 [/let]
 
-export class [className/] extends [getShortQualifiedName(classExtend, aPackage.name)/] [for ( interface : String | classImplements) before(' implements ') separator (',')][getShortQualifiedName(interface,aPackage.name)/][/for] {
+export class [className/] extends [getShortQualifiedName(classExtend, aPackage.name)/][for ( interface : String | classImplements) before(' implements ') separator (', ')][getShortQualifiedName(interface,aPackage.name)/][/for] {
 [let dataDeclarationFeatures : Set(EStructuralFeature) = features->select( isField() )]
     [dataDeclarationFeatures.generateVariableDeclaration()/]
 [/let]

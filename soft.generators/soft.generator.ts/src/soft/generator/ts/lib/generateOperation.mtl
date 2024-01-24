@@ -17,7 +17,7 @@
 [import soft::generator::ts::generateType/]
 
 [template public generateDeclaration(aOperation : EOperation)]
-[aOperation.getOperationName()/]([aOperation.generateParameterList()/]) : [aOperation.generateType()/]
+[aOperation.getOperationName()/]([aOperation.generateParameterList()/]): [aOperation.generateType()/]
 
 [/template]
 
