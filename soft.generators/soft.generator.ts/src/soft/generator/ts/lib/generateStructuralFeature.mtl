@@ -129,7 +129,7 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 [if isContainer()]
     if (this.eContainerFeatureID() == [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/]) {
         return this.eContainer() as [aStructuralFeature.generateType()/]
-    } 
+    }
     return null
 [elseif not isVolatile()]
     [if not isListType() and isProxy()]

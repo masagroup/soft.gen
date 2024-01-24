@@ -36,9 +36,9 @@
 
 [comment imports/]
 [if aClass.requiresList()]
-import * as deepEqual from "deep-equal";
+import * as deepEqual from "deep-equal"
 [/if]
-import { anything , capture, instance, mock, reset, verify, when } from "ts-mockito";
+import { anything, capture, instance, mock, reset, verify, when } from "ts-mockito"
 [let allTypes : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( o | o.getType() )->asSet()
                                         , if aClass.requiresMap() then Set{ 'ecore.EMap', 'ecore.EMapEntry' } else Set{} endif
                                         , if aClass.requiresList() then Set{ 'ecore.EList', 'ecore.EObjectList','ecore.ImmutableEList','ecore.EOPPOSITE_FEATURE_BASE',aPackage.getQualifiedConstantsName() } else Set{} endif
@@ -62,7 +62,6 @@ interface [mockType.getInterfaceName()/]Internal extends [getShortQualifiedName(
 [/let]
 
 describe("[className/]", () => {
-	
 	test("eStaticClass", () => {
         let o = new [className/]()
 		expect(o.eStaticClass()).toBe(get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]())

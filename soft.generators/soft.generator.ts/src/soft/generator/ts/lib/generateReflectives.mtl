@@ -73,7 +73,7 @@ eDerivedFeatureID(eContainer: [if not aPackage.isEcorePackage()]ecore.[/if]EObje
     let eClass = eContainer as [if not aPackage.isEcorePackage()]ecore.[/if]EClass;
 [for (aMixinClass : EClass | mixinClasses)]
     if (eClass == get[aPackage.getInterfaceName()/]().get[aMixinClass.getElementAccessorName()/]()) {
-        switch ( featureID ) {
+        switch (featureID) {
 [for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
             case [aMixinClass.getQualifiedIDName(aFeature)/] : {
                 return [aClass.getQualifiedIDName(aFeature)/]
@@ -116,22 +116,14 @@ eDerivedOperationID(eContainer: [if not aPackage.isEcorePackage()]ecore.[/if]EOb
 [template private generateEGetDefinition(aClass : EClass)]
 [let aPackage : EPackage = aClass.ePackage]
 eGetFromID(featureID: number, resolve: boolean): any {
-    switch ( featureID ) {
+    switch (featureID) {
     [for (anStructFeature : EStructuralFeature | aClass.getEGetFeatures()->asOrderedSet()->sortedBy(name))]
         case [aClass.getQualifiedIDName(anStructFeature)/]: {
     [if anStructFeature.isProxy()]
         [if anStructFeature.isListType()]
-            let list = this.[anStructFeature.getPropertyName()/]
-            if (!resolve) {
-                if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectList(list))
-                    return list.getUnResolvedList()
-            }
-            return list
+            return !resolve && [if not aPackage.isEcorePackage()]ecore.[/if]isEObjectList(this.[anStructFeature.getPropertyName()/]) ? this.[anStructFeature.getPropertyName()/].getUnResolvedList() : this.[anStructFeature.getPropertyName()/]
         [else]
-            if (resolve) {
-                return this.[anStructFeature.getPropertyName()/]
-            }
-            return  this.basicGet[anStructFeature.getPropertyName().toUpperFirst()/]()
+			return resolve ? this.[anStructFeature.getPropertyName()/] : this.basicGet[anStructFeature.getPropertyName().toUpperFirst()/]()
         [/if]       
     [else] 
             return this.[anStructFeature.getPropertyName()/]
@@ -171,7 +163,7 @@ eSetFromID(featureID: number, newValue: any) {
     [let aPackage : EPackage = aClass.ePackage]
     [let aDataType : EGenericType = anStructFeature.eGenericType]
             this.[anStructFeature.getPropertyName()/].clear()
-            this.[anStructFeature.getPropertyName()/].addAll( newValue as [if not aPackage.isEcorePackage()]ecore.[/if]EList<[if not aPackage.isEcorePackage()]ecore.[/if]EMapEntry<[aDataType.generateMapTypeParameters(aPackage)/]>>)
+            this.[anStructFeature.getPropertyName()/].addAll(newValue as [if not aPackage.isEcorePackage()]ecore.[/if]EList<[if not aPackage.isEcorePackage()]ecore.[/if]EMapEntry<[aDataType.generateMapTypeParameters(aPackage)/]>>)
     [/let]
     [/let]
     [elseif anStructFeature.isListType()]
@@ -184,7 +176,7 @@ eSetFromID(featureID: number, newValue: any) {
         }
 [/for]
         default: {
-                super.eSetFromID(featureID, newValue)
+        	super.eSetFromID(featureID, newValue)
         }
     }
 }

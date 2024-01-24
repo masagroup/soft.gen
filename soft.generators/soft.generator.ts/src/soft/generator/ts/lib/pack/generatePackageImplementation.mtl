@@ -183,12 +183,12 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
 
 [template private generateDataMember(anENamedElement : ENamedElement, aPackage : EPackage)] 
-private [anENamedElement.getInstanceName()/] : [aPackage.getMetaType(anENamedElement)/]
+private [anENamedElement.getInstanceName()/]: [aPackage.getMetaType(anENamedElement)/]
 
 [/template]
 
 [template private generateGetter(aClassifier : EClassifier, anEPackage : EPackage)]
-[aClassifier.getReflectiveGetterName()/]() : [anEPackage.getMetaType(aClassifier)/] {
+[aClassifier.getReflectiveGetterName()/](): [anEPackage.getMetaType(aClassifier)/] {
     return this.[aClassifier.getInstanceName()/]
 }
 
@@ -196,7 +196,7 @@ private [anENamedElement.getInstanceName()/] : [aPackage.getMetaType(anENamedEle
 
 [template private generateGetter(aFeature : EStructuralFeature, anEPackage : EPackage)]
 [let aClass : EClass = aFeature.eContainingClass]
-[aFeature.getReflectiveGetterName()/]() : [anEPackage.getMetaType(aFeature)/] {
+[aFeature.getReflectiveGetterName()/](): [anEPackage.getMetaType(aFeature)/] {
     return this.[aClass.getInstanceName()/].eStructuralFeatures.get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]) as [anEPackage.getMetaType(aFeature)/]
 }
 [/let]
@@ -204,7 +204,7 @@ private [anENamedElement.getInstanceName()/] : [aPackage.getMetaType(anENamedEle
 
 [template private generateGetter(aOperation : EOperation, anEPackage : EPackage)]
 [let aClass : EClass = aOperation.eContainingClass]
-[aOperation.getReflectiveGetterName()/]() : [anEPackage.getMetaType(aOperation)/] {
+[aOperation.getReflectiveGetterName()/](): [anEPackage.getMetaType(aOperation)/] {
     return this.[aClass.getInstanceName()/].eOperations.get([aClass.eOperations->indexOf(aOperation)-1/]) as [anEPackage.getMetaType(aOperation)/]
 }
 [/let]
