@@ -261,6 +261,7 @@ this.initEClass(this.[aEClass.getInstanceName()/],"[aEClass.name/]","[aEClass.ge
 
 [template private generateInitialization(anEAttribute : EAttribute, aPackage : EPackage )]
 this.initEAttribute([anEAttribute.getPackageGetter()/],[anEAttribute.eType.oclAsType(EDataType).getPackageGetter(anEAttribute)/],"[anEAttribute.name/]","[anEAttribute.defaultValueLiteral/]",[anEAttribute.lowerBound/],[anEAttribute.upperBound/],[anEAttribute.transient.toString()/],[anEAttribute.volatile.toString()/],[anEAttribute.changeable.toString()/],[anEAttribute.unsettable.toString()/],[anEAttribute.unique.toString()/],[anEAttribute.derived.toString()/],[anEAttribute.ordered.toString()/],[anEAttribute.iD.toString()/])
+
 [/template]
 
 [template private generateInitialization(anEReference : EReference, aPackage : EPackage )]

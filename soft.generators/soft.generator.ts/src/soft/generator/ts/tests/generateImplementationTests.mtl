@@ -259,12 +259,13 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	when(mockValue.eResource()).thenReturn(resource)
 	o.[aStructuralFeature.getPropertyName()/] = value
 	verify(mockResource.attached(o)).once()
-	verify(mockAdapter.notifyChanged(anything())).once() 
-	let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
-	expect(notification.notifier).toBe(o)
-	expect(notification.oldValue).toBeNull()
-	expect(notification.newValue).toBe(value)
-	
+	verify(mockAdapter.notifyChanged(anything())).once()
+	{ 
+		let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
+		expect(notification.notifier).toBe(o)
+		expect(notification.oldValue).toBeNull()
+		expect(notification.newValue).toBe(value)
+	}	
 	// set with the same value
 	reset(mockAdapter)
 	o.[aStructuralFeature.getPropertyName()/] = value
@@ -285,11 +286,13 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	verify(mockResource.detached(o)).once()
 	verify(mockOtherResource.attached(o)).once()
 	verify(mockAdapter.notifyChanged(anything())).once()
-	['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
-	expect(notification.notifier).toBe(o)
-	expect(notification.oldValue).toBe(value)
-	expect(notification.newValue).toBe(other)
-	expect(notification.position).toBe(-1)
+	{
+		let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
+		expect(notification.notifier).toBe(o)
+		expect(notification.oldValue).toBe(value)
+		expect(notification.newValue).toBe(other)
+		expect(notification.position).toBe(-1)
+	}
 })
 [/let]
 [/let]
@@ -313,11 +316,13 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	when(mockValue.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
 	o.[aStructuralFeature.getPropertyName()/] = value
 	verify(mockAdapter.notifyChanged(anything())).once() 
-	let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
-	expect(notification.notifier).toBe(o)
-	expect(notification.oldValue).toBeNull()
-	expect(notification.newValue).toBe(value)
-	
+	{
+		let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
+		expect(notification.notifier).toBe(o)
+		expect(notification.oldValue).toBeNull()
+		expect(notification.newValue).toBe(value)
+	}
+
 	// set with other value
 	[aStructuralFeature.eType.generateTestValue(aClass.ePackage,'other')/]
 	reset(mockAdapter)
@@ -326,11 +331,13 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	when(mockOther.eInverseAdd(o,[reverseClass.getQualifiedIDName(reverseFeature)/],null)).thenReturn(null)
 	o.[aStructuralFeature.getPropertyName()/] = other
 	verify(mockAdapter.notifyChanged(anything())).once()
-	['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
-	expect(notification.notifier).toBe(o)
-	expect(notification.oldValue).toBe(value)
-	expect(notification.newValue).toBe(other)
-	expect(notification.position).toBe(-1)
+	{
+		let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
+		expect(notification.notifier).toBe(o)
+		expect(notification.oldValue).toBe(value)
+		expect(notification.newValue).toBe(other)
+		expect(notification.position).toBe(-1)
+	}
 })
 [/let]
 [/let]
