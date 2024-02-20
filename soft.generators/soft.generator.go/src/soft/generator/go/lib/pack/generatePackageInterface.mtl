@@ -68,7 +68,9 @@
 	className : String = aPackage.getInterfaceName();
 	packagePath : String = aPackage.getInterfacePackagePath();
 	ecore : EPackage = getEcorePackage();
-	packages : Set(String) = if not aPackage.isEcorePackage() then Set{ ecore.getInterfacePackagePath()} else Set{} endif;
+	packages : Set(String) = Set{ if aPackage.getImplementationPackagePath() = packagePath then Set{'sync/sync'} else Set{} endif
+								, if not aPackage.isEcorePackage() then Set{ ecore.getInterfacePackagePath()} else Set{} endif
+								}->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
 [file (aPackage.getInterfaceOutputDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName()) , false, 'UTF-8')]

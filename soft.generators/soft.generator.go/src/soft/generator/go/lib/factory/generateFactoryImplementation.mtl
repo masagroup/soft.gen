@@ -40,7 +40,7 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 	dataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
 	isFactoryInstance : Boolean = interfacePath <> packagePath;
 	packages : Set(String) = Set{ Set{'strconv/strconv',interfacePath}
-								, if isFactoryInstance then Set{ interfacePath } else Set{} endif
+								, if isFactoryInstance then Set{ interfacePath , 'sync/sync'} else Set{} endif
 								, if not aPackage.isEcorePackage() then Set{ecore.getInterfacePackagePath()} else Set{} endif
 								, dataTypes->collect(getInstanceTypeName())
 										   ->select(t | isFactoryImplemented(t))
