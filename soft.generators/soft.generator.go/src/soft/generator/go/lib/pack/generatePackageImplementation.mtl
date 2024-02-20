@@ -183,7 +183,7 @@ p.InitEDataType([aDataType.getPackageGetter(packagePath,imports)/], "[aDataType.
 	annotationSources : OrderedSet(String) = aPackage.getAnnotationSources();
 	ecore : EPackage = getEcorePackage();
 	isPackageInstance : Boolean = interfacePath <> packagePath;
-	packages : Set(String) = Set { if isPackageInstance then Set{ interfacePath } else Set{} endif
+	packages : Set(String) = Set { if isPackageInstance then Set{ interfacePath , 'sync/sync' } else Set{} endif
 								 , Set{ecore.getInterfacePackagePath(), ecore.getImplementationPackagePath()}
 								 , aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.getImplementationPackagePath()->asSet()
 								 }->flatten();
