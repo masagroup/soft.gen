@@ -21,17 +21,18 @@
 	qualifiedClassName : String = aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName());
 	importedClassName : String = getImportedIdentifier(qualifiedClassName, packagePath, imports) ;
 }]
+var factoryOnce sync.Once
 var factoryInstance [importedClassName/]
 
 // GetFactory returns the factory for the model [aPackage.name/]
 func GetFactory() [importedClassName/] {
-    if factoryInstance == nil {
+	factoryOnce.Do(func(){
 [let extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension']
 [let factoryName : String = if extension then aPackage.getFactoryExtensionName() else aPackage.getFactoryImplementationName() endif] 
 		factoryInstance = new[factoryName.toUpperFirst()/]()
 [/let]
 [/let]
-    }
+	})
     return factoryInstance
 }
 [/template]
