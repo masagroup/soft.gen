@@ -42,10 +42,6 @@ test.ts:
 	@echo "[test.ts]"
 	@test $(shell docker run --rm -i masagroup/soft.generator.ts -v 2>&1 | sed -r 's#soft.generator.ts version: (.*)#\1#g') = "$(soft.generator.ts.version)" || (echo "invalid soft.generator.ts version"; exit 1)
 
-# publish generators images on docker hub
-publish:
-	@$(foreach lang,$(langs), docker push masagroup/soft.generator.$(lang);)
-
 define export_generator
 	$(eval id := $(shell docker create masagroup/soft.generator.$(1) bash))
 	docker cp $(id)://usr/share/soft.generator.$(1) - | gzip > dist/soft.generator.$(1)-$(soft.generator.$(1).version).tar.gz
@@ -70,3 +66,8 @@ versions:
 	@$(foreach package,$(packages), docker run --rm -v $(CURDIR):/pwd -w /pwd klakegg/saxon xslt -s:/pwd/pom.xml -xsl:/pwd/pom.xslt -o:/pwd/pom.xml artifactId=soft.generator.$(package) version=$(soft.generator.$(package).version);)
 	@$(foreach package,$(packages), sed -i "s#Bundle-Version: .*#Bundle-Version: $(soft.generator.$(package).version)#g" soft.generators/soft.generator.$(package)/META-INF/MANIFEST.MF;)
 	@$(foreach lang,$(langs), sed -i "s#[0-9]*\.[0-9]*\.[0-9]*\.jar#$(soft.generator.$(lang).version).jar#g" Dockerfile-$(lang);)
+
+# publish generators images on docker hub
+publish:
+	@$(foreach lang,$(langs), docker image tag masagroup/soft.generator.$(lang) masagroup/soft.generator.$(lang):v$(soft.generator.$(lang).version);)
+	@$(foreach lang,$(langs), docker image push masagroup/soft.generator.$(lang):v$(soft.generator.$(lang).version);)
