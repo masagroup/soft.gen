@@ -27,14 +27,14 @@ export enum [enumName/] {
 [for (lit : EEnumLiteral | literals)]
     [lit.name.toUpperCase()/] = [lit.value.toString()/],
 [/for]
-};
+}
 
 export function [enumName.toLowerFirst()/]ToString([varName/]: [enumName/]) : string {
     switch( [varName/] )
     {
 [for (lit : EEnumLiteral | literals)]
         case [enumName/].[lit.name.toUpperCase()/]:
-            return "[lit.name/]";
+            return "[lit.name/]"
 [/for]
     }
 }
@@ -42,9 +42,9 @@ export function [enumName.toLowerFirst()/]ToString([varName/]: [enumName/]) : st
 export function [enumName.toLowerFirst()/]FromString(literalValue: string) : [enumName/] {
 [for (lit : EEnumLiteral | literals)]
     [if lit <> literals->first()]else [/if]if ( literalValue == "[lit.name/]" )
-        return [enumName/].[lit.name.toUpperCase()/];
+        return [enumName/].[lit.name.toUpperCase()/]
 [/for]
-    throw new Error("Invalid value for enum [enumName/]: " + literalValue); 
+    throw new Error("Invalid value for enum [enumName/]: " + literalValue) 
 }
 
 [/file]

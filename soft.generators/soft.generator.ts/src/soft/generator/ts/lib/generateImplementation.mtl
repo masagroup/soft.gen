@@ -49,18 +49,17 @@
 [aPackage.generateImports(allTypes,className)/]
 [/let]
 
-export class [className/] extends [getShortQualifiedName(classExtend, aPackage.name)/] [for ( interface : String | classImplements) before(' implements ') separator (',')][getShortQualifiedName(interface,aPackage.name)/][/for]
-{
+export class [className/] extends [getShortQualifiedName(classExtend, aPackage.name)/][for ( interface : String | classImplements) before(' implements ') separator (', ')][getShortQualifiedName(interface,aPackage.name)/][/for] {
 [let dataDeclarationFeatures : Set(EStructuralFeature) = features->select( isField() )]
     [dataDeclarationFeatures.generateVariableDeclaration()/]
 [/let]
 
     constructor() {
-        super();
+        super()
         [variableFeatures.generateVariableInitialization(aClass)/]
     }
 
-    eStaticClass() : [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
+    eStaticClass(): [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
         return get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]()
     }
 

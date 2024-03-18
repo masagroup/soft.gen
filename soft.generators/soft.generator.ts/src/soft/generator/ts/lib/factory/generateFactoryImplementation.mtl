@@ -39,33 +39,33 @@
 
 export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EFactoryExt implements [aPackage.getFactoryName()/] {
     
-    private static _instance : [className/] = null;
+    private static _instance: [className/] = null
 
-    public static getInstance() : [className/] {
+    public static getInstance(): [className/] {
         if (!this._instance) {
-            this._instance = new [className/]();
+            this._instance = new [className/]()
         }
-        return this._instance;
+        return this._instance
     }
 
     protected constructor() {
-        super();
+        super()
     } 
 
     create(eClass: [getShortQualifiedName('ecore.EClass',aPackage.name)/]): [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
         switch(eClass.classifierID){
 [for (aClass : EClass | classes)]
         case [aClass.getQualifiedIDName()/]:
-            return this.create[aClass.name/]();
+            return this.create[aClass.name/]()
 [/for]
         default:
-            throw new Error("create: " + eClass.classifierID + " not found");
+            throw new Error("create: " + eClass.classifierID + " not found")
         }
     }
 [for (aClass : EClass | classes)]
 
     create[aClass.name/](): [aClass.getInterfaceName()/] {
-        return new [if aClass.hasExtension()][aClass.getExtensionName()/][else][aClass.getImplementationName()/][/if]();
+        return new [if aClass.hasExtension()][aClass.getExtensionName()/][else][aClass.getImplementationName()/][/if]()
     }
     [let ref : OrderedSet(EReference) = aClass.getAllContainers()]
     [for(aReference:EReference | ref->sortedBy(name))]
@@ -88,10 +88,10 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
         switch (eDataType.classifierID) {
         [for (aDataType : EDataType | dataTypes)]
             case [aDataType.getQualifiedIDName()/]:
-                return this.create[aDataType.name/]FromString(eDataType, literalValue);
+                return this.create[aDataType.name/]FromString(eDataType, literalValue)
         [/for]
             default:
-                throw new Error("The datatype '" + eDataType.name + "' is not a valid classifier");
+                throw new Error("The datatype '" + eDataType.name + "' is not a valid classifier")
         }
     }
 
@@ -99,10 +99,10 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
         switch (eDataType.classifierID) {
         [for (aDataType : EDataType | dataTypes)]
         case [aDataType.getQualifiedIDName()/]:
-            return this.convert[aDataType.name/]ToString(eDataType, instanceValue);
+            return this.convert[aDataType.name/]ToString(eDataType, instanceValue)
         [/for]
         default:
-            throw new Error("The datatype '" + eDataType.name + "' is not a valid classifier");
+            throw new Error("The datatype '" + eDataType.name + "' is not a valid classifier")
         }
     }
     [for (aDataType : EDataType | dataTypes)]
@@ -120,28 +120,28 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
 [let enumTypeName : String = aDataType.name ]
 create[enumTypeName/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-    return [enumTypeName.toLowerFirst()/]FromString(literalValue);
+    return [enumTypeName.toLowerFirst()/]FromString(literalValue)
 }
 [/let]
 [/template]
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'string')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-   return literalValue;
+   return literalValue
 }
 
 [/template]
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'boolean')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-   return literalValue.toLowerCase() === "true";
+   return literalValue.toLowerCase() === "true"
 }
 
 [/template]
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'number')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-    return Number(literalValue);
+    return Number(literalValue)
 }
 
 [/template]
@@ -149,9 +149,9 @@ create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]e
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'byte')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
     if (literalValue.length == 0 ) {
-        return 0;
+        return 0
     } else {
-        return literalValue.charCodeAt(0);
+        return literalValue.charCodeAt(0)
     }
 }
 
@@ -159,14 +159,14 @@ create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]e
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'Uint8Array')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-    return new TextEncoder().encode(literalValue);
+    return new TextEncoder().encode(literalValue)
 }
 
 [/template]
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.getType() = 'Date')]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-     return new Date(literalValue);
+     return new Date(literalValue)
 }
 
 [/template]
@@ -174,21 +174,21 @@ create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]e
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType )]
 create[aDataType.name/]FromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, literalValue: string): any {
-    throw new Error("NotImplementedException");
+    throw new Error("NotImplementedException")
 }
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]
 [let enumTypeName : String = aDataType.name ]
 convert[enumTypeName/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-    return [enumTypeName.toLowerFirst()/]ToString(instanceValue as [enumTypeName/]);
+    return [enumTypeName.toLowerFirst()/]ToString(instanceValue as [enumTypeName/])
 }
 [/let]
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'string' )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-    return instanceValue as string;
+    return instanceValue as string
 }
 [/template]
 
@@ -197,45 +197,45 @@ convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ec
         aDataType.getType() = 'boolean'
       )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-    return instanceValue.toString();
+    return instanceValue.toString()
 }
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'byte' )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-    return String.fromCharCode(instanceValue as number);
+    return String.fromCharCode(instanceValue as number)
 }
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'Uint8Array' )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-    return new TextDecoder().decode(instanceValue as Uint8Array);
+    return new TextDecoder().decode(instanceValue as Uint8Array)
 }
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType ) ? ( aDataType.getType() = 'Date' )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-    return (instanceValue as Date).toISOString();
+    return (instanceValue as Date).toISOString()
 }
 [/template]
 
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType )]
 convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string { 
-    throw new Error("NotImplementedException");
+    throw new Error("NotImplementedException")
 }
 [/template]
 
 [template public generateCreateFunctionContent(aClass : EClass, aReference : EReference, addID : Boolean)]
 let element = new [if aClass.hasExtension()][aClass.getExtensionName()/][else][aClass.getImplementationName()/][/if]();
 [if(addID)]
-element.[aClass.getElementIDAccessorName().toLowerFirst()/]ID = classID;
+element.[aClass.getElementIDAccessorName().toLowerFirst()/]ID = classID
 [/if]
 [if(not aReference.eOpposite.name.oclIsUndefined())]
 if (eContainer != null) {
 [if(aReference.eOpposite.upperBound <> 1)]
-    eContainer.[aReference.eOpposite.name/].add(element);
+    eContainer.[aReference.eOpposite.name/].add(element)
 [else]
-    eContainer.[aReference.eOpposite.name/] = element;
+    eContainer.[aReference.eOpposite.name/] = element
 [/if]
 }
 [/if]
