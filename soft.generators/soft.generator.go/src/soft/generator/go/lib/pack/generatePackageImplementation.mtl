@@ -243,7 +243,7 @@ func (p *[className/])createPackageContents(ecoreFactory [getImportedIdentifier(
 	[allDataTypes.generateCreation(packagePath,imports)/]
 }
 
-func (p *[className/])initializePackageContents(ecoreFactory [getImportedIdentifier(ecore.getQualifiedInterfaceIdentifier('EcoreFactory'), packagePath,imports)/]) {
+func (p *[className/])initializePackageContents([if aPackage.isEcorePackage()]_[else]ecoreFactory[/if] [getImportedIdentifier(ecore.getQualifiedInterfaceIdentifier('EcoreFactory'), packagePath,imports)/]) {
 
 [if allClasses->notEmpty()]
 	[allClasses.initSuperTypes(packagePath,imports)/]
