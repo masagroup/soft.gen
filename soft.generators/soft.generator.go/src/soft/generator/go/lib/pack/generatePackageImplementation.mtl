@@ -164,7 +164,7 @@ p.InitEOperation([anEOperation.getPackageGetter(packagePath,imports)/],[anEOpera
 [template private generateInitialization(aEnum : EEnum, packagePath : String, imports : OclAny)]
 p.InitEEnum([aEnum.getPackageGetter(packagePath,imports)/], "[aEnum.name/]","[if aEnum.instanceTypeName.oclIsUndefined()]int32[else][aEnum.getInstanceTypeName()/][/if]")
 [for (anEEnumLiteral : EEnumLiteral | aEnum.eLiterals)]
-p.AddEEnumLiteral([aEnum.getPackageGetter(packagePath,imports)/], "[anEEnumLiteral.name/]", "[anEEnumLiteral.literal/]", [anEEnumLiteral.value.toString()/])
+p.AddEEnumLiteral([aEnum.getPackageGetter(packagePath,imports)/], "[anEEnumLiteral.name/]", "[anEEnumLiteral.literal/]", [anEEnumLiteral.value.toString()/], [getImportedIdentifier(aEnum.ePackage.getQualifiedInterfaceIdentifier(anEEnumLiteral.getConstantsName()), packagePath, imports)/])
 [/for]
 
 [/template]
