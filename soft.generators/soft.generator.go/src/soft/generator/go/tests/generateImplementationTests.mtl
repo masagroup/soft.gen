@@ -45,9 +45,9 @@
 [template public generateImplementationTests(aClass : EClass) {
 	aPackage : EPackage = aClass.ePackage;
 	packagePath : String = aPackage.getImplementationPackagePath();
-	requiresInterface : Boolean = not aClass.isReflectiveDelegation();
-	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( aClass.getImplementedFeatures()->notEmpty() or aClass.requiresList() );
 	implementedFeatures : Set(EStructuralFeature) = aClass.getImplementedFeatures();
+	requiresInterface : Boolean = not aClass.isReflectiveDelegation();
+	requiresEcore : Boolean = not aPackage.isEcorePackage() and ( implementedFeatures->notEmpty() or aClass.requiresList() );
 	referencedFeatures : Set(EStructuralFeature) = implementedFeatures->reject(isMapFeature());
 	referencedTypes : Set(EClassifier) = OrderedSet{ aClass.eSuperTypes
               								, referencedFeatures.eType
