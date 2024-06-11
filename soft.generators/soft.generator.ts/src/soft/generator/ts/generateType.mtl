@@ -35,6 +35,59 @@
 
 [query public getQualifiedExtensionIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedImplementationIdentifier( aClass.getExtensionName() ) /]
 
+[query public getImportedIdentifier( qualifiedIdentifier : String, packagePath : String, imports : OclAny ) : String =
+	if imports.oclIsUndefined() then
+		qualifiedIdentifier
+	else
+		let indexDot : Integer = qualifiedIdentifier.lastIndex('.') in
+		if indexDot = -1 then
+			qualifiedIdentifier
+		else
+			let q : String = qualifiedIdentifier.substring(1, indexDot-1) in
+			let o : String = qualifiedIdentifier.substring(indexDot+1) in
+			if q = packagePath then
+				o 
+			else
+				let i : OclAny = mapGet(imports,q) in		
+				if i.oclIsUndefined() then
+					let nameIndex : Integer = q.lastIndex('#') in
+					if nameIndex = -1 then
+						q + '.' + o
+					else
+						q.substring(nameIndex+1) + '.' + o
+					endif
+				else
+					if i = '' then
+						o
+					else
+						i.oclAsType(String) + '.' + o
+					endif
+				endif
+			endif
+		endif
+	endif
+/]
+
+
+[query public getSimpleIdentifier( qualifiedIdentifier : String ) : String = 
+	let index : Integer = qualifiedIdentifier.lastIndex('.') in
+	if index = -1 then
+		qualifiedIdentifier
+	else
+		qualifiedIdentifier.substring(index+1)
+	endif
+/]
+
+
+[query public getIdentifierPackagePath( qualifiedIdentifier : String ) : String =
+	let index : Integer = qualifiedIdentifier.lastIndex('.') in
+	if index = -1 then
+		''
+	else
+		qualifiedIdentifier.substring(1,index-1)
+	endif
+/]
+
 
 [template public generateType(aElement : ETypedElement) post (trim())]
 [if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
