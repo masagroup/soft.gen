@@ -89,50 +89,52 @@
 /]
 
 
-[template public generateType(aElement : ETypedElement) post (trim())]
+[template public generateType(aElement : ETypedElement, packagePath : String, imports : OclAny) post (trim())]
 [if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
 void
 [else]
 	[let aDataType : EGenericType = aElement.eGenericType]
     [let aPackage : EPackage = aElement.getEPackage()]
+	[let ecore : EPackage = getEcorePackage()]
     [if aElement.isMapType()]
-		[getShortQualifiedName('ecore.EMap', aPackage.name )/]<[aDataType.generateMapKeyType(aPackage)/], [aDataType.generateMapValueType(aPackage)/]>
+		[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EMap'), packagePath, imports)/]<[aDataType.generateMapKeyType(packagePath,imports)/], [aDataType.generateMapValueType(packagePath,imports)/]>
 	[elseif aElement.isListType()]
-        [getShortQualifiedName('ecore.EList', aPackage.name )/]<[aDataType.generateListTypeParameters(aPackage)/]>
+        [getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EList'), packagePath, imports)/]<[aDataType.generateListTypeParameters(packagePath,imports)/]>
     [else]
-        [aDataType.generateType(aPackage)/][if aDataType.eClassifier.name <> 'EJavaClass' and aDataType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aDataType.eTypeArguments) separator (',')][getShortQualifiedName(g.eClassifier.getType(),aPackage.name)/][/for]>[/if]
+        [aDataType.generateType(packagePath,imports)/][if aDataType.eClassifier.name <> 'EJavaClass' and aDataType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aDataType.eTypeArguments) separator (',')][getShortQualifiedName(g.eClassifier.getType(),aPackage.name)/][/for]>[/if]
     [/if]
     [/let]
+	[/let]
 	[/let]
 [/if]
 [/template]
 
-[template public generateMapTypeParameters(anEDataType : EGenericType, aPackage : EPackage ) post(trim())]
-[anEDataType.generateMapKeyType(aPackage)/], [anEDataType.generateMapValueType(aPackage)/]	
+[template public generateMapTypeParameters(anEDataType : EGenericType, packagePath : String, imports : OclAny ) post(trim())]
+[anEDataType.generateMapKeyType(packagePath,imports)/], [anEDataType.generateMapValueType(packagePath,imports)/]	
 [/template]
 
-[template public generateListTypeParameters(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
-[anEDataType.generateType(aPackage)/]
+[template public generateListTypeParameters(anEDataType : EGenericType, packagePath : String, imports : OclAny) post(trim())]
+[anEDataType.generateType(packagePath,imports)/]
 [/template]
 
-[template private generateMapKeyType(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
-[anEDataType.generateMapTypeParameter(aPackage,1,'key')/]
+[template private generateMapKeyType(anEDataType : EGenericType, packagePath : String, imports : OclAny) post(trim())]
+[anEDataType.generateMapTypeParameter(packagePath,imports,1,'key')/]
 [/template]
 
-[template private generateMapValueType(anEDataType : EGenericType, aPackage : EPackage) post(trim())]
-[anEDataType.generateMapTypeParameter(aPackage,2,'value')/]
+[template private generateMapValueType(anEDataType : EGenericType, packagePath : String, imports : OclAny) post(trim())]
+[anEDataType.generateMapTypeParameter(packagePath,imports,2,'value')/]
 [/template]
 
-[template private generateMapTypeParameter(anEDataType : EGenericType, aPackage : EPackage, index : Integer, featureName : String) post(trim())]
+[template private generateMapTypeParameter(anEDataType : EGenericType, packagePath : String, imports : OclAny, index : Integer, featureName : String) post(trim())]
 [if anEDataType.eTypeArguments->size() = 2]
 [let keyType : EGenericType = anEDataType.eTypeArguments->at(index)]
-[getShortQualifiedName(keyType.eClassifier.getType(),aPackage.name)/]
+[getImportedIdentifier( keyType.eClassifier.getType(),packagePath, imports)/]
 [/let]
 [elseif anEDataType.eClassifier.oclIsKindOf(EClass) and anEDataType.eClassifier.oclAsType(EClass).isMapEntry()]
 [let mapEntryClass : EClass = anEDataType.eClassifier.oclAsType(EClass)]
 [let keyFeature : EStructuralFeature = mapEntryClass.getEStructuralFeature(featureName)]
 [let keyType : EGenericType = keyFeature.eGenericType]
-[getShortQualifiedName(keyType.eClassifier.getType(),aPackage.name)/]
+[getImportedIdentifier( keyType.eClassifier.getType(),packagePath, imports)/]
 [/let]
 [/let]
 [/let]
@@ -142,16 +144,16 @@ any
 [/template]
 
 
-[template public generateType(anEDataType : EGenericType, aPackage : EPackage ) post (trim())]
+[template public generateType(anEDataType : EGenericType, packagePath : String, imports : OclAny ) post (trim())]
 [if (anEDataType.oclIsUndefined() or anEDataType.eClassifier.oclIsUndefined())]
 void
 [else]
-[getShortQualifiedName(anEDataType.eClassifier.getType(), aPackage.name )/]
+[getImportedIdentifier( anEDataType.eClassifier.getType(),packagePath, imports)/]
 [/if]
 [/template]
 
-[template public generateParameterList(aOperation:EOperation ) post(trim())]
-[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterName()/]: [sParameter.generateType()/][/for]
+[template public generateParameterList(aOperation:EOperation, packagePath : String, imports : OclAny ) post(trim())]
+[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterName()/]: [sParameter.generateType(packagePath,imports)/][/for]
 [/template]
 
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
