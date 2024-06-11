@@ -98,29 +98,19 @@ endif endif endif
 [query public getInterfaceName( aPackage : EPackage ) : String = aPackage.getInterfaceName( getPackageName() )/]
 [query private getInterfaceName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceName').toUpperFirst() /]
 
-[query public getQualifiedInterfaceName( aClass : EClass ) : String = aClass.ePackage.name + '.'  + aClass.getInterfaceName()/]
-[query public getQualifiedInterfaceName( aPackage : EPackage ) : String = aPackage.name + '.' + aPackage.getInterfaceName()/]
-
 [** Implementation Names **/]
 [query public getImplementationName( aClass : EClass ) : String = aClass.getImplementationName( aClass.name )/]
 [query public getImplementationName( aPackage : EPackage ) : String = aPackage.getImplementationName( getPackageName() ) /]
 [query private getImplementationName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'implementationName', '$1Impl')/]
 
-[query public getQualifiedImplementationName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getImplementationName()/]
-
 [** Constants Names **/]
 [query public getConstantsName( aPackage : EPackage ) : String = aPackage.getConstantsName( aPackage.name.toUpperFirst() ) /]
 [query private getConstantsName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'constantsName', '$1Constants')/]
-
-[query public getQualifiedConstantsName( aPackage : EPackage ) : String = aPackage.name + '.' + aPackage.getConstantsName()/]
-
 
 [** Extension Names **/]
 [query public getExtensionName( aClass : EClass ) : String = aClass.getExtensionName(aClass.name )/]
 [query public getExtensionName( aPackage : EPackage ) : String = aPackage.getExtensionName( getPackageName() )/]
 [query private getExtensionName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'extensionName', '$1Ext')/]
-
-[query public getQualifiedExtensionName( aClass : EClass ) : String = aClass.ePackage.name + '.' + aClass.getExtensionName()/]
 
 [** FileNames **/]
 [query public getInterfaceFileName( aNamedElement : ENamedElement , aName : String ) : String = aNamedElement.getElementName( aName, 'interfaceFileName', '$1.ts')/]
@@ -149,8 +139,6 @@ endif endif endif endif
 
 [query public getOperationName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' )/]
 
-[query public getMetaType(aPackage : EPackage , anENamedElement : ENamedElement) : String = getShortQualifiedName( anENamedElement.eClass().getQualifiedInterfaceName(), aPackage.name ) /]
-
 [query public getParameterName(aParameter : EParameter) : String =
  	let n : String = aParameter.name in
 	if n = 'arguments' then 'args'
@@ -165,32 +153,22 @@ let methodName : String = if ecorePackageClass.eAllOperations->exists( name = ge
 methodName
 /]
 
-[query public getQualifiedIDName( aClass : EClass, aStructuralFeature : EStructuralFeature ) : String =
-    aClass.ePackage.getConstantsName() + '.' +  aClass.getFeatureIDName( aStructuralFeature )
+[query public isConstantsQualified( aEEnum  : EEnum ) : Boolean = 
+	let aPackage : EPackage = aEEnum.ePackage in
+	let aEnumNames : OrderedSet(String) = aEEnum.eLiterals.name->asOrderedSet() in
+	aPackage.eAllContents(EEnum)->exists( e | e <> aEEnum and aEEnum.eLiterals.name->asOrderedSet()->intersection(aEnumNames)->notEmpty() ) 
 /]
 
-[query public getQualifiedIDName( aClass : EClass, aOperation : EOperation ) : String =
-    aClass.ePackage.getConstantsName() + '.' + aClass.getOperationIDName( aOperation )
+[query public getConstantsName(eLiteral : EEnumLiteral) : String =
+	let eLiteralName : String =  upperCamelToUpperUnderscore(eLiteral.name.toUpperFirst()) in
+	if eLiteral.eEnum.isConstantsQualified() then
+		let eEnumName : String = upperCamelToUpperUnderscore(eLiteral.eEnum.name.toUpperFirst()) in	 
+		eEnumName + '__' + eLiteralName 
+	else eLiteralName 
+	endif
 /]
 
-[query public getQualifiedIDName( aDataType : EDataType ) : String =
-    aDataType.ePackage.getConstantsName() + '.' + aDataType.getClassifierIDName()
-/]
 
-[query public getQualifiedIDName( aClass : EClass ) : String =
-    aClass.ePackage.getConstantsName() + '.' + aClass.getClassifierIDName()
-/]
 
-[** Name Qualification **]
-[query public getShortQualifiedName( aQualifiedName : String , aNamespaceName : String ) : String =
-    aQualifiedName.getShortQualifiedNameSep(aNamespaceName, '.')
-/]
 
-[query public getUnQualifiedName( aQualifiedName : String ) : String =
-    aQualifiedName.getUnQualifiedNameSep('.')
-/]
-
-[query public getQualification( any : OclAny , aQualifiedName : String ) : String =
-    any.getQualificationSep(aQualifiedName, '.') 
-/]
 
