@@ -15,10 +15,25 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils]
 [import soft::generator::ts::generateCommon/]
+[import soft::generator::ts::generatePath/]
 
 [query public isBackReference(aStructuralFeature:EStructuralFeature) : Boolean = aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).isBackReference()/]
 [query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
 [query private isShared(aReference : EReference) : Boolean = if (aReference.hasKey('aggregation')) then aReference.valueKey('aggregation')='shared' else false endif/]
+
+[query private getQualifiedIdentifier( qualification : String, identifier : String ) : String = qualification + '.' + identifier/] 
+
+[query public getQualifiedInterfaceIdentifier( aPackage : EPackage, identifier : String ) : String = getQualifiedIdentifier(aPackage.getPackagePath(),identifier)/]
+
+[query public getQualifiedInterfaceIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedInterfaceIdentifier( aClass.getInterfaceName() ) /]
+
+[query public getQualifiedInterfaceIdentifier( aEnum : EEnum ) : String = aEnum.ePackage.getQualifiedInterfaceIdentifier( aEnum.name ) /]
+
+[query public getQualifiedImplementationIdentifier( aPackage : EPackage,identifier : String ) : String = getQualifiedIdentifier(aPackage.getPackagePath(),identifier)/]
+
+[query public getQualifiedImplementationIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedImplementationIdentifier( aClass.getImplementationName() ) /]
+
+[query public getQualifiedExtensionIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedImplementationIdentifier( aClass.getExtensionName() ) /]
 
 
 [template public generateType(aElement : ETypedElement) post (trim())]

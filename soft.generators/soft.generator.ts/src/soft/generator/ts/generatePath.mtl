@@ -1,0 +1,69 @@
+[**
+ * This file is part of soft.generator.ts, a project for typescript 
+ * code generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
+[comment encoding = UTF-8 /]
+[module generatePath('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
+
+[**
+ * Returns all packages paths
+ * A path is defined as package#alias
+ * By default returns path for ecore : @masagroup/ecore#ecore
+*/]
+[query private getAllPackagePaths(any : OclAny) : OclAny =
+	let ecorePackage : EPackage = getEcorePackage() in
+	let currentPackage : EPackage = getCurrentPackage() in
+	let packageToPaths : OclAny = mapNew('getAllPackageToPaths_' + currentPackage.name)
+									.mapPut('uri:'+ ecorePackage.nsURI, '@masagroup/ecore#ecore') in
+    let packagesProperty : OclAny = getProperty('packages') in 
+	let packages : String = (if packagesProperty.oclIsUndefined() or packagesProperty = '' then '' else packagesProperty.oclAsType(String) endif) + 
+							(if currentPackage.hasKey('packages') then ';' + currentPackage.valueKey('packages') else '' endif) in
+	if packages <> '' then
+		let tokenized : Sequence(String) = packages.tokenize(',; \r\n') in
+        tokenized->iterate( p : String ; res : OclAny = packageToPaths | (
+        	let index : Integer = p.index('=') in 
+            if index = -1 then
+				let packIndex : Integer = p.index('#') in
+				let packPath : String = if packIndex = -1 then p else p.substring(1, packIndex-1) endif in
+				let nameIndex : Integer = packPath.lastIndex('/') in
+				if nameIndex = -1 then
+					res.mapPut('name:'+packPath,p)
+				else
+					res.mapPut('name:'+packPath.substring(nameIndex+1),p)
+				endif
+            else
+                res.mapPut('uri:'+p.substring(1,index-1),p.substring(index+1))
+            endif
+		))
+    else
+        packageToPaths
+    endif
+/]
+
+[query public getPackagePath(aPackage : EPackage): String =
+ 	let packageToPaths : OclAny = getAllPackagePaths() in
+	let uriPath : OclAny = mapGet(packageToPaths, 'uri:' + aPackage.nsURI) in
+	if not uriPath.oclIsUndefined() then
+		uriPath.oclAsType(String)
+	else
+		let namePath : OclAny = mapGet(packageToPaths, 'name:' + aPackage.name) in
+		if not namePath.oclIsUndefined() then
+			namePath.oclAsType(String)
+		else
+			aPackage.name + '#' + aPackage.name
+		endif
+	endif
+/]
+
+
+
