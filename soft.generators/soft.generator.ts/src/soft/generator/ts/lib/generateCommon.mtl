@@ -13,45 +13,51 @@
 [module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon/]
+[import soft::generator::ts::generateType/]
 
-
-[**
- * Classes Onthology
-*/]
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
-    if ( aClass.eSuperTypes->isEmpty() ) then
-        if ( aClass.name = 'EObject' ) then
-            Sequence{'ecore.ENotifier'}
-        else
-            Sequence{'ecore.EObject'}
-        endif
+	let ecore : EPackage = getEcorePackage() in
+	if ( aClass.isMapEntry() ) then
+		Sequence{ ecore.getQualifiedInterfaceIdentifier('EObject'), ecore.getQualifiedInterfaceIdentifier('EMapEntry<any,any>')}
+    else if ( aClass.eSuperTypes->isEmpty() ) then
+		let aPackage : EPackage = aClass.ePackage in 
+	    if ( aClass.name = 'EObject' ) then
+            Sequence{ecore.getQualifiedInterfaceIdentifier('ENotifier')}
+        else if ( aPackage.hasPackageProperty('rootExtendsInterface') ) then
+			Sequence{aPackage.getPackageProperty('rootExtendsInterface')}
+		else
+            Sequence{ecore.getQualifiedInterfaceIdentifier('EObject')}
+        endif endif
     else
-        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceName()))
-    endif
+        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceIdentifier()))
+    endif endif
 /]
 
 [query public getClassExtends(aClass : EClass ) : String =
-    let aPackage : EPackage = aClass.ePackage in 
-    let extendsClass : EClass = aClass.getClassExtendsClass() in
+	let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
-        if ( aClass.name = 'EObject' ) then
-            'ecore.BasicEObject'
-        else if ( aPackage.hasKey('dynamic' ) and aPackage.valueKey('dynamic') = 'true' ) then
-            'ecore.DynamicEObjectImpl'
-        else
-            'ecore.EObjectImpl'
-        endif endif 
+		let aPackage : EPackage = aClass.ePackage in 
+        let ecore : EPackage = getEcorePackage() in
+    	if ( aClass.name = 'EObject' ) then
+			 ecore.getQualifiedImplementationIdentifier('BasicEObject')
+        else if ( aPackage.hasPackageProperty('rootExtendsClass') ) then
+			aPackage.getPackageProperty('rootExtendsClass')
+		else
+			ecore.getQualifiedImplementationIdentifier('EObjectImpl')
+        endif endif  
     else
         if ( extendsClass.hasExtension() ) then
-            extendsClass.getQualifiedExtensionName()
+            extendsClass.getQualifiedExtensionIdentifier()
         else
-            extendsClass.getQualifiedImplementationName()
+            extendsClass.getQualifiedImplementationIdentifier()
         endif
     endif
 /]
 
-[query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedInterfaceName() }/]
+
+[query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedInterfaceIdentifier() }/]
 
 [query public getPropertyName( aFeature : EStructuralFeature ) : String =
 if aFeature.eType.name = 'EBoolean' then 'is' + aFeature.name.toUpperFirst() else aFeature.name endif/]

@@ -351,22 +351,18 @@ void
 	endif endif
 /]
 
-[query private getAllImportModules(aPackage : EPackage) : OclAny =
-    let namespacesToPackages : OclAny = 
-    if (aPackage.hasGenAnnotation()) then
-        let annotations : Sequence(String) = aPackage.getGenAnnotation().details->select(key = 'importModule').value in
-        annotations->iterate( annotation : String ; res : OclAny = mapNew('getNamespaceToModule_' + aPackage.name) | (
-            let index : Integer = annotation.index(':') in 
-            if index = -1 then
-                res
-            else
-                res.mapPut(annotation.substring(1,index-1),annotation.substring(index+1)) 
-            endif
-        ))
-    else
-        mapNew('getNamespaceToModule_' + aPackage.name)
-    endif in
-    namespacesToPackages.mapPut('ecore','@masagroup/ecore')
+[query public getPackagePath( aClassifier : EClassifier ) : String = 
+    if aClassifier.oclIsUndefined() then 
+        ''
+	else if aClassifier.oclIsKindOf(EEnum) then
+		aClassifier.ePackage.getPackagePath()
+	else if aClassifier.oclIsKindOf(EDataType) then
+		let aDataType : EDataType = aClassifier.oclAsType(EDataType) in
+		let goType : String = aDataType.getInstanceTypeName() in
+		getIdentifierPackagePath(goType)
+	else
+		aClassifier.ePackage.getPackagePath()
+	endif endif endif
 /]
 
 

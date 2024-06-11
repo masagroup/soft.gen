@@ -15,14 +15,35 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
 
-[query public getOutputDirectory( anPackage : EPackage ) : String = 
-    let property : OclAny = getProperty('library.output.dir') in 
-    if property.oclIsUndefined() or property = '' then 
-        anPackage.name + '/src/'
-    else 
-        property 
-    endif
+
+
+[**
+ * package property
+*/]
+[query public hasPackageProperty(anPackage : EPackage, aProperty : String ) : Boolean =
+	let property : OclAny = getProperty(aProperty) in 
+	if property.oclIsUndefined() or property = '' then
+		anPackage.hasKey(aProperty)
+	else
+		true
+	endif
 /]
+
+[query public getPackageProperty(anPackage : EPackage, aProperty : String ) : String =
+	let property : OclAny = getProperty(aProperty) in 
+	if property.oclIsUndefined() or property = '' then
+		anPackage.valueKey(aProperty)
+	else
+		property
+	endif
+/]
+
+
+[query public getOutputDirectory( anPackage : EPackage ) : String =
+	let replacement : String = if anPackage.hasPackageProperty('outputDir') then anPackage.getPackageProperty('outputDir') else '$1' endif in
+	anPackage.name.replaceFirst('(.*)', replacement)
+/]
+
 
 [**
  * File Comments 
