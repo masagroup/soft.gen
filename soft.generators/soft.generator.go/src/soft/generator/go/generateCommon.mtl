@@ -194,18 +194,6 @@ methodName.toUpperFirst()
 
 [query public getOperationName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' ).toUpperFirst()/]
 
-[** Name Qualification **]
-
-
-[query public getUnQualifiedName( aQualifiedName : String ) : String =
-    aQualifiedName.getUnQualifiedNameSep('.')
-/]
-
-[query public getQualification( any : OclAny , aQualifiedName : String ) : String =
-    any.getQualificationSep(aQualifiedName, '.') 
-/]
-
-
 
 [query public isConstantsQualified( aEEnum  : EEnum ) : Boolean = 
 	let aPackage : EPackage = aEEnum.ePackage in
