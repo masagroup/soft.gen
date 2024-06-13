@@ -15,53 +15,48 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils]
 [import soft::generator::ts::generateCommon/]
-[import soft::generator::ts::generatePath/]
+[import soft::generator::ts::generateModule/]
 
 [query public isBackReference(aStructuralFeature:EStructuralFeature) : Boolean = aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).isBackReference()/]
 [query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
 [query private isShared(aReference : EReference) : Boolean = if (aReference.hasKey('aggregation')) then aReference.valueKey('aggregation')='shared' else false endif/]
 
-[query private getQualifiedIdentifier( qualification : String, identifier : String ) : String = qualification + '.' + identifier/] 
+[query private getQualifiedIdentifier( qualification : String, identifier : String ) : String = qualification + '/' + identifier/] 
 
-[query public getQualifiedInterfaceIdentifier( aPackage : EPackage, identifier : String ) : String = getQualifiedIdentifier(aPackage.getPackagePath(),identifier)/]
+[query public getQualifiedIdentifier( aPackage : EPackage, identifier : String ) : String = getQualifiedIdentifier(aPackage.getPackageModule(),identifier)/]
 
-[query public getQualifiedInterfaceIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedInterfaceIdentifier( aClass.getInterfaceName() ) /]
+[query public getQualifiedIdentifier( aClassifier : EClassifier ) : String =
+	if aClassifier.oclIsUndefined() then 'any'
+	else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getQualifiedIdentifier()
+	else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getQualifiedIdentifier()
+	else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getQualifiedIdentifier()
+	else '' endif endif endif endif
+ /]
 
-[query public getQualifiedInterfaceIdentifier( aEnum : EEnum ) : String = aEnum.ePackage.getQualifiedInterfaceIdentifier( aEnum.name ) /]
+[query public getQualifiedIdentifier( aDataType : EDataType ) : String = aDataType.getType()/]
 
-[query public getQualifiedImplementationIdentifier( aPackage : EPackage,identifier : String ) : String = getQualifiedIdentifier(aPackage.getPackagePath(),identifier)/]
+[query public getQualifiedIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedIdentifier( aClass.getInterfaceName() ) /]
 
-[query public getQualifiedImplementationIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedImplementationIdentifier( aClass.getImplementationName() ) /]
+[query public getQualifiedIdentifier( aEnum : EEnum ) : String = aEnum.ePackage.getQualifiedIdentifier( aEnum.name ) /]
 
-[query public getQualifiedExtensionIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedImplementationIdentifier( aClass.getExtensionName() ) /]
-
-[query public getImportedIdentifier( qualifiedIdentifier : String, packagePath : String, imports : OclAny ) : String =
-	if imports.oclIsUndefined() then
+[query public getImportedIdentifier( qualifiedIdentifier : String, namespaces : OclAny ) : String =
+	if namespaces.oclIsUndefined() then
 		qualifiedIdentifier
 	else
-		let indexDot : Integer = qualifiedIdentifier.lastIndex('.') in
-		if indexDot = -1 then
+		let indexSlash : Integer = qualifiedIdentifier.lastIndex('/') in
+		if indexSlash = -1 then
 			qualifiedIdentifier
 		else
-			let q : String = qualifiedIdentifier.substring(1, indexDot-1) in
-			let o : String = qualifiedIdentifier.substring(indexDot+1) in
-			if q = packagePath then
-				o 
+			let q : String = qualifiedIdentifier.substring(1, indexSlash-1) in
+			let o : String = qualifiedIdentifier.substring(indexSlash+1) in
+			let n : OclAny = mapGet(namespaces,q) in		
+			if n.oclIsUndefined() then
+				o
 			else
-				let i : OclAny = mapGet(imports,q) in		
-				if i.oclIsUndefined() then
-					let nameIndex : Integer = q.lastIndex('#') in
-					if nameIndex = -1 then
-						q + '.' + o
-					else
-						q.substring(nameIndex+1) + '.' + o
-					endif
+				if n = '' then
+					o
 				else
-					if i = '' then
-						o
-					else
-						i.oclAsType(String) + '.' + o
-					endif
+					n.oclAsType(String) + '.' + o
 				endif
 			endif
 		endif
@@ -70,7 +65,7 @@
 
 
 [query public getSimpleIdentifier( qualifiedIdentifier : String ) : String = 
-	let index : Integer = qualifiedIdentifier.lastIndex('.') in
+	let index : Integer = qualifiedIdentifier.lastIndex('/') in
 	if index = -1 then
 		qualifiedIdentifier
 	else
@@ -79,8 +74,8 @@
 /]
 
 
-[query public getIdentifierPackagePath( qualifiedIdentifier : String ) : String =
-	let index : Integer = qualifiedIdentifier.lastIndex('.') in
+[query public getIdentifierModule( qualifiedIdentifier : String ) : String =
+	let index : Integer = qualifiedIdentifier.lastIndex('/') in
 	if index = -1 then
 		''
 	else
@@ -88,19 +83,19 @@
 	endif
 /]
 
-[query public getImportedIDName( aClass : EClass, aFeature : EStructuralFeature, packagePath : String, imports : OclAny) : String =
-	getImportedIdentifier(aClass.ePackage.getQualifiedInterfaceIdentifier(aClass.getFeatureIDName(aFeature)), packagePath,imports)
+[query public getImportedIDName( aClass : EClass, aFeature : EStructuralFeature, namespaces : OclAny) : String =
+	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.getFeatureIDName(aFeature)),namespaces)
 /]
 
-[query public getImportedIDName( aClass : EClass, aOperation : EOperation, packagePath : String, imports : OclAny) : String =
-	getImportedIdentifier(aClass.ePackage.getQualifiedInterfaceIdentifier(aClass.getOperationIDName(aOperation)), packagePath,imports)
+[query public getImportedIDName( aClass : EClass, aOperation : EOperation, namespaces : OclAny) : String =
+	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.getOperationIDName(aOperation)),namespaces)
 /]
 
-[query public getImportedIDName( aClassifier : EClassifier, packagePath : String, imports : OclAny) : String = 
-	getImportedIdentifier(aClassifier.ePackage.getQualifiedInterfaceIdentifier(aClassifier.getClassifierIDName()), packagePath,imports)
+[query public getImportedIDName( aClassifier : EClassifier, namespaces : OclAny) : String = 
+	getImportedIdentifier(aClassifier.ePackage.getQualifiedIdentifier(aClassifier.getClassifierIDName()),namespaces)
 /]
 
-[template public generateType(aElement : ETypedElement, packagePath : String, imports : OclAny) post (trim())]
+[template public generateType(aElement : ETypedElement, namespaces : OclAny) post (trim())]
 [if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
 void
 [else]
@@ -108,11 +103,11 @@ void
     [let aPackage : EPackage = aElement.getEPackage()]
 	[let ecore : EPackage = getEcorePackage()]
     [if aElement.isMapType()]
-		[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EMap'), packagePath, imports)/]<[aDataType.generateMapKeyType(packagePath,imports)/], [aDataType.generateMapValueType(packagePath,imports)/]>
+		[getImportedIdentifier( ecore.getQualifiedIdentifier('EMap'), namespaces)/]<[aDataType.generateMapKeyType(namespaces)/], [aDataType.generateMapValueType(namespaces)/]>
 	[elseif aElement.isListType()]
-        [getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EList'), packagePath, imports)/]<[aDataType.generateListTypeParameters(packagePath,imports)/]>
+        [getImportedIdentifier( ecore.getQualifiedIdentifier('EList'), namespaces)/]<[aDataType.generateListTypeParameters(namespaces)/]>
     [else]
-        [aDataType.generateType(packagePath,imports)/][if aDataType.eClassifier.name <> 'EJavaClass' and aDataType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aDataType.eTypeArguments) separator (',')][getImportedIdentifier(g.eClassifier.getType(),packagePath,imports)/][/for]>[/if]
+        [aDataType.generateType(namespaces)/][if aDataType.eClassifier.name <> 'EJavaClass' and aDataType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aDataType.eTypeArguments) separator (',')][getImportedIdentifier(g.eClassifier.getType(),namespaces)/][/for]>[/if]
     [/if]
     [/let]
 	[/let]
@@ -120,32 +115,32 @@ void
 [/if]
 [/template]
 
-[template public generateMapTypeParameters(anEDataType : EGenericType, packagePath : String, imports : OclAny ) post(trim())]
-[anEDataType.generateMapKeyType(packagePath,imports)/], [anEDataType.generateMapValueType(packagePath,imports)/]	
+[template public generateMapTypeParameters(anEDataType : EGenericType, namespaces : OclAny ) post(trim())]
+[anEDataType.generateMapKeyType(namespaces)/], [anEDataType.generateMapValueType(namespaces)/]	
 [/template]
 
-[template public generateListTypeParameters(anEDataType : EGenericType, packagePath : String, imports : OclAny) post(trim())]
-[anEDataType.generateType(packagePath,imports)/]
+[template public generateListTypeParameters(anEDataType : EGenericType, namespaces : OclAny) post(trim())]
+[anEDataType.generateType(namespaces)/]
 [/template]
 
-[template private generateMapKeyType(anEDataType : EGenericType, packagePath : String, imports : OclAny) post(trim())]
-[anEDataType.generateMapTypeParameter(packagePath,imports,1,'key')/]
+[template private generateMapKeyType(anEDataType : EGenericType, namespaces : OclAny) post(trim())]
+[anEDataType.generateMapTypeParameter(namespaces,1,'key')/]
 [/template]
 
-[template private generateMapValueType(anEDataType : EGenericType, packagePath : String, imports : OclAny) post(trim())]
-[anEDataType.generateMapTypeParameter(packagePath,imports,2,'value')/]
+[template private generateMapValueType(anEDataType : EGenericType, namespaces : OclAny) post(trim())]
+[anEDataType.generateMapTypeParameter(namespaces,2,'value')/]
 [/template]
 
-[template private generateMapTypeParameter(anEDataType : EGenericType, packagePath : String, imports : OclAny, index : Integer, featureName : String) post(trim())]
+[template private generateMapTypeParameter(anEDataType : EGenericType , namespaces : OclAny, index : Integer, featureName : String) post(trim())]
 [if anEDataType.eTypeArguments->size() = 2]
 [let keyType : EGenericType = anEDataType.eTypeArguments->at(index)]
-[getImportedIdentifier( keyType.eClassifier.getType(),packagePath, imports)/]
+[getImportedIdentifier( keyType.eClassifier.getType(), namespaces)/]
 [/let]
 [elseif anEDataType.eClassifier.oclIsKindOf(EClass) and anEDataType.eClassifier.oclAsType(EClass).isMapEntry()]
 [let mapEntryClass : EClass = anEDataType.eClassifier.oclAsType(EClass)]
 [let keyFeature : EStructuralFeature = mapEntryClass.getEStructuralFeature(featureName)]
 [let keyType : EGenericType = keyFeature.eGenericType]
-[getImportedIdentifier( keyType.eClassifier.getType(),packagePath, imports)/]
+[getImportedIdentifier( keyType.eClassifier.getType(), namespaces)/]
 [/let]
 [/let]
 [/let]
@@ -155,16 +150,16 @@ any
 [/template]
 
 
-[template public generateType(anEDataType : EGenericType, packagePath : String, imports : OclAny ) post (trim())]
+[template public generateType(anEDataType : EGenericType, namespaces : OclAny ) post (trim())]
 [if (anEDataType.oclIsUndefined() or anEDataType.eClassifier.oclIsUndefined())]
 void
 [else]
-[getImportedIdentifier( anEDataType.eClassifier.getType(),packagePath, imports)/]
+[getImportedIdentifier( anEDataType.eClassifier.getType(), namespaces)/]
 [/if]
 [/template]
 
-[template public generateParameterList(aOperation:EOperation, packagePath : String, imports : OclAny ) post(trim())]
-[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterName()/]: [sParameter.generateType(packagePath,imports)/][/for]
+[template public generateParameterList(aOperation:EOperation, namespaces : OclAny ) post(trim())]
+[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterName()/]: [sParameter.generateType(namespaces)/][/for]
 [/template]
 
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
@@ -203,7 +198,7 @@ void
 	else if not aClassifier.instanceTypeName.oclIsUndefined() then
 		aClassifier.instanceTypeName
 	else if aClassifier.oclIsKindOf(EClass) then
-		aClassifier.oclAsType(EClass).getQualifiedInterfaceIdentifier()
+		aClassifier.oclAsType(EClass).getQualifiedIdentifier()
 	else
 		''
 	endif endif endif in
@@ -233,58 +228,58 @@ void
     else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getType()
     else '' endif endif endif endif
 /]
-[query private getType( aClass : EClass ) : String = aClass.getQualifiedInterfaceIdentifier()/]
-[query private getType( aEnum : EEnum ) : String = aEnum.getQualifiedInterfaceIdentifier()/]
+[query private getType( aClass : EClass ) : String = aClass.getQualifiedIdentifier()/]
+[query private getType( aEnum : EEnum ) : String = aEnum.getQualifiedIdentifier()/]
 [query private getType( aDataType : EDataType ) : String = aDataType.getInstanceTypeName()/]
 
-[query public getDefaultValue(anEAttribute : EAttribute, packagePath : String, imports : OclAny) : String = 
+[query public getDefaultValue(anEAttribute : EAttribute , namespaces : OclAny) : String = 
 	if anEAttribute.many then 
 		'' 
 	else 
 		if (defaultValueLiteral->notEmpty()) then 
-			eType.getDefaultValueFromLiteral(defaultValueLiteral,packagePath,imports) 
+			eType.getDefaultValueFromLiteral(defaultValueLiteral,namespaces) 
 		else 
-			eType.getDefaultValue(packagePath, imports) 
+			eType.getDefaultValue( namespaces) 
 		endif 
 	endif
 /]
 
 
-[query private getDefaultValueFromLiteral(aClassifier : EClassifier, literal : String , packagePath : String, imports : OclAny) : String =
-	 if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValueFromLiteral(literal,packagePath,imports)
-	 else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValueFromLiteral(literal,packagePath,imports)
+[query private getDefaultValueFromLiteral(aClassifier : EClassifier, literal : String , namespaces : OclAny) : String =
+	 if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValueFromLiteral(literal,namespaces)
+	 else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValueFromLiteral(literal,namespaces)
 	 else literal endif endif
 /]
 
-[query private getDefaultValueFromLiteral(aEnum : EEnum, literal : String , packagePath : String, imports : OclAny) : String =
+[query private getDefaultValueFromLiteral(aEnum : EEnum, literal : String, namespaces : OclAny) : String =
 	let eLiterals : OrderedSet(EEnumLiteral) = aEnum.eLiterals->select( el : EEnumLiteral | el.name = literal ) in
 	if eLiterals->isEmpty() then
 		literal 
 	else
-		getImportedIdentifier( aEnum.ePackage.getQualifiedInterfaceIdentifier(eLiterals->first().getConstantsName()), packagePath,imports)
+		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(eLiterals->first().getConstantsName()),namespaces)
 	endif
 /]
 
-[query private getDefaultValueFromLiteral(aDataType : EDataType, literal : String ,packagePath : String, imports : OclAny) : String = 
+[query private getDefaultValueFromLiteral(aDataType : EDataType, literal : String , namespaces : OclAny) : String = 
 	literal
 /]
 
 
-[query public getDefaultValue(aClassifier : EClassifier, packagePath : String, imports : OclAny) : String =
-    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue(packagePath,imports)
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue(packagePath,imports)
+[query public getDefaultValue(aClassifier : EClassifier, namespaces : OclAny) : String =
+    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue(namespaces)
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue(namespaces)
     else 'nil' endif endif
 /]
 
-[query public getDefaultValue(aEnum : EEnum, packagePath : String, imports : OclAny) : String = 
+[query public getDefaultValue(aEnum : EEnum, namespaces : OclAny) : String = 
 	if aEnum.eLiterals->notEmpty() then
-		getImportedIdentifier( aEnum.ePackage.getQualifiedInterfaceIdentifier(aEnum.eLiterals->at(1).getConstantsName()),packagePath, imports) 
+		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(aEnum.eLiterals->at(1).getConstantsName()), namespaces) 
 	else 
 		0 
 	endif
 /]
 
-[query public getDefaultValue(aDataType : EDataType, packagePath : String, imports : OclAny) : String =
+[query public getDefaultValue(aDataType : EDataType, namespaces : OclAny) : String =
 	if hasKey(aDataType, 'defaultValue') then
 		aDataType.valueKey('defaultValue')
 	else if aDataType.name <> 'EChar' and not aDataType.defaultValue.oclIsUndefined() then
@@ -298,7 +293,7 @@ void
 		    aPackage.getAllDataTypes()->iterate( s ; res : String = '' |
 		    if res = '' then
 		        if s->exists(n : String | n = typeName) then
-					getImportedIdentifier( s->at( s->size() - 1 ), packagePath,imports)
+					getImportedIdentifier( s->at( s->size() - 1 ),namespaces)
 		        else
 		            res
 		        endif
@@ -309,26 +304,26 @@ void
 	endif endif endif
 /]
 
-[query public getTestValue(aClassifier : EClassifier,packagePath : String, imports : OclAny) : String =
+[query public getTestValue(aClassifier : EClassifier, namespaces : OclAny) : String =
 	if aClassifier.oclIsUndefined() then 'nil'
-    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(packagePath,imports)
-    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue(packagePath,imports)
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTestValue(packagePath,imports)
+    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(namespaces)
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue(namespaces)
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTestValue(namespaces)
     else '' endif endif endif endif	
 /]
 
-[query private getTestValue( aClass : EClass ,packagePath : String , imports : OclAny) : String =
+[query private getTestValue( aClass : EClass , namespaces : OclAny) : String =
 	'// must be defined'
 /]
 
 
-[query private getTestValue( aEnum : EEnum ,packagePath : String, imports : OclAny ) : String =
+[query private getTestValue( aEnum : EEnum , namespaces : OclAny ) : String =
 	if aEnum.eLiterals->size() >= 1 then
 		let constant : String = aEnum.eLiterals->at(if aEnum.eLiterals->size() > 1 then 2 else 1 endif).getConstantsName() in
-		getImportedIdentifier( aEnum.ePackage.getQualifiedInterfaceIdentifier(constant),packagePath, imports)
+		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(constant), namespaces)
 	else 0 endif/]
 
-[query private getTestValue( aDataType : EDataType ,packagePath : String, imports : OclAny) : String = 
+[query private getTestValue( aDataType : EDataType, namespaces : OclAny) : String = 
 	if hasKey(aDataType, 'testValue') then
 		aDataType.valueKey('testValue')
 	else
@@ -340,7 +335,7 @@ void
 			aPackage.getAllDataTypes()->iterate( s ; res : String = '' |
 		    if res = '' then
 		        if s->exists(n : String | n = typeName) then
-					getImportedIdentifier( s->at( s->size() ),packagePath, imports)
+					getImportedIdentifier( s->at( s->size() ), namespaces)
 				else
 					res
 		        endif
@@ -351,17 +346,17 @@ void
 	endif endif
 /]
 
-[query public getPackagePath( aClassifier : EClassifier ) : String = 
+[query public getModule( aClassifier : EClassifier ) : String = 
     if aClassifier.oclIsUndefined() then 
         ''
 	else if aClassifier.oclIsKindOf(EEnum) then
-		aClassifier.ePackage.getPackagePath()
+		aClassifier.ePackage.getPackageModule()
 	else if aClassifier.oclIsKindOf(EDataType) then
 		let aDataType : EDataType = aClassifier.oclAsType(EDataType) in
-		let goType : String = aDataType.getInstanceTypeName() in
-		getIdentifierPackagePath(goType)
+		let tsType : String = aDataType.getInstanceTypeName() in
+		getIdentifierModule(tsType)
 	else
-		aClassifier.ePackage.getPackagePath()
+		aClassifier.ePackage.getPackageModule()
 	endif endif endif
 /]
 

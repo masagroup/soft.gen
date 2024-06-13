@@ -20,18 +20,18 @@
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
 	let ecore : EPackage = getEcorePackage() in
 	if ( aClass.isMapEntry() ) then
-		Sequence{ ecore.getQualifiedInterfaceIdentifier('EObject'), ecore.getQualifiedInterfaceIdentifier('EMapEntry<any,any>')}
+		Sequence{ ecore.getQualifiedIdentifier('EObject'), ecore.getQualifiedIdentifier('EMapEntry<any,any>')}
     else if ( aClass.eSuperTypes->isEmpty() ) then
 		let aPackage : EPackage = aClass.ePackage in 
 	    if ( aClass.name = 'EObject' ) then
-            Sequence{ecore.getQualifiedInterfaceIdentifier('ENotifier')}
+            Sequence{ecore.getQualifiedIdentifier('ENotifier')}
         else if ( aPackage.hasPackageProperty('rootExtendsInterface') ) then
 			Sequence{aPackage.getPackageProperty('rootExtendsInterface')}
 		else
-            Sequence{ecore.getQualifiedInterfaceIdentifier('EObject')}
+            Sequence{ecore.getQualifiedIdentifier('EObject')}
         endif endif
     else
-        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceIdentifier()))
+        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedIdentifier()))
     endif endif
 /]
 
@@ -41,23 +41,23 @@
 		let aPackage : EPackage = aClass.ePackage in 
         let ecore : EPackage = getEcorePackage() in
     	if ( aClass.name = 'EObject' ) then
-			 ecore.getQualifiedImplementationIdentifier('BasicEObject')
+			 ecore.getQualifiedIdentifier('BasicEObject')
         else if ( aPackage.hasPackageProperty('rootExtendsClass') ) then
 			aPackage.getPackageProperty('rootExtendsClass')
 		else
-			ecore.getQualifiedImplementationIdentifier('EObjectImpl')
+			ecore.getQualifiedIdentifier('EObjectImpl')
         endif endif  
     else
         if ( extendsClass.hasExtension() ) then
-            extendsClass.getQualifiedExtensionIdentifier()
+            extendsClass.getQualifiedIdentifier()
         else
-            extendsClass.getQualifiedImplementationIdentifier()
+            extendsClass.getQualifiedIdentifier()
         endif
     endif
 /]
 
 
-[query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedInterfaceIdentifier() }/]
+[query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedIdentifier() }/]
 
 [query public getPropertyName( aFeature : EStructuralFeature ) : String =
 if aFeature.eType.name = 'EBoolean' then 'is' + aFeature.name.toUpperFirst() else aFeature.name endif/]

@@ -17,7 +17,7 @@
 [import soft::generator::common::generateUtils]
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateElement/]
-[import soft::generator::ts::generatePath/]
+[import soft::generator::ts::generateModule/]
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
 [import soft::generator::ts::lib::generateOperation/]
@@ -26,14 +26,13 @@
 [template public generateInterface(aClass : EClass) {
 	ecorePackage : EPackage = getEcorePackage(); 
 	aPackage : EPackage = aClass.ePackage;
-	packagePath : String = aPackage.getPackagePath();         
 	interfaceName : String = aClass.getInterfaceName(); 
     interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
     isDiamond : Boolean = interfaceExtends->size() > 1;
-	allTypes : Set(String) = Set{  interfaceExtends->collect(i | getIdentifierPackagePath(i))
-								, (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getReferencedTypes() endif)->collect( cls | cls.getPackagePath())
-                                , if ( aClass.requiresList() or isDiamond ) then Set{ ecorePackage.getQualifiedInterfaceIdentifier('EList') } else Set{} endif
-								, if ( aClass.requiresMap() ) then Set{ ecorePackage.getQualifiedInterfaceIdentifier('EMap') } else Set{} endif
+	allTypes : Set(String) = Set{  interfaceExtends
+								, (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getReferencedTypes() endif)->collect( cls | cls.getQualifiedIdentifier())
+                                , if ( aClass.requiresList() or isDiamond ) then Set{ ecorePackage.getQualifiedIdentifier('EList') } else Set{} endif
+								, if ( aClass.requiresMap() ) then Set{ ecorePackage.getQualifiedIdentifier('EMap') } else Set{} endif
 								}->flatten();
 
 }]
