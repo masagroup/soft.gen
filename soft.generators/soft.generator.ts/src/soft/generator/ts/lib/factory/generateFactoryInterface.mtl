@@ -18,19 +18,20 @@
 [import soft::generator::ts::generateType /]
 
 [template public generateFactoryInterface(aPackage : EPackage) { 
+	ecorePackage : EPackage = getEcorePackage(); 
     className : String = aPackage.getFactoryName(); 
     packageName : String = aPackage.name;
     extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension';
     factoryName : String = if extension then aPackage.getFactoryExtensionName() else aPackage.getFactoryImplementationName() endif;
+	types : Set(String) = Set{  aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceIdentifier() )
+							 ,  Set{ ecorePackage.getQualifiedIdentifier('EFactory') }
+							 }->flatten();
+	modules : OclAny = aPackage.getModules('factory-interface',types);
 }]
 [file (aPackage.getOutputDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-[let allTypes : OrderedSet(String) = Set{ aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceName() )
-                                        , Set{'ecore.EFactory' , aPackage.name + '.' + factoryName }
-                                        }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[aPackage.generateImports(allTypes,className)/]
-[/let]
+[aPackage.generateImports('interface', types, modules)/]	
 
 export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EFactory {
 [for (aEClass : EClass | aPackage.eAllContents(EClass)->sortedBy(name))]
@@ -39,9 +40,9 @@ export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/
     create[aEClass.name/](): [aEClass.getInterfaceName()/]
 [let ref:OrderedSet(EReference) = aEClass.getAllContainers()]
 [for(aReference:EReference | ref->sortedBy(name))]
-    create[aEClass.name/]FromContainer(eContainer: [aReference.generateType()/]): [aEClass.getInterfaceName()/]
+    create[aEClass.name/]FromContainer(eContainer: [aReference.generateType(modules)/]): [aEClass.getInterfaceName()/]
 [if(aEClass.getElementIDAccessorName().size() > 0)]
-    create[aEClass.name/]FromContainerAndClassID(eContainer: [aReference.generateType()/],classID: number ): [aEClass.getInterfaceName()/]
+    create[aEClass.name/]FromContainerAndClassID(eContainer: [aReference.generateType(modules)/],classID: number ): [aEClass.getInterfaceName()/]
 [/if]
 [/for]
 [/let]
