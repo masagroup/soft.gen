@@ -362,7 +362,7 @@ void
 
 [query public getModules(element : ENamedElement, type :String, types : Set(String)) : OclAny =
 	types->iterate( t : String ; res : OclAny = mapNew('getElementModules_'+ type+ '_'+ element.name) |
-						let typeModule : String =getIdentifierModule(t) in
+						let typeModule : String = getIdentifierModule(t) in
 						if res.mapContainsKey(typeModule) then
 							let namespaceModule : String = getModuleNamespace(typeModule) in
 							res.mapPut(typeModule,namespaceModule)
@@ -371,6 +371,35 @@ void
 						endif 					    
 				  )
 /]
+
+[template public generateImports(element : ENamedElement, type :String, types : Set(String), modules : OclAny)]
+[let modulesToTypes : OclAny = types->iterate( type : String ; res : OclAny = mapNew('modulesToTypes_'+type+'_'+element.name) | (
+   let module : String = getIdentifierModule(type) in
+    if (module <> '') then
+        let typeName : String = getSimpleIdentifier(type) in
+        let types : Sequence(OclAny) = res.mapGetOrDefault(module, Sequence{}).asSequence() in
+        res.mapPut( module , types->append(typeName) )
+    else
+        res
+    endif
+))]
+[for (moduleAny : OclAny | modulesToTypes.mapKeys()->sortedBy(oclAsType(String)))]
+[let moduleStr : String = moduleAny.oclAsType(String)]
+[let namespace : OclAny =  modules.mapGet(moduleAny)]
+[if namespace.oclIsUndefined()]
+import {
+[for ( type : OclAny | modulesToTypes.mapGet(moduleAny).asSequence()->asOrderedSet())]
+    [type.oclAsType(String)/],
+[/for]    
+} from [moduleStr/]
+[else]
+import * as [namespace/] from [moduleStr/]
+[/if]
+[/let]
+[/let]
+[/for]
+[/let]
+[/template]
 
 
 

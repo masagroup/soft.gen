@@ -41,7 +41,7 @@
 [file (aPackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-
+[aClass.generateImports('interface', types, modules)/]
 
 export interface [interfaceName/][for ( qualifiedIdentifier : String | interfaceExtends ) before (' extends ') separator (', ')][getImportedIdentifier( qualifiedIdentifier , modules)/][/for] {
 [let attributes : OrderedSet(EAttribute) = aClass.eAttributes->asOrderedSet()->select( isGet() or isSet() )]
