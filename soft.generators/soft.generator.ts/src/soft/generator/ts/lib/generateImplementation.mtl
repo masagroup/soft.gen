@@ -34,24 +34,26 @@
     variableFeatures : Collection(EStructuralFeature) = features->select(isField());
     initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
     operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName());
-    classImplements : Sequence(String) = aClass.getClassImplements();
+    classImplements : Set(String) = aClass.getClassImplements()->asSet();
+	types : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
+									, Set{
+										 	if aClass.requiresMap()  then Set{'EMap','BasicEObjectMap','EMapEntry'} else Set{} endif,
+											if aClass.requiresList() then Set{'EList','BasicEList','BasicEObjectList'} else Set{} endif,
+		 									if aClass.hasReflectives() then Set{'EObject','EObjectInternal','EList','ENotifyingList','ENotificationChain','isEObjectList'} else Set{} endif,
+											if features->exists(requiresNotification()) then Set{'ENotification','ENotificationChain','EventType','Notification','EOPPOSITE_FEATURE_BASE'} else Set{} endif,
+											Set{'EClass','isEObjectInternal'}
+									    }->flatten()->collect(t | ecorePackage.getQualifiedIdentifier(t))->asSet()
+									, Set { aPackage.getQualifiedIdentifier(aPackage.getConstantsName())}
+									, classImplements
+									}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
+	modules : OclAny = aClass.getModules('implementation',types);
 }]
 [file (aPackage.getOutputDirectory() + '/' + aClass.getImplementationFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-[let types : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
-                                    , if aClass.requiresMap() then Set{'EMap','BasicEObjectMap','EMapEntry'}->collect(t | ecorePackage.getQualifiedIdentifier(t)) else Set{} endif
-                                    , if aClass.requiresList() then Set { Set{'EList','BasicEList','BasicEObjectList'}->collect(t | ecorePackage.getQualifiedIdentifier(t)), aPackage.getQualifiedConstantsName() }->flatten() else Set{} endif
-                                    , if aClass.hasReflectives() then Set{'ecore.EObject','ecore.EObjectInternal','ecore.EList','ecore.ENotifyingList','ecore.ENotificationChain','ecore.isEObjectList'} else Set{} endif
-                                    , if features->exists(requiresNotification()) then Set{'ecore.ENotification','ecore.ENotificationChain','ecore.EventType','ecore.Notification','ecore.EOPPOSITE_FEATURE_BASE', aPackage.getQualifiedConstantsName() } else Set{} endif
-                                    , if features->exists(isContainer()) then Set{aPackage.getQualifiedConstantsName()} else Set{} endif
-                                    , Set {classExtend, 'ecore.EClass','ecore.isEObjectInternal', aPackage.name + '.' + 'get'+ aPackage.getInterfaceName()}
-                                    , classImplements->asSet()
-                                    }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[aPackage.generateImports(allTypes,className)/]
-[/let]
+[aClass.generateImports('implementation', types, modules)/]
 
-export class [className/] extends [getShortQualifiedName(classExtend, aPackage.name)/][for ( interface : String | classImplements) before(' implements ') separator (', ')][getShortQualifiedName(interface,aPackage.name)/][/for] {
+export class [className/] extends [getImportedIdentifier(classExtend, modules)/][for ( interface : String | classImplements) before(' implements ') separator (', ')][getImportedIdentifier(interface,modules)/][/for] {
 [let dataDeclarationFeatures : Set(EStructuralFeature) = features->select( isField() )]
     [dataDeclarationFeatures.generateVariableDeclaration()/]
 [/let]
