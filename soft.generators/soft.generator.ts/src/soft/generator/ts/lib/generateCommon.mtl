@@ -31,7 +31,7 @@
             Sequence{ecore.getQualifiedIdentifier('EObject')}
         endif endif
     else
-        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedIdentifier()))
+        aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceIdentifier()))
     endif endif
 /]
 
@@ -49,15 +49,13 @@
         endif endif  
     else
         if ( extendsClass.hasExtension() ) then
-            extendsClass.getQualifiedIdentifier()
+            extendsClass.getQualifiedExtensionIdentifier()
         else
-            extendsClass.getQualifiedIdentifier()
+            extendsClass.getQualifiedImplementationIdentifier()
         endif
     endif
 /]
 
-
-[query public getClassImplements(aClass : EClass ) : Sequence(String) = Sequence{ aClass.getQualifiedIdentifier() }/]
 
 [query public getPropertyName( aFeature : EStructuralFeature ) : String =
 if aFeature.eType.name = 'EBoolean' then 'is' + aFeature.name.toUpperFirst() else aFeature.name endif/]

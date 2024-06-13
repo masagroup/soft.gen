@@ -25,19 +25,23 @@
 
 [query public getQualifiedIdentifier( aPackage : EPackage, identifier : String ) : String = getQualifiedIdentifier(aPackage.getPackageModule(),identifier)/]
 
-[query public getQualifiedIdentifier( aClassifier : EClassifier ) : String =
+[query public getQualifiedInterfaceIdentifier( aClassifier : EClassifier ) : String =
 	if aClassifier.oclIsUndefined() then 'any'
-	else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getQualifiedIdentifier()
-	else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getQualifiedIdentifier()
-	else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getQualifiedIdentifier()
+	else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getQualifiedInterfaceIdentifier()
+	else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getQualifiedInterfaceIdentifier()
+	else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getQualifiedInterfaceIdentifier()
 	else '' endif endif endif endif
  /]
 
-[query public getQualifiedIdentifier( aDataType : EDataType ) : String = aDataType.getType()/]
+[query public getQualifiedInterfaceIdentifier( aDataType : EDataType ) : String = aDataType.getType()/]
 
-[query public getQualifiedIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedIdentifier( aClass.getInterfaceName() ) /]
+[query public getQualifiedInterfaceIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedIdentifier( aClass.getInterfaceName() ) /]
 
-[query public getQualifiedIdentifier( aEnum : EEnum ) : String = aEnum.ePackage.getQualifiedIdentifier( aEnum.name ) /]
+[query public getQualifiedImplementationIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedIdentifier( aClass.getImplementationName() ) /]
+
+[query public getQualifiedExtensionIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedIdentifier( aClass.getExtensionName() ) /]
+
+[query public getQualifiedInterfaceIdentifier( aEnum : EEnum ) : String = aEnum.ePackage.getQualifiedIdentifier( aEnum.name ) /]
 
 [query public getImportedIdentifier( qualifiedIdentifier : String, modules : OclAny ) : String =
 	if modules.oclIsUndefined() then
@@ -198,7 +202,7 @@ void
 	else if not aClassifier.instanceTypeName.oclIsUndefined() then
 		aClassifier.instanceTypeName
 	else if aClassifier.oclIsKindOf(EClass) then
-		aClassifier.oclAsType(EClass).getQualifiedIdentifier()
+		aClassifier.oclAsType(EClass).getQualifiedInterfaceIdentifier()
 	else
 		''
 	endif endif endif in
@@ -228,8 +232,8 @@ void
     else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getType()
     else '' endif endif endif endif
 /]
-[query private getType( aClass : EClass ) : String = aClass.getQualifiedIdentifier()/]
-[query private getType( aEnum : EEnum ) : String = aEnum.getQualifiedIdentifier()/]
+[query private getType( aClass : EClass ) : String = aClass.getQualifiedInterfaceIdentifier()/]
+[query private getType( aEnum : EEnum ) : String = aEnum.getQualifiedInterfaceIdentifier()/]
 [query private getType( aDataType : EDataType ) : String = aDataType.getInstanceTypeName()/]
 
 [query public getDefaultValue(anEAttribute : EAttribute , modules : OclAny) : String = 

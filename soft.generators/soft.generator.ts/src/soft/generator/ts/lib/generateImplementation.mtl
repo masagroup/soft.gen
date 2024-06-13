@@ -30,11 +30,12 @@
     ecorePackage : EPackage = getEcorePackage();  
     className : String = aClass.getImplementationName();
     classExtend : String = aClass.getClassExtends(); 
-    features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
+    classImplement : String = aClass.getQualifiedInterfaceIdentifier();
+	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
     variableFeatures : Collection(EStructuralFeature) = features->select(isField());
     initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
     operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName());
-    classImplements : Set(String) = aClass.getClassImplements()->asSet();
+    
 	types : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
 									, Set{
 										 	if aClass.requiresMap()  then Set{'EMap','BasicEObjectMap','EMapEntry'} else Set{} endif,
@@ -43,8 +44,7 @@
 											if features->exists(requiresNotification()) then Set{'ENotification','ENotificationChain','EventType','Notification','EOPPOSITE_FEATURE_BASE'} else Set{} endif,
 											Set{'EClass','isEObjectInternal'}
 									    }->flatten()->collect(t | ecorePackage.getQualifiedIdentifier(t))->asSet()
-									, Set { aPackage.getQualifiedIdentifier(aPackage.getConstantsName())}
-									, classImplements
+									, Set { classImplement, aPackage.getQualifiedIdentifier(aPackage.getConstantsName())}
 									}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
 	modules : OclAny = aClass.getModules('implementation',types);
 }]
@@ -53,7 +53,7 @@
 
 [aClass.generateImports('implementation', types, modules)/]
 
-export class [className/] extends [getImportedIdentifier(classExtend, modules)/][for ( interface : String | classImplements) before(' implements ') separator (', ')][getImportedIdentifier(interface,modules)/][/for] {
+export class [className/] extends [getImportedIdentifier(classExtend, modules)/] implements [getImportedIdentifier(classImplement,modules)/] {
 [let dataDeclarationFeatures : Set(EStructuralFeature) = features->select( isField() )]
     [dataDeclarationFeatures.generateVariableDeclaration(modules)/]
 [/let]

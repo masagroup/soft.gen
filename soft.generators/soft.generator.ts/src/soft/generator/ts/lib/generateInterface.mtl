@@ -32,7 +32,7 @@
     interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
     isDiamond : Boolean = interfaceExtends->size() > 1;
 	types : Set(String) = Set{  interfaceExtends
-								, (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getReferencedTypes() endif)->collect( cls | cls.getQualifiedIdentifier())
+								, (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getReferencedTypes() endif)->collect( cls | cls.getQualifiedInterfaceIdentifier())
                                 , if ( aClass.requiresList() or isDiamond ) then Set{ ecorePackage.getQualifiedIdentifier('EList') } else Set{} endif
 								, if ( aClass.requiresMap() ) then Set{ ecorePackage.getQualifiedIdentifier('EMap') } else Set{} endif
 								}->flatten();
