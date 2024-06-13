@@ -23,25 +23,27 @@
 [import soft::generator::ts::lib::generateOperation/]
 [import soft::generator::ts::lib::generateStructuralFeature/]
 
+
+
 [template public generateInterface(aClass : EClass) {
 	ecorePackage : EPackage = getEcorePackage(); 
 	aPackage : EPackage = aClass.ePackage;
 	interfaceName : String = aClass.getInterfaceName(); 
     interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
     isDiamond : Boolean = interfaceExtends->size() > 1;
-	allTypes : Set(String) = Set{  interfaceExtends
+	types : Set(String) = Set{  interfaceExtends
 								, (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getReferencedTypes() endif)->collect( cls | cls.getQualifiedIdentifier())
                                 , if ( aClass.requiresList() or isDiamond ) then Set{ ecorePackage.getQualifiedIdentifier('EList') } else Set{} endif
 								, if ( aClass.requiresMap() ) then Set{ ecorePackage.getQualifiedIdentifier('EMap') } else Set{} endif
 								}->flatten();
-
+	modules : OclAny = aClass.getModules('interface',types);
 }]
 [file (aPackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
 
 
-export interface [interfaceName/][for ( qualifiedIdentifier : String | interfaceExtends ) before (' extends ') separator (', ')][getImportedIdentifier( qualifiedIdentifier ,packagePath, imports)/][/for] {
+export interface [interfaceName/][for ( qualifiedIdentifier : String | interfaceExtends ) before (' extends ') separator (', ')][getImportedIdentifier( qualifiedIdentifier , namespaces)/][/for] {
 [let attributes : OrderedSet(EAttribute) = aClass.eAttributes->asOrderedSet()->select( isGet() or isSet() )]
 [if attributes->notEmpty()]
     // Attributes

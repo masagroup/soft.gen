@@ -39,8 +39,8 @@
 
 [query public getQualifiedIdentifier( aEnum : EEnum ) : String = aEnum.ePackage.getQualifiedIdentifier( aEnum.name ) /]
 
-[query public getImportedIdentifier( qualifiedIdentifier : String, namespaces : OclAny ) : String =
-	if namespaces.oclIsUndefined() then
+[query public getImportedIdentifier( qualifiedIdentifier : String, modules : OclAny ) : String =
+	if modules.oclIsUndefined() then
 		qualifiedIdentifier
 	else
 		let indexSlash : Integer = qualifiedIdentifier.lastIndex('/') in
@@ -49,7 +49,7 @@
 		else
 			let q : String = qualifiedIdentifier.substring(1, indexSlash-1) in
 			let o : String = qualifiedIdentifier.substring(indexSlash+1) in
-			let n : OclAny = mapGet(namespaces,q) in		
+			let n : OclAny = mapGet(modules,q) in		
 			if n.oclIsUndefined() then
 				o
 			else
@@ -83,19 +83,19 @@
 	endif
 /]
 
-[query public getImportedIDName( aClass : EClass, aFeature : EStructuralFeature, namespaces : OclAny) : String =
-	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.getFeatureIDName(aFeature)),namespaces)
+[query public getImportedIDName( aClass : EClass, aFeature : EStructuralFeature, modules : OclAny) : String =
+	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.getFeatureIDName(aFeature)),modules)
 /]
 
-[query public getImportedIDName( aClass : EClass, aOperation : EOperation, namespaces : OclAny) : String =
-	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.getOperationIDName(aOperation)),namespaces)
+[query public getImportedIDName( aClass : EClass, aOperation : EOperation, modules : OclAny) : String =
+	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.getOperationIDName(aOperation)),modules)
 /]
 
-[query public getImportedIDName( aClassifier : EClassifier, namespaces : OclAny) : String = 
-	getImportedIdentifier(aClassifier.ePackage.getQualifiedIdentifier(aClassifier.getClassifierIDName()),namespaces)
+[query public getImportedIDName( aClassifier : EClassifier, modules : OclAny) : String = 
+	getImportedIdentifier(aClassifier.ePackage.getQualifiedIdentifier(aClassifier.getClassifierIDName()),modules)
 /]
 
-[template public generateType(aElement : ETypedElement, namespaces : OclAny) post (trim())]
+[template public generateType(aElement : ETypedElement, modules : OclAny) post (trim())]
 [if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
 void
 [else]
@@ -103,11 +103,11 @@ void
     [let aPackage : EPackage = aElement.getEPackage()]
 	[let ecore : EPackage = getEcorePackage()]
     [if aElement.isMapType()]
-		[getImportedIdentifier( ecore.getQualifiedIdentifier('EMap'), namespaces)/]<[aDataType.generateMapKeyType(namespaces)/], [aDataType.generateMapValueType(namespaces)/]>
+		[getImportedIdentifier( ecore.getQualifiedIdentifier('EMap'), modules)/]<[aDataType.generateMapKeyType(modules)/], [aDataType.generateMapValueType(modules)/]>
 	[elseif aElement.isListType()]
-        [getImportedIdentifier( ecore.getQualifiedIdentifier('EList'), namespaces)/]<[aDataType.generateListTypeParameters(namespaces)/]>
+        [getImportedIdentifier( ecore.getQualifiedIdentifier('EList'), modules)/]<[aDataType.generateListTypeParameters(modules)/]>
     [else]
-        [aDataType.generateType(namespaces)/][if aDataType.eClassifier.name <> 'EJavaClass' and aDataType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aDataType.eTypeArguments) separator (',')][getImportedIdentifier(g.eClassifier.getType(),namespaces)/][/for]>[/if]
+        [aDataType.generateType(modules)/][if aDataType.eClassifier.name <> 'EJavaClass' and aDataType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aDataType.eTypeArguments) separator (',')][getImportedIdentifier(g.eClassifier.getType(),modules)/][/for]>[/if]
     [/if]
     [/let]
 	[/let]
@@ -115,32 +115,32 @@ void
 [/if]
 [/template]
 
-[template public generateMapTypeParameters(anEDataType : EGenericType, namespaces : OclAny ) post(trim())]
-[anEDataType.generateMapKeyType(namespaces)/], [anEDataType.generateMapValueType(namespaces)/]	
+[template public generateMapTypeParameters(anEDataType : EGenericType, modules : OclAny ) post(trim())]
+[anEDataType.generateMapKeyType(modules)/], [anEDataType.generateMapValueType(modules)/]	
 [/template]
 
-[template public generateListTypeParameters(anEDataType : EGenericType, namespaces : OclAny) post(trim())]
-[anEDataType.generateType(namespaces)/]
+[template public generateListTypeParameters(anEDataType : EGenericType, modules : OclAny) post(trim())]
+[anEDataType.generateType(modules)/]
 [/template]
 
-[template private generateMapKeyType(anEDataType : EGenericType, namespaces : OclAny) post(trim())]
-[anEDataType.generateMapTypeParameter(namespaces,1,'key')/]
+[template private generateMapKeyType(anEDataType : EGenericType, modules : OclAny) post(trim())]
+[anEDataType.generateMapTypeParameter(modules,1,'key')/]
 [/template]
 
-[template private generateMapValueType(anEDataType : EGenericType, namespaces : OclAny) post(trim())]
-[anEDataType.generateMapTypeParameter(namespaces,2,'value')/]
+[template private generateMapValueType(anEDataType : EGenericType, modules : OclAny) post(trim())]
+[anEDataType.generateMapTypeParameter(modules,2,'value')/]
 [/template]
 
-[template private generateMapTypeParameter(anEDataType : EGenericType , namespaces : OclAny, index : Integer, featureName : String) post(trim())]
+[template private generateMapTypeParameter(anEDataType : EGenericType , modules : OclAny, index : Integer, featureName : String) post(trim())]
 [if anEDataType.eTypeArguments->size() = 2]
 [let keyType : EGenericType = anEDataType.eTypeArguments->at(index)]
-[getImportedIdentifier( keyType.eClassifier.getType(), namespaces)/]
+[getImportedIdentifier( keyType.eClassifier.getType(), modules)/]
 [/let]
 [elseif anEDataType.eClassifier.oclIsKindOf(EClass) and anEDataType.eClassifier.oclAsType(EClass).isMapEntry()]
 [let mapEntryClass : EClass = anEDataType.eClassifier.oclAsType(EClass)]
 [let keyFeature : EStructuralFeature = mapEntryClass.getEStructuralFeature(featureName)]
 [let keyType : EGenericType = keyFeature.eGenericType]
-[getImportedIdentifier( keyType.eClassifier.getType(), namespaces)/]
+[getImportedIdentifier( keyType.eClassifier.getType(), modules)/]
 [/let]
 [/let]
 [/let]
@@ -150,16 +150,16 @@ any
 [/template]
 
 
-[template public generateType(anEDataType : EGenericType, namespaces : OclAny ) post (trim())]
+[template public generateType(anEDataType : EGenericType, modules : OclAny ) post (trim())]
 [if (anEDataType.oclIsUndefined() or anEDataType.eClassifier.oclIsUndefined())]
 void
 [else]
-[getImportedIdentifier( anEDataType.eClassifier.getType(), namespaces)/]
+[getImportedIdentifier( anEDataType.eClassifier.getType(), modules)/]
 [/if]
 [/template]
 
-[template public generateParameterList(aOperation:EOperation, namespaces : OclAny ) post(trim())]
-[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterName()/]: [sParameter.generateType(namespaces)/][/for]
+[template public generateParameterList(aOperation:EOperation, modules : OclAny ) post(trim())]
+[for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterName()/]: [sParameter.generateType(modules)/][/for]
 [/template]
 
 [query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
@@ -232,54 +232,54 @@ void
 [query private getType( aEnum : EEnum ) : String = aEnum.getQualifiedIdentifier()/]
 [query private getType( aDataType : EDataType ) : String = aDataType.getInstanceTypeName()/]
 
-[query public getDefaultValue(anEAttribute : EAttribute , namespaces : OclAny) : String = 
+[query public getDefaultValue(anEAttribute : EAttribute , modules : OclAny) : String = 
 	if anEAttribute.many then 
 		'' 
 	else 
 		if (defaultValueLiteral->notEmpty()) then 
-			eType.getDefaultValueFromLiteral(defaultValueLiteral,namespaces) 
+			eType.getDefaultValueFromLiteral(defaultValueLiteral,modules) 
 		else 
-			eType.getDefaultValue( namespaces) 
+			eType.getDefaultValue( modules) 
 		endif 
 	endif
 /]
 
 
-[query private getDefaultValueFromLiteral(aClassifier : EClassifier, literal : String , namespaces : OclAny) : String =
-	 if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValueFromLiteral(literal,namespaces)
-	 else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValueFromLiteral(literal,namespaces)
+[query private getDefaultValueFromLiteral(aClassifier : EClassifier, literal : String , modules : OclAny) : String =
+	 if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValueFromLiteral(literal,modules)
+	 else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValueFromLiteral(literal,modules)
 	 else literal endif endif
 /]
 
-[query private getDefaultValueFromLiteral(aEnum : EEnum, literal : String, namespaces : OclAny) : String =
+[query private getDefaultValueFromLiteral(aEnum : EEnum, literal : String, modules : OclAny) : String =
 	let eLiterals : OrderedSet(EEnumLiteral) = aEnum.eLiterals->select( el : EEnumLiteral | el.name = literal ) in
 	if eLiterals->isEmpty() then
 		literal 
 	else
-		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(eLiterals->first().getConstantsName()),namespaces)
+		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(eLiterals->first().getConstantsName()),modules)
 	endif
 /]
 
-[query private getDefaultValueFromLiteral(aDataType : EDataType, literal : String , namespaces : OclAny) : String = 
+[query private getDefaultValueFromLiteral(aDataType : EDataType, literal : String , modules : OclAny) : String = 
 	literal
 /]
 
 
-[query public getDefaultValue(aClassifier : EClassifier, namespaces : OclAny) : String =
-    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue(namespaces)
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue(namespaces)
+[query public getDefaultValue(aClassifier : EClassifier, modules : OclAny) : String =
+    if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue(modules)
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue(modules)
     else 'nil' endif endif
 /]
 
-[query public getDefaultValue(aEnum : EEnum, namespaces : OclAny) : String = 
+[query public getDefaultValue(aEnum : EEnum, modules : OclAny) : String = 
 	if aEnum.eLiterals->notEmpty() then
-		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(aEnum.eLiterals->at(1).getConstantsName()), namespaces) 
+		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(aEnum.eLiterals->at(1).getConstantsName()), modules) 
 	else 
 		0 
 	endif
 /]
 
-[query public getDefaultValue(aDataType : EDataType, namespaces : OclAny) : String =
+[query public getDefaultValue(aDataType : EDataType, modules : OclAny) : String =
 	if hasKey(aDataType, 'defaultValue') then
 		aDataType.valueKey('defaultValue')
 	else if aDataType.name <> 'EChar' and not aDataType.defaultValue.oclIsUndefined() then
@@ -293,7 +293,7 @@ void
 		    aPackage.getAllDataTypes()->iterate( s ; res : String = '' |
 		    if res = '' then
 		        if s->exists(n : String | n = typeName) then
-					getImportedIdentifier( s->at( s->size() - 1 ),namespaces)
+					getImportedIdentifier( s->at( s->size() - 1 ),modules)
 		        else
 		            res
 		        endif
@@ -304,26 +304,26 @@ void
 	endif endif endif
 /]
 
-[query public getTestValue(aClassifier : EClassifier, namespaces : OclAny) : String =
+[query public getTestValue(aClassifier : EClassifier, modules : OclAny) : String =
 	if aClassifier.oclIsUndefined() then 'nil'
-    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(namespaces)
-    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue(namespaces)
-    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTestValue(namespaces)
+    else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(modules)
+    else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue(modules)
+    else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTestValue(modules)
     else '' endif endif endif endif	
 /]
 
-[query private getTestValue( aClass : EClass , namespaces : OclAny) : String =
+[query private getTestValue( aClass : EClass , modules : OclAny) : String =
 	'// must be defined'
 /]
 
 
-[query private getTestValue( aEnum : EEnum , namespaces : OclAny ) : String =
+[query private getTestValue( aEnum : EEnum , modules : OclAny ) : String =
 	if aEnum.eLiterals->size() >= 1 then
 		let constant : String = aEnum.eLiterals->at(if aEnum.eLiterals->size() > 1 then 2 else 1 endif).getConstantsName() in
-		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(constant), namespaces)
+		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(constant), modules)
 	else 0 endif/]
 
-[query private getTestValue( aDataType : EDataType, namespaces : OclAny) : String = 
+[query private getTestValue( aDataType : EDataType, modules : OclAny) : String = 
 	if hasKey(aDataType, 'testValue') then
 		aDataType.valueKey('testValue')
 	else
@@ -335,7 +335,7 @@ void
 			aPackage.getAllDataTypes()->iterate( s ; res : String = '' |
 		    if res = '' then
 		        if s->exists(n : String | n = typeName) then
-					getImportedIdentifier( s->at( s->size() ), namespaces)
+					getImportedIdentifier( s->at( s->size() ), modules)
 				else
 					res
 		        endif
@@ -359,5 +359,19 @@ void
 		aClassifier.ePackage.getPackageModule()
 	endif endif endif
 /]
+
+[query public getModules(element : ENamedElement, type :String, types : Set(String)) : OclAny =
+	types->iterate( t : String ; res : OclAny = mapNew('getElementModules_'+ type+ '_'+ element.name) |
+						let typeModule : String =getIdentifierModule(t) in
+						if res.mapContainsKey(typeModule) then
+							let namespaceModule : String = getModuleNamespace(typeModule) in
+							res.mapPut(typeModule,namespaceModule)
+						else 
+							res
+						endif 					    
+				  )
+/]
+
+
 
 
