@@ -55,7 +55,7 @@
 
 export class [className/] extends [getImportedIdentifier(classExtend, modules)/][for ( interface : String | classImplements) before(' implements ') separator (', ')][getImportedIdentifier(interface,modules)/][/for] {
 [let dataDeclarationFeatures : Set(EStructuralFeature) = features->select( isField() )]
-    [dataDeclarationFeatures.generateVariableDeclaration()/]
+    [dataDeclarationFeatures.generateVariableDeclaration(modules)/]
 [/let]
 
     constructor() {
@@ -67,13 +67,13 @@ export class [className/] extends [getImportedIdentifier(classExtend, modules)/]
         return get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]()
     }
 
-    [features.generateImplementation(aClass)/]
+    [features.generateImplementation(aClass,modules)/]
 
-    [operations.generateImplementation(aClass)/]
+    [operations.generateImplementation(aClass,modules)/]
 
-    [initializerFeatures.generateVariableInitializationMethodDefinition(aClass)/]
+    [initializerFeatures.generateVariableInitializationMethodDefinition(aClass,modules)/]
 
-    [aClass.generateReflectivesDefinition()/]
+    [aClass.generateReflectivesDefinition(modules)/]
 }
 
 [/file]

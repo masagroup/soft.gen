@@ -47,19 +47,19 @@ export interface [interfaceName/][for ( qualifiedIdentifier : String | interface
 [let attributes : OrderedSet(EAttribute) = aClass.eAttributes->asOrderedSet()->select( isGet() or isSet() )]
 [if attributes->notEmpty()]
     // Attributes
-    [attributes->asOrderedSet().generateDeclaration()/]
+    [attributes->asOrderedSet().generateDeclaration(modules)/]
 [/if]
 [/let]
 [let references : OrderedSet(EReference) = aClass.eReferences->asOrderedSet()->select( isGet() or isSet() )]
 [if references->notEmpty()]
     // References
-    [references.generateDeclaration()/]
+    [references.generateDeclaration(modules)/]
 [/if]
 [/let]
 [let operations : OrderedSet(EOperation) = aClass.eOperations->asOrderedSet()]
 [if operations->notEmpty()]
     // Operations
-    [operations.generateDeclaration()/]
+    [operations.generateDeclaration(modules)/]
 [/if]
 [/let]
 }
