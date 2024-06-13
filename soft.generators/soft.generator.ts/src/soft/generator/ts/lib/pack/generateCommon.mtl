@@ -17,8 +17,8 @@
 [import soft::generator::ts::lib::generateCommon/]
 
 
-[query public getMetaType(anENamedElement : ENamedElement, packagePath : String ,imports : OclAny) : String =
-	getImportedIdentifier(anENamedElement.eClass().getQualifiedInterfaceIdentifier(),packagePath, imports) 
+[query public getMetaType(anENamedElement : ENamedElement, modules : OclAny) : String =
+	getImportedIdentifier(anENamedElement.eClass().getQualifiedInterfaceIdentifier(),modules) 
 /]
 
 [template public generateStaticClassID(aEClass : EClass)]

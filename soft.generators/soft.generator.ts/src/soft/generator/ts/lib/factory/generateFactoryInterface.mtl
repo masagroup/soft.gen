@@ -31,7 +31,7 @@
 [file (aPackage.getOutputDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-[aPackage.generateImports('interface', types, modules)/]	
+[aPackage.generateImports('factory-interface', types, modules)/]	
 
 export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EFactory {
 [for (aEClass : EClass | aPackage.eAllContents(EClass)->sortedBy(name))]

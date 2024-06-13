@@ -38,12 +38,12 @@
 										, Set{aPackage.getConstantsName(), aPackage.getFactoryName()}->collect(t | aPackage.getQualifiedIdentifier(t))->asSet()
 										, aPackage.getPackageEnumTypes()
 										}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
-	modules : OclAny = aPackage.getModules('interface',types);
+	modules : OclAny = aPackage.getModules('factory-implemention',types);
 }]
 [file (aPackage.getOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-[aPackage.generateImports('interface', types, modules)/]	
+[aPackage.generateImports('factory-implemention', types, modules)/]	
 
 export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EFactoryExt implements [aPackage.getFactoryName()/] {
     
