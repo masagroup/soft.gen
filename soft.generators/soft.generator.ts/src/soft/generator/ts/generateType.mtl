@@ -395,9 +395,9 @@ import {
 [for ( type : OclAny | modulesToTypes.mapGet(moduleAny).asSequence()->asOrderedSet()->sortedBy(t |t.oclAsType(String)))]
     [type.oclAsType(String)/],
 [/for]    
-} from [moduleStr/]
+} from "[moduleStr/]"
 [else]
-import * as [namespace/] from [moduleStr/]
+import * as [namespace/] from "[moduleStr/]"
 [/if]
 [/let]
 [/let]
