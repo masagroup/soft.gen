@@ -52,7 +52,18 @@
 			qualifiedIdentifier
 		else
 			let q : String = qualifiedIdentifier.substring(1, indexSlash-1) in
-			let o : String = qualifiedIdentifier.substring(indexSlash+1) in
+			let t : String = qualifiedIdentifier.substring(indexSlash+1) in
+			let indexParametersStart : Integer = t.index('<') in
+			let o : String = 
+				if indexParametersStart = -1 then 
+					t 
+				else
+					let indexParametersEnd : Integer = t.lastIndex('>') in
+					let type : String = t.substring(1, indexParametersStart-1) in
+					let qualifiedParameters : Sequence(String) = t.substring(indexParametersStart+1,indexParametersEnd-1 ).tokenize(',') in
+					let importedParameters : String = Sequence{1..qualifiedParameters->size()}->iterate(index; res : String ='' | res + (if index = 1 then '' else ',' endif) + getImportedIdentifier(qualifiedParameters->at(index), modules)) in
+					type + '<'+ importedParameters +'>' 
+				endif in			
 			let n : OclAny = mapGet(modules,q) in		
 			if n.oclIsUndefined() then
 				o
@@ -371,13 +382,19 @@ void
 				  )
 /]
 
-[template public generateImports(element : ENamedElement, type :String, types : Set(String), modules : OclAny)]
-[let modulesToTypes : OclAny = types->iterate( type : String ; res : OclAny = mapNew('modulesToTypes_'+type+'_'+element.name) | (
-   let module : String = getIdentifierModule(type) in
+[query private removeGenericParametersFromIdentifier(identifier : String) : String =
+	let index : Integer = identifier.index('<') in
+	if index = -1 then identifier else identifier.substring(1,index-1) endif
+/]  
+
+[template public generateImports(element : ENamedElement, templ : String, types : Set(String), modules : OclAny)]
+[let modulesToTypes : OclAny = types->iterate( qualifiedIdentifier : String ; res : OclAny = mapNew('modulesToTypes_'+ templ + '_'+element.name) | (
+   let module : String = getIdentifierModule(qualifiedIdentifier) in
     if (module <> '') then
-        let typeName : String = getSimpleIdentifier(type) in
-        let types : Sequence(OclAny) = res.mapGetOrDefault(module, Sequence{}).asSequence() in
-        res.mapPut( module , types->append(typeName) )
+		let types : Sequence(OclAny) = res.mapGetOrDefault(module, Sequence{}).asSequence() in        
+		let simpleIdentifier : String = getSimpleIdentifier(qualifiedIdentifier) in
+		let type : String = removeGenericParametersFromIdentifier(simpleIdentifier) in
+        res.mapPut( module , types->append(type) )
     else
         res
     endif

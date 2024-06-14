@@ -17,10 +17,20 @@
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType/]
 
+[query private getMapTypeParameter(aClass : EClass , featureName : String) : String =
+	let keyFeature : EStructuralFeature = aClass.getEStructuralFeature(featureName) in
+	let keyType : EGenericType = keyFeature.eGenericType in
+	keyType.eClassifier.getType()
+/]
+
+[query private getMapKeyType(aClass : EClass): String = aClass.getMapTypeParameter('key')/]
+
+[query private getMapValueType(aClass : EClass): String = aClass.getMapTypeParameter('key')/]
+
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
 	let ecore : EPackage = getEcorePackage() in
 	if ( aClass.isMapEntry() ) then
-		Sequence{ ecore.getQualifiedIdentifier('EObject'), ecore.getQualifiedIdentifier('EMapEntry<any,any>')}
+		Sequence{ ecore.getQualifiedIdentifier('EObject'), ecore.getQualifiedIdentifier('EMapEntry<'+aClass.getMapKeyType()+','+aClass.getMapValueType()+'>')}
     else if ( aClass.eSuperTypes->isEmpty() ) then
 		let aPackage : EPackage = aClass.ePackage in 
 	    if ( aClass.name = 'EObject' ) then

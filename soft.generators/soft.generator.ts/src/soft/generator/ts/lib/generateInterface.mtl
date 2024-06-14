@@ -34,10 +34,9 @@
 	types : Set(String) = Set{  interfaceExtends
 								, if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getReferencedTypes() endif->collect( cls | cls.getQualifiedInterfaceIdentifier())
 								, Set{
-										if aClass.requiresList() or isDiamond then Set{ 'EList' } else Set{} endif,
-										if aClass.requiresMap() then Set{ 'EMap' } else Set{} endif,
-										if aClass.isMapEntry() then Set{ 'EMapEntry'} else Set{} endif
-								  	}->flatten()->collect(t | ecorePackage.getQualifiedIdentifier(t))
+										if aClass.requiresList() then Set{ 'EList' } else Set{} endif,
+										if aClass.requiresMap() then Set{ 'EMap' } else Set{} endif
+									}->flatten()->collect(t | ecorePackage.getQualifiedIdentifier(t))
 								}->flatten()->select(s | s <> '' and s <> aClass.getQualifiedInterfaceIdentifier() );
 	modules : OclAny = aClass.getModules('interface',types);
 }]
