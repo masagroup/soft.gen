@@ -88,16 +88,16 @@
 /]
 
 [query public getImportedIDName( aClass : EClass, aFeature : EStructuralFeature, modules : OclAny) : String =
-	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.getFeatureIDName(aFeature)),modules)
+	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.ePackage.getConstantsName()+'.'+ aClass.getFeatureIDName(aFeature)),modules)
 /]
 
 [query public getImportedIDName( aClass : EClass, aOperation : EOperation, modules : OclAny) : String =
-	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.getOperationIDName(aOperation)),modules)
+	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.ePackage.getConstantsName()+'.'+ aClass.getOperationIDName(aOperation)),modules)
 /]
 
-[query public getImportedIDName( aClassifier : EClassifier, modules : OclAny) : String = 
-	getImportedIdentifier(aClassifier.ePackage.getQualifiedIdentifier(aClassifier.getClassifierIDName()),modules)
-/]
+[query public getImportedIDName( aClassifier : EClassifier, modules : OclAny) : String =
+	getImportedIdentifier(aClassifier.ePackage.getQualifiedIdentifier(aClassifier.ePackage.getConstantsName()+'.'+ aClassifier.getClassifierIDName()),modules)
+ /]
 
 [template public generateType(aElement : ETypedElement, modules : OclAny) post (trim())]
 [if aElement.oclIsUndefined() or aElement.eGenericType.oclIsUndefined()]
