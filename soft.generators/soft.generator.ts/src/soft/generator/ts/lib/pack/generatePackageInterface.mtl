@@ -27,16 +27,17 @@
 [template public generatePackageInterface(aPackage : EPackage) {
 	ecorePackage : EPackage = getEcorePackage();
 	className : String = aPackage.getInterfaceName();
-	types : Set(String) = Set{	'EAttribute',
-								'EReference',
-								'EClass',
-								'EEnum',
-								'EOperation',
-								'EDataType',
-								'EcoreFactory',
-								'EPackageExt',
-								'getEcoreFactory'
-							}->collect(t | ecorePackage.getQualifiedIdentifier(t))->asSet();
+		types : Set(String) = Set{
+								Set{'EAttribute',
+									'EReference',
+									'EClass',
+									'EEnum',
+									'EOperation',
+									'EDataType',
+									'EPackage'
+									}->collect(t | ecorePackage.getQualifiedIdentifier(t)),
+								Set{ aPackage.getQualifiedIdentifier(aPackage.getImplementationName()) }
+							}->flatten();
 	modules : OclAny = aPackage.getModules('package-interface',types);
 }]
 [file (aPackage.getPackageDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
