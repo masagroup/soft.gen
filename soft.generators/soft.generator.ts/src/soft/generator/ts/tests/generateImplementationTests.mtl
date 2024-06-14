@@ -562,7 +562,7 @@ test("eGetFromID", () => {
 	expect(
 		deepEqual(
 			o.eGetFromID([aClass.getImportedIDName(anStructFeature,modules)/],false),
-			(o.[anStructFeature.getPropertyName()/] as [ecorePrefix/]EObjectList<[anStructFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>).getUnResolvedList()
+			(o.[anStructFeature.getPropertyName()/] as [ecorePrefix/]EObjectList<[anStructFeature.eGenericType.generateListTypeParameters(modules)/]>).getUnResolvedList()
 		)
 	).toBeTruthy()
 	[/if]
@@ -636,7 +636,7 @@ expect(() => o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)
 {
 	// list with a value
 	[anStructuralFeature.eType.generateTestValue(aClass.ePackage,'value')/]
-	let l = new [ecorePrefix/]ImmutableEList<[anStructuralFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>(['['/]value[']'/])
+	let l = new [ecorePrefix/]ImmutableEList<[anStructuralFeature.eGenericType.generateListTypeParameters(modules)/]>(['['/]value[']'/])
 [if anStructuralFeature.isProxy()]
 	when(mockValue.eIsProxy()).thenReturn(false)
 [/if]
@@ -710,7 +710,7 @@ verify([mockName/].eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass, modules : OclAny) ? (isListType())]
 [let ecorePrefix : String = if not aClass.ePackage.isEcorePackage() then 'ecore.' else '' endif]
 {
-	let l = new [ecorePrefix/]ImmutableEList<[anStructuralFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]>()
+	let l = new [ecorePrefix/]ImmutableEList<[anStructuralFeature.eGenericType.generateListTypeParameters(modules)/]>()
 	o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)/], l)
 	expect(o.[anStructuralFeature.getPropertyName()/].isEmpty()).toBeTruthy()
 }
@@ -801,7 +801,7 @@ test("eUnsetFromID", () => {
 		[if anStructFeature.isListType()]
 		let v = o.eGetFromID([aClass.getImportedIDName(anStructFeature,modules)/], false)
 		expect(v).not.toBeNull()
-		let l = v as [if not aClass.ePackage.isEcorePackage()]ecore.[/if]EList<[anStructFeature.eGenericType.generateListTypeParameters(aClass.ePackage)/]> 
+		let l = v as [if not aClass.ePackage.isEcorePackage()]ecore.[/if]EList<[anStructFeature.eGenericType.generateListTypeParameters(modules)/]> 
 		expect(l.isEmpty()).toBeTruthy()
 		[elseif anStructFeature.oclIsKindOf(EReference)]
 		expect(o.eGetFromID([aClass.getImportedIDName(anStructFeature,modules)/], false)).toBeNull()

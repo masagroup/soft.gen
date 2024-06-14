@@ -80,7 +80,7 @@ describe("[className/]", () => {
 		let mockContainer = mock<[getImportedIdentifier(eClassType.getQualifiedInterfaceIdentifier(), modules)/]>()
 		let container = instance(mockContainer)
 		[if(aReference.eOpposite.upperBound <> 1)]
-		let mockList = mock<[ecorePrefix/]EList<[aReference.eOpposite.eGenericType.generateListTypeParameters(aPackage)/]>>()
+		let mockList = mock<[ecorePrefix/]EList<[aReference.eOpposite.eGenericType.generateListTypeParameters(modules)/]>>()
 		let list = instance(mockList)
 		when(mockList.add(anything())).thenReturn(true)
 		when(mockContainer.[aReference.eOpposite.name/]).thenReturn(list)
@@ -93,7 +93,7 @@ describe("[className/]", () => {
 		let mockContainer = mock<[getImportedIdentifier(eClassType.getQualifiedInterfaceIdentifier(), modules)/]>()
 		let container = instance(mockContainer)
 		[if(aReference.eOpposite.upperBound <> 1)]
-		let mockList = mock<[ecorePrefix/]EList<[aReference.eOpposite.eGenericType.generateListTypeParameters(aPackage)/]>>()
+		let mockList = mock<[ecorePrefix/]EList<[aReference.eOpposite.eGenericType.generateListTypeParameters(modules)/]>>()
 		let list = instance(mockList)
 		when(mockList.add(anything())).thenReturn(true)
 		when(mockContainer.[aReference.eOpposite.name/]).thenReturn(list)
