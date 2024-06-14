@@ -272,7 +272,7 @@ void
 [query public getDefaultValue(aClassifier : EClassifier, modules : OclAny) : String =
     if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue(modules)
     else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue(modules)
-    else 'nil' endif endif
+    else 'null' endif endif
 /]
 
 [query public getDefaultValue(aEnum : EEnum, modules : OclAny) : String = 
@@ -290,10 +290,7 @@ void
 		aDataType.defaultValue.toString()
 	else
 		let typeName : String = aDataType.getInstanceTypeName() in
-		if typeName.size() > 0 and typeName.first(1) = '*' then
-			'nil'
-		else
-			let aPackage : EPackage = aDataType.ePackage in 
+		let aPackage : EPackage = aDataType.ePackage in 
 		    aPackage.getAllDataTypes()->iterate( s ; res : String = '' |
 		    if res = '' then
 		        if s->exists(n : String | n = typeName) then
@@ -305,11 +302,11 @@ void
 		        res 
 		    endif	
 	 		)
-	endif endif endif
+	endif endif
 /]
 
 [query public getTestValue(aClassifier : EClassifier, modules : OclAny) : String =
-	if aClassifier.oclIsUndefined() then 'nil'
+	if aClassifier.oclIsUndefined() then 'null'
     else if aClassifier.oclIsKindOf( EClass ) then aClassifier.oclAsType(EClass).getTestValue(modules)
     else if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getTestValue(modules)
     else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getTestValue(modules)
@@ -332,10 +329,7 @@ void
 		aDataType.valueKey('testValue')
 	else
 		let typeName : String = aDataType.getInstanceTypeName() in
-		if typeName.size() > 0 and typeName.first(1) = '*' then
-			'nil'
-		else
-			let aPackage : EPackage = aDataType.ePackage in 
+		let aPackage : EPackage = aDataType.ePackage in 
 			aPackage.getAllDataTypes()->iterate( s ; res : String = '' |
 		    if res = '' then
 		        if s->exists(n : String | n = typeName) then
@@ -347,7 +341,7 @@ void
 		        res 
 		    endif
 		 	) 
-	endif endif
+	endif
 /]
 
 [query public getModule( aClassifier : EClassifier ) : String = 
