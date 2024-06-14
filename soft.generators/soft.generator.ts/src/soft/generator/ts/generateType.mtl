@@ -370,8 +370,8 @@ void
 	endif endif endif
 /]
 
-[query public getModules(element : ENamedElement, type :String, types : Set(String)) : OclAny =
-	types->iterate( t : String ; res : OclAny = mapNew('getElementModules_'+ type+ '_'+ element.name) |
+[query public getModules(element : ENamedElement, templates :String, types : Set(String)) : OclAny =
+	types->iterate( t : String ; res : OclAny = mapNew('getElementModules_'+ templates + '_' + element.name) |
 						let typeModule : String = getIdentifierModule(t) in
 						if res.mapContainsKey(typeModule) then
 							let namespaceModule : String = getModuleNamespace(typeModule) in
@@ -387,8 +387,8 @@ void
 	if index = -1 then identifier else identifier.substring(1,index-1) endif
 /]  
 
-[template public generateImports(element : ENamedElement, templ : String, types : Set(String), modules : OclAny)]
-[let modulesToTypes : OclAny = types->iterate( qualifiedIdentifier : String ; res : OclAny = mapNew('modulesToTypes_'+ templ + '_'+element.name) | (
+[template public generateImports(element : ENamedElement, templates : String, types : Set(String), modules : OclAny)]
+[let modulesToTypes : OclAny = types->iterate( qualifiedIdentifier : String ; res : OclAny = mapNew('modulesToTypes_'+ templates + '_'+ element.name) | (
    let module : String = getIdentifierModule(qualifiedIdentifier) in
     if (module <> '') then
 		let types : Sequence(OclAny) = res.mapGetOrDefault(module, Sequence{}).asSequence() in        
