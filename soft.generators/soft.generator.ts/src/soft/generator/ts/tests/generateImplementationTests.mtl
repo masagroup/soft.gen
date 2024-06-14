@@ -605,11 +605,11 @@ expect(() => o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)
 [let aMapClass : EClass = anStructuralFeature.eType.oclAsType(EClass)]
 [let keyFeature : EStructuralFeature = aMapClass.getEStructuralFeature('key')]
 [let valueFeature : EStructuralFeature = aMapClass.getEStructuralFeature('value')]
-	let mockMap = mock<[ecorePrefix/]EMap<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>>()
+	let mockMap = mock<[ecorePrefix/]EMap<[anStructuralFeature.eGenericType.generateMapTypeParameters(modules)/]>>()
 	let map = instance(mockMap)
-	let mockIterator = mock<Iterator<[ecorePrefix/]EMapEntry<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>>>()
+	let mockIterator = mock<Iterator<[ecorePrefix/]EMapEntry<[anStructuralFeature.eGenericType.generateMapTypeParameters(modules)/]>>>()
 	let iterator = instance(mockIterator)
-	let mockEntry = mock<[ecorePrefix/]EMapEntry<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>>()
+	let mockEntry = mock<[ecorePrefix/]EMapEntry<[anStructuralFeature.eGenericType.generateMapTypeParameters(modules)/]>>()
 	let entry = instance(mockEntry)
 	[keyFeature.eType.generateTestValue(aPackage,'key')/]
 	[valueFeature.eType.generateTestValue(aPackage,'value')/]
@@ -618,7 +618,7 @@ expect(() => o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)
 	when(mockEntry.key).thenReturn(key)
 	when(mockEntry.value).thenReturn(value)
 	o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)/], map)
-	expect(o.[anStructuralFeature.getPropertyName()/].toMap()).toEqual(new Map<[anStructuralFeature.eGenericType.generateMapTypeParameters(aPackage)/]>(['['/]['['/]key,value[']'/][']'/]))
+	expect(o.[anStructuralFeature.getPropertyName()/].toMap()).toEqual(new Map<[anStructuralFeature.eGenericType.generateMapTypeParameters(modules)/]>(['['/]['['/]key,value[']'/][']'/]))
 [/let]
 [/let]
 [/let]

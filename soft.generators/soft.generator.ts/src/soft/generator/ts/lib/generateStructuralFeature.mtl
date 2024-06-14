@@ -372,7 +372,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 [let aPackage : EPackage = aClass.ePackage]
 [let aClassifier : EClassifier = aStructuralFeature.eType]
 [let aType : EGenericType = aStructuralFeature.eGenericType]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectMap<[aType.generateMapTypeParameters(aPackage)/]>([if aClassifier.ePackage.name <> aClass.ePackage.name][aClassifier.ePackage.name/].[/if]get[aClassifier.ePackage.getInterfaceName()/]().[aClassifier.getReflectiveGetterName()/]())
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectMap<[aType.generateMapTypeParameters(modules)/]>([if aClassifier.ePackage.name <> aClass.ePackage.name][aClassifier.ePackage.name/].[/if]get[aClassifier.ePackage.getInterfaceName()/]().[aClassifier.getReflectiveGetterName()/]())
 [/let]
 [/let]
 [/let]

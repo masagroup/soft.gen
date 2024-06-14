@@ -163,7 +163,7 @@ eSetFromID(featureID: number, newValue: any) {
     [let aPackage : EPackage = aClass.ePackage]
     [let aDataType : EGenericType = anStructFeature.eGenericType]
             this.[anStructFeature.getPropertyName()/].clear()
-            this.[anStructFeature.getPropertyName()/].addAll(newValue as [if not aPackage.isEcorePackage()]ecore.[/if]EList<[if not aPackage.isEcorePackage()]ecore.[/if]EMapEntry<[aDataType.generateMapTypeParameters(aPackage)/]>>)
+            this.[anStructFeature.getPropertyName()/].addAll(newValue as [if not aPackage.isEcorePackage()]ecore.[/if]EList<[if not aPackage.isEcorePackage()]ecore.[/if]EMapEntry<[aDataType.generateMapTypeParameters(modules)/]>>)
     [/let]
     [/let]
     [elseif anStructFeature.isListType()]
