@@ -46,7 +46,7 @@
 
 import { anything , capture, instance, mock, reset, verify, when } from "ts-mockito";
 
-[aPackage.generateImports('factory-implemention', types, modules)/]	
+[aPackage.generateImports('factory-tests', types, modules)/]	
 
 describe("[className/]", () => {
 
