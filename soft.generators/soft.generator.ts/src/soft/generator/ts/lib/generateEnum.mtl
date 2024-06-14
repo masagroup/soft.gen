@@ -20,7 +20,7 @@
     varName : String = enumName.toLowerFirst(); 
     aPackage : EPackage = aEEnum.ePackage; 
     literals : OrderedSet(EEnumLiteral) = aEEnum.eLiterals->asOrderedSet()->sortedBy(name);  }]
-[file (aPackage.getOutputDirectory() + '/' + aEEnum.getInterfaceFileName( enumName ), false, 'UTF-8')]
+[file (aPackage.getPackageDirectory() + '/' + aEEnum.getInterfaceFileName( enumName ), false, 'UTF-8')]
 [fileComment()/]
 
 export enum [enumName/] {

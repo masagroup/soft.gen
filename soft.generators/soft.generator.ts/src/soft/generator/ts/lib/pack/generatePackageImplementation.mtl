@@ -46,7 +46,7 @@
 	 						  }->flatten();
 	modules : OclAny = aPackage.getModules('package-implementation',types);
 }]
-[file (aPackage.getOutputDirectory() + '/'+  aPackage.getImplementationFileName(aPackage.getPackageName()),false, 'UTF-8')]
+[file (aPackage.getPackageDirectory() + '/'+  aPackage.getImplementationFileName(aPackage.getPackageName()),false, 'UTF-8')]
 [fileComment()/]
 
 [aPackage.generateImports('package-implementation', types, modules)/]

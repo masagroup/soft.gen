@@ -48,7 +48,7 @@
 									}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
 	modules : OclAny = aClass.getModules('implementation-tests',types);
 }]
-[file (aClass.ePackage.getOutputDirectory() + '/' + aClass.getImplementationTestFileName( aClass.name ), false, 'UTF-8')]
+[file (aClass.ePackage.getPackageDirectory() + '/' + aClass.getImplementationTestFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
 [comment imports/]

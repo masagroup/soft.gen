@@ -17,7 +17,7 @@
 [import soft::generator::ts::lib::pack::generateCommon/]
 
 [template public generatePackageConstants(anEPackage : EPackage) {className : String = anEPackage.getConstantsName();}]
-[file (anEPackage.getOutputDirectory() + '/'+  anEPackage.getConstantsFileName(className) , false, 'UTF-8')]
+[file (anEPackage.getPackageDirectory() + '/'+  anEPackage.getConstantsFileName(className) , false, 'UTF-8')]
 [fileComment()/]
 
 export class [className/] {

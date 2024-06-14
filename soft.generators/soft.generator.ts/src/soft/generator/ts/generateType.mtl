@@ -392,7 +392,7 @@ void
 [let namespace : OclAny =  modules.mapGet(moduleAny)]
 [if namespace.oclIsUndefined()]
 import {
-[for ( type : OclAny | modulesToTypes.mapGet(moduleAny).asSequence()->asOrderedSet())]
+[for ( type : OclAny | modulesToTypes.mapGet(moduleAny).asSequence()->asOrderedSet()->sortedBy(t |t.oclAsType(String)))]
     [type.oclAsType(String)/],
 [/for]    
 } from [moduleStr/]

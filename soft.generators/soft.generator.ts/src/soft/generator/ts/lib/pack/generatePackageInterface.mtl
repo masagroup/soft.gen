@@ -39,7 +39,7 @@
 							}->collect(t | ecorePackage.getQualifiedIdentifier(t))->asSet();
 	modules : OclAny = aPackage.getModules('package-interface',types);
 }]
-[file (aPackage.getOutputDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
+[file (aPackage.getPackageDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
 [aPackage.generateImports('package-interface', types, modules)/]

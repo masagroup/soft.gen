@@ -28,7 +28,7 @@
 							 }->flatten();
 	modules : OclAny = aPackage.getModules('factory-interface',types);
 }]
-[file (aPackage.getOutputDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
+[file (aPackage.getPackageDirectory() + '/' + aPackage.getInterfaceFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
 [aPackage.generateImports('factory-interface', types, modules)/]	

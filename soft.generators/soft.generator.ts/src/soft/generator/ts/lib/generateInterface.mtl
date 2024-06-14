@@ -38,7 +38,7 @@
 								}->flatten();
 	modules : OclAny = aClass.getModules('interface',types);
 }]
-[file (aPackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getPackageDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
 [aClass.generateImports('interface', types, modules)/]

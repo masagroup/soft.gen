@@ -39,8 +39,10 @@
 /]
 
 
-[query public getOutputDirectory( anPackage : EPackage ) : String =
-	let replacement : String = if anPackage.hasPackageProperty('outputDir') then anPackage.getPackageProperty('outputDir') else '$1' endif in
+[query public getPackageDirectory( anPackage : EPackage ) : String =
+	let replacement : String = if anPackage.hasPackageProperty('packageDir') 
+							   then anPackage.getPackageProperty('packageDir') 
+							   else '$1' endif in
 	anPackage.name.replaceFirst('(.*)', replacement)
 /]
 

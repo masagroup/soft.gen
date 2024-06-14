@@ -40,7 +40,7 @@
 										}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
 	modules : OclAny = aPackage.getModules('factory-implemention',types);
 }]
-[file (aPackage.getOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
+[file (aPackage.getPackageDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
 [aPackage.generateImports('factory-implemention', types, modules)/]	

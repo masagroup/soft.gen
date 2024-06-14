@@ -41,7 +41,7 @@
 								}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
 	modules : OclAny = aPackage.getModules('factory-tests',types);
  } ]
-[file (aPackage.getOutputDirectory() + '/' + aPackage.getFactoryTestFileName(aPackage.name), false, 'UTF-8')]
+[file (aPackage.getPackageDirectory() + '/' + aPackage.getFactoryTestFileName(aPackage.name), false, 'UTF-8')]
 [fileComment()/]
 
 import { anything , capture, instance, mock, reset, verify, when } from "ts-mockito";
