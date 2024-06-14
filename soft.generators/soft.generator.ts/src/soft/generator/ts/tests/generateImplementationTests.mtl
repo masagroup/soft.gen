@@ -33,18 +33,18 @@
 	className : String = aClass.getImplementationName();
 	features : Collection(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
 	types : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
-									, Set{
-										 	if aClass.requiresMap()  then Set{'EMap','EMapEntry'} else Set{} endif,
+									, Set{	
+											if aClass.requiresMap()  then Set{'EMap','EMapEntry'} else Set{} endif,
 											if aClass.requiresList() then Set{'EList','EObjectList','ImmutableEList','EOPPOSITE_FEATURE_BASE'} else Set{} endif,
 		 									if aClass.hasReflectives() then Set{'EObject','EObjectInternal','EList','ENotifyingList','ENotificationChain','isEObjectList'} else Set{} endif,
 											if features->exists(requiresNotification()) then Set{'ENotification','ENotificationChain','EventType','Notification','EOPPOSITE_FEATURE_BASE'} else Set{} endif,
 											Set{'EResource','EResourceSet','EAdapter','URI'}
 									    }->flatten()->collect(t | ecorePackage.getQualifiedIdentifier(t))->asSet()
-									, Set { 
+									, Set{ 
 											aClass.getImplementationName(), 
 											aPackage.getConstantsName(),
 											'get'+ aPackage.getInterfaceName()
-										  }->collect(t | aPackage.getQualifiedIdentifier(t))->asSet()
+										 }->collect(t | aPackage.getQualifiedIdentifier(t))->asSet()
 									}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
 	modules : OclAny = aClass.getModules('implementation-tests',types);
 }]
