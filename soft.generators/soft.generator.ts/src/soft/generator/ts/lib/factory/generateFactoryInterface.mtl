@@ -25,6 +25,7 @@
     factoryName : String = if extension then aPackage.getFactoryExtensionName() else aPackage.getFactoryImplementationName() endif;
 	types : Set(String) = Set{  aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceIdentifier() )
 							 ,  Set{ ecorePackage.getQualifiedIdentifier('EFactory') }
+							 ,  Set{ aPackage.getQualifiedIdentifier(factoryName) }
 							 }->flatten();
 	modules : OclAny = aPackage.getModules('factory-interface',types);
 }]
