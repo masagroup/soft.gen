@@ -166,7 +166,8 @@ void
 [for (sParameter : EParameter | aOperation.eParameters) separator (', ')][sParameter.getParameterName()/]: [sParameter.generateType(modules)/][/for]
 [/template]
 
-[query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) = 
+[query private getAllDataTypes(o : OclAny) : Sequence( Sequence( String ) ) =
+	let ecore : EPackage = getEcorePackage() in 
     Sequence {
         Sequence{ 'java.lang.Boolean', 'boolean', 'boolean', 'false' , 'true'},
         Sequence{ 'java.lang.Integer', 'int', 'number' , '0', '45'},
@@ -178,19 +179,19 @@ void
 		Sequence{ 'java.lang.Class' , 'any', 'null', ''},
 		Sequence{ 'java.lang.Object', 'any', 'null', 'null'},
 		Sequence{ 'java.lang.Long' , 'java.math.BigInteger', 'long' , 'number' , '0', '45'},
-        Sequence{ 'java.util.Map' , 'ecore.EMap', 'null', 'null'},
-        Sequence{ 'java.util.Map$Entry' , 'ecore.EMapEntry', 'null' , 'null'},
+        Sequence{ 'java.util.Map' , ecore.getQualifiedIdentifier('EMap'), 'null', 'null'},
+        Sequence{ 'java.util.Map$Entry' , ecore.getQualifiedIdentifier('EMapEntry'), 'null' , 'null'},
 		Sequence{ 'java.lang.Short' , 'short' , 'number' , '0', '2'},
         Sequence{ 'java.lang.String' , 'string', '""' , '"Test String"'},
 		
 
-		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', 'ecore.EDiagnosticChain', 'null', 'null'},
-		Sequence{ 'org.eclipse.emf.common.util.EList', 'ecore.EList', 'null', 'null'},
+		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', ecore.getQualifiedIdentifier('EDiagnosticChain'), 'null', 'null'},
+		Sequence{ 'org.eclipse.emf.common.util.EList', ecore.getQualifiedIdentifier('EList'), 'null', 'null'},
 		Sequence{ 'org.eclipse.emf.common.util.Enumerator', 'any', 'null', 'null'},
 		Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap', 'any', 'null', 'null'},
         Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap$Entry', 'any', 'null', 'null'},
-        Sequence{ 'org.eclipse.emf.ecore.resource.Resource', 'ecore.EResource', 'null' , 'null'},
-        Sequence{ 'org.eclipse.emf.ecore.resource.ResourceSet', 'ecore.EResourceSet', 'null' , 'null'},
+        Sequence{ 'org.eclipse.emf.ecore.resource.Resource', ecore.getQualifiedIdentifier('EResource'), 'null' , 'null'},
+        Sequence{ 'org.eclipse.emf.ecore.resource.ResourceSet', ecore.getQualifiedIdentifier('EResourceSet'), 'null' , 'null'},
 		Sequence{ 'org.eclipse.emf.common.util.TreeIterator', 'IterableIterator', 'null' , 'null'}
     }
 /]
