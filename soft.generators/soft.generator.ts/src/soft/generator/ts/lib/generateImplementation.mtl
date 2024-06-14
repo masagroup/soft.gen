@@ -44,7 +44,14 @@
 											if features->exists(requiresNotification()) then Set{'ENotification','ENotificationChain','EventType','Notification','EOPPOSITE_FEATURE_BASE'} else Set{} endif,
 											Set{'EClass','isEObjectInternal'}
 									    }->flatten()->collect(t | ecorePackage.getQualifiedIdentifier(t))->asSet()
-									, Set { classImplement, aPackage.getQualifiedIdentifier(aPackage.getConstantsName())}
+									, Set { 
+											aPackage.getConstantsName(), 
+											'get' + aPackage.getPackageName() 
+										  }->collect(t | aPackage.getQualifiedIdentifier(t))->asSet()
+									, Set {
+											classImplement,
+											classExtend
+										  }
 									}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
 	modules : OclAny = aClass.getModules('implementation',types);
 }]
