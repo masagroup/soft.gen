@@ -39,7 +39,7 @@
 	types : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
 									, Set{
 										 	if aClass.requiresMap()  then Set{'EMap','BasicEObjectMap','EMapEntry'} else Set{} endif,
-											if aClass.requiresList() then Set{'EList','BasicEList','BasicEObjectList'} else Set{} endif,
+											if aClass.requiresList() then Set{'EList','BasicEList','BasicEObjectList','BasicEDataTypeList'} else Set{} endif,
 		 									if aClass.hasReflectives() then Set{'EObject','EObjectInternal','EList','ENotifyingList','ENotificationChain','isEObjectList'} else Set{} endif,
 											if features->exists(requiresNotification()) then Set{'ENotification','ENotificationChain','EventType','Notification','EOPPOSITE_FEATURE_BASE'} else Set{} endif,
 											Set{'EClass','isEObjectInternal'}
