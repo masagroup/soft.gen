@@ -15,7 +15,7 @@
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils]
 [import soft::generator::ts::generateCommon/]
-[import soft::generator::ts::generateModule/]
+[import soft::generator::ts::generateLibrary/]
 
 [query public isBackReference(aStructuralFeature:EStructuralFeature) : Boolean = aStructuralFeature.oclIsKindOf(EReference) and aStructuralFeature.oclAsType(EReference).isBackReference()/]
 [query public isBackReference(aReference:EReference) : Boolean = aReference.container or isShared()/]
@@ -23,7 +23,7 @@
 
 [query private getQualifiedIdentifier( qualification : String, identifier : String ) : String = qualification + '/' + identifier/] 
 
-[query public getQualifiedIdentifier( aPackage : EPackage, identifier : String ) : String = getQualifiedIdentifier(aPackage.getPackageModule(),identifier)/]
+[query public getQualifiedIdentifier( aPackage : EPackage, identifier : String ) : String = getQualifiedIdentifier(aPackage.getLibrary(),identifier)/]
 
 [query public getQualifiedInterfaceIdentifier( aClassifier : EClassifier ) : String =
 	if aClassifier.oclIsUndefined() then 'any'
@@ -79,7 +79,7 @@
 /]
 
 
-[query public getSimpleIdentifier( qualifiedIdentifier : String ) : String = 
+[query public getIdentifier( qualifiedIdentifier : String ) : String = 
 	let index : Integer = qualifiedIdentifier.lastIndex('/') in
 	if index = -1 then
 		qualifiedIdentifier
@@ -88,8 +88,7 @@
 	endif
 /]
 
-
-[query public getIdentifierModule( qualifiedIdentifier : String ) : String =
+[query public getQualifier( qualifiedIdentifier : String ) : String = 
 	let index : Integer = qualifiedIdentifier.lastIndex('/') in
 	if index = -1 then
 		''
@@ -366,26 +365,12 @@ void
 	endif
 /]
 
-[query public getModule( aClassifier : EClassifier ) : String = 
-    if aClassifier.oclIsUndefined() then 
-        ''
-	else if aClassifier.oclIsKindOf(EEnum) then
-		aClassifier.ePackage.getPackageModule()
-	else if aClassifier.oclIsKindOf(EDataType) then
-		let aDataType : EDataType = aClassifier.oclAsType(EDataType) in
-		let tsType : String = aDataType.getInstanceTypeName() in
-		getIdentifierModule(tsType)
-	else
-		aClassifier.ePackage.getPackageModule()
-	endif endif endif
-/]
-
 [query public getModules(element : ENamedElement, templates :String, types : Set(String)) : OclAny =
-	types->iterate( t : String ; res : OclAny = mapNew('getElementModules_'+ templates + '_' + element.name) |
-						let typeModule : String = getIdentifierModule(t) in
-						if res.mapContainsKey(typeModule) then
-							let namespaceModule : String = getModuleNamespace(typeModule) in
-							res.mapPut(typeModule,namespaceModule)
+	types->iterate( t : String ; res : OclAny = mapNew('getModules_'+ templates + '_' + element.name) |
+						let library : String = getQualifier(t) in
+						if res.mapContainsKey(library) then
+							let namespace : String = getLibraryNamespace(library) in
+							res.mapPut(library,namespace)
 						else 
 							res
 						endif 					    
@@ -399,12 +384,12 @@ void
 
 [template public generateImports(element : ENamedElement, templates : String, types : Set(String), modules : OclAny)]
 [let modulesToTypes : OclAny = types->iterate( qualifiedIdentifier : String ; res : OclAny = mapNew('modulesToTypes_'+ templates + '_'+ element.name) | (
-   let module : String = getIdentifierModule(qualifiedIdentifier) in
-    if (module <> '') then
-		let types : Sequence(OclAny) = res.mapGetOrDefault(module, Sequence{}).asSequence() in        
-		let simpleIdentifier : String = getSimpleIdentifier(qualifiedIdentifier) in
+   let library : String = getQualifier(qualifiedIdentifier) in
+    if (library <> '') then
+		let types : Sequence(OclAny) = res.mapGetOrDefault(library, Sequence{}).asSequence() in        
+		let simpleIdentifier : String = getIdentifier(qualifiedIdentifier) in
 		let type : String = removeGenericParametersFromIdentifier(simpleIdentifier) in
-        res.mapPut( module , types->append(type) )
+        res.mapPut( library , types->append(type) )
     else
         res
     endif

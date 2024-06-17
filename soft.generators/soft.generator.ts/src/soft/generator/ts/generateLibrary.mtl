@@ -1,0 +1,142 @@
+[**
+ * This file is part of soft.generator.ts, a project for typescript 
+ * code generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
+[comment encoding = UTF-8 /]
+[module generateLibrary('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
+
+[**
+ * Returns all typescript libraries corresponding to ecore package 
+ * By default typescript library for ecore package is @masagroup/ecore
+ /]
+[query private getPackageToLibraryMap(any : OclAny) : OclAny =
+	let ecorePackage : EPackage = getEcorePackage() in
+	let currentPackage : EPackage = getCurrentPackage() in
+	let packageToLibrary : OclAny = mapNew('getPackageToLibraryMap_' + currentPackage.name)
+													.mapPut('uri:'+ ecorePackage.nsURI, '@masagroup/ecore') in
+    let packagesProperty : OclAny = getProperty('packages') in 
+	let packages : String = (if packagesProperty.oclIsUndefined() or packagesProperty = '' then '' else packagesProperty.oclAsType(String) endif) + 
+							(if currentPackage.hasKey('packages') then ';' + currentPackage.valueKey('packages') else '' endif) in
+	if packages <> '' then
+		let tokenized : Sequence(String) = packages.tokenize(',; \r\n') in
+        tokenized->iterate( p : String ; res : OclAny = packageToLibrary | (
+        	let index : Integer = p.index('=') in 
+            if index = -1 then
+				let nameIndex : Integer = p.lastIndex('/') in
+				if nameIndex = -1 then
+					res.mapPut('name:'+p,p)
+				else
+					res.mapPut('name:'+p.substring(nameIndex+1),p)
+				endif
+            else
+                res.mapPut('uri:'+p.substring(1,index-1),p.substring(index+1))
+            endif
+		))
+    else
+        packageToLibrary
+    endif
+/]
+
+[query public getLibrary(aPackage : EPackage): String =
+ 	let packageToLibrary : OclAny = getPackageToLibraryMap() in
+	let uriPath : OclAny = mapGet(packageToLibrary, 'uri:' + aPackage.nsURI) in
+	if not uriPath.oclIsUndefined() then
+		uriPath.oclAsType(String)
+	else
+		let namePath : OclAny = mapGet(packageToLibrary, 'name:' + aPackage.name) in
+		if not namePath.oclIsUndefined() then
+			namePath.oclAsType(String)
+		else
+			'<undefined module for referenced package' + aPackage.name + '>'
+		endif
+	endif
+/]
+
+[query public getLibraryToPathMap(any : OclAny) : OclAny =
+ 	let currentPackage : EPackage = getCurrentPackage() in
+	let currentLibrary : String = currentPackage.getLibrary() in
+	let libraryToPath : OclAny = mapNew('getLibraryToPathMap_' + currentPackage.name)
+									   .mapPut(currentLibrary, './internal') in
+	let pathsProperty : OclAny = getProperty('paths') in 
+	let paths : String = (if pathsProperty.oclIsUndefined() or pathsProperty = '' then '' else pathsProperty.oclAsType(String) endif) + 
+							(if currentPackage.hasKey('paths') then ';' + currentPackage.valueKey('paths') else '' endif) in
+	if paths <> '' then
+		let tokenized : Sequence(String) = paths.tokenize(',; \r\n') in
+        tokenized->iterate( p : String ; res : OclAny = libraryToPath | (
+        	let index : Integer = p.index('=') in 
+            if index = -1 then
+				res
+            else
+                res.mapPut(p.substring(1,index-1),p.substring(index+1))
+            endif
+		))
+	else
+		libraryToPath
+	endif
+/]
+
+[query public getLibraryPath( p : String ) : String =
+ 	let packageToPath : OclAny = getLibraryToPathMap() in
+	let packagePath : OclAny = mapGet(packageToPath,p ) in
+	if packagePath.oclIsUndefined() then
+		p
+	else
+		packagePath.oclAsType(String)
+	endif
+/]
+
+[query private getLibraryToNamespaceMap(any : OclAny) : OclAny =
+	let currentPackage : EPackage = getCurrentPackage() in
+	let libraryToNamespace : OclAny = mapNew('getLibraryToNamespaceMap')
+									.mapPut('@masagroup/ecore','ecore' )
+								    .mapPut('./internal','') in
+    let namespacesProperty : OclAny = getProperty('namespaces') in 
+	let namespaces : String = (if namespacesProperty.oclIsUndefined() or namespacesProperty = '' then '' else namespacesProperty.oclAsType(String) endif) + 
+							(if currentPackage.hasKey('namespaces') then ';' + currentPackage.valueKey('namespaces') else '' endif) in
+	if namespaces <> '' then
+		let tokenized : Sequence(String) = namespaces.tokenize(',; \r\n') in
+        tokenized->iterate( p : String ; res : OclAny = libraryToNamespace | (
+        	let index : Integer = p.index('=') in 
+            if index = -1 then
+				res.mapPut(p,'')
+			else
+                res.mapPut(p.substring(1,index-1),p.substring(index+1))
+            endif
+		))
+    else
+        libraryToNamespace
+    endif
+/]
+
+
+[query public getLibraryNamespace(any : OclAny, path : String) : String =
+	let pathToNamespace : OclAny =  getLibraryToNamespaceMap() in
+	let pathNamespace : OclAny = mapGet(pathToNamespace,path) in
+	if pathNamespace.oclIsUndefined() then
+		let index : Integer = path.lastIndex('/') in
+		if index = -1 then
+			''
+		else
+			path.substring(index+1)
+		endif 
+	else
+		pathNamespace
+	endif
+/]
+
+
+
+
+
+
+

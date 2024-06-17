@@ -14,7 +14,7 @@
 
 [import soft::generator::common::generateElement/]
 [import soft::generator::common::generateUtils/]
-[import soft::generator::ts::generateModule/]
+[import soft::generator::ts::generateLibrary/]
 [import soft::generator::ts::generateType/]
 
 [query public getReferencedTypes(aClass : EClass) : Set(EClassifier) = 
