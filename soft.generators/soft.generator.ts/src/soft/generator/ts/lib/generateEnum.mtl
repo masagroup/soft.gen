@@ -24,25 +24,25 @@
 [fileComment()/]
 
 export enum [enumName/] {
-[for (lit : EEnumLiteral | literals)]
-    [lit.name.toUpperCase()/] = [lit.value.toString()/],
+[for (literal : EEnumLiteral | literals)]
+	[literal.getConstantsName()/] = [literal.value.toString()/],
 [/for]
 }
 
 export function [enumName.toLowerFirst()/]ToString([varName/]: [enumName/]) : string {
     switch( [varName/] )
     {
-[for (lit : EEnumLiteral | literals)]
-        case [enumName/].[lit.name.toUpperCase()/]:
-            return "[lit.name/]"
+[for (literal : EEnumLiteral | literals)]
+        case [enumName/].[literal.getConstantsName()/]:
+            return "[literal.name/]"
 [/for]
     }
 }
 
 export function [enumName.toLowerFirst()/]FromString(literalValue: string) : [enumName/] {
-[for (lit : EEnumLiteral | literals)]
-    [if lit <> literals->first()]else [/if]if ( literalValue == "[lit.name/]" )
-        return [enumName/].[lit.name.toUpperCase()/]
+[for (literal : EEnumLiteral | literals)]
+    [if literal <> literals->first()]else [/if]if ( literalValue == "[literal.name/]" )
+        return [enumName/].[literal.getConstantsName()/]
 [/for]
     throw new Error("Invalid value for enum [enumName/]: " + literalValue) 
 }
