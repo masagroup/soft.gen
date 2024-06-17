@@ -63,7 +63,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     create(eClass: [if not aPackage.isEcorePackage()]ecore.[/if]EClass): [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
         switch(eClass.classifierID){
 [for (aClass : EClass | classes)]
-        case [getImportedIdentifier(aPackage.getQualifiedIdentifier(aClass.getClassifierIDName()), modules) /]:
+		case [aClass.getImportedIDName(modules)/]:
             return this.create[aClass.name/]()
 [/for]
         default:
@@ -95,7 +95,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     createFromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType,literalValue: string): any {
         switch (eDataType.classifierID) {
         [for (aDataType : EDataType | dataTypes)]
-			case [getImportedIdentifier(aPackage.getQualifiedIdentifier(aDataType.getClassifierIDName()), modules) /]:
+			case [aDataType.getImportedIDName(modules)/]:
                 return this.create[aDataType.name/]FromString(eDataType, literalValue)
         [/for]
             default:
@@ -106,7 +106,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     convertToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string {
         switch (eDataType.classifierID) {
         [for (aDataType : EDataType | dataTypes)]
-        case [getImportedIdentifier(aPackage.getQualifiedIdentifier(aDataType.getClassifierIDName()), modules) /]:
+        case [aDataType.getImportedIDName(modules)/]:
             return this.convert[aDataType.name/]ToString(eDataType, instanceValue)
         [/for]
         default:
