@@ -57,7 +57,7 @@
 		if not namePath.oclIsUndefined() then
 			namePath.oclAsType(String)
 		else
-			'<undefined module for referenced package' + aPackage.name + '>'
+			aPackage.name
 		endif
 	endif
 /]
@@ -65,14 +65,14 @@
 [query private getModuleToPathMap(any : OclAny) : OclAny =
  	let currentPackage : EPackage = getCurrentPackage() in
 	let currentModule : String = currentPackage.getModule() in
-	let libraryToPath : OclAny = mapNew('getModuleToPathMap_' + currentPackage.name)
+	let moduleToPath : OclAny = mapNew('getModuleToPathMap_' + currentPackage.name)
 									   .mapPut(currentModule, './internal') in
 	let pathsProperty : OclAny = getProperty('paths') in 
 	let paths : String = (if pathsProperty.oclIsUndefined() or pathsProperty = '' then '' else pathsProperty.oclAsType(String) endif) + 
 							(if currentPackage.hasKey('paths') then ';' + currentPackage.valueKey('paths') else '' endif) in
 	if paths <> '' then
 		let tokenized : Sequence(String) = paths.tokenize(',; \r\n') in
-        tokenized->iterate( p : String ; res : OclAny = libraryToPath | (
+        tokenized->iterate( p : String ; res : OclAny = moduleToPath | (
         	let index : Integer = p.index('=') in 
             if index = -1 then
 				res
@@ -81,7 +81,7 @@
             endif
 		))
 	else
-		libraryToPath
+		moduleToPath
 	endif
 /]
 
