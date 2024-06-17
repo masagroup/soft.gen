@@ -36,7 +36,9 @@
     initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
     operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName());
     
-	types : OrderedSet(String) = Set{ aClass.getReferencedTypes()->collect( cls | cls.getType() )->asSet()
+	types : OrderedSet(String) = Set{ aClass.getReferencedTypes()
+											->select( cls | not cls.oclIsTypeOf(EClass) or not cls.oclAsType(EClass).isMapEntry())
+											->collect( cls | cls.getType() )->asSet()
 									, Set{
 										 	if aClass.requiresMap()  then Set{'EMap','BasicEObjectMap','EMapEntry'} else Set{} endif,
 											if aClass.requiresList() then Set{'EList','BasicEList','BasicEObjectList','BasicEDataTypeList'} else Set{} endif,
