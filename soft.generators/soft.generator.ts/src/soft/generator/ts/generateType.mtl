@@ -253,11 +253,21 @@ void
 		'' 
 	else 
 		if (defaultValueLiteral->notEmpty()) then 
-			eType.getDefaultValueFromLiteral(defaultValueLiteral,modules) 
+			anEAttribute.eType.getDefaultValueFromLiteral(defaultValueLiteral,modules) 
 		else 
-			eType.getDefaultValue( modules) 
+			anEAttribute.eType.getDefaultValue(modules) 
 		endif 
 	endif
+/]
+
+[query public getDefaultValue(anEReference : EReference , modules : OclAny) : String = 
+	'null'
+/]
+
+[query public getDefaultValue(aFeature : EStructuralFeature , modules : OclAny) : String = 
+	if aFeature.oclIsKindOf(EAttribute) then aFeature.oclAsType(EAttribute).getDefaultValue(modules)
+	else if aFeature.oclIsKindOf(EReference) then aFeature.oclAsType(EReference).getDefaultValue(modules)
+	else '' endif endif
 /]
 
 
@@ -284,7 +294,7 @@ void
 [query public getDefaultValue(aClassifier : EClassifier, modules : OclAny) : String =
     if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue(modules)
     else if aClassifier.oclIsKindOf( EDataType ) then aClassifier.oclAsType(EDataType).getDefaultValue(modules)
-    else 'null' endif endif
+	else 'null' endif endif
 /]
 
 [query public getDefaultValue(aEnum : EEnum, modules : OclAny) : String = 

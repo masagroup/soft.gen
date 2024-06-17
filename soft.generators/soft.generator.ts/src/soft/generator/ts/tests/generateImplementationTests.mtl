@@ -370,7 +370,7 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	verify(mockAdapter.notifyChanged(anything())).once()
 	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
 	expect(notification.notifier).toBe(o)
-[let defaultValue : String = aStructuralFeature.getDefaultValue(aClass,modules)]
+[let defaultValue : String = aStructuralFeature.getDefaultValue(modules)]
 [if defaultValue = 'null']
 	expect(notification.oldValue).toBeNull()
 [else]
