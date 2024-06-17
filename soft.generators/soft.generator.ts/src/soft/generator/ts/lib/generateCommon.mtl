@@ -25,7 +25,7 @@
 
 [query private getMapKeyType(aClass : EClass): String = aClass.getMapTypeParameter('key')/]
 
-[query private getMapValueType(aClass : EClass): String = aClass.getMapTypeParameter('key')/]
+[query private getMapValueType(aClass : EClass): String = aClass.getMapTypeParameter('value')/]
 
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
 	let ecore : EPackage = getEcorePackage() in
