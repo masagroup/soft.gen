@@ -69,7 +69,7 @@ export class [className/] extends [getImportedIdentifier(classExtend, modules)/]
 
     constructor() {
         super()
-        [variableFeatures.generateVariableInitialization(aClass)/]
+        [variableFeatures.generateVariableInitialization(modules)/]
     }
 
     eStaticClass(): [if not aPackage.isEcorePackage()]ecore.[/if]EClass {

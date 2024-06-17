@@ -144,7 +144,7 @@ eIsSetFromID(featureID: number): boolean {
     switch (featureID) {
 [for (anStructFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
         case [aClass.getImportedIDName(anStructFeature,modules)/]: {
-            return [anStructFeature.generateComparison(aClass)/]
+            return [anStructFeature.generateComparison(modules)/]
         }
 [/for]
         default: {
@@ -195,7 +195,7 @@ eUnsetFromID(featureID: number) {
             this.[aStructFeature.getPropertyName()/] = null
     [else]
         [let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
-        [let defaultValue : String = aAttribute.getDefaultValue(aClass.ePackage)]
+        [let defaultValue : String = aAttribute.getDefaultValue(modules)]
         [if defaultValue <> '']
             this.[aStructFeature.getPropertyName()/] = [defaultValue/]
         [else]
@@ -236,11 +236,11 @@ eInvokeFromID(operationID: number , args: [if not aPackage.isEcorePackage()]ecor
 [/let]
 [/template]
 
-[template private generateOperationInvoke(eOperation : EOperation ,modules : OclAny)]
+[template private generateOperationInvoke(eOperation : EOperation , modules : OclAny)]
 [eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]args.get([i-1/])[if needCast] as [eParameter.generateType(modules)/][/if][/let][/for])
 [/template]
 
-[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
+[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
 [let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
 [let accessor : String = if isField() then aAttribute.getVariableName() else aAttribute.getPropertyName() endif]
 [if isListType()]
@@ -250,13 +250,13 @@ eInvokeFromID(operationID: number , args: [if not aPackage.isEcorePackage()]ecor
         this.[aAttribute.getPropertyName()/].size() != 0
     [/if]
 [else] 
-    this.[accessor/] != [aAttribute.getDefaultValue(aClass)/]
+    this.[accessor/] != [aAttribute.getDefaultValue(modules)/]
 [/if]
 [/let]
 [/let]
 [/template]
 
-[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
+[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny ) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
 [if isListType()]
     [if isField()]
         this.[anStructFeature.getPropertyName()/] != null && this.[anStructFeature.getPropertyName()/].size() != 0
@@ -271,12 +271,12 @@ eInvokeFromID(operationID: number , args: [if not aPackage.isEcorePackage()]ecor
     [/if]
 [else]
     [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getPropertyName() endif]
-        this.[accessor/] != [anStructFeature.eType.getDefaultValue(aClass)/]
+        this.[accessor/] != [anStructFeature.eType.getDefaultValue(modules)/]
     [/let]
 [/if]
 [/template]
 
-[template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass) ? (eType.isAny()) post (trim())]
+[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (eType.isAny()) post (trim())]
 this.[anStructFeature.getPropertyName()/] != null
 [/template]
 
