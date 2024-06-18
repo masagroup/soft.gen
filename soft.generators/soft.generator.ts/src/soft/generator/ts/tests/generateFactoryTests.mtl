@@ -30,7 +30,7 @@
 [template public generateFactoryTests(aPackage : EPackage) {
 	ecorePackage : EPackage = getEcorePackage();
 	className : String = aPackage.getFactoryImplementationName(); 
-	allClasses : OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
+	allClasses : Sequence(EClass) = aPackage.eAllContents(EClass)->select( cls | not cls.interface and not cls.abstract)->sortedBy(name);
 	allDataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name);
 	ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.' else '' endif;
 	types : Set(String) = Set{ allClasses->collect(c | c.getQualifiedInterfaceIdentifier())
