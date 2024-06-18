@@ -387,7 +387,7 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEDataTypeList<[anEAttribut
 [/let]
 [/template]
 
-[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (anEAttribute.isFeatureMapType()) post(trim()) ]
+[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass , modules : OclAny) ? (anEAttribute.isFeatureMapType()) post(trim()) ]
 null
 [/template]
 
