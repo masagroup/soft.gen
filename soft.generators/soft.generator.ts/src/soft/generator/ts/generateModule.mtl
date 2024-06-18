@@ -97,9 +97,10 @@
 
 [query private getModuleToNamespaceMap(any : OclAny) : OclAny =
 	let currentPackage : EPackage = getCurrentPackage() in
+	let currentModule : String = currentPackage.getModule() in
 	let moduleToNamespace : OclAny = mapNew('getModuleToNamespaceMap_' + currentPackage.name)
 									.mapPut('@masagroup/ecore','ecore' )
-								    .mapPut('./internal','') in
+								    .mapPut(currentModule,'') in
     let namespacesProperty : OclAny = getProperty('namespaces') in 
 	let namespaces : String = (if namespacesProperty.oclIsUndefined() or namespacesProperty = '' then '' else namespacesProperty.oclAsType(String) endif) + 
 							(if currentPackage.hasKey('namespaces') then ';' + currentPackage.valueKey('namespaces') else '' endif) in
