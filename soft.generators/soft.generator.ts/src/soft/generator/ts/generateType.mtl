@@ -47,53 +47,60 @@
 	if modules.oclIsUndefined() then
 		qualifiedIdentifier
 	else
-		let indexSlash : Integer = qualifiedIdentifier.lastIndex('/') in
-		if indexSlash = -1 then
+		let indexAngleBracketStart : Integer = qualifiedIdentifier.index('<') in
+		let arguments : String = if indexAngleBracketStart = -1 then
+			''
+		else
+			let indexAngleBracketEnd : Integer = qualifiedIdentifier.lastIndex('>') in
+			let qualifiedTypeArguments : Sequence(String) = qualifiedIdentifier.substring(indexAngleBracketStart+1, indexAngleBracketEnd-1).tokenize(',') in
+			let importedTypeArguments : String = Sequence{1..qualifiedTypeArguments->size()}->iterate(index; res : String = '' | res + (if index = 1 then '' else ',' endif) + getImportedIdentifier(qualifiedTypeArguments->at(index), modules)) in
+			'<'+ importedTypeArguments +'>' 
+		endif in
+		let type : String = if indexAngleBracketStart = -1 then
 			qualifiedIdentifier
 		else
-			let q : String = qualifiedIdentifier.substring(1, indexSlash-1) in
-			let t : String = qualifiedIdentifier.substring(indexSlash+1) in
-			let indexParametersStart : Integer = t.index('<') in
-			let o : String = 
-				if indexParametersStart = -1 then 
-					t 
-				else
-					let indexParametersEnd : Integer = t.lastIndex('>') in
-					let type : String = t.substring(1, indexParametersStart-1) in
-					let qualifiedParameters : Sequence(String) = t.substring(indexParametersStart+1,indexParametersEnd-1 ).tokenize(',') in
-					let importedParameters : String = Sequence{1..qualifiedParameters->size()}->iterate(index; res : String ='' | res + (if index = 1 then '' else ',' endif) + getImportedIdentifier(qualifiedParameters->at(index), modules)) in
-					type + '<'+ importedParameters +'>' 
-				endif in			
-			let n : OclAny = mapGet(modules,q) in		
+			qualifiedIdentifier.substring(1, indexAngleBracketStart-1)
+		endif in
+		let indexSlash : Integer = type.lastIndex('/') in
+		if indexSlash = -1 then
+			type + arguments
+		else
+			let q : String = type.substring(1, indexSlash-1) in
+			let t : String = type.substring(indexSlash+1) in
+			let n : OclAny = mapGet(modules,q) in
 			if n.oclIsUndefined() then
-				o
+				type + arguments
+			else if n = '' then
+				t + arguments
 			else
-				if n = '' then
-					o
-				else
-					n.oclAsType(String) + '.' + o
-				endif
-			endif
+				n.oclAsType(String) + '.' + t + arguments
+			endif endif
 		endif
 	endif
 /]
 
+[query private removeTypeParametersFromIdentifier(identifier : String) : String =
+	let index : Integer = identifier.index('<') in
+	if index = -1 then identifier else identifier.substring(1,index-1) endif
+/]  
 
 [query public getIdentifier( qualifiedIdentifier : String ) : String = 
-	let index : Integer = qualifiedIdentifier.lastIndex('/') in
+	let identifier : String = removeTypeParametersFromIdentifier(qualifiedIdentifier) in
+	let index : Integer = identifier.lastIndex('/') in
 	if index = -1 then
-		qualifiedIdentifier
+		identifier
 	else
-		qualifiedIdentifier.substring(index+1)
+		identifier.substring(index+1)
 	endif
 /]
 
 [query public getQualifier( qualifiedIdentifier : String ) : String = 
-	let index : Integer = qualifiedIdentifier.lastIndex('/') in
+	let identifier : String = removeTypeParametersFromIdentifier(qualifiedIdentifier) in
+	let index : Integer = identifier.lastIndex('/') in
 	if index = -1 then
 		''
 	else
-		qualifiedIdentifier.substring(1,index-1)
+		identifier.substring(1,index-1)
 	endif
 /]
 
@@ -377,19 +384,15 @@ void
 				  )
 /]
 
-[query private removeGenericParametersFromIdentifier(identifier : String) : String =
-	let index : Integer = identifier.index('<') in
-	if index = -1 then identifier else identifier.substring(1,index-1) endif
-/]  
+
 
 [template public generateImports(element : ENamedElement, templates : String, types : Set(String), modules : OclAny)]
 [let modulesToTypes : OclAny = types->iterate( qualifiedIdentifier : String ; res : OclAny = mapNew('modulesToTypes_'+ templates + '_'+ element.name) | (
    let library : String = getQualifier(qualifiedIdentifier) in
    if (library <> '') then
 		let id : String = getIdentifier(qualifiedIdentifier) in
-		let type : String = removeGenericParametersFromIdentifier(id) in		
 		let libraryTypes : Sequence(OclAny) = res.mapGetOrDefault(library, Sequence{}).asSequence() in        
-		res.mapPut( library , libraryTypes->append(type) )
+		res.mapPut( library , libraryTypes->append(id) )
    else
         res
    endif

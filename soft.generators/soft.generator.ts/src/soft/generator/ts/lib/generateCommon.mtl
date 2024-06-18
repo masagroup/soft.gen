@@ -18,9 +18,8 @@
 [import soft::generator::ts::generateType/]
 
 [query private getMapTypeParameter(aClass : EClass , featureName : String) : String =
-	let keyFeature : EStructuralFeature = aClass.getEStructuralFeature(featureName) in
-	let keyType : EGenericType = keyFeature.eGenericType in
-	keyType.eClassifier.getType()
+	let aFeature : EStructuralFeature = aClass.getEStructuralFeature(featureName) in
+	aFeature.generateType(null)
 /]
 
 [query private getMapKeyType(aClass : EClass): String = aClass.getMapTypeParameter('key')/]
