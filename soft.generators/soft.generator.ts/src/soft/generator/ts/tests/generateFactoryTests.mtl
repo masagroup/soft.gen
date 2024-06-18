@@ -134,7 +134,7 @@ test("create[aDataType.name/]FromString", () => {
 	let eDataType = instance(mockDataType)
 	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
 [for (eLiteral : EEnumLiteral | eEnum.eLiterals->asOrderedSet()->sortedBy(name) )]
-	expect(factory.createFromString(eDataType, "[eLiteral.name/]")).toStrictEqual([eEnum.name/].[eLiteral.name.toUpperCase()/])
+	expect(factory.createFromString(eDataType, "[eLiteral.name/]")).toStrictEqual([eEnum.name/].[eLiteral.getConstantsName()/])
 [/for]
 })
 [/let]
@@ -219,7 +219,7 @@ test("convert[aDataType.name/]ToString", () => {
 	let eDataType = instance(mockDataType)
 	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
 [for (eLiteral : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
-	expect(factory.convertToString(eDataType, [eEnum.name/].[eLiteral.name.toUpperCase()/])).toStrictEqual("[eLiteral.name/]")
+	expect(factory.convertToString(eDataType, [eEnum.name/].[eLiteral.getConstantsName()/])).toStrictEqual("[eLiteral.name/]")
 [/for]
 })
 [/template]
