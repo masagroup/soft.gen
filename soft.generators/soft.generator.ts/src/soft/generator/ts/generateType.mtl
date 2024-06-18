@@ -375,7 +375,7 @@ void
 [query public getModules(element : ENamedElement, templates :String, types : Set(String)) : OclAny =
 	types->iterate( t : String ; res : OclAny = mapNew('getModules_'+ templates + '_' + element.name) |
 						let module : String = getQualifier(t) in
-						if not res.mapContainsKey(module) then
+						if module <> '' and not res.mapContainsKey(module) then
 							let namespace : String = getModuleNamespace(module) in
 							res.mapPut(module,namespace)
 						else 
@@ -388,11 +388,11 @@ void
 
 [template public generateImports(element : ENamedElement, templates : String, types : Set(String), modules : OclAny)]
 [let modulesToTypes : OclAny = types->iterate( qualifiedIdentifier : String ; res : OclAny = mapNew('modulesToTypes_'+ templates + '_'+ element.name) | (
-   let library : String = getQualifier(qualifiedIdentifier) in
-   if (library <> '') then
+   let module : String = getQualifier(qualifiedIdentifier) in
+   if (module <> '') then
 		let id : String = getIdentifier(qualifiedIdentifier) in
-		let libraryTypes : Sequence(OclAny) = res.mapGetOrDefault(library, Sequence{}).asSequence() in        
-		res.mapPut( library , libraryTypes->append(id) )
+		let libraryTypes : Sequence(OclAny) = res.mapGetOrDefault(module, Sequence{}).asSequence() in        
+		res.mapPut( module , libraryTypes->append(id) )
    else
         res
    endif
