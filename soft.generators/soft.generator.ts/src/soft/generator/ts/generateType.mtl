@@ -387,7 +387,7 @@ void
 
 
 [template public generateImports(element : ENamedElement, templates : String, types : Set(String), modules : OclAny)]
-[let modulesToTypes : OclAny = types->iterate( qualifiedIdentifier : String ; res : OclAny = mapNew('modulesToTypes_'+ templates + '_'+ element.name) | (
+[let modulesToTypes : OclAny = types->iterate( qualifiedIdentifier : String ; res : OclAny = mapNew('modulesToTypes_'+ templates + '_'+ element.name).mapClear() | (
    let module : String = getQualifier(qualifiedIdentifier) in
    if (module <> '') then
 		let id : String = getIdentifier(qualifiedIdentifier) in
