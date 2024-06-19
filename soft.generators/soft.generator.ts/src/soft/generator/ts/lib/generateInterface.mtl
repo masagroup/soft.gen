@@ -45,6 +45,22 @@
 [file (aPackage.getPackageDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
+[if isDebug()]
+// module : [aPackage.getModule()/]
+// path : [getModulePath(aPackage.getModule())/]
+// namespace : [getModuleNamespace(aPackage.getModule())/]
+
+// types
+[for (type : String| types)]
+// [type/]
+[/for]
+
+// modules
+[for (mod : OclAny | modules.mapKeys())]
+// [mod/] => [modules.mapGet(mod)/]
+[/for]
+[/if]
+
 [aClass.generateImports('interface', types, modules)/]
 
 export interface [interfaceName/][for ( qualifiedIdentifier : String | interfaceExtends ) before (' extends ') separator (', ')][getImportedIdentifier( qualifiedIdentifier , modules)/][/for] {
