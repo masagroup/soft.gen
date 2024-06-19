@@ -373,7 +373,13 @@ void
 /]
 
 [query public getModules(element : ENamedElement, templates :String, types : Set(String)) : OclAny =
-	types->iterate( t : String ; res : OclAny = mapNew('getModules_'+ templates + '_' + element.name) |
+	let currentPackage : EPackage = getCurrentPackage() in
+	let currentModule : String = currentPackage.getModule() in
+	let currentNamespace : String = getModuleNamespace(currentModule) in
+	let modulesToNamespace : OclAny = mapNew('getModules_'+ templates + '_' + element.name)
+										.mapClear()
+										.mapPut(currentModule,currentNamespace) in
+	types->iterate( t : String ; res : OclAny = modulesToNamespace |
 						let module : String = getQualifier(t) in
 						if module <> '' and not res.mapContainsKey(module) then
 							let namespace : String = getModuleNamespace(module) in

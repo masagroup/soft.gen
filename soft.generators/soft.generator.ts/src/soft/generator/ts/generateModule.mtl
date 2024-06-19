@@ -103,7 +103,7 @@
 								    .mapPut(currentModule,'') in
     let namespacesProperty : OclAny = getProperty('namespaces') in 
 	let namespaces : String = (if namespacesProperty.oclIsUndefined() or namespacesProperty = '' then '' else namespacesProperty.oclAsType(String) endif) + 
-							(if currentPackage.hasKey('namespaces') then ';' + currentPackage.valueKey('namespaces') else '' endif) in
+							  (if currentPackage.hasKey('namespaces') then ';' + currentPackage.valueKey('namespaces') else '' endif) in
 	if namespaces <> '' then
 		let tokenized : Sequence(String) = namespaces.tokenize(',; \r\n') in
         tokenized->iterate( p : String ; res : OclAny = moduleToNamespace | (
