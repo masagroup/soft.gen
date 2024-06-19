@@ -65,14 +65,13 @@
 [query private getModuleToPathMap(any : OclAny) : OclAny =
  	let currentPackage : EPackage = getCurrentPackage() in
 	let currentModule : String = currentPackage.getModule() in
-	let moduleToPath : OclAny = mapNew('getModuleToPathMap_' + currentPackage.name)
-									   .mapPut(currentModule, './internal') in
 	let pathsProperty : OclAny = getProperty('paths') in 
 	let paths : String = (if pathsProperty.oclIsUndefined() or pathsProperty = '' then '' else pathsProperty.oclAsType(String) endif) + 
-							(if currentPackage.hasKey('paths') then ';' + currentPackage.valueKey('paths') else '' endif) in
-	if paths <> '' then
+						 (if currentPackage.hasKey('paths') then ';' + currentPackage.valueKey('paths') else '' endif) in
+	let moduleToPath : OclAny = mapNew('getModuleToPathMap_' + currentPackage.name).mapClear() in
+	let moduleToPath : OclAny = if paths <> '' then
 		let tokenized : Sequence(String) = paths.tokenize(',; \r\n') in
-        tokenized->iterate( p : String ; res : OclAny = moduleToPath | (
+        tokenized->iterate( p : String ; res : OclAny = moduleToPath  | (
         	let index : Integer = p.index('=') in 
             if index = -1 then
 				res
@@ -81,8 +80,9 @@
             endif
 		))
 	else
-		moduleToPath
-	endif
+		 moduleToPath
+	endif in
+		moduleToPath.mapPut(currentModule, './internal')
 /]
 
 [query public getModulePath( p : String ) : String =
