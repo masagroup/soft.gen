@@ -19,8 +19,7 @@
 [import soft::generator::ts::generateType /]
 [import soft::generator::ts::lib::pack::generateCommon/]
 
-
-
+[query private getElementInstance(anENamedElement : ENamedElement) : String = '_' + anENamedElement.getMemberName()/]
 
 [template public generatePackageImplementation(aPackage : EPackage){
 	ecorePackage : EPackage = getEcorePackage();  
@@ -145,25 +144,6 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
 
 
-[query private getInstanceName(anENamedElement : ENamedElement) : String = 
-    if anENamedElement.oclIsKindOf(EDataType) then 
-        anENamedElement.oclAsType(EDataType).getInstanceName()
-    else if anENamedElement.oclIsKindOf(EClass) then 
-        anENamedElement.oclAsType(EClass).getInstanceName() 
-    else if anENamedElement.oclIsKindOf(EStructuralFeature) then 
-        anENamedElement.oclAsType(EStructuralFeature).getInstanceName()
-    else if anENamedElement.oclIsKindOf(EOperation) then
-        anENamedElement.oclAsType(EOperation).getInstanceName()
-    else
-        anENamedElement.name.toLowerFirst()
-    endif endif endif endif
-/]
-[query private getInstanceName(aDataType : EDataType) : String = '_' + aDataType.name.toLowerFirst() + 'Type'/]
-[query private getInstanceName(aClass : EClass) : String = '_' + aClass.name.toLowerFirst() + 'Class'/]
-[query private getInstanceName(aStructural : EStructuralFeature) : String = '_' + aStructural.eContainingClass.name.toLowerFirst() + '_' + aStructural.name.toUpperFirst() /]
-[query private getInstanceName(aOperation : EOperation) : String = '_' + aOperation.eContainingClass.name.toLowerFirst() + '_' + aOperation.name.toUpperFirst() + aOperation.getParameterListName() /]
-[query private getParameterListName( aOperation : EOperation) : String = if aOperation.eParameters->notEmpty() then '_' + aOperation.getParameterListDetailsName() else '' endif /]
-[query private getParameterListDetailsName(aOperation : EOperation) : String = if aOperation.eParameters->size()>1 then aOperation.eParameters->first().eType.name + '_' + aOperation.eParameters->last().eType.name else aOperation.eParameters->first().eType.name endif /]
 
 [query private getPackageGetter(aModelElement : EModelElement) : String =
     if aModelElement.oclIsKindOf(EPackage) then  
@@ -187,13 +167,13 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
 
 [template private generateDataMember(anENamedElement : ENamedElement, aPackage : EPackage, modules : OclAny)] 
-private [anENamedElement.getInstanceName()/]: [aPackage.getMetaType(anENamedElement,modules)/]
+private [anENamedElement.getElementInstance()/]: [aPackage.getMetaType(anENamedElement,modules)/]
 
 [/template]
 
 [template private generateGetter(aClassifier : EClassifier, anEPackage : EPackage, modules : OclAny)]
 [aClassifier.getReflectiveGetterName()/](): [anEPackage.getMetaType(aClassifier,modules)/] {
-    return this.[aClassifier.getInstanceName()/]
+    return this.[aClassifier.getElementInstance()/]
 }
 
 [/template]
@@ -201,7 +181,7 @@ private [anENamedElement.getInstanceName()/]: [aPackage.getMetaType(anENamedElem
 [template private generateGetter(aFeature : EStructuralFeature, anEPackage : EPackage, modules : OclAny)]
 [let aClass : EClass = aFeature.eContainingClass]
 [aFeature.getReflectiveGetterName()/](): [anEPackage.getMetaType(aFeature,modules)/] {
-    return this.[aClass.getInstanceName()/].eStructuralFeatures.get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]) as [anEPackage.getMetaType(aFeature,modules)/]
+    return this.[aClass.getElementInstance()/].eStructuralFeatures.get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]) as [anEPackage.getMetaType(aFeature,modules)/]
 }
 [/let]
 [/template]
@@ -209,27 +189,27 @@ private [anENamedElement.getInstanceName()/]: [aPackage.getMetaType(anENamedElem
 [template private generateGetter(aOperation : EOperation, anEPackage : EPackage, modules : OclAny)]
 [let aClass : EClass = aOperation.eContainingClass]
 [aOperation.getReflectiveGetterName()/](): [anEPackage.getMetaType(aOperation,modules)/] {
-    return this.[aClass.getInstanceName()/].eOperations.get([aClass.eOperations->indexOf(aOperation)-1/]) as [anEPackage.getMetaType(aOperation,modules)/]
+    return this.[aClass.getElementInstance()/].eOperations.get([aClass.eOperations->indexOf(aOperation)-1/]) as [anEPackage.getMetaType(aOperation,modules)/]
 }
 [/let]
 [/template]
 
 [template private generateCreation(aEClass : EClass, modules : OclAny)]
-this.[aEClass.getInstanceName()/] = factory.createEClassFromContainerAndClassID(this, [aEClass.getImportedIDName(modules)/])
+this.[aEClass.getElementInstance()/] = factory.createEClassFromContainerAndClassID(this, [aEClass.getImportedIDName(modules)/])
 [/template]
 
 [template private generateCreation(anEAttribute : EAttribute, modules : OclAny)]
-factory.createEAttributeFromContainerAndClassID(this.[anEAttribute.eContainingClass.getInstanceName()/], [anEAttribute.eContainingClass.getImportedIDName(anEAttribute,modules)/])
+factory.createEAttributeFromContainerAndClassID(this.[anEAttribute.eContainingClass.getElementInstance()/], [anEAttribute.eContainingClass.getImportedIDName(anEAttribute,modules)/])
 
 [/template]
 
 [template private generateCreation(anEReference : EReference, modules : OclAny)]
-factory.createEReferenceFromContainerAndClassID(this.[anEReference.eContainingClass.getInstanceName()/], [anEReference.eContainingClass.getImportedIDName(anEReference,modules)/])
+factory.createEReferenceFromContainerAndClassID(this.[anEReference.eContainingClass.getElementInstance()/], [anEReference.eContainingClass.getImportedIDName(anEReference,modules)/])
 
 [/template] 
 
 [template private generateCreation(anEOperation : EOperation, modules : OclAny)]
-factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingClass.getInstanceName()/], [anEOperation.eContainingClass.getImportedIDName(anEOperation,modules)/])
+factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingClass.getElementInstance()/], [anEOperation.eContainingClass.getImportedIDName(anEOperation,modules)/])
 
 [/template]
 
@@ -237,30 +217,30 @@ factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingCl
 [/template]
 
 [template private generateCreation(aEnum : EEnum, modules : OclAny)]
-this.[aEnum.getInstanceName()/] = factory.createEEnumFromContainerAndClassID(this, [aEnum.getImportedIDName(modules)/])
+this.[aEnum.getElementInstance()/] = factory.createEEnumFromContainerAndClassID(this, [aEnum.getImportedIDName(modules)/])
 
 [/template]
 
 [template private generateCreation(anEDatatype : EDataType, modules : OclAny)]
-this.[anEDatatype.getInstanceName()/] = factory.createEDataTypeFromContainerAndClassID(this, [anEDatatype.getImportedIDName(modules)/])
+this.[anEDatatype.getElementInstance()/] = factory.createEDataTypeFromContainerAndClassID(this, [anEDatatype.getImportedIDName(modules)/])
 
 [/template]
 
 [query private getGetter(aClassifier : EClassifier , aPackage : EPackage, modules : OclAny ) : String =
     if aClassifier.oclIsUndefined() then 'null'
-    else if ( aClassifier.ePackage = aPackage ) or ( aClassifier.ePackage.name = aPackage.name ) then 'this.' + aClassifier.getInstanceName()
+    else if ( aClassifier.ePackage = aPackage ) or ( aClassifier.ePackage.name = aPackage.name ) then 'this.' + aClassifier.getElementInstance()
     else getImportedIdentifier(aPackage.getQualifiedIdentifier('get'+aClassifier.ePackage.getInterfaceName()), modules)+ '().' + aClassifier.getReflectiveGetterName() + '()'
     endif endif
 /]
 
 [template public initSuperTypes(aEClass : EClass, modules : OclAny )]
 [for (superClass : EClass | aEClass.eSuperTypes)]
-this.[aEClass.getInstanceName()/].eSuperTypes.add([superClass.getGetter(aEClass.ePackage,modules)/])
+this.[aEClass.getElementInstance()/].eSuperTypes.add([superClass.getGetter(aEClass.ePackage,modules)/])
 [/for]
 [/template]
 
 [template private generateInitialization(aEClass : EClass)]
-this.initEClass(this.[aEClass.getInstanceName()/], "[aEClass.name/]", "[aEClass.getInstanceTypeName()/]", [aEClass.abstract.toString()/], [aEClass.interface.toString()/])
+this.initEClass(this.[aEClass.getElementInstance()/], "[aEClass.name/]", "[aEClass.getInstanceTypeName()/]", [aEClass.abstract.toString()/], [aEClass.interface.toString()/])
 [/template]
 
 [template private generateInitialization(anEAttribute : EAttribute, aPackage : EPackage )]
