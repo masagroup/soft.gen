@@ -35,6 +35,8 @@
 
 [query public getQualifiedInterfaceIdentifier( aDataType : EDataType ) : String = aDataType.getType()/]
 
+[query public getQualifiedInterfaceIdentifier( aPackage : EPackage ) : String = aPackage.getQualifiedIdentifier( aPackage.getInterfaceName() ) /]
+
 [query public getQualifiedInterfaceIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedIdentifier( aClass.getInterfaceName() ) /]
 
 [query public getQualifiedImplementationIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedIdentifier( aClass.getImplementationName() ) /]
