@@ -49,7 +49,6 @@
 [file (aPackage.getPackageDirectory() + '/'+  aPackage.getImplementationFileName(aPackage.getPackageName()),false, 'UTF-8')]
 [fileComment()/]
 
-// toto
 [aPackage.generateImports('package-implementation', types, modules)/]
 
 export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EPackageExt implements [aPackage.getInterfaceName()/] {
