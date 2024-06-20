@@ -176,7 +176,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 [query private getPackageGetter(aEClass : EClass, supertype : EClass, modules : OclAny) : String = getPackageGetter(supertype.oclAsType(EClassifier),aEClass.oclAsType(EClassifier),modules) /]
 [query private getPackageGetter(aEClassifier1 : EClassifier, aEClassifier2 : EClassifier, modules : OclAny) : String = getPackageInstance(aEClassifier1, aEClassifier2,modules) + '.' +aEClassifier1.getReflectiveGetterName() + '()' /]
 [query private getPackageInstance(aClassifier1 : EClassifier ,aClassifier2 : EClassifier , modules : OclAny) : String = if (aClassifier1.ePackage.name = aClassifier2.ePackage.name ) then 'this' else  aClassifier1.getPackageInstance(modules) endif /]
-[query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation, modules : OclAny) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'null' else getPackageInstance(anEClassifier, anOperation.eContainingClass,modules) + anEClassifier.getReflectiveGetterName() + '()' endif/]
+[query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation, modules : OclAny) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'null' else getPackageInstance(anEClassifier, anOperation.eContainingClass,modules) + '.' + anEClassifier.getReflectiveGetterName() + '()' endif/]
 
 [template private generateDataMember(anENamedElement : ENamedElement, aPackage : EPackage, modules : OclAny)] 
 private [anENamedElement.getElementInstance()/]: [aPackage.getMetaType(anENamedElement,modules)/]
