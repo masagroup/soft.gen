@@ -805,7 +805,7 @@ test("eUnsetFromID", () => {
 			[let defaultValue : String = aAttribute.getDefaultValue(modules)]
 			[if defaultValue <> '']
 		let v = o.eGetFromID([aClass.getImportedIDName(anStructFeature,modules)/], false)
-			[if defaultValue = 'nil']
+			[if defaultValue = 'null']
 		expect(v).toBeNull()
 			[else]
 		expect(v).toBe([defaultValue/])
