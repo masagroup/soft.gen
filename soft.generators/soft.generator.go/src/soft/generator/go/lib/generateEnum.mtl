@@ -53,11 +53,12 @@ func ([varName/] *[enumName/]) ToString() string {
 	return [varName/]ToString['['/]*[varName/][']'/]
 }
 
-func ([varName/] *[enumName/]) FromString( s string ) {
-	if value, isValue := [varName/]ToID['['/]s[']'/]; isValue {
-		*[varName/] = value	
+func ([varName/] *[enumName/]) FromString( value string ) {
+	if literal, isLiteral := [varName/]ToID['['/]value[']'/]; isLiteral {
+		*[varName/] = literal	
+	} else {
+		panic("invalid value for enum [enumName/]: " + value)
 	}
-	panic("invalid value for enum [enumName/]: " + literalValue)
 }
 
 [/file]

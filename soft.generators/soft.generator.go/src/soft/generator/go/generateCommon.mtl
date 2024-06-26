@@ -200,9 +200,9 @@ methodName.toUpperFirst()
 /]
 
 [query public getConstantsName(eLiteral : EEnumLiteral) : String =
-	let eLiteralName : String =  upperCamelToUpperUnderscore(eLiteral.name.toUpperFirst()) in
+	let eLiteralName : String =  splitAndCombineWords( eLiteral.name, '_').toUpperCase() in
 	if eLiteral.eEnum.isConstantsQualified() then
-		let eEnumName : String = upperCamelToUpperUnderscore(eLiteral.eEnum.name.toUpperFirst()) in	 
+		let eEnumName : String = splitAndCombineWords( eLiteral.eEnum.name, '_').toUpperCase() in	 
 		eEnumName + '__' + eLiteralName 
 	else eLiteralName 
 	endif
