@@ -54,9 +54,11 @@ func ([varName/] *[enumName/]) ToString() string {
 }
 
 func ([varName/] *[enumName/]) FromString( s string ) {
-	*[varName/] = [varName/]ToID['['/]s[']'/]
+	if value, isValue := [varName/]ToID['['/]s[']'/]; isValue {
+		*[varName/] = value	
+	}
+	panic("invalid value for enum [enumName/]: " + literalValue)
 }
-
 
 [/file]
 [/template]
