@@ -40,11 +40,15 @@ export function [enumName.toLowerFirst()/]ToString([varName/]: [enumName/]) : st
 }
 
 export function [enumName.toLowerFirst()/]FromString(literalValue: string) : [enumName/] {
+	switch( literalValue )
+	{
 [for (eLiteral : EEnumLiteral | eLiterals)]
-    [if eLiteral <> eLiterals->first()]else [/if]if ( literalValue == "[eLiteral.literal/]" )
-        return [enumName/].[eLiteral.getConstantsName()/]
+		case "[eLiteral.literal/]":
+			return [enumName/].[eLiteral.getConstantsName()/]	
 [/for]
-    throw new Error("Invalid value for enum [enumName/]: " + literalValue) 
+		default:
+			throw new Error("Invalid value for enum [enumName/]: " + literalValue)		
+	}
 }
 
 [/file]
