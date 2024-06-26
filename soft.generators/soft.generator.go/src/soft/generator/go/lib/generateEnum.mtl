@@ -23,7 +23,7 @@
 	enumName : String = aEEnum.name;
 	varName : String = enumName.toLowerFirst(); 
 	aPackage : EPackage = aEEnum.ePackage; 
-	literals : OrderedSet(EEnumLiteral) = aEEnum.eLiterals->asOrderedSet()->sortedBy(name);  }]
+	eLiterals : OrderedSet(EEnumLiteral) = aEEnum.eLiterals->asOrderedSet()->sortedBy(name);  }]
 [file (aPackage.getInterfaceOutputDirectory() + '/' + aEEnum.getInterfaceFileName( enumName ), false, 'UTF-8')]
 [fileComment()/]
 
@@ -32,20 +32,20 @@ package [aPackage.name/]
 type [enumName/] int32
 
 const (
-[for (literal : EEnumLiteral | literals)]
+[for (literal : EEnumLiteral | eLiterals)]
     [literal.getConstantsName()/] [enumName/] = [literal.value.toString()/]
 [/for]    
 )
 
 var [varName/]ToString = map['['/][enumName/][']'/]string{
-[for (literal : EEnumLiteral | literals)]
-	[literal.getConstantsName()/]:"[literal.name/]",
+[for (eLiteral : EEnumLiteral | eLiterals)]
+	[eLiteral.getConstantsName()/]:"[eLiteral.literal/]",
 [/for]	
 }
 
 var [varName/]ToID = map['['/]string[']'/][enumName/]{
-[for (literal : EEnumLiteral | literals)]
-	"[literal.name/]" : [literal.getConstantsName()/],
+[for (eLiteral : EEnumLiteral | eLiterals)]
+	"[eLiteral.literal/]" : [eLiteral.getConstantsName()/],
 [/for]	
 }
 
