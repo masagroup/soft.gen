@@ -176,19 +176,8 @@ let methodName : String = if ecorePackageClass.eAllOperations->exists( name = ge
 methodName
 /]
 
-[query public isConstantsQualified( aEEnum  : EEnum ) : Boolean = 
-	let aPackage : EPackage = aEEnum.ePackage in
-	let aEnumNames : OrderedSet(String) = aEEnum.eLiterals.name->asOrderedSet() in
-	aPackage.eAllContents(EEnum)->exists( e | e <> aEEnum and aEEnum.eLiterals.name->asOrderedSet()->intersection(aEnumNames)->notEmpty() ) 
-/]
-
 [query public getConstantsName(eLiteral : EEnumLiteral) : String =
-	let eLiteralName : String =  splitAndCombineWords( eLiteral.name, '_').toUpperCase() in
-	if eLiteral.eEnum.isConstantsQualified() then
-		let eEnumName : String = splitAndCombineWords( eLiteral.eEnum.name, '_').toUpperCase() in	 
-		eEnumName + '__' + eLiteralName 
-	else eLiteralName 
-	endif
+	if eLiteral.name = '_' then '_' else splitAndCombineWords( eLiteral.name, '_').toUpperCase() endif 		
 /]
 
 [query public getReservedKeywords(oclAny : OclAny) : Sequence(String) = 
