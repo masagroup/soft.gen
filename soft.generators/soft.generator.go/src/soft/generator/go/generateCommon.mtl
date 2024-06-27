@@ -160,8 +160,6 @@ endif endif endif
 [query public getFactoryTestFileName( aNamedElement : ENamedElement, packageName : String ) : String = aNamedElement.getElementName( packageName + 'factory', 'factoryTestFileName', '$1_impl_test.go').toLower()/]
 [query public getPackageTestFileName( aNamedElement : ENamedElement, packageName : String ) : String = aNamedElement.getElementName( packageName + 'package', 'packageTestFileName', '$1_impl_test.go').toLower()/]
 
-[query public getElementInstanceName(anENamedElement : ENamedElement) : String = anENamedElement.getMemberName()/]
-
 [query private getElementTypeName(anENamedElement : ENamedElement) : String =
 if anENamedElement.oclIsTypeOf(EClass) then 'Class'
 else if anENamedElement.oclIsTypeOf(EAttribute) then 'Attribute'
@@ -194,18 +192,6 @@ methodName.toUpperFirst()
 
 [query public getOperationName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' ).toUpperFirst()/]
 
-[** Name Qualification **]
-
-
-[query public getUnQualifiedName( aQualifiedName : String ) : String =
-    aQualifiedName.getUnQualifiedNameSep('.')
-/]
-
-[query public getQualification( any : OclAny , aQualifiedName : String ) : String =
-    any.getQualificationSep(aQualifiedName, '.') 
-/]
-
-
 
 [query public isConstantsQualified( aEEnum  : EEnum ) : Boolean = 
 	let aPackage : EPackage = aEEnum.ePackage in
@@ -214,9 +200,9 @@ methodName.toUpperFirst()
 /]
 
 [query public getConstantsName(eLiteral : EEnumLiteral) : String =
-	let eLiteralName : String =  upperCamelToUpperUnderscore(eLiteral.name.toUpperFirst()) in
+	let eLiteralName : String =  splitAndCombineWords( eLiteral.name, '_').toUpperCase() in
 	if eLiteral.eEnum.isConstantsQualified() then
-		let eEnumName : String = upperCamelToUpperUnderscore(eLiteral.eEnum.name.toUpperFirst()) in	 
+		let eEnumName : String = splitAndCombineWords( eLiteral.eEnum.name, '_').toUpperCase() in	 
 		eEnumName + '__' + eLiteralName 
 	else eLiteralName 
 	endif

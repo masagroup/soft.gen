@@ -1,0 +1,143 @@
+[**
+ * This file is part of soft.generator.ts, a project for typescript 
+ * code generation of an ecore model
+ *
+ * Copyright(c) 2021 MASA Group
+ *	
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+**/]
+
+[comment encoding = UTF-8 /]
+[module generateModule('http://www.eclipse.org/emf/2002/Ecore')/]
+
+[import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateUtils/]
+
+[**
+ * Returns package to module map 
+ * By default typescript module for ecore package is @masagroup/ecore
+ /]
+[query private getPackageToModuleMap(any : OclAny) : OclAny =
+	let ecorePackage : EPackage = getEcorePackage() in
+	let currentPackage : EPackage = getCurrentPackage() in
+	let packageToModule : OclAny = mapNew('getPackageToLibraryMap_' + currentPackage.name)
+													.mapPut('uri:'+ ecorePackage.nsURI, '@masagroup/ecore') in
+    let packagesProperty : OclAny = getProperty('packages') in 
+	let packages : String = (if packagesProperty.oclIsUndefined() or packagesProperty = '' then '' else packagesProperty.oclAsType(String) endif) + 
+							(if currentPackage.hasKey('packages') then ';' + currentPackage.valueKey('packages') else '' endif) in
+	if packages <> '' then
+		let tokenized : Sequence(String) = packages.tokenize(',; \r\n') in
+        tokenized->iterate( p : String ; res : OclAny = packageToModule | (
+        	let index : Integer = p.index('=') in 
+            if index = -1 then
+				let nameIndex : Integer = p.lastIndex('/') in
+				if nameIndex = -1 then
+					res.mapPut('name:'+p,p)
+				else
+					res.mapPut('name:'+p.substring(nameIndex+1),p)
+				endif
+            else
+                res.mapPut('uri:'+p.substring(1,index-1),p.substring(index+1))
+            endif
+		))
+    else
+        packageToModule
+    endif
+/]
+
+[query public getModule(aPackage : EPackage): String =
+ 	let packageToModule : OclAny = getPackageToModuleMap() in
+	let uriPath : OclAny = mapGet(packageToModule, 'uri:' + aPackage.nsURI) in
+	if not uriPath.oclIsUndefined() then
+		uriPath.oclAsType(String)
+	else
+		let namePath : OclAny = mapGet(packageToModule, 'name:' + aPackage.name) in
+		if not namePath.oclIsUndefined() then
+			namePath.oclAsType(String)
+		else
+			aPackage.name
+		endif
+	endif
+/]
+
+[query private getModuleToPathMap(any : OclAny) : OclAny =
+ 	let currentPackage : EPackage = getCurrentPackage() in
+	let currentModule : String = currentPackage.getModule() in
+	let pathsProperty : OclAny = getProperty('paths') in 
+	let paths : String = (if pathsProperty.oclIsUndefined() or pathsProperty = '' then '' else pathsProperty.oclAsType(String) endif) + 
+						 (if currentPackage.hasKey('paths') then ';' + currentPackage.valueKey('paths') else '' endif) in
+	let moduleToPath : OclAny = mapNew('getModuleToPathMap_' + currentPackage.name).mapClear() in
+	let moduleToPath : OclAny = if paths <> '' then
+		let tokenized : Sequence(String) = paths.tokenize(',; \r\n') in
+        tokenized->iterate( p : String ; res : OclAny = moduleToPath  | (
+        	let index : Integer = p.index('=') in 
+            if index = -1 then
+				res
+            else
+                res.mapPut(p.substring(1,index-1),p.substring(index+1))
+            endif
+		))
+	else
+		 moduleToPath
+	endif in
+		moduleToPath.mapPut(currentModule, './internal')
+/]
+
+[query public getModulePath( p : String ) : String =
+ 	let moduleToPath : OclAny = getModuleToPathMap() in
+	let modulePath : OclAny = mapGet(moduleToPath,p ) in
+	if modulePath.oclIsUndefined() then
+		p
+	else
+		modulePath.oclAsType(String)
+	endif
+/]
+
+[query private getModuleToNamespaceMap(any : OclAny) : OclAny =
+	let currentPackage : EPackage = getCurrentPackage() in
+	let currentModule : String = currentPackage.getModule() in
+	let moduleToNamespace : OclAny = mapNew('getModuleToNamespaceMap_' + currentPackage.name)
+									.mapPut('@masagroup/ecore','ecore' )
+								    .mapPut(currentModule,'') in
+    let namespacesProperty : OclAny = getProperty('namespaces') in 
+	let namespaces : String = (if namespacesProperty.oclIsUndefined() or namespacesProperty = '' then '' else namespacesProperty.oclAsType(String) endif) + 
+							  (if currentPackage.hasKey('namespaces') then ';' + currentPackage.valueKey('namespaces') else '' endif) in
+	if namespaces <> '' then
+		let tokenized : Sequence(String) = namespaces.tokenize(',; \r\n') in
+        tokenized->iterate( p : String ; res : OclAny = moduleToNamespace | (
+        	let index : Integer = p.index('=') in 
+            if index = -1 then
+				res.mapPut(p,'')
+			else
+                res.mapPut(p.substring(1,index-1),p.substring(index+1))
+            endif
+		))
+    else
+        moduleToNamespace
+    endif
+/]
+
+
+[query public getModuleNamespace(any : OclAny, path : String) : String =
+	let moduleToNamespace : OclAny =  getModuleToNamespaceMap() in
+	let moduleNamespace : OclAny = mapGet(moduleToNamespace,path) in
+	if moduleNamespace.oclIsUndefined() then
+		let index : Integer = path.lastIndex('/') in
+		if index = -1 then
+			''
+		else
+			path.substring(index+1)
+		endif 
+	else
+		moduleNamespace
+	endif
+/]
+
+
+
+
+
+
+

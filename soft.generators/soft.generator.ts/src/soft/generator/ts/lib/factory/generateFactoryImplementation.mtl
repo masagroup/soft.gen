@@ -18,24 +18,32 @@
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
 
+[query private getPackageEnumTypes(aPackage : EPackage) : Set(String) =
+	 aPackage.eAllContents(EEnum)->iterate( aEnum : EEnum ; res : Set(String) = Set{} | ( 
+                                                	res->union(Set{ aEnum.name
+                                                              	  , aEnum.name.toLowerFirst() + 'ToString'
+                                                                  , aEnum.name.toLowerFirst() + 'FromString' 
+                                                                  }
+													          )
+										  ))->collect(t | aPackage.getQualifiedIdentifier(t))->asSet()
+/]
+
 [template public generateFactoryImplementation(aPackage : EPackage) { 
+	ecorePackage : EPackage = getEcorePackage(); 
     className : String = aPackage.getFactoryImplementationName();
-    classes : Sequence(EClass) = aPackage.eAllContents(EClass)->select( not interface and not abstract );  
+    classes : Sequence(EClass) = aPackage.eAllContents(EClass)->select( not interface and not abstract );
+	types : Set(String) = Set{ classes->collect(c | if c.hasExtension() then c.getQualifiedExtensionIdentifier() else c.getQualifiedImplementationIdentifier() endif)
+                                        , aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceIdentifier() )
+										, Set{'EObject' , 'EClass', 'EFactoryExt' , 'EDataType'}->collect(t | ecorePackage.getQualifiedIdentifier(t))
+										, Set{aPackage.getConstantsName(), aPackage.getFactoryName()}->collect(t | aPackage.getQualifiedIdentifier(t))->asSet()
+										, aPackage.getPackageEnumTypes()
+										}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
+	modules : OclAny = aPackage.getModules('factory-implemention',types);
 }]
-[file (aPackage.getOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
+[file (aPackage.getPackageDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
-[let allTypes : OrderedSet(String) = Set{ classes->collect(c | if c.hasExtension() then c.getQualifiedExtensionName() else c.getQualifiedImplementationName() endif)
-                                        , aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceName() )
-                                        , Set{'ecore.EObject' , 'ecore.EClass', 'ecore.EFactoryExt' , 'ecore.EDataType' }
-                                        , Set{aPackage.name + '.' +  aPackage.getConstantsName() , aPackage.name + '.' + aPackage.getFactoryName() }
-                                        , aPackage.eAllContents(EEnum)->iterate( aEnum : EEnum ; res : Set(String) = Set{} | ( 
-                                                res->union(Set{ aPackage.name + '.' + aEnum.name
-                                                              , aPackage.name + '.' + aEnum.name.toLowerFirst() + 'ToString'
-                                                              , aPackage.name + '.' + aEnum.name.toLowerFirst() + 'FromString' })) )
-                                        }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s)]
-[aPackage.generateImports(allTypes,className)/]
-[/let]
+[aPackage.generateImports('factory-implemention', types, modules)/]	
 
 export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EFactoryExt implements [aPackage.getFactoryName()/] {
     
@@ -52,10 +60,10 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
         super()
     } 
 
-    create(eClass: [getShortQualifiedName('ecore.EClass',aPackage.name)/]): [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
+    create(eClass: [if not aPackage.isEcorePackage()]ecore.[/if]EClass): [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
         switch(eClass.classifierID){
 [for (aClass : EClass | classes)]
-        case [aClass.getQualifiedIDName()/]:
+		case [aClass.getImportedIDName(modules)/]:
             return this.create[aClass.name/]()
 [/for]
         default:
@@ -87,7 +95,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     createFromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType,literalValue: string): any {
         switch (eDataType.classifierID) {
         [for (aDataType : EDataType | dataTypes)]
-            case [aDataType.getQualifiedIDName()/]:
+			case [aDataType.getImportedIDName(modules)/]:
                 return this.create[aDataType.name/]FromString(eDataType, literalValue)
         [/for]
             default:
@@ -98,7 +106,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     convertToString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue: any): string {
         switch (eDataType.classifierID) {
         [for (aDataType : EDataType | dataTypes)]
-        case [aDataType.getQualifiedIDName()/]:
+        case [aDataType.getImportedIDName(modules)/]:
             return this.convert[aDataType.name/]ToString(eDataType, instanceValue)
         [/for]
         default:

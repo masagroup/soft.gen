@@ -19,52 +19,52 @@
 [import soft::generator::ts::lib::generateCommon /]
 
 
-[template public generateDeclaration(aStructuralFeature : EStructuralFeature)]
+[template public generateDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
 [if isGet() or isSet()]
-[aStructuralFeature.generatePropertyDeclaration()/]
+[aStructuralFeature.generatePropertyDeclaration(modules)/]
 [/if]
 [if isUnSet()]
-[aStructuralFeature.generateUnSetDeclaration()/]
+[aStructuralFeature.generateUnSetDeclaration(modules)/]
 [/if]
 [/template]
 
-[template private generatePropertyDeclaration(aStructuralFeature : EStructuralFeature)]
-[if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/]: [aStructuralFeature.generateType()/]
+[template private generatePropertyDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+[if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/]: [aStructuralFeature.generateType(modules)/]
 [/template]
 
-[template private generateUnSetDeclaration(aStructuralFeature : EStructuralFeature)]
+[template private generateUnSetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
 [aStructuralFeature.getUnSetterName()/](): void
 [/template]
 
-[template public generateVariableDeclaration(aStructuralFeature : EStructuralFeature)]
-protected [aStructuralFeature.getVariableName()/]: [aStructuralFeature.generateType()/]
+[template public generateVariableDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+protected [aStructuralFeature.getVariableName()/]: [aStructuralFeature.generateType(modules)/]
 
 [/template]
 
-[template public generateVariableInitialization(aStructuralFeature : EStructuralFeature, aClass : EClass )]
+[template public generateVariableInitialization(aStructuralFeature : EStructuralFeature,modules : OclAny )]
 [/template]
 
-[template public generateVariableInitialization(aReference : EReference, aClass : EClass )]
+[template public generateVariableInitialization(aReference : EReference,modules : OclAny )]
 this.[aReference.getVariableName()/] = null
 
 [/template]
 
-[template public generateVariableInitialization(aAttribute : EAttribute, aClass : EClass ) ]
-[let defaultValue : String = aAttribute.getDefaultValue(aClass)]
+[template public generateVariableInitialization(aAttribute : EAttribute,modules : OclAny ) ]
+[let defaultValue : String = aAttribute.getDefaultValue(modules)]
 [if defaultValue <> '']
 this.[aAttribute.getVariableName()/] = [defaultValue/]
 [/if]
 [/let]
 [/template]
 
-[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'function' )]
-protected [aStructuralFeature.getInitializationMethodName()/](): [aStructuralFeature.generateType()/] {
+[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny) ? ( aStructuralFeature.getLazy() = 'function' )]
+protected [aStructuralFeature.getInitializationMethodName()/](): [aStructuralFeature.generateType(modules)/] {
 [if isMapType()]
-    return [getMapConstructor(aClass)/]
+    return [getMapConstructor(aClass,modules)/]
 [elseif isListType()]
-    return [getListConstructor(aClass)/]
+    return [getListConstructor(aClass,modules)/]
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
-    return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/]
+    return [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(modules)/]
 [else]
     throw new Error("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
@@ -72,16 +72,16 @@ protected [aStructuralFeature.getInitializationMethodName()/](): [aStructuralFea
 
 [/template]
 
-[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass) ? ( aStructuralFeature.getLazy() = 'action' )]
+[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny) ? ( aStructuralFeature.getLazy() = 'action' )]
 protected [aStructuralFeature.getInitializationMethodName()/](): void {
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isMapType()]
-    this.[varName/] = [getMapConstructor(aClass)/]
+    this.[varName/] = [aStructuralFeature.getMapConstructor(aClass,modules)/]
 [elseif isListType()]
-    this.[varName/] = [getListConstructor(aClass)/]
+    this.[varName/] = [aStructuralFeature.getListConstructor(aClass,modules)/]
 [elseif isProxy()]
 [elseif aStructuralFeature.oclIsKindOf(EAttribute)]
-    this.[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/]
+    this.[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(modules)/]
 [else]
     throw new Error("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
@@ -90,45 +90,45 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 
 [/template]
 
-[template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
+[template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny)]
 [if isGet()]
 
-[aStructuralFeature.generateGetImplementation(aClass)/]
+[aStructuralFeature.generateGetImplementation(aClass,modules)/]
 [/if]
 [if isSet()]
 
-[aStructuralFeature.generateSetImplementation(aClass)/]
+[aStructuralFeature.generateSetImplementation(aClass,modules)/]
 [/if]
 [if isGet() and not isSet() and not isVolatile() and not isContainer() and not isListType()]
 
-[aStructuralFeature.generateInternalSetImplementation(aClass)/]
+[aStructuralFeature.generateInternalSetImplementation(aClass,modules)/]
 [/if]
 [if isBasicGet()]
 
-[aStructuralFeature.generateBasicGetImplementation(aClass)/]
+[aStructuralFeature.generateBasicGetImplementation(aClass,modules)/]
 [/if]
 [if isBasicSet()]
 
-[aStructuralFeature.generateBasicSetImplementation(aClass)/]
+[aStructuralFeature.generateBasicSetImplementation(aClass,modules)/]
 [/if]
 [if isUnSet()]
 
-[aStructuralFeature.generateUnSetImplementation(aClass)/]
+[aStructuralFeature.generateUnSetImplementation(aClass,modules)/]
 [/if]
 [if isBasicUnSet()]
 
-[aStructuralFeature.generateBasicUnSetImplementation(aClass)/]
+[aStructuralFeature.generateBasicUnSetImplementation(aClass,modules)/]
 [/if]
 [/template]
 
-[template public generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[template public generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
 // get the value of [aStructuralFeature.getPropertyName()/]
-get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType()/] {
+get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(modules)/] {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
     if (this.eContainerFeatureID() == [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/]) {
-        return this.eContainer() as [aStructuralFeature.generateType()/]
+        return this.eContainer() as [aStructuralFeature.generateType(modules)/]
     }
     return null
 [elseif not isVolatile()]
@@ -137,27 +137,27 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
         [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
         [let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst()]
         let [oldVarName/] = this.[varName/]
-        let [newVarName/] = this.eResolveProxy([oldVarName/]) as [aStructuralFeature.generateType()/]
+        let [newVarName/] = this.eResolveProxy([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
         this.[varName/] = [newVarName/]
         if ([newVarName/] != [oldVarName/]) {
         [if isContains()]
             let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
             [if not isBidirectional()]
-            notifications = ([oldVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getQualifiedIDName(aStructuralFeature)/],notifications)
+            notifications = ([oldVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
             [else]
                 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
                 [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = ([oldVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[reverseClass.getQualifiedIDName(reverseFeature)/],notifications)
+            notifications = ([oldVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[reverseClass.getImportedIDName(reverseFeature,modules)/],notifications)
                 [/let]
                 [/let]
             [/if]
             if ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInternalContainer() == null) {
             [if not isBidirectional()]
-            notifications = ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getQualifiedIDName(aStructuralFeature)/],notifications)
+            notifications = ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
             [else]
                 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
                 [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this, [reverseClass.getQualifiedIDName(reverseFeature)/],notifications)
+            notifications = ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this, [reverseClass.getImportedIDName(reverseFeature,modules)/],notifications)
                 [/let]
                 [/let]
             [/if]
@@ -167,7 +167,7 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
             }
         [/if]
             if (this.eNotificationRequired) {
-                this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.RESOLVE, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]))
+                this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.RESOLVE, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/]))
             }
         }
         [/let]
@@ -178,7 +178,7 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
         [if lazy <> 'no']
             [if  lazy = 'function']
                 [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/]) {
+    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(modules)/]) {
                 [else]
     if (this.[varName/] == null) {
                 [/if]
@@ -191,11 +191,11 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
         [/let]
     [elseif aStructuralFeature.isMapType()]
     if (this.[varName/] == null) {
-        this.[varName/] = [aStructuralFeature.getMapConstructor(aClass)/]
+        this.[varName/] = [aStructuralFeature.getMapConstructor(aClass,modules)/]
     }
     [elseif aStructuralFeature.isListType()]
     if (this.[varName/] == null) {
-        this.[varName/] = [aStructuralFeature.getListConstructor(aClass)/]
+        this.[varName/] = [aStructuralFeature.getListConstructor(aClass,modules)/]
     }
     [/if]
     return this.[varName/]
@@ -209,14 +209,14 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 }
 [/template]
 
-[template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
 // get the basic value of [aStructuralFeature.getPropertyName()/] with no proxy resolution
-basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFeature.generateType()/] {
+basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFeature.generateType(modules)/] {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [if isContainer()]
-    if (this.EContainerFeatureID() == [aClass.getQualifiedIDName(aStructuralFeature)/]) {
-        return this.eInternalContainer() as [aStructuralFeature.generateType()/]
+    if (this.EContainerFeatureID() == [aClass.getImportedIDName(aStructuralFeature,modules)/]) {
+        return this.eInternalContainer() as [aStructuralFeature.generateType(modules)/]
     } 
     return null
 [elseif not isVolatile()]
@@ -224,7 +224,7 @@ basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFe
     [if lazy <> 'no']
         [if  lazy = 'function']
             [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/]) {
+    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(modules)/]) {
             [else]
     if (this.[varName/] == null) {
             [/if]
@@ -246,16 +246,16 @@ basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFe
 }
 [/template]
 
-[template public generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
+[template public generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny)]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst() ]
 [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst() ]
 // set the value of [aStructuralFeature.getPropertyName()/]
-set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType()/] ) {
+set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
 [if not isVolatile()]
     [if isContainer()]
-    if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getQualifiedIDName(aStructuralFeature)/])) {
+    if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getImportedIDName(aStructuralFeature,modules)/])) {
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
         if ( this.eInternalContainer() != null) {
             notifications = this.eBasicRemoveFromContainer(notifications)
@@ -263,7 +263,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
         if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([newVarName/])) {
 		[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
         [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = [newVarName/].eInverseAdd(this,  [reverseClass.getQualifiedIDName(reverseFeature)/], notifications)
+            notifications = [newVarName/].eInverseAdd(this,  [reverseClass.getImportedIDName(reverseFeature,modules)/], notifications)
 		[/let]
 		[/let]
         }
@@ -272,7 +272,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
             notifications.dispatch()
         }
     } else if (this.eNotificationRequired) {
-        this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getQualifiedIDName(aStructuralFeature)/], [newVarName/], [newVarName/]))
+        this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [newVarName/], [newVarName/]))
     }
     [elseif isBidirectional() or isContains()]
     let [oldVarName/] = this.[varName/]
@@ -280,18 +280,18 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
         if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([oldVarName/])) {
         [if not isBidirectional()]
-           notifications = [oldVarName/].eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/] , notifications)
+           notifications = [oldVarName/].eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aStructuralFeature,modules)/] , notifications)
         }
         if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([newVarName/])) {
-           notifications = [newVarName/].eInverseAdd(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/] , notifications)
+           notifications = [newVarName/].eInverseAdd(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aStructuralFeature,modules)/] , notifications)
         }
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
             [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = [oldVarName/].eInverseRemove(this, [reverseClass.getQualifiedIDName(reverseFeature)/] , notifications)
+            notifications = [oldVarName/].eInverseRemove(this, [reverseClass.getImportedIDName(reverseFeature,modules)/] , notifications)
         }
         if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([newVarName/])) {
-            notifications = [newVarName/].eInverseAdd(this, [reverseClass.getQualifiedIDName(reverseFeature)/] , notifications)
+            notifications = [newVarName/].eInverseAdd(this, [reverseClass.getImportedIDName(reverseFeature,modules)/] , notifications)
         }
             [/let]
             [/let]
@@ -307,7 +307,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
     let [oldVarName/] = this.[varName/]
     this.[varName/] = [newVarName/]
     if (this.eNotificationRequired) {
-        this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], [newVarName/]))
+        this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/]))
     }
     [/if]
 [elseif hasKey('setterBody')]
@@ -322,20 +322,20 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 [/let]
 [/template]
 
-[template public generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[template public generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst()]
-basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [aStructuralFeature.generateType()/] , msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain ): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
+basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [aStructuralFeature.generateType(modules)/] , msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain ): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
 [if isContainer()]
-    return this.eBasicSetContainer([newVarName/], [aClass.getQualifiedIDName(aStructuralFeature)/], msgs)
+    return this.eBasicSetContainer([newVarName/], [aClass.getImportedIDName(aStructuralFeature,modules)/], msgs)
 [elseif not isVolatile()]
     [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
     let [oldVarName/] = this.[varName/]
     this.[varName/] = [newVarName/]
     let notifications = msgs
     if ( this.eNotificationRequired ) {
-        let notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], [newVarName/])
+        let notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/])
         if (notifications != null ) {
             notifications.add( notification )
         } else {
@@ -355,12 +355,12 @@ basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [a
 [/let]
 [/template]
 
-[template private generateInternalSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[template private generateInternalSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst() ]
 /** @internal */
-set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType()/] ) {
+set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
 	this.[varName/] = [newVarName/]
 }
 [/let]
@@ -368,50 +368,50 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 [/let]
 [/template]
 
-[template private getMapConstructor( aStructuralFeature : EStructuralFeature, aClass : EClass) post(trim())]
+[template private getMapConstructor( aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny) post(trim())]
 [let aPackage : EPackage = aClass.ePackage]
 [let aClassifier : EClassifier = aStructuralFeature.eType]
 [let aType : EGenericType = aStructuralFeature.eGenericType]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectMap<[aType.generateMapTypeParameters(aPackage)/]>([if aClassifier.ePackage.name <> aClass.ePackage.name][aClassifier.ePackage.name/].[/if]get[aClassifier.ePackage.getInterfaceName()/]().[aClassifier.getReflectiveGetterName()/]())
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectMap<[aType.generateMapTypeParameters(modules)/]>([if aClassifier.ePackage.name <> aClass.ePackage.name][aClassifier.ePackage.name/].[/if]get[aClassifier.ePackage.getInterfaceName()/]().[aClassifier.getReflectiveGetterName()/]())
 [/let]
 [/let]
 [/let]
 [/template]
 
-[template private getListConstructor( aStructuralFeature : EStructuralFeature , aClass : EClass) post(trim())]
+[template private getListConstructor( aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny) post(trim())]
 [/template]
 
-[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
+[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass , modules : OclAny) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
 [let aPackage : EPackage = aClass.ePackage]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEDataTypeList<[anEAttribute.eGenericType.generateType(aPackage)/]>(this, [aClass.getQualifiedIDName(anEAttribute)/])
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEDataTypeList<[anEAttribute.eGenericType.generateType(modules)/]>(this, [aClass.getImportedIDName(anEAttribute,modules)/])
 [/let]
 [/template]
 
-[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass ) ? (anEAttribute.isFeatureMapType()) post(trim()) ]
+[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass , modules : OclAny) ? (anEAttribute.isFeatureMapType()) post(trim()) ]
 null
 [/template]
 
 
-[template private getListConstructor( anEReference : EReference , aClass : EClass ) post(trim())]
+[template private getListConstructor( anEReference : EReference , aClass : EClass , modules : OclAny) post(trim())]
 [let aPackage : EPackage = aClass.ePackage]
-[let aType : String = anEReference.eGenericType.generateType(aPackage)]
+[let aType : String = anEReference.eGenericType.generateType(modules)]
 [if (anEReference.containment)]
     [if anEReference.eOpposite.oclIsUndefined() ]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getQualifiedIDName(anEReference)/] , -1, true, true, false, [anEReference.isProxy()/], [anEReference.isUnSettable()/])
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getImportedIDName(anEReference,modules)/] , -1, true, true, false, [anEReference.isProxy()/], [anEReference.isUnSettable()/])
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getQualifiedIDName(anEReference)/] ,[reverseClass.getQualifiedIDName(reverseFeature)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getImportedIDName(anEReference,modules)/] ,[reverseClass.getImportedIDName(reverseFeature,modules)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
         [/let]
         [/let]
     [/if]
 [else]
     [if anEReference.eOpposite.oclIsUndefined() ]     
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [anEReference.eContainingClass.getQualifiedIDName( anEReference )/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [anEReference.eContainingClass.getImportedIDName( anEReference ,modules)/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
     [else]
         [let reverseFeature :EReference = anEReference.eOpposite ]
         [let reverseClass :EClass = reverseFeature.eContainingClass ]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getQualifiedIDName(anEReference)/] , [reverseClass.getQualifiedIDName(reverseFeature)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getImportedIDName(anEReference,modules)/] , [reverseClass.getImportedIDName(reverseFeature,modules)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
         [/let]
         [/let]
     [/if]
@@ -421,7 +421,7 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
 [/template]
 
 
-[template public generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass)]
+[template public generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny)]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst() ]
@@ -432,7 +432,7 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
         [let lazy : String = aStructuralFeature.getLazy()]
         [if lazy = 'function']
             [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if ( this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(aClass)/] ) {
+    if ( this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(modules)/] ) {
         [else]
     if ( this.[varName/] != null ) {
         [/if]
@@ -446,10 +446,10 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
     if (this.[varName/] != null) {
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
         [if not isBidirectional()]
-        notifications = (this.[varName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getQualifiedIDName(aStructuralFeature)/] , notifications )
+        notifications = (this.[varName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aStructuralFeature,modules)/] , notifications )
         [else]
             [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
-        notifications = (this.[varName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[reverseFeature.eContainingClass.getQualifiedIDName(reverseFeature)/] , notifications )
+        notifications = (this.[varName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[reverseFeature.eContainingClass.getImportedIDName(reverseFeature,modules)/] , notifications )
             [/let]
         [/if]
         notifications = basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](notifications)
@@ -457,11 +457,11 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
             notifications.dispatch()
         }
     } else if (this.eNotificationRequired) {
-        this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getQualifiedIDName(aStructuralFeature)/],null,null))
+        this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/],null,null))
     }
     [else]
         if (this.eNotificationRequired) {
-            this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this,[if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getQualifiedIDName(aStructuralFeature)/],null,null))
+            this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this,[if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/],null,null))
         }
     [/if]
 [elseif hasKey('unsetterBody')]
@@ -475,7 +475,7 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
 [/let]
 [/template]
 
-[template public generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass)]
+[template public generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName()]    
 [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
@@ -485,7 +485,7 @@ basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](msgs: [if not aPacka
     let notifications = msgs
     this.[varName/] = null
     if (this.eNotificationRequired()) {
-        let notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getQualifiedIDName(aStructuralFeature)/], [oldVarName/], null)
+        let notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], null)
         if ( notifications != null ) {
             notifications.add( notification )
         } else {

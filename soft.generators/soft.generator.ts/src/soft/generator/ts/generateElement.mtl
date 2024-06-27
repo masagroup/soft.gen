@@ -13,8 +13,13 @@
 [module generateElement('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateElement/]
+[import soft::generator::common::generateUtils/]
+[import soft::generator::ts::generateModule]
+[import soft::generator::ts::generateType/]
 
 [query public getReferencedTypes(aClass : EClass) : Set(EClassifier) = 
 	OrderedSet{aClass.eSuperTypes
               ,aClass.getImplementedFeatures().eType
               ,aClass.getImplementedOperations().getReferencedTypes()}->flatten()->select( cls | not cls.oclIsUndefined() ) /]
+
+

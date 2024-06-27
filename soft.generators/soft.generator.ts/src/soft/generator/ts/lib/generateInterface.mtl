@@ -17,50 +17,69 @@
 [import soft::generator::common::generateUtils]
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateElement/]
+[import soft::generator::ts::generateModule]
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
 [import soft::generator::ts::lib::generateOperation/]
 [import soft::generator::ts::lib::generateStructuralFeature/]
 
-[template public generateInterface(aClass : EClass) { 
-    interfaceName : String = aClass.getInterfaceName(); 
-    aPackage : EPackage = aClass.ePackage; 
+
+
+[template public generateInterface(aClass : EClass) {
+	ecorePackage : EPackage = getEcorePackage(); 
+	aPackage : EPackage = aClass.ePackage;
+	interfaceName : String = aClass.getInterfaceName(); 
     interfaceExtends : Sequence(String) = aClass.getInterfaceExtends();
     isDiamond : Boolean = interfaceExtends->size() > 1;
+	types : Set(String) = Set{  interfaceExtends
+								, (if isDiamond then aClass.eSuperTypes.getReferencedTypes() else aClass.getReferencedTypes() endif)
+									->select( cls | not cls.oclIsTypeOf(EClass) or not cls.oclAsType(EClass).isMapEntry())
+									->collect( cls | cls.getQualifiedInterfaceIdentifier())
+								, Set{
+										if aClass.requiresList() then Set{ 'EList' } else Set{} endif,
+										if aClass.requiresMap() then Set{ 'EMap' } else Set{} endif
+									}->flatten()->collect(t | ecorePackage.getQualifiedIdentifier(t))
+								}->flatten()->select(s | s <> '' and s <> aClass.getQualifiedInterfaceIdentifier() );
+	modules : OclAny = aClass.getModules('interface',types);
 }]
-[file (aPackage.getOutputDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
+[file (aPackage.getPackageDirectory() + '/' + aClass.getInterfaceFileName( aClass.name ), false, 'UTF-8')]
 [fileComment()/]
 
-[let refTypes : Set(EClassifier) = if isDiamond then aClass.eSuperTypes.getReferencedTypes()->asSet() else aClass.getReferencedTypes()->asSet() endif]
-[let mapType : Set(String) = if ( aClass.requiresMap() ) then Set{ 'ecore.EMap' } else Set{} endif]
-[let listType : Set(String) = if ( aClass.requiresList() or isDiamond ) then Set{ 'ecore.EList' } else Set{} endif]
-[let allTypes : OrderedSet(String) = Set{ interfaceExtends
-                                        , refTypes->collect( type | type.getType())->asSet()
-                                        , listType
-                                        , mapType }->flatten()->select(s | s <> '' and s <> aClass.getQualifiedInterfaceName() )->asOrderedSet()->sortedBy(s | s)]
-[aPackage.generateImports(allTypes,interfaceName)/]
-[/let]
-[/let]
-[/let]
-[/let]
+[if isDebug()]
+// module : [aPackage.getModule()/]
+// path : [getModulePath(aPackage.getModule())/]
+// namespace : [getModuleNamespace(aPackage.getModule())/]
 
-export interface [interfaceName/][for ( extend : String | interfaceExtends ) before (' extends ') separator (', ')][getShortQualifiedName(extend,aPackage.name)/][/for] {
+// types
+[for (type : String| types)]
+// [type/]
+[/for]
+
+// modules
+[for (mod : OclAny | modules.mapKeys())]
+// [mod/] => [modules.mapGet(mod)/]
+[/for]
+[/if]
+
+[aClass.generateImports('interface', types, modules)/]
+
+export interface [interfaceName/][for ( qualifiedIdentifier : String | interfaceExtends ) before (' extends ') separator (', ')][getImportedIdentifier( qualifiedIdentifier , modules)/][/for] {
 [let attributes : OrderedSet(EAttribute) = aClass.eAttributes->asOrderedSet()->select( isGet() or isSet() )]
 [if attributes->notEmpty()]
     // Attributes
-    [attributes->asOrderedSet().generateDeclaration()/]
+    [attributes->asOrderedSet().generateDeclaration(modules)/]
 [/if]
 [/let]
 [let references : OrderedSet(EReference) = aClass.eReferences->asOrderedSet()->select( isGet() or isSet() )]
 [if references->notEmpty()]
     // References
-    [references.generateDeclaration()/]
+    [references.generateDeclaration(modules)/]
 [/if]
 [/let]
 [let operations : OrderedSet(EOperation) = aClass.eOperations->asOrderedSet()]
 [if operations->notEmpty()]
     // Operations
-    [operations.generateDeclaration()/]
+    [operations.generateDeclaration(modules)/]
 [/if]
 [/let]
 }

@@ -13,8 +13,13 @@
 [module generateCommon('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon /]
+[import soft::generator::ts::generateType /]
 [import soft::generator::ts::lib::generateCommon/]
 
+
+[query public getMetaType(anENamedElement : ENamedElement, modules : OclAny) : String =
+	getImportedIdentifier(anENamedElement.eClass().getQualifiedInterfaceIdentifier(),modules) 
+/]
 
 [template public generateStaticClassID(aEClass : EClass)]
 // [aEClass.getClassifierIDName()/] is the meta object id for the class [aEClass.name/].

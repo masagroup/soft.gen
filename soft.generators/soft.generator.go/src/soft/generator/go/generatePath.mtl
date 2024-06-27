@@ -18,7 +18,9 @@
 
 
 [**
- * Returns Ecore module default path
+ * Returns all packages paths
+ * A path is defined as package/alias
+ * By default returns path for ecore : github.com/masagroup/soft.go/ecore/ecore
 */]
 [query private getAllPackagePaths(any : OclAny) : OclAny =
 	let ecorePackage : EPackage = getEcorePackage() in

@@ -28,6 +28,8 @@
 
 [query public mapIsEmpty( map : OclAny ) : Boolean = invoke('soft.generator.common.GenerateUtils','mapIsEmpty(java.util.Map)',Sequence{map}) /]
 
+[query public mapClear( map : OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapClear(java.util.Map)',Sequence{map}) /]
+
 [query public mapPut( map : OclAny , key: OclAny , value:OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapPut(java.util.Map,java.lang.Object,java.lang.Object)',Sequence{map,key,value }) /]
 
 [query public mapPutAll( map : OclAny , o : OclAny ) : OclAny = invoke('soft.generator.common.GenerateUtils','mapPutAll(java.util.Map,java.util.Map)',Sequence{map,o }) /]

@@ -18,35 +18,41 @@
 [import soft::generator::ts::generateType /]
 [import soft::generator::ts::lib::pack::generateCommon/]
 
-[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage )]
+[template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage, modules : OclAny )]
 
 // Returns the meta object for the [anENamedElement.name.toUpperFirst()/]
-[anENamedElement.getReflectiveGetterName()/](): [getShortQualifiedName(anENamedElement.eClass().getQualifiedInterfaceName(),aPackage.name)/]
+[anENamedElement.getReflectiveGetterName()/](): [getImportedIdentifier(anENamedElement.eClass().getQualifiedInterfaceIdentifier(), modules)/]
 [/template]
 
-[template public generatePackageInterface(aPackage : EPackage) {className : String = aPackage.getInterfaceName();}]
-[file (aPackage.getOutputDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
+[template public generatePackageInterface(aPackage : EPackage) {
+	ecorePackage : EPackage = getEcorePackage();
+	className : String = aPackage.getInterfaceName();
+		types : Set(String) = Set{
+								Set{'EAttribute',
+									'EReference',
+									'EClass',
+									'EEnum',
+									'EOperation',
+									'EDataType',
+									'EPackage'
+									}->collect(t | ecorePackage.getQualifiedIdentifier(t)),
+								Set{ aPackage.getQualifiedIdentifier(aPackage.getImplementationName()) }
+							}->flatten();
+	modules : OclAny = aPackage.getModules('package-interface',types);
+}]
+[file (aPackage.getPackageDirectory() + '/'+  aPackage.getInterfaceFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
-[let allTypes : OrderedSet(String) = OrderedSet{'ecore.EAttribute' 
-                                               ,'ecore.EReference'
-                                               ,'ecore.EClass'
-                                               ,'ecore.EEnum'
-                                               ,'ecore.EOperation' 
-                                               ,'ecore.EDataType'
-                                               ,'ecore.EPackage' 
-                                               , aPackage.name + '.' + aPackage.getImplementationName()}->sortedBy(s | s)]
-[aPackage.generateImports(allTypes,className)/]
-[/let]
+[aPackage.generateImports('package-interface', types, modules)/]
 
 export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EPackage {
 [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
-    [aClass.generateGetter(aPackage)/]
-    [aClass.eAttributes->sortedBy(name).generateGetter(aPackage)/]
-    [aClass.eReferences->sortedBy(name).generateGetter(aPackage)/]
-    [aClass.eOperations->sortedBy(name).generateGetter(aPackage)/]
+    [aClass.generateGetter(aPackage,modules)/]
+    [aClass.eAttributes->sortedBy(name).generateGetter(aPackage,modules)/]
+    [aClass.eReferences->sortedBy(name).generateGetter(aPackage,modules)/]
+    [aClass.eOperations->sortedBy(name).generateGetter(aPackage,modules)/]
 [/for]
-    [aPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(aPackage)/]
+    [aPackage.eAllContents(EDataType)->sortedBy(name).generateGetter(aPackage,modules)/]
 }
 
 export function get[className/](): [className/] {

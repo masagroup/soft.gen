@@ -23,6 +23,8 @@
 [import soft::generator::go::lib::pack::generateCommon/]
 [import soft::generator::go::lib::pack::generatePackageInstance/]
 
+[query private getElementInstance(anENamedElement : ENamedElement) : String = anENamedElement.getMemberName()/]
+
 [query private getPackageInstance(aClassifier : EClassifier, packagePath : String, imports : OclAny ) : String = 
 	getImportedIdentifier( aClassifier.ePackage.getImplementationPackagePath() + '.GetPackage()',packagePath, imports )
 /]
@@ -47,14 +49,14 @@
 
 
 [template private generateDataMember(anENamedElement : ENamedElement, aPackage : EPackage, packagePath : String, imports : OclAny)] 
-[anENamedElement.getElementInstanceName()/] [getMetaType(anENamedElement,packagePath,imports)/] 
+[anENamedElement.getElementInstance()/] [getMetaType(anENamedElement,packagePath,imports)/] 
 
 [/template]
 
 [template private generateGetter(aClassifier : EClassifier, aPackage : EPackage, packagePath : String, imports : OclAny)]
 // [aClassifier.getReflectiveGetterName()/] returns the meta object corresponding to 
 func (p *[aPackage.getImplementationName()/]) [aClassifier.getReflectiveGetterName()/]() [getMetaType(aClassifier,packagePath,imports)/] {
-    return p.[aClassifier.getElementInstanceName()/]
+    return p.[aClassifier.getElementInstance()/]
 }
 
 [/template]
@@ -64,7 +66,7 @@ func (p *[aPackage.getImplementationName()/]) [aClassifier.getReflectiveGetterNa
 [let metaType : String = getMetaType(aFeature,packagePath,imports)]
 // [aFeature.getReflectiveGetterName()/] returns the meta object corresponding to 
 func (p *[aPackage.getImplementationName()/]) [aFeature.getReflectiveGetterName()/]() [metaType/] {
-    return p.[aClass.getElementInstanceName()/].GetEStructuralFeatures().Get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]).([metaType/])
+    return p.[aClass.getElementInstance()/].GetEStructuralFeatures().Get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]).([metaType/])
 }
 [/let]
 [/let]
@@ -76,7 +78,7 @@ func (p *[aPackage.getImplementationName()/]) [aFeature.getReflectiveGetterName(
 [let metaType : String = getMetaType(aOperation,packagePath,imports)]
 // [aOperation.getReflectiveGetterName()/] returns the meta object corresponding to 
 func (p *[aPackage.getImplementationName()/]) [aOperation.getReflectiveGetterName()/]() [metaType/] {
-    return p.[aClass.getElementInstanceName()/].GetEOperations().Get([aClass.eOperations->indexOf(aOperation)-1/]).([metaType/])
+    return p.[aClass.getElementInstance()/].GetEOperations().Get([aClass.eOperations->indexOf(aOperation)-1/]).([metaType/])
 }
 [/let]
 [/let]
@@ -84,27 +86,27 @@ func (p *[aPackage.getImplementationName()/]) [aOperation.getReflectiveGetterNam
 [/template]
 
 [template private generateCreation(aEClass : EClass, packagePath : String, imports : OclAny) ]
-p.[aEClass.getElementInstanceName()/] = ecoreFactory.CreateEClassFromContainerAndClassID(p, [aEClass.getImportedIDName(packagePath, imports)/])
+p.[aEClass.getElementInstance()/] = ecoreFactory.CreateEClassFromContainerAndClassID(p, [aEClass.getImportedIDName(packagePath, imports)/])
 [/template]
 
 [template private generateCreation(aAttribute : EAttribute, packagePath : String, imports : OclAny) {
 	aClass : EClass = aAttribute.eContainingClass;
 }]
-ecoreFactory.CreateEAttributeFromContainerAndClassID(p.[aClass.getElementInstanceName()/], [aClass.getImportedIDName(aAttribute,packagePath, imports)/])
+ecoreFactory.CreateEAttributeFromContainerAndClassID(p.[aClass.getElementInstance()/], [aClass.getImportedIDName(aAttribute,packagePath, imports)/])
 
 [/template]
 
 [template private generateCreation(aReference : EReference, packagePath : String, imports : OclAny) {
 	aClass : EClass = aReference.eContainingClass;
 }]
-ecoreFactory.CreateEReferenceFromContainerAndClassID(p.[aClass.getElementInstanceName()/], [aClass.getImportedIDName(aReference,packagePath, imports)/])
+ecoreFactory.CreateEReferenceFromContainerAndClassID(p.[aClass.getElementInstance()/], [aClass.getImportedIDName(aReference,packagePath, imports)/])
 
 [/template]
 
 [template private generateCreation(anEOperation : EOperation, packagePath : String, imports : OclAny) {
 	aClass : EClass = anEOperation.eContainingClass;
 }]
-ecoreFactory.CreateEOperationFromContainerAndClassID(p.[aClass.getElementInstanceName()/], [aClass.getImportedIDName(anEOperation,packagePath, imports)/])
+ecoreFactory.CreateEOperationFromContainerAndClassID(p.[aClass.getElementInstance()/], [aClass.getImportedIDName(anEOperation,packagePath, imports)/])
 
 [/template]
 
@@ -112,23 +114,23 @@ ecoreFactory.CreateEOperationFromContainerAndClassID(p.[aClass.getElementInstanc
 [/template]
 
 [template private generateCreation(aEnum : EEnum, packagePath : String, imports : OclAny)]
-p.[aEnum.getElementInstanceName()/] = ecoreFactory.CreateEEnumFromContainerAndClassID(p, [aEnum.getImportedIDName(packagePath, imports)/])
+p.[aEnum.getElementInstance()/] = ecoreFactory.CreateEEnumFromContainerAndClassID(p, [aEnum.getImportedIDName(packagePath, imports)/])
 
 [/template]
 
 [template private generateCreation(anEDatatype : EDataType, packagePath : String, imports : OclAny)]
-p.[anEDatatype.getElementInstanceName()/] = ecoreFactory.CreateEDataTypeFromContainerAndClassID(p, [anEDatatype.getImportedIDName(packagePath, imports)/])
+p.[anEDatatype.getElementInstance()/] = ecoreFactory.CreateEDataTypeFromContainerAndClassID(p, [anEDatatype.getImportedIDName(packagePath, imports)/])
 
 [/template]
 
 [template public initSuperTypes(aEClass : EClass,packagePath : String, imports : OclAny)]
 [for (superClass : EClass | aEClass.eSuperTypes)]
-p.[aEClass.getElementInstanceName()/].GetESuperTypes().Add([aEClass.getPackageGetter(superClass,packagePath,imports)/])
+p.[aEClass.getElementInstance()/].GetESuperTypes().Add([aEClass.getPackageGetter(superClass,packagePath,imports)/])
 [/for]
 [/template]
 
 [template private generateInitialization(aEClass : EClass)]
-p.InitEClass(p.[aEClass.getElementInstanceName()/],"[aEClass.name/]","[aEClass.getInstanceTypeName()/]",[aEClass.abstract.toString()/],[aEClass.interface.toString()/])
+p.InitEClass(p.[aEClass.getElementInstance()/],"[aEClass.name/]","[aEClass.getInstanceTypeName()/]",[aEClass.abstract.toString()/],[aEClass.interface.toString()/])
 [/template]
 
 [template private generateInitialization(anEAttribute : EAttribute, packagePath : String, imports : OclAny)]
