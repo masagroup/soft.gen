@@ -46,6 +46,13 @@
 	anPackage.name.replaceFirst('(.*)', replacement)
 /]
 
+[query public getModuleResolution(anPackage : EPackage) : String =
+ 	if anPackage.hasPackageProperty('moduleResolution')
+	then anPackage.getPackageProperty('moduleResolution').toLower()
+	else 'nodenext'
+	endif
+/]
+
 
 [**
  * File Comments 

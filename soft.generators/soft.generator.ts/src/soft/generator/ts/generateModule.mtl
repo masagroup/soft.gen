@@ -14,6 +14,13 @@
 
 [import soft::generator::common::generateCommon/]
 [import soft::generator::common::generateUtils/]
+[import soft::generator::ts::generateCommon/]
+
+[query private isExplicitFileExtension(anPackage : EPackage) : Boolean =
+	let moduleResolution : String = anPackage.getModuleResolution() in
+	moduleResolution = 'nodenext' or moduleResolution = 'node16'
+/]
+
 
 [**
  * Returns package to module map 
@@ -82,7 +89,8 @@
 	else
 		 moduleToPath
 	endif in
-		moduleToPath.mapPut(currentModule, './internal')
+		let extension : String = if currentPackage.isExplicitFileExtension() then '.js' else '' endif in
+		moduleToPath.mapPut(currentModule, './internal' + extension)
 /]
 
 [query public getModulePath( p : String ) : String =
