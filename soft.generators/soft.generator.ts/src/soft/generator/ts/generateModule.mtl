@@ -16,12 +16,6 @@
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon/]
 
-[query private isExplicitFileExtension(anPackage : EPackage) : Boolean =
-	let moduleResolution : String = anPackage.getModuleResolution() in
-	moduleResolution = 'nodenext' or moduleResolution = 'node16'
-/]
-
-
 [**
  * Returns package to module map 
  * By default typescript module for ecore package is @masagroup/ecore

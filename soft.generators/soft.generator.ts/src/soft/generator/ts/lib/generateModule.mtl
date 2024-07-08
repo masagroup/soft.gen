@@ -40,44 +40,45 @@ export {
     [anEPackage.getConstantsName()/],
     get[anEPackage.getInterfaceName()/],
     get[anEPackage.getFactoryName()/],
-} from "./internal"
+} from "./internal[if anEPackage.isExplicitFileExtension()].js[/if]"
 [/file]
 [/template]
 
 [template public generateInternal(anEPackage : EPackage){
     allClasses : Sequence(EClass) = anEPackage.getOrderedClasses();
+	extension : String = if anEPackage.isExplicitFileExtension() then '.js' else '' endif;
 }]
 [file (anEPackage.getPackageDirectory() + '/'+  anEPackage.getInternalFileName(),false, 'UTF-8') ]
 [fileComment()/]
 
 // interfaces
 [for (aClass: EClass | allClasses)]
-export * from "./[removeFileExtension(aClass.getInterfaceFileName(aClass.name))/]"
+export * from "./[removeFileExtension(aClass.getInterfaceFileName(aClass.name))+extension/]"
 [/for]
 
 // enums
 [for (aEnum: EEnum | anEPackage.eAllContents(EEnum))]
-export * from "./[removeFileExtension(aEnum.getInterfaceFileName(aEnum.name))/]"
+export * from "./[removeFileExtension(aEnum.getInterfaceFileName(aEnum.name))+extension/]"
 [/for]
 
 // package - factory- constants
-export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getPackageName()))/]"
-export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getFactoryName()))/]"
-export * from "./[removeFileExtension(anEPackage.getConstantsFileName(anEPackage.getConstantsName()))/]"
+export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getPackageName()))+extension/]"
+export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getFactoryName()))+extension/]"
+export * from "./[removeFileExtension(anEPackage.getConstantsFileName(anEPackage.getConstantsName()))+extension/]"
 
 // implementations
 [for (aClass: EClass | allClasses)]
 [if not aClass.interface]
-export * from "./[removeFileExtension(aClass.getImplementationFileName(aClass.name))/]"
+export * from "./[removeFileExtension(aClass.getImplementationFileName(aClass.name))+extension/]"
 [if aClass.hasExtension()]
-export * from "./[removeFileExtension(aClass.getExtensionFileName(aClass.name))/]"
+export * from "./[removeFileExtension(aClass.getExtensionFileName(aClass.name))+extension/]"
 [/if]
 [/if]
 [/for]
-export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getPackageName()))/]"
-export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getFactoryName()))/]"
+export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getPackageName()))+extension/]"
+export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getFactoryName()))+extension/]"
 [if anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension']
-export * from "./[removeFileExtension(anEPackage.getExtensionFileName(anEPackage.getFactoryName()))/]"
+export * from "./[removeFileExtension(anEPackage.getExtensionFileName(anEPackage.getFactoryName()))+extension/]"
 [/if]
 [/file]
 [/template]

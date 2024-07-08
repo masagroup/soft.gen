@@ -53,7 +53,10 @@
 	endif
 /]
 
-
+[query public isExplicitFileExtension(anPackage : EPackage) : Boolean =
+	let moduleResolution : String = anPackage.getModuleResolution() in
+	moduleResolution = 'nodenext' or moduleResolution = 'node16'
+/]
 [**
  * File Comments 
 */]
