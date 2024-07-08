@@ -46,7 +46,17 @@
 	anPackage.name.replaceFirst('(.*)', replacement)
 /]
 
+[query public getModuleResolution(anPackage : EPackage) : String =
+ 	if anPackage.hasPackageProperty('moduleResolution')
+	then anPackage.getPackageProperty('moduleResolution').toLower()
+	else 'nodenext'
+	endif
+/]
 
+[query public isExplicitFileExtension(anPackage : EPackage) : Boolean =
+	let moduleResolution : String = anPackage.getModuleResolution() in
+	moduleResolution = 'nodenext' or moduleResolution = 'node16'
+/]
 [**
  * File Comments 
 */]
