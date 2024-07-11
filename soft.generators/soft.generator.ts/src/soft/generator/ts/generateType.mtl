@@ -414,6 +414,8 @@ import {
     [type.oclAsType(String)/],
 [/for]    
 } from "[modulePath/]"
+[elseif getCurrentPackage().isSyntheticDefaultImports()]
+import [namespace/] from "[modulePath/]"
 [else]
 import * as [namespace/] from "[modulePath/]"
 [/if]

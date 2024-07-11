@@ -57,6 +57,13 @@
 	let moduleResolution : String = anPackage.getModuleResolution() in
 	moduleResolution = 'nodenext' or moduleResolution = 'node16'
 /]
+
+[query public isSyntheticDefaultImports (anPackage : EPackage) : Boolean =
+	if anPackage.hasPackageProperty('allowSyntheticDefaultImports')
+	then anPackage.getPackageProperty('allowSyntheticDefaultImports') = 'true'
+	else false
+	endif
+/]
 [**
  * File Comments 
 */]
