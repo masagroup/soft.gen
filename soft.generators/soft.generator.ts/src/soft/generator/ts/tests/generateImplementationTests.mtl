@@ -52,6 +52,9 @@
 [fileComment()/]
 
 [comment imports/]
+[if aPackage.isVitest()]
+import { describe, expect, test } from "vitest"
+[/if]
 [if aClass.requiresList()]
 import deepEqual from "deep-equal"
 [/if]
