@@ -342,10 +342,4 @@ and (not aClass.getEStructuralFeature('value').oclIsUndefined())/]
     endif 
 /]
 
-[query public isTemplateGenerated( any : OclAny , aTemplateName : String ) : Boolean =
-	let templatesProperty : String =  getProperty('templates') in
-	let templates : Sequence(String) = templatesProperty.tokenize(',') in
-	templates->includes(aTemplateName)
-/]
-
 [query public isDebug(any : OclAny) : Boolean = getProperty('debug') = 'true'/] 

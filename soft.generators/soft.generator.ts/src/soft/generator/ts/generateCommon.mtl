@@ -53,6 +53,17 @@
 	endif
 /]
 
+[query public getTestFramework(anPackage : EPackage) : String =
+ 	if anPackage.hasPackageProperty('testFramework')
+	then anPackage.getPackageProperty('testFramework').toLower()
+	else 'jest'
+	endif
+/]
+
+[query public isVitest(anPackage : EPackage) : Boolean =
+	anPackage.getTestFramework() = 'vitest' 
+/]
+
 [query public isExplicitFileExtension(anPackage : EPackage) : Boolean =
 	let moduleResolution : String = anPackage.getModuleResolution() in
 	moduleResolution = 'nodenext' or moduleResolution = 'node16'

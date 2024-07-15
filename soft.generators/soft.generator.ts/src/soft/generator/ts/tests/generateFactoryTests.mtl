@@ -44,6 +44,9 @@
 [file (aPackage.getPackageDirectory() + '/' + aPackage.getFactoryTestFileName(aPackage.name), false, 'UTF-8')]
 [fileComment()/]
 
+[if aPackage.isVitest()]
+import { describe, expect, test } from "vitest"
+[/if]
 import { anything , capture, instance, mock, reset, verify, when } from "ts-mockito";
 [aPackage.generateImports('factory-tests', types, modules)/]	
 
