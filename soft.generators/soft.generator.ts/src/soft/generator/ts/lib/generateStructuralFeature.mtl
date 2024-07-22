@@ -18,13 +18,10 @@
 [import soft::generator::ts::generateType /]
 [import soft::generator::ts::lib::generateCommon /]
 
-[query private hasProperty(aStructuralFeature : EStructuralFeature) : Boolean =
-	let aPackage : EPackage = aStructuralFeature.getEPackage() in 
-	aPackage.hasPropertyAccessors() and not isUnSet() and (isGet() or isSet())
-/]
+
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
-[if hasProperty()]
+[if hasPropertyAccessors()]
 [aStructuralFeature.generatePropertyDeclaration(modules)/]
 [else]
 [if isGet()]
@@ -144,7 +141,7 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 // get the value of [aStructuralFeature.getPropertyName()/]
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
-[if hasProperty()]get [aStructuralFeature.getPropertyName()/][else][aStructuralFeature.getGetterName()/][/if](): [aStructuralFeature.generateType(modules)/] {
+[if hasPropertyAccessors()]get [aStructuralFeature.getPropertyName()/][else][aStructuralFeature.getGetterName()/][/if](): [aStructuralFeature.generateType(modules)/] {
 [if isContainer()]
     if (this.eContainerFeatureID() == [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/]) {
         return this.eContainer() as [aStructuralFeature.generateType(modules)/]
@@ -271,7 +268,7 @@ basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFe
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst() ]
 [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst() ]
-[if hasProperty()]set [aStructuralFeature.getPropertyName()/][else][aStructuralFeature.getSetterName()/][/if]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
+[if hasPropertyAccessors()]set [aStructuralFeature.getPropertyName()/][else][aStructuralFeature.getSetterName()/][/if]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
 [if not isVolatile()]
     [if isContainer()]
     if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getImportedIDName(aStructuralFeature,modules)/])) {
