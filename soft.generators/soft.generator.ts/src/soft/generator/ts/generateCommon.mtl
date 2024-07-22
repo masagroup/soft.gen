@@ -75,6 +75,17 @@
 	else false
 	endif
 /]
+
+[query public hasPropertyAccessors(aPackage : EPackage) : Boolean =
+	if aPackage.hasPackageProperty('propertyAccessors') then
+		aPackage.getPackageProperty('propertyAccessors') = 'true'
+	else
+		false
+	endif 
+/]
+
+
+
 [**
  * File Comments 
 */]
@@ -183,10 +194,15 @@ endif endif endif endif
 /]
 
 [** Accessors Names **/]
-[query public getterPrefix(feature : EStructuralFeature) : String = if feature.eType.name = 'EBoolean' then 'Is' else 'Get' endif/]
+[query private getterPrefix(feature : EStructuralFeature) : String = if feature.eType.name = 'EBoolean' then 'is' else 'get' endif/]
 
-[query public getUnSetterName(feature : EStructuralFeature) : String = feature.getElementName( name.toUpperFirst() , 'unSetterName', 'unSet$1')/]
-[query public getIsSetName(feature : EStructuralFeature) : String = feature.getElementName( name.toUpperFirst() , 'isSetName', 'isSet$1')/]
+[query public getSetterName(feature : EStructuralFeature) : String   = feature.getElementName( feature.name.toUpperFirst(), 'setterName', 'set$1')/]
+
+[query public getGetterName(feature : EStructuralFeature) : String   = feature.getElementName( feature.name.toUpperFirst(), 'getterName', feature.getterPrefix() + '$1')/]
+
+[query public getUnSetterName(feature : EStructuralFeature) : String = feature.getElementName( feature.name.toUpperFirst(), 'unSetterName', 'unSet$1')/]
+
+[query public getIsSetName(feature : EStructuralFeature) : String    = feature.getElementName( feature.name.toUpperFirst(), 'isSetName', 'isSet$1')/]
 
 [query public getOperationName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' )/]
 

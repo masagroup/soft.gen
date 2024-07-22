@@ -18,18 +18,37 @@
 [import soft::generator::ts::generateType /]
 [import soft::generator::ts::lib::generateCommon /]
 
+[query private hasProperty(aStructuralFeature : EStructuralFeature) : Boolean =
+	let aPackage : EPackage = aStructuralFeature.getEPackage() in 
+	aPackage.hasPropertyAccessors() and not isUnSet() and (isGet() or isSet())
+/]
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
-[if isGet() or isSet()]
+[if hasProperty()]
 [aStructuralFeature.generatePropertyDeclaration(modules)/]
+[else]
+[if isGet()]
+[aStructuralFeature.generateGetDeclaration(modules)/]
+[/if]
+[if isSet()]
+[aStructuralFeature.generateSetDeclaration(modules)/]
 [/if]
 [if isUnSet()]
 [aStructuralFeature.generateUnSetDeclaration(modules)/]
+[/if]
 [/if]
 [/template]
 
 [template private generatePropertyDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
 [if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/]: [aStructuralFeature.generateType(modules)/]
+[/template]
+
+[template private generateGetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+[aStructuralFeature.getGetterName()/]() [aStructuralFeature.generateType(modules)/]
+[/template]
+
+[template private generateSetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+[aStructuralFeature.getSetterName()/]( [aStructuralFeature.generateType(modules)/] )
 [/template]
 
 [template private generateUnSetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
@@ -121,11 +140,11 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 [/if]
 [/template]
 
-[template public generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
+[template private generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
 // get the value of [aStructuralFeature.getPropertyName()/]
-get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(modules)/] {
 [let aPackage : EPackage =  aClass.ePackage ]
 [let varName : String = aStructuralFeature.getVariableName() ]
+[if hasProperty()]get [aStructuralFeature.getPropertyName()/][else][aStructuralFeature.getGetterName()/][/if](): [aStructuralFeature.generateType(modules)/] {
 [if isContainer()]
     if (this.eContainerFeatureID() == [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/]) {
         return this.eContainer() as [aStructuralFeature.generateType(modules)/]
@@ -247,12 +266,12 @@ basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFe
 [/template]
 
 [template public generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny)]
+// set the value of [aStructuralFeature.getPropertyName()/]
 [let aPackage : EPackage = aClass.ePackage]
 [let varName : String = aStructuralFeature.getVariableName() ]
 [let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst() ]
 [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst() ]
-// set the value of [aStructuralFeature.getPropertyName()/]
-set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
+[if hasProperty()]set [aStructuralFeature.getPropertyName()/][else][aStructuralFeature.getSetterName()/][/if]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
 [if not isVolatile()]
     [if isContainer()]
     if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getImportedIDName(aStructuralFeature,modules)/])) {
