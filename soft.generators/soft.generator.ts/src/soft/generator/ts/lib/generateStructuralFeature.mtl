@@ -329,7 +329,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 }
 [/template]
 
-[template public generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
+[template private generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
@@ -401,7 +401,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 }
 [/template]
 
-[template public generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
+[template private generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
 	oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst();
@@ -453,7 +453,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 }
 [/template]
 
-[template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+[template private generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage =  aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
 }]
@@ -489,7 +489,7 @@ basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFe
 }
 [/template]
 
-[template public generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+[template private generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
@@ -520,7 +520,7 @@ basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [a
 }
 [/template]
 
-[template public generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+[template private generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();    
 	oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst();
@@ -543,4 +543,21 @@ basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](msgs: [if not aPacka
     throw new Error("basic[aStructuralFeature.getUnSetterName().toUpperFirst()/] not implemented")
 [/if] 
 }
+[/template]
+
+
+[template public generateGetCall(aFeature : EStructuralFeature) post (trim())] 
+	[if aFeature.isMethodAccessors()]
+		[aFeature.getGetterName()/]()
+	[elseif aFeature.isPropertyAccessors()]
+		[aFeature.getPropertyName()/]
+	[/if] 
+[/template]
+
+[template public generateSetCall(aFeature : EStructuralFeature, value : String) post (trim())] 
+	[if aFeature.isMethodAccessors()]
+		[aFeature.getSetterName()/]([value/])
+	[elseif aFeature.isPropertyAccessors()]
+		[aFeature.getPropertyName()/] = [value/]
+	[/if] 
 [/template]
