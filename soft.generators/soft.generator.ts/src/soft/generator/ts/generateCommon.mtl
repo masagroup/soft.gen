@@ -76,15 +76,7 @@
 	endif
 /]
 
-[query public hasPropertyAccessors(aPackage : EPackage) : Boolean =
-	if aPackage.hasPackageProperty('propertyAccessors') then
-		aPackage.getPackageProperty('propertyAccessors') = 'true'
-	else
-		false
-	endif 
-/]
-
-[query private getAccessorsType(aPackage : EPackage) : Collection(String) =
+[query public getAccessorsType(aPackage : EPackage) : Sequence(String) =
 	if aPackage.hasPackageProperty('accessors') then
 		aPackage.getPackageProperty('accessors').tokenize(',')
 	else
@@ -107,7 +99,7 @@
 
 [query public isMethodAccessors(aFeature : EStructuralFeature) : Boolean =
 	let aPackage : EPackage = aFeature.getEPackage() in 
-	aPackage.isPropertyAccessors()
+	aPackage.isMethodAccessors()
 /]
 
 

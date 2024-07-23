@@ -258,20 +258,20 @@ this.[if anStructFeature.isField()][anStructFeature.getVariableName()/][else][an
 
 [template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny ) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
 [if isListType()]
-    [if isField()][generateGetCall(anStructFeature)/] && [/if][generateGetCall(anStructFeature)/].size() != 0
+    [if isField()][generateGetField(anStructFeature)/] && [/if][generateGetField(anStructFeature)/].size() != 0
 [elseif anStructFeature.oclAsType(EReference).isBackReference() ]
     [if anStructFeature.eType.name <> 'EBoolean']
-    [generateGetCall(anStructFeature)/] != null
+    this.[generateGetCall(anStructFeature)/] != null
     [else]
-    [generateGetCall(anStructFeature)/]
+    this.[generateGetCall(anStructFeature)/]
     [/if]
 [else]
-	[generateGetCall(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(modules)/]
+	this.[generateGetCall(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(modules)/]
 [/if]
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (eType.isAny()) post (trim())]
-[generateGetCall(anStructFeature)/] != null
+this.[generateGetCall(anStructFeature)/] != null
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass,modules : OclAny) ]
@@ -299,8 +299,8 @@ eBasicInverseAdd(otherEnd: [if not aPackage.isEcorePackage()]ecore.[/if]EObject,
             return this.eBasicSetContainer(otherEnd, [aClass.getImportedIDName(aFeature,modules)/], msgs)
         [/if]
     [else]
-            const msgs = notifications;
-			const [aFeature.name/] = [if aFeature.isProxy()]basic[aFeature.getGetterName().toUpperFirst()/]()[else][aFeature.generateGetCall()/][/if]	
+            let msgs = notifications;
+			const [aFeature.name/] = this.[if aFeature.isProxy()]basic[aFeature.getGetterName().toUpperFirst()/]()[else][aFeature.generateGetCall()/][/if]	
             if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([aFeature.name/])) {
             [if aFeature.isContains()]
                 msgs = [aFeature.name/].eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aFeature,modules)/], msgs)

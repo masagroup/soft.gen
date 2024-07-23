@@ -33,6 +33,7 @@
 [if isUnSet()]
 [aStructuralFeature.generateUnSetDeclaration(modules)/]
 [/if]
+
 [/if]
 [/template]
 
@@ -41,11 +42,11 @@
 [/template]
 
 [template private generateGetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
-[aStructuralFeature.getGetterName()/]() [aStructuralFeature.generateType(modules)/]
+[aStructuralFeature.getGetterName()/](): [aStructuralFeature.generateType(modules)/]
 [/template]
 
 [template private generateSetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
-[aStructuralFeature.getSetterName()/]( [aStructuralFeature.generateType(modules)/] )
+[aStructuralFeature.getSetterName()/]( new[aStructuralFeature.getPropertyName().toUpperFirst()/] : [aStructuralFeature.generateType(modules)/] ): void
 [/template]
 
 [template private generateUnSetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
@@ -322,9 +323,11 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 }
 [/template]
 
-[template private generateMethodSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
+[template private generateMethodSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+	newVarname : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
+}]
 // set the value of [aStructuralFeature.name/]
-[aStructuralFeature.getSetterName()/](new[aStructuralFeature.getPropertyName().toUpperFirst()/] : [aStructuralFeature.generateType(modules)/] ) {
+[aStructuralFeature.getSetterName()/](new[aStructuralFeature.getPropertyName().toUpperFirst()/] : [aStructuralFeature.generateType(modules)/] ): void {
 [generateSetImplementation(aStructuralFeature,aClass,modules)/]
 }
 [/template]
@@ -335,7 +338,6 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
 	oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst();
 }]
-// set the value of [aStructuralFeature.getPropertyName()/]
 [if not isVolatile()]
     [if isContainer()]
     if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getImportedIDName(aStructuralFeature,modules)/])) {
@@ -398,7 +400,6 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 [else]
     throw new Error("set [aStructuralFeature.getPropertyName()/] not implemented")
 [/if]
-}
 [/template]
 
 [template private generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){

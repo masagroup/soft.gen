@@ -16,6 +16,7 @@
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::generateType/]
+[import soft::generator::ts::lib::generateStructuralFeature /]
 
 [query private getPackageEnumTypes(aPackage : EPackage) : Set(String) =
 	 aPackage.eAllContents(EEnum)->iterate( aEnum : EEnum ; res : Set(String) = Set{} | ( 
@@ -57,14 +58,14 @@ describe("[className/]", () => {
 		{
 			let mockEClass = mock<[ecorePrefix/]EClass>()
 			let eClass = instance(mockEClass)
-			when(mockEClass.classifierID).thenReturn(-1)
+			when(mockEClass.getClassifierID()).thenReturn(-1)
 			expect(() => factory.create(eClass)).toThrow(Error)
 		}
 		[for (aClass : EClass | allClasses) ? (aClass.abstract=false)]
 		{
 			let mockEClass = mock<[ecorePrefix/]EClass>()
 			let eClass = instance(mockEClass)
-			when(mockEClass.classifierID).thenReturn([aClass.getImportedIDName(modules)/])
+			when(mockEClass.getClassifierID()).thenReturn([aClass.getImportedIDName(modules)/])
 			expect(factory.create(eClass)).not.toBeNull()
 		}
 	    [/for]
@@ -85,7 +86,7 @@ describe("[className/]", () => {
 		let mockList = mock<[ecorePrefix/]EList<[aReference.eOpposite.eGenericType.generateListTypeParameters(modules)/]>>()
 		let list = instance(mockList)
 		when(mockList.add(anything())).thenReturn(true)
-		when(mockContainer.[aReference.eOpposite.name/]).thenReturn(list)
+		when(mockContainer.[aReference.eOpposite.generateGetCall()/]).thenReturn(list)
 		[/if]
 		expect([className/].getInstance().create[aClass.name/]FromContainer(container)).not.toBeNull()
 	});
@@ -98,7 +99,7 @@ describe("[className/]", () => {
 		let mockList = mock<[ecorePrefix/]EList<[aReference.eOpposite.eGenericType.generateListTypeParameters(modules)/]>>()
 		let list = instance(mockList)
 		when(mockList.add(anything())).thenReturn(true)
-		when(mockContainer.[aReference.eOpposite.name/]).thenReturn(list)
+	when(mockContainer.[aReference.eOpposite.generateGetCall()/]).thenReturn(list)
 		[/if]
 		expect([className/].getInstance().create[aClass.name/]FromContainerAndClassID(container,0)).not.toBeNull()
 	});
@@ -111,13 +112,13 @@ describe("[className/]", () => {
 	test("createFromStringInvalid", () => {
 		let mockDataType = mock<[ecorePrefix/]EDataType>()
 		let eDataType = instance(mockDataType)
-		when(mockDataType.classifierID).thenReturn(-1)
+		when(mockDataType.getClassifierID()).thenReturn(-1)
 		expect(() => [className/].getInstance().createFromString(eDataType, "")).toThrow(Error)
 	});
 	test("convertToStringInvalid", () => {
 		let mockDataType = mock<[ecorePrefix/]EDataType>()
 		let eDataType = instance(mockDataType)
-		when(mockDataType.classifierID).thenReturn(-1)
+		when(mockDataType.getClassifierID()).thenReturn(-1)
 		expect(() => [className/].getInstance().convertToString(eDataType, null)).toThrow(Error)
 	})
 [for (aDataType : EDataType | allDataTypes)]
@@ -134,7 +135,7 @@ test("create[aDataType.name/]FromString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 [for (eLiteral : EEnumLiteral | eEnum.eLiterals->asOrderedSet()->sortedBy(name) )]
 	expect(factory.createFromString(eDataType, "[eLiteral.name/]")).toStrictEqual([eEnum.name/].[eLiteral.getConstantsName()/])
 [/for]
@@ -147,7 +148,7 @@ test("create[aDataType.name/]FromString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.createFromString(eDataType, "test")).toStrictEqual("test")
 })
 [/template]
@@ -157,7 +158,7 @@ test("create[aDataType.name/]FromString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.createFromString(eDataType, "3")).toStrictEqual(3)
 })
 [/template]
@@ -167,7 +168,7 @@ test("create[aDataType.name/]FromString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.createFromString(eDataType, "")).toStrictEqual(0)
 	expect(factory.createFromString(eDataType, "a")).toStrictEqual(97)
 })
@@ -178,7 +179,7 @@ test("create[aDataType.name/]FromString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.createFromString(eDataType, "ab")).toStrictEqual(Uint8Array.from(['['/]97,98[']'/]))
 })
 [/template]
@@ -188,7 +189,7 @@ test("create[aDataType.name/]FromString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.createFromString(eDataType, "true")).toBeTruthy()
 	expect(factory.createFromString(eDataType, "false")).toBeFalsy()
 })
@@ -199,7 +200,7 @@ test("create[aDataType.name/]FromString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.createFromString(eDataType, "2020-05-12T17:33:10.770Z")).toEqual(new Date(Date.UTC(2020, 4, 12, 17, 33, 10, 770)))
 })
 [/template]
@@ -209,7 +210,7 @@ test("create[aDataType.name/]FromString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(() => factory.createFromString(eDataType, "")).toThrow(Error)
 })
 [/template]
@@ -219,7 +220,7 @@ test("convert[aDataType.name/]ToString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 [for (eLiteral : EEnumLiteral | aDataType.oclAsType(EEnum).eLiterals->asOrderedSet()->sortedBy(name) )]
 	expect(factory.convertToString(eDataType, [eEnum.name/].[eLiteral.getConstantsName()/])).toStrictEqual("[eLiteral.name/]")
 [/for]
@@ -231,7 +232,7 @@ test("convert[aDataType.name/]ToString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.convertToString(eDataType, "test")).toStrictEqual("test")
 })
 [/template]
@@ -241,7 +242,7 @@ test("convert[aDataType.name/]ToString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.convertToString(eDataType,true)).toStrictEqual("true")
 	expect(factory.convertToString(eDataType,false)).toStrictEqual("false")
 })
@@ -252,7 +253,7 @@ test("convert[aDataType.name/]ToString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.convertToString(eDataType,3)).toStrictEqual("3")
 })
 [/template]
@@ -262,7 +263,7 @@ test("convert[aDataType.name/]ToString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.convertToString(eDataType,97)).toStrictEqual("a")
 })
 [/template]
@@ -272,7 +273,7 @@ test("convert[aDataType.name/]ToString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.convertToString(eDataType,Uint8Array.from(['['/]97,98[']'/]))).toStrictEqual("ab")
 })
 [/template]
@@ -282,7 +283,7 @@ test("convert[aDataType.name/]ToString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(factory.convertToString(eDataType,new Date(Date.UTC(2020, 4, 12, 17, 33, 10, 770)))).toStrictEqual("2020-05-12T17:33:10.770Z")
 })
 [/template]
@@ -293,7 +294,7 @@ test("convert[aDataType.name/]ToString", () => {
 	let factory = [aPackage.getFactoryImplementationName()/].getInstance()
 	let mockDataType = mock<[if not aPackage.isEcorePackage()]ecore.[/if]EDataType>()
 	let eDataType = instance(mockDataType)
-	when(mockDataType.classifierID).thenReturn([aDataType.getImportedIDName(modules)/])
+	when(mockDataType.getClassifierID()).thenReturn([aDataType.getImportedIDName(modules)/])
 	expect(() => factory.convertToString(eDataType, "")).toThrow(Error)
 })
 [/template]

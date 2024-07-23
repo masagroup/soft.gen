@@ -66,10 +66,10 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
     private constructor() {
         super()
-        this.name = [aPackage.getConstantsName()/].eNAME
-        this.nsPrefix = [aPackage.getConstantsName()/].eNS_PREFIX
-        this.nsURI = [aPackage.getConstantsName()/].eNS_URI
-        this.eFactoryInstance = get[aPackage.getFactoryName()/]()
+        this._name = [aPackage.getConstantsName()/].eNAME
+        this._nsPrefix = [aPackage.getConstantsName()/].eNS_PREFIX
+        this._nsURI = [aPackage.getConstantsName()/].eNS_URI
+        this._eFactoryInstance = get[aPackage.getFactoryName()/]()
         this.createPackageContents()
         this.initializePackageContents()
         this.createResource()
@@ -192,7 +192,7 @@ private [anENamedElement.getElementInstance()/]: [aPackage.getMetaType(anENamedE
 [template private generateGetter(aFeature : EStructuralFeature, anEPackage : EPackage, modules : OclAny)]
 [let aClass : EClass = aFeature.eContainingClass]
 [aFeature.getReflectiveGetterName()/](): [anEPackage.getMetaType(aFeature,modules)/] {
-    return this.[aClass.getElementInstance()/].eStructuralFeatures.get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]) as [anEPackage.getMetaType(aFeature,modules)/]
+    return this.[aClass.getElementInstance()/].getEStructuralFeatures().get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]) as [anEPackage.getMetaType(aFeature,modules)/]
 }
 [/let]
 [/template]
@@ -200,7 +200,7 @@ private [anENamedElement.getElementInstance()/]: [aPackage.getMetaType(anENamedE
 [template private generateGetter(aOperation : EOperation, anEPackage : EPackage, modules : OclAny)]
 [let aClass : EClass = aOperation.eContainingClass]
 [aOperation.getReflectiveGetterName()/](): [anEPackage.getMetaType(aOperation,modules)/] {
-    return this.[aClass.getElementInstance()/].eOperations.get([aClass.eOperations->indexOf(aOperation)-1/]) as [anEPackage.getMetaType(aOperation,modules)/]
+    return this.[aClass.getElementInstance()/].getEOperations().get([aClass.eOperations->indexOf(aOperation)-1/]) as [anEPackage.getMetaType(aOperation,modules)/]
 }
 [/let]
 [/template]
@@ -246,7 +246,7 @@ this.[anEDatatype.getElementInstance()/] = factory.createEDataTypeFromContainerA
 
 [template public initSuperTypes(aEClass : EClass, modules : OclAny )]
 [for (superClass : EClass | aEClass.eSuperTypes)]
-this.[aEClass.getElementInstance()/].eSuperTypes.add([superClass.getGetter(aEClass.ePackage,modules)/])
+this.[aEClass.getElementInstance()/].getESuperTypes().add([superClass.getGetter(aEClass.ePackage,modules)/])
 [/for]
 [/template]
 
