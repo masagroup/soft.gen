@@ -84,9 +84,30 @@
 	endif 
 /]
 
-[query public hasPropertyAccessors(aStructuralFeature : EStructuralFeature) : Boolean =
-	let aPackage : EPackage = aStructuralFeature.getEPackage() in 
-	aPackage.hasPropertyAccessors() and not isUnSet() and (isGet() or isSet())
+[query private getAccessorsType(aPackage : EPackage) : Collection(String) =
+	if aPackage.hasPackageProperty('accessors') then
+		aPackage.getPackageProperty('accessors').tokenize(',')
+	else
+		Sequence{'method'}
+	endif 
+/]
+
+[query public isPropertyAccessors(aPackage : EPackage) : Boolean = 
+	aPackage.getAccessorsType()->includes('property') 
+/]
+
+[query public isPropertyAccessors(aFeature : EStructuralFeature) : Boolean =
+	let aPackage : EPackage = aFeature.getEPackage() in 
+	aPackage.isPropertyAccessors()
+/]
+
+[query public isMethodAccessors(aPackage : EPackage) : Boolean = 
+	aPackage.getAccessorsType()->includes('method') 
+/]
+
+[query public isMethodAccessors(aFeature : EStructuralFeature) : Boolean =
+	let aPackage : EPackage = aFeature.getEPackage() in 
+	aPackage.isPropertyAccessors()
 /]
 
 
