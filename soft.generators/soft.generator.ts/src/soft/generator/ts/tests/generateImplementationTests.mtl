@@ -614,8 +614,8 @@ expect(() => o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)
 	[valueFeature.eType.generateTestValue('value',modules)/]
 	when(mockMap['['/]Symbol.iterator[']'/]()).thenReturn(iterator)
 	when(mockIterator.next()).thenReturn({ value: entry, done: false } ).thenReturn({ value: undefined, done: true })
-	when(mockEntry.key).thenReturn(key)
-	when(mockEntry.value).thenReturn(value)
+	when(mockEntry.getKey()).thenReturn(key)
+	when(mockEntry.getValue()).thenReturn(value)
 	o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)/], map)
 	expect(o.[anStructuralFeature.generateGetCall()/].toMap()).toEqual(new Map<[anStructuralFeature.eGenericType.generateMapTypeParameters(modules)/]>(['['/]['['/]key,value[']'/][']'/]))
 [/let]
@@ -773,7 +773,7 @@ test("eIsSetFromID", () => {
 	let o = new [aClass.getImplementationName()/]()
 	expect(() => o.eIsSetFromID(-1)).toThrow(Error)
 	[for (anStructFeature : EStructuralFeature | features)]
-		[if anStructFeature.isVolatile()]
+		[if anStructFeature.isVolatile() or (anStructFeature.getLazy() <> '' and not anStructFeature.isContainer() and not (anStructFeature.isMapType() or anStructFeature.isListType() or anStructFeature.isProxy() or anStructFeature.oclIsKindOf(EAttribute)))]
 	expect(() => o.eIsSetFromID([aClass.getImportedIDName(anStructFeature,modules)/])).toThrow(Error)
 		[else]
 	expect(o.eIsSetFromID([aClass.getImportedIDName(anStructFeature,modules)/])).toBeFalsy()

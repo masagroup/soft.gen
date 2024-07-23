@@ -66,10 +66,10 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
     private constructor() {
         super()
-        this._name = [aPackage.getConstantsName()/].eNAME
-        this._nsPrefix = [aPackage.getConstantsName()/].eNS_PREFIX
-        this._nsURI = [aPackage.getConstantsName()/].eNS_URI
-        this._eFactoryInstance = get[aPackage.getFactoryName()/]()
+        this.setName([aPackage.getConstantsName()/].eNAME)
+        this.setNsPrefix([aPackage.getConstantsName()/].eNS_PREFIX)
+        this.setNsURI([aPackage.getConstantsName()/].eNS_URI)
+        this.setEFactoryInstance(get[aPackage.getFactoryName()/]())
         this.createPackageContents()
         this.initializePackageContents()
         this.createResource()

@@ -242,23 +242,21 @@ eInvokeFromID(operationID: number , args: [if not aPackage.isEcorePackage()]ecor
 [eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]args.get([i-1/])[if needCast] as [eParameter.generateType(modules)/][/if][/let][/for])
 [/template]
 
-[template private generateGetField(anStructFeature : EStructuralFeature) post (trim())]
-this.[if anStructFeature.isField()][anStructFeature.getVariableName()/][else][anStructFeature.generateGetCall()/][/if]
-[/template]
-
-[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim()) {
+[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim()){
 	aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute);
 }]
 [if isListType()]
-	[if isField()][generateGetField(anStructFeature)/] && [/if][generateGetField(anStructFeature)/].size() != 0
+	[if isField()]this.[anStructFeature.generateGetCall()/] && [/if]!this.[anStructFeature.generateGetCall()/].isEmpty()
 [else] 
-    [generateGetField(anStructFeature)/] != [aAttribute.getDefaultValue(modules)/]
+    this.[anStructFeature.generateGetCall()/] != [aAttribute.getDefaultValue(modules)/]
 [/if]
 [/template]
 
-[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny ) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
+[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny ) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim()){
+	aReference : EReference = anStructFeature.oclAsType(EReference);
+}]
 [if isListType()]
-    [if isField()][generateGetField(anStructFeature)/] && [/if][generateGetField(anStructFeature)/].size() != 0
+    [if isField()]this.[anStructFeature.generateGetCall()/] && [/if]!this.[anStructFeature.generateGetCall()/].isEmpty()
 [elseif anStructFeature.oclAsType(EReference).isBackReference() ]
     [if anStructFeature.eType.name <> 'EBoolean']
     this.[generateGetCall(anStructFeature)/] != null
@@ -266,7 +264,7 @@ this.[if anStructFeature.isField()][anStructFeature.getVariableName()/][else][an
     this.[generateGetCall(anStructFeature)/]
     [/if]
 [else]
-	this.[generateGetCall(anStructFeature)/] != [anStructFeature.eType.getDefaultValue(modules)/]
+	this.[generateGetCall(anStructFeature)/] != [aReference.getDefaultValue(modules)/]
 [/if]
 [/template]
 
