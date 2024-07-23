@@ -169,6 +169,10 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 
 [aStructuralFeature.generatePropertySetImplementation(aClass,modules)/]
 [/if]
+[if isGet() and not isSet() and not isVolatile() and not isContainer() and not isListType()]
+
+[aStructuralFeature.generateInternalPropertySetImplementation(aClass,modules)/]
+[/if]
 [/if]
 [if isMethodAccessors()]
 [if isGet()]
@@ -313,6 +317,19 @@ set [aStructuralFeature.getPropertyName()/]([newVarname/] : [aStructuralFeature.
 [generateSetImplementation(aStructuralFeature,aClass,modules)/]
 [/if]
 }
+[/template]
+
+[template private generateInternalPropertySetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
+[let aPackage : EPackage = aClass.ePackage]
+[let varName : String = aStructuralFeature.getVariableName() ]
+[let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst() ]
+/** @internal */
+set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
+	this.[varName/] = [newVarName/]
+}
+[/let]
+[/let]
+[/let]
 [/template]
 
 [template private generateMethodSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
