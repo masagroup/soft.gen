@@ -19,7 +19,6 @@
 [import soft::generator::ts::lib::generateCommon /]
 
 
-
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
 [if isPropertyAccessors()]
 [aStructuralFeature.generatePropertyDeclaration(modules)/]
@@ -78,7 +77,6 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEDataTypeList<[anEAttribut
 [template private getListConstructor( anEAttribute : EAttribute , aClass : EClass , modules : OclAny) ? (anEAttribute.isFeatureMapType()) post(trim()) ]
 null
 [/template]
-
 
 [template private getListConstructor( anEReference : EReference , aClass : EClass , modules : OclAny) post(trim()) {
 	aPackage : EPackage = aClass.ePackage;
