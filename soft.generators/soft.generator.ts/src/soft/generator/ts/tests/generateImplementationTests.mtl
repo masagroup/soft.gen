@@ -183,7 +183,7 @@ test("get[aStructuralFeature.name.toUpperFirst()/]", () => {
 	// events
 	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
 	let adapter = instance(mockAdapter)
-	o.eAdapters.add(adapter)
+	o.eAdapters().add(adapter)
 	
 	// set object resource
 	let mockResourceSet = mock<[ecorePrefix/]EResourceSet>()
@@ -262,7 +262,7 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	// add listener
 	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
 	let adapter = instance(mockAdapter)
-	o.eAdapters.add(adapter)
+	o.eAdapters().add(adapter)
 	
 	// set value
 	when(mockValue.eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,modules)/],null)).thenReturn(null)
@@ -272,9 +272,9 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	verify(mockAdapter.notifyChanged(anything())).once()
 	{ 
 		let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
-		expect(notification.notifier).toBe(o)
-		expect(notification.oldValue).toBeNull()
-		expect(notification.newValue).toBe(value)
+		expect(notification.getNotifier()).toBe(o)
+		expect(notification.getOldValue()).toBeNull()
+		expect(notification.getNewValue()).toBe(value)
 	}	
 	// set with the same value
 	reset(mockAdapter)
@@ -298,10 +298,10 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	verify(mockAdapter.notifyChanged(anything())).once()
 	{
 		let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
-		expect(notification.notifier).toBe(o)
-		expect(notification.oldValue).toBe(value)
-		expect(notification.newValue).toBe(other)
-		expect(notification.position).toBe(-1)
+		expect(notification.getNotifier()).toBe(o)
+		expect(notification.getOldValue()).toBe(value)
+		expect(notification.getNewValue()).toBe(other)
+		expect(notification.getPosition()).toBe(-1)
 	}
 })
 [/let]
@@ -319,7 +319,7 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	// add listener
 	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
 	let adapter = instance(mockAdapter)
-	o.eAdapters.add(adapter)
+	o.eAdapters().add(adapter)
 	
 	// first value
 	[aStructuralFeature.eType.generateTestValue('value',modules)/]
@@ -328,9 +328,9 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	verify(mockAdapter.notifyChanged(anything())).once() 
 	{
 		let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
-		expect(notification.notifier).toBe(o)
-		expect(notification.oldValue).toBeNull()
-		expect(notification.newValue).toBe(value)
+		expect(notification.getNotifier()).toBe(o)
+		expect(notification.getOldValue()).toBeNull()
+		expect(notification.getNewValue()).toBe(value)
 	}
 
 	// set with other value
@@ -343,10 +343,10 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	verify(mockAdapter.notifyChanged(anything())).once()
 	{
 		let ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
-		expect(notification.notifier).toBe(o)
-		expect(notification.oldValue).toBe(value)
-		expect(notification.newValue).toBe(other)
-		expect(notification.position).toBe(-1)
+		expect(notification.getNotifier()).toBe(o)
+		expect(notification.getOldValue()).toBe(value)
+		expect(notification.getNewValue()).toBe(other)
+		expect(notification.getPosition()).toBe(-1)
 	}
 })
 [/let]
@@ -363,7 +363,7 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	// add listener
 	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
 	let adapter = instance(mockAdapter)
-	o.eAdapters.add(adapter)
+	o.eAdapters().add(adapter)
 
 	// set value
 	o.[aStructuralFeature.generateSetCall('value')/]
@@ -371,16 +371,16 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	// checks
 	verify(mockAdapter.notifyChanged(anything())).once()
 	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
-	expect(notification.notifier).toBe(o)
+	expect(notification.getNotifier()).toBe(o)
 [let defaultValue : String = aStructuralFeature.getDefaultValue(modules)]
 [if defaultValue = 'null']
-	expect(notification.oldValue).toBeNull()
+	expect(notification.getOldValue()).toBeNull()
 [else]
-	expect(notification.oldValue).toBe([defaultValue/])
+	expect(notification.getOldValue()).toBe([defaultValue/])
 [/if]
 [/let]
-	expect(notification.newValue).toBe(value)
-	expect(notification.position).toBe(-1)
+	expect(notification.getNewValue()).toBe(value)
+	expect(notification.getPosition()).toBe(-1)
 })
 [/let]
 [/template]
@@ -395,7 +395,7 @@ test("basicSet[aStructuralFeature.name.toUpperFirst()/]", () => {
 	// add listener
 	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
 	let adapter = instance(mockAdapter)
-	o.eAdapters.add(adapter)
+	o.eAdapters().add(adapter)
 
 	// notification chain
 	let mockNotifications = mock<[ecorePrefix/]ENotificationChain>()
@@ -411,18 +411,18 @@ test("basicSet[aStructuralFeature.name.toUpperFirst()/]", () => {
 	// checks
 	verify(mockNotifications.add(anything())).once()
 	const ['['/]notification[']'/] = capture(mockNotifications.add).last()
-	expect(notification.notifier).toBe(o)
-	expect(notification.eventType).toBe([ecorePrefix/]EventType.SET)
-	expect(notification.featureID).toBe([aClass.getImportedIDName(aStructuralFeature,modules)/])
+	expect(notification.getNotifier()).toBe(o)
+	expect(notification.getEventType()).toBe([ecorePrefix/]EventType.SET)
+	expect(notification.getFeatureID()).toBe([aClass.getImportedIDName(aStructuralFeature,modules)/])
 [let defaultValue : String = aStructuralFeature.getDefaultValue(modules)]
 [if defaultValue = 'null']
-	expect(notification.oldValue).toBeNull()
+	expect(notification.getOldValue()).toBeNull()
 [else]
-	expect(notification.oldValue).toBe([defaultValue/])
+	expect(notification.getOldValue()).toBe([defaultValue/])
 [/if]
 [/let]
-	expect(notification.newValue).toBe(value)
-	expect(notification.position).toBe(-1)
+	expect(notification.getNewValue()).toBe(value)
+	expect(notification.getPosition()).toBe(-1)
 })
 [/let]
 [/template]
@@ -450,7 +450,7 @@ test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
 	// add listener
 	let mockAdapter = mock<[ecorePrefix/]EAdapter>()
 	let adapter = instance(mockAdapter)
-	o.eAdapters.add(adapter)
+	o.eAdapters().add(adapter)
 
 	// unset
 	o.[aStructuralFeature.getUnSetterName()/]()
@@ -458,9 +458,9 @@ test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
 	// checks
 	verify(mockAdapter.notifyChanged(anything())).once()
 	const ['['/]notification[']'/] = capture(mockAdapter.notifyChanged).last()
-	expect(notification.notifier).toBe(o)
-	expect(notification.eventType).toBe([ecorePrefix/]EventType.UNSET)
-	expect(notification.featureID).toBe([aClass.getImportedIDName(aStructuralFeature,modules)/])	
+	expect(notification.getNotifier()).toBe(o)
+	expect(notification.getEventType()).toBe([ecorePrefix/]EventType.UNSET)
+	expect(notification.getFeatureID()).toBe([aClass.getImportedIDName(aStructuralFeature,modules)/])	
 [let defaultValue : String = aStructuralFeature.getDefaultValue(modules)]
 [if defaultValue = 'null']
 	expect(o.[aStructuralFeature.generateGetCall()/]).toBeNull()

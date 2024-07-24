@@ -269,7 +269,7 @@ return [aStructuralFeature.getGetterName()/]()
                 notifications.Dispatch()
             }
         [/if]
-            if (this.eNotificationRequired) {
+            if (this.eNotificationRequired()) {
                 this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.RESOLVE, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/]))
             }
         }
@@ -364,7 +364,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
         if ( notifications != null ) {
             notifications.dispatch()
         }
-    } else if (this.eNotificationRequired) {
+    } else if (this.eNotificationRequired()) {
         this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [newVarName/], [newVarName/]))
     }
     [elseif isBidirectional() or isContains()]
@@ -399,7 +399,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
     [else]
     let [oldVarName/] = this.[varName/]
     this.[varName/] = [newVarName/]
-    if (this.eNotificationRequired) {
+    if (this.eNotificationRequired()) {
         this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/]))
     }
     [/if]
@@ -456,11 +456,11 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
         if ( notifications != null ) {
             notifications.dispatch()
         }
-    } else if (this.eNotificationRequired) {
+    } else if (this.eNotificationRequired()) {
         this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/],null,null))
     }
     [else]
-        if (this.eNotificationRequired) {
+        if (this.eNotificationRequired()) {
             this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this,[if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/],null,null))
         }
     [/if]
@@ -521,7 +521,7 @@ basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [a
     let [oldVarName/] = this.[varName/]
     this.[varName/] = [newVarName/]
     let notifications = msgs
-    if ( this.eNotificationRequired ) {
+    if ( this.eNotificationRequired() ) {
         let notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/])
         if (notifications != null ) {
             notifications.add( notification )
