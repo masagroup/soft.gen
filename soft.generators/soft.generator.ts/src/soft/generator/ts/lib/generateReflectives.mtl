@@ -242,13 +242,17 @@ eInvokeFromID(operationID: number , args: [if not aPackage.isEcorePackage()]ecor
 [eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]args.get([i-1/])[if needCast] as [eParameter.generateType(modules)/][/if][/let][/for])
 [/template]
 
+[template private generateVariableOrGetter(anStructFeature : EStructuralFeature) post (trim())]
+	[if isField()][anStructFeature.getVariableName()/][else][anStructFeature.generateGetCall()/][/if]
+[/template]
+
 [template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim()){
 	aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute);
 }]
 [if isListType()]
-	[if isField()]this.[anStructFeature.generateGetCall()/] && [/if]!this.[anStructFeature.generateGetCall()/].isEmpty()
+	[if isField()]this.[anStructFeature.getVariableName()/] && [/if]!this.[anStructFeature.generateVariableOrGetter()/].isEmpty()
 [else] 
-    this.[anStructFeature.generateGetCall()/] != [aAttribute.getDefaultValue(modules)/]
+    this.[anStructFeature.generateVariableOrGetter()/] != [aAttribute.getDefaultValue(modules)/]
 [/if]
 [/template]
 
@@ -256,20 +260,20 @@ eInvokeFromID(operationID: number , args: [if not aPackage.isEcorePackage()]ecor
 	aReference : EReference = anStructFeature.oclAsType(EReference);
 }]
 [if isListType()]
-    [if isField()]this.[anStructFeature.generateGetCall()/] && [/if]!this.[anStructFeature.generateGetCall()/].isEmpty()
-[elseif anStructFeature.oclAsType(EReference).isBackReference() ]
-    [if anStructFeature.eType.name <> 'EBoolean']
-    this.[generateGetCall(anStructFeature)/] != null
+    [if isField()]this.[aReference.getVariableName()/] && [/if]!this.[aReference.generateVariableOrGetter()/].isEmpty()
+[elseif aReference.isBackReference() ]
+    [if aReference.eType.name <> 'EBoolean']
+    this.[aReference.generateVariableOrGetter()/] != null
     [else]
-    this.[generateGetCall(anStructFeature)/]
+    this.[aReference.generateVariableOrGetter()/]
     [/if]
 [else]
-	this.[generateGetCall(anStructFeature)/] != [aReference.getDefaultValue(modules)/]
+	this.[aReference.generateVariableOrGetter()/] != [aReference.getDefaultValue(modules)/]
 [/if]
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (eType.isAny()) post (trim())]
-this.[generateGetCall(anStructFeature)/] != null
+this.[generateVariableOrGetter(anStructFeature)/] != null
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass,modules : OclAny) ]

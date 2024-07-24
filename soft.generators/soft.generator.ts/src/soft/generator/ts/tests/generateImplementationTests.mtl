@@ -773,7 +773,7 @@ test("eIsSetFromID", () => {
 	let o = new [aClass.getImplementationName()/]()
 	expect(() => o.eIsSetFromID(-1)).toThrow(Error)
 	[for (anStructFeature : EStructuralFeature | features)]
-		[if anStructFeature.isVolatile() or (anStructFeature.getLazy() <> '' and not anStructFeature.isContainer() and not (anStructFeature.isMapType() or anStructFeature.isListType() or anStructFeature.isProxy() or anStructFeature.oclIsKindOf(EAttribute)))]
+		[if anStructFeature.isVolatile()]
 	expect(() => o.eIsSetFromID([aClass.getImportedIDName(anStructFeature,modules)/])).toThrow(Error)
 		[else]
 	expect(o.eIsSetFromID([aClass.getImportedIDName(anStructFeature,modules)/])).toBeFalsy()

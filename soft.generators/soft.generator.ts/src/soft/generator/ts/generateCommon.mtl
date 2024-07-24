@@ -39,6 +39,11 @@
 /]
 
 
+[**
+ * return the package output directory. 
+ * property: packageDir
+ * default : .
+*/]
 [query public getPackageDirectory( anPackage : EPackage ) : String =
 	let replacement : String = if anPackage.hasPackageProperty('packageDir') 
 							   then anPackage.getPackageProperty('packageDir') 
@@ -46,6 +51,11 @@
 	anPackage.name.replaceFirst('(.*)', replacement)
 /]
 
+[**
+ * return the package module resolution. 
+ * property: moduleResolution
+ * default : nodenext
+*/]
 [query public getModuleResolution(anPackage : EPackage) : String =
  	if anPackage.hasPackageProperty('moduleResolution')
 	then anPackage.getPackageProperty('moduleResolution').toLower()
@@ -53,6 +63,11 @@
 	endif
 /]
 
+[**
+ * return the package test framework. 
+ * property: testFramework
+ * default : jest
+*/]
 [query public getTestFramework(anPackage : EPackage) : String =
  	if anPackage.hasPackageProperty('testFramework')
 	then anPackage.getPackageProperty('testFramework').toLower()
@@ -60,6 +75,10 @@
 	endif
 /]
 
+
+[**
+ * return true if the package test framework is vitest 
+*/]
 [query public isVitest(anPackage : EPackage) : Boolean =
 	anPackage.getTestFramework() = 'vitest' 
 /]
@@ -76,6 +95,11 @@
 	endif
 /]
 
+[**
+ * return the package accesors type for features. 
+ * property: accessors
+ * default : method
+*/]
 [query public getAccessorsType(aPackage : EPackage) : Sequence(String) =
 	if aPackage.hasPackageProperty('accessors') then
 		aPackage.getPackageProperty('accessors').tokenize(',')
@@ -84,19 +108,31 @@
 	endif 
 /]
 
+[**
+ * return true if feature accessors are defined as property 
+*/]
 [query public isPropertyAccessors(aPackage : EPackage) : Boolean = 
 	aPackage.getAccessorsType()->includes('property') 
 /]
 
+[**
+ * return true if feature accessors are defined as property 
+*/]
 [query public isPropertyAccessors(aFeature : EStructuralFeature) : Boolean =
 	let aPackage : EPackage = aFeature.getEPackage() in 
 	aPackage.isPropertyAccessors()
 /]
 
+[**
+ * return true if feature accessors are defined as methods 
+*/]
 [query public isMethodAccessors(aPackage : EPackage) : Boolean = 
 	aPackage.getAccessorsType()->includes('method') 
 /]
 
+[**
+ * return true if feature accessors are defined as methods 
+*/]
 [query public isMethodAccessors(aFeature : EStructuralFeature) : Boolean =
 	let aPackage : EPackage = aFeature.getEPackage() in 
 	aPackage.isMethodAccessors()

@@ -155,6 +155,10 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 
 [/template]
 
+[query private isSimpleSet(aStructuralFeature : EStructuralFeature) : Boolean =
+	isGet() and not isSet() and not isVolatile() and not isContainer() and not isListType()
+/]
+
 [template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny) ]
 [if isPropertyAccessors()]
 [if isGet()]
@@ -165,9 +169,9 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 
 [aStructuralFeature.generatePropertySetImplementation(aClass,modules)/]
 [/if]
-[if isGet() and not isSet() and not isVolatile() and not isContainer() and not isListType()]
+[if isSimpleSet()]
 
-[aStructuralFeature.generateInternalPropertySetImplementation(aClass,modules)/]
+[aStructuralFeature.generatePropertySimpleSetImplementation(aClass,modules)/]
 [/if]
 [/if]
 [if isMethodAccessors()]
@@ -178,6 +182,10 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 [if isSet()]
 
 [aStructuralFeature.generateMethodSetImplementation(aClass,modules)/]
+[/if]
+[if isSimpleSet()]
+
+[aStructuralFeature.generateMethodSimpleSetImplementation(aClass,modules)/]
 [/if]
 [if isUnSet()]
 
@@ -312,7 +320,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarname/] : [aStructuralFeature.
 }
 [/template]
 
-[template private generateInternalPropertySetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+[template private generatePropertySimpleSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
@@ -400,6 +408,16 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 [else]
     throw new Error("set [aStructuralFeature.getPropertyName()/] not implemented")
 [/if]
+[/template]
+
+[template private generateMethodSimpleSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+	aPackage : EPackage = aClass.ePackage;
+	varName : String = aStructuralFeature.getVariableName();
+	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
+}]
+[aStructuralFeature.getSetterName()/]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
+	this.[varName/] = [newVarName/]
+}
 [/template]
 
 [template private generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
