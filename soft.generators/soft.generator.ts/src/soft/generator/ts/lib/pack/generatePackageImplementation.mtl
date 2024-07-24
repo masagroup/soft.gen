@@ -126,10 +126,10 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
         [for (eAnnotation : EAnnotation | aPackage.eAllContents(EAnnotation)->select( a | a.source = aAnnotationSource))]
         {
             let eAnnotation = factory.createEAnnotationFromContainer([eAnnotation.eModelElement.getPackageGetter(modules)/])
-            eAnnotation.source = source
+            eAnnotation.setSource(source)
             [for (eEntry : EStringToStringMapEntry | eAnnotation.details)]
             [let value : String = if eEntry.value.oclIsUndefined() then '' else eEntry.value endif]
-            eAnnotation.details.put("[eEntry.key/]","[value.replaceAll('\\\\','\\\\\\\\').replaceAll('"', '\\\\"').replaceAll('\\n','\\\\n').replaceAll('\\r','\\\\r')/]")
+            eAnnotation.getDetails().put("[eEntry.key/]","[value.replaceAll('\\\\','\\\\\\\\').replaceAll('"', '\\\\"').replaceAll('\\n','\\\\n').replaceAll('\\r','\\\\r')/]")
             [/let]
             [/for]
         }

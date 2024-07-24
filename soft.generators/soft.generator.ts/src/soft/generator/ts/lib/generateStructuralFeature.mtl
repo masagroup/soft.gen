@@ -311,7 +311,7 @@ return [aStructuralFeature.getGetterName()/]()
 	newVarname : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
 }]
 // set the value of [aStructuralFeature.name/]
-set [aStructuralFeature.getPropertyName()/]([newVarname/] : [aStructuralFeature.generateType(modules)/] ) {
+set [aStructuralFeature.getPropertyName()/]([newVarname/]: [aStructuralFeature.generateType(modules)/]) {
 [if isMethodAccessors()]
 [aStructuralFeature.getSetterName()/]([newVarname/])
 [else]
@@ -326,7 +326,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarname/] : [aStructuralFeature.
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
 }]
 /** @internal */
-set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
+set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]) {
 	this.[varName/] = [newVarName/]
 }
 [/template]
@@ -335,7 +335,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 	newVarname : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
 }]
 // set the value of [aStructuralFeature.name/]
-[aStructuralFeature.getSetterName()/](new[aStructuralFeature.getPropertyName().toUpperFirst()/] : [aStructuralFeature.generateType(modules)/] ): void {
+[aStructuralFeature.getSetterName()/](new[aStructuralFeature.getPropertyName().toUpperFirst()/]: [aStructuralFeature.generateType(modules)/]): void {
 [generateSetImplementation(aStructuralFeature,aClass,modules)/]
 }
 [/template]
@@ -415,7 +415,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
 	varName : String = aStructuralFeature.getVariableName();
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
 }]
-[aStructuralFeature.getSetterName()/]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
+[aStructuralFeature.getSetterName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]) {
 	this.[varName/] = [newVarName/]
 }
 [/template]
@@ -513,7 +513,7 @@ basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFe
 	varName : String = aStructuralFeature.getVariableName();
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
 }]
-basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [aStructuralFeature.generateType(modules)/] , msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain ): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
+basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [aStructuralFeature.generateType(modules)/], msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
 [if isContainer()]
     return this.eBasicSetContainer([newVarName/], [aClass.getImportedIDName(aStructuralFeature,modules)/], msgs)
 [elseif not isVolatile()]
