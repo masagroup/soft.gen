@@ -614,8 +614,8 @@ expect(() => o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)
 	[valueFeature.eType.generateTestValue('value',modules)/]
 	when(mockMap['['/]Symbol.iterator[']'/]()).thenReturn(iterator)
 	when(mockIterator.next()).thenReturn({ value: entry, done: false } ).thenReturn({ value: undefined, done: true })
-	when(mockEntry.getKey()).thenReturn(key)
-	when(mockEntry.getValue()).thenReturn(value)
+	when(mockEntry.key).thenReturn(key)
+	when(mockEntry.value).thenReturn(value)
 	o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)/], map)
 	expect(o.[anStructuralFeature.generateGetCall()/].toMap()).toEqual(new Map<[anStructuralFeature.eGenericType.generateMapTypeParameters(modules)/]>(['['/]['['/]key,value[']'/][']'/]))
 [/let]

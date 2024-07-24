@@ -193,15 +193,15 @@ eUnsetFromID(featureID: number) {
         case [aClass.getImportedIDName(aStructFeature,modules)/]: {
     [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
             this.[aStructFeature.generateGetCall()/].clear()
-    [elseif aStructFeature.isUnSet() ]
+    [elseif aStructFeature.isUnSet() and not aStructFeature.isPropertyAccessors()]
             this.[aStructFeature.getUnSetterName()/]()
     [elseif aStructFeature.oclIsKindOf(EReference)]
-		this.[aStructFeature.generateSetCall('null')/]
+			this.[aStructFeature.generateSetCall('null')/]
 	[else]
         [let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
         [let defaultValue : String = aAttribute.getDefaultValue(modules)]
         [let newValue : String = if defaultValue <> '' then defaultValue else 'null' endif]
-		this.[aStructFeature.generateSetCall(newValue)/]
+			this.[aStructFeature.generateSetCall(newValue)/]
 		[/let]
 		[/let]
         [/let]

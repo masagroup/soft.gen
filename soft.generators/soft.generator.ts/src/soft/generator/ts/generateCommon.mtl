@@ -96,7 +96,7 @@
 /]
 
 [**
- * return the package accesors type for features. 
+ * return the package accessors type for features. 
  * property: accessors
  * default : method
 */]
@@ -109,35 +109,31 @@
 /]
 
 [**
- * return true if feature accessors are defined as property 
+ * return the accessors type for a feature. 
+ * property: accessors
+ * default : method
 */]
-[query public isPropertyAccessors(aPackage : EPackage) : Boolean = 
-	aPackage.getAccessorsType()->includes('property') 
+[query public getAccessorsType(aFeature : EStructuralFeature) : Sequence(String) =
+	if aFeature.hasKey('accessors') then
+		aFeature.valueKey('accessors').tokenize(',')
+	else 
+		aFeature.getEPackage().getAccessorsType()
+	endif	
 /]
 
 [**
  * return true if feature accessors are defined as property 
 */]
 [query public isPropertyAccessors(aFeature : EStructuralFeature) : Boolean =
-	let aPackage : EPackage = aFeature.getEPackage() in 
-	aPackage.isPropertyAccessors()
+	aFeature.getAccessorsType()->includes('property')
 /]
 
 [**
- * return true if feature accessors are defined as methods 
-*/]
-[query public isMethodAccessors(aPackage : EPackage) : Boolean = 
-	aPackage.getAccessorsType()->includes('method') 
-/]
-
-[**
- * return true if feature accessors are defined as methods 
+ * return true if feature accessors are defined as property 
 */]
 [query public isMethodAccessors(aFeature : EStructuralFeature) : Boolean =
-	let aPackage : EPackage = aFeature.getEPackage() in 
-	aPackage.isMethodAccessors()
+	aFeature.getAccessorsType()->includes('method')
 /]
-
 
 [**
  * File Comments 
