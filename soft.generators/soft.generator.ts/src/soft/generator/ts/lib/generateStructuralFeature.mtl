@@ -160,7 +160,7 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 /]
 
 [template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny) ]
-[if isPropertyAccessors() or aClass.isMapEntry()]
+[if isPropertyAccessors()]
 [if isGet()]
 
 [aStructuralFeature.generatePropertyGetImplementation(aClass,modules)/]
@@ -174,7 +174,7 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 [aStructuralFeature.generatePropertySimpleSetImplementation(aClass,modules)/]
 [/if]
 [/if]
-[if isMethodAccessors()]
+[if isMethodAccessors() or aClass.isMapEntry()]
 [if isGet()]
 
 [aStructuralFeature.generateMethodGetImplementation(aClass,modules)/]
@@ -210,7 +210,7 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 [template private generatePropertyGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
 // get the value of [aStructuralFeature.name/]
 get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(modules)/] {
-[if isMethodAccessors()]
+[if isMethodAccessors() or aClass.isMapEntry()]
 	return this.[aStructuralFeature.getGetterName()/]()
 [else]
 [generateGetImplementation(aStructuralFeature,aClass,modules)/]
@@ -312,7 +312,7 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 }]
 // set the value of [aStructuralFeature.name/]
 set [aStructuralFeature.getPropertyName()/]([newVarname/]: [aStructuralFeature.generateType(modules)/]) {
-[if isMethodAccessors()]
+[if isMethodAccessors() or aClass.isMapEntry()]
 	this.[aStructuralFeature.getSetterName()/]([newVarname/])
 [else]
 [generateSetImplementation(aStructuralFeature,aClass,modules)/]
@@ -325,14 +325,18 @@ set [aStructuralFeature.getPropertyName()/]([newVarname/]: [aStructuralFeature.g
 	varName : String = aStructuralFeature.getVariableName();
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
 }]
-/** @internal */
+// set the value of [aStructuralFeature.name/]
 set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]) {
+[if isMethodAccessors() or aClass.isMapEntry()]
+	this.[aStructuralFeature.getSetterName()/]([newVarName/])
+[else]
 [if aStructuralFeature.isListType()]
 	const l = this.[aStructuralFeature.generateGetCall()/]
 	l.clear()
 	l.addAll([newVarName/])
 [else]
 	this.[varName/] = [newVarName/]
+[/if]
 [/if]
 }
 [/template]
@@ -421,6 +425,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 	varName : String = aStructuralFeature.getVariableName();
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
 }]
+// set the value of [aStructuralFeature.name/]
 [aStructuralFeature.getSetterName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]) {
 [if aStructuralFeature.isListType()]
 	const l = this.[aStructuralFeature.generateGetCall()/]
