@@ -23,7 +23,7 @@
 /]
 
 [query private isAsyncGet(aStructuralFeature : EStructuralFeature ) : Boolean =
-	isGet() and isAsync() and isProxy() and not isListType()  
+	isGet() and isProxy() and not isListType() and not isContainer()  
 /]
 
 [template public generatePropertyDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
@@ -185,7 +185,7 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 
 [aStructuralFeature.generateMethodGetImplementation(aClass,modules)/]
 [/if]
-[if isAsyncGet() and isMethodAccessors()]
+[if isAsyncGet()]
 
 [aStructuralFeature.generateMethodGetAsyncImplementation(aClass,modules)/]
 [/if]
@@ -303,7 +303,7 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 [elseif hasKey('getterBody')]
     [valueKey('getterBody')/]
 [else]
-    throw new Error("get [aStructuralFeature.getPropertyName()/] not implemented")
+    throw new Error("[aStructuralFeature.getGetterName()/] not implemented")
 [/if]
 }
 [/template]
@@ -316,6 +316,7 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 }]
 // get the value of [aStructuralFeature.name/] asynchronously
 async [aStructuralFeature.getGetterName()/]Async(): Promise<[aStructuralFeature.generateType(modules)/]> {
+[if not isVolatile()]
     if (this.[varName/] != null && this.[varName/].eIsProxy()) {
         let [oldVarName/] = this.[varName/]
         let [newVarName/] = await this.eResolveProxyAsync([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
@@ -353,6 +354,9 @@ async [aStructuralFeature.getGetterName()/]Async(): Promise<[aStructuralFeature.
         }
     }
 	return this.[varName/]
+[else]
+	throw new Error("[aStructuralFeature.getGetterName()/]Async not implemented")
+[/if]
 }
 [/template]
 
@@ -450,7 +454,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 [elseif hasKey('setterBody')]
     [valueKey('setterBody')/]
 [else]
-    throw new Error("set [aStructuralFeature.getPropertyName()/] not implemented")
+    throw new Error("[aStructuralFeature.getSetterName()/] not implemented")
 [/if]
 }
 [/template]
