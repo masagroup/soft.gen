@@ -122,13 +122,13 @@ eGetFromID(featureID: number, resolve: boolean): any {
         case [aClass.getImportedIDName(anStructFeature,modules)/]: {
     [if anStructFeature.isProxy()]
         [if anStructFeature.isListType()]
-			const list = this.[anStructFeature.generateGetCall()/]
+			const list = this.[anStructFeature.getGetterName()/]()
             return !resolve && [if not aPackage.isEcorePackage()]ecore.[/if]isEObjectList(list) ? list.getUnResolvedList() : list
         [else]
-			return resolve ? this.[anStructFeature.generateGetCall()/] : this.basic[anStructFeature.getGetterName().toUpperFirst()/]()
+			return resolve ? this.[anStructFeature.getGetterName()/]() : this.basic[anStructFeature.getGetterName().toUpperFirst()/]()
         [/if]       
     [else] 
-            return this.[anStructFeature.generateGetCall()/]
+            return this.[anStructFeature.getGetterName()/]()
     [/if]
         }
     [/for]
@@ -164,17 +164,17 @@ eSetFromID(featureID: number, newValue: any) {
     [if anStructFeature.isMapType()]
     [let aPackage : EPackage = aClass.ePackage]
     [let aDataType : EGenericType = anStructFeature.eGenericType]
-			const list = this.[anStructFeature.generateGetCall()/]
+			const list = this.[anStructFeature.getGetterName()/]()
             list.clear()
             list.addAll(newValue as [if not aPackage.isEcorePackage()]ecore.[/if]EList<[if not aPackage.isEcorePackage()]ecore.[/if]EMapEntry<[aDataType.generateMapTypeParameters(modules)/]>>)
     [/let]
     [/let]
     [elseif anStructFeature.isListType()]
-            const list = this.[anStructFeature.generateGetCall()/]
+            const list = this.[anStructFeature.getGetterName()/]()
             list.clear()
             list.addAll(newValue as [anStructFeature.generateType(modules)/])
     [else]
-			this.[anStructFeature.generateSetCall('newValue as '+ anStructFeature.generateType(modules))/]
+			this.[anStructFeature.getSetterName()/](newValue as [anStructFeature.generateType(modules)/])
 	[/if]
             break
         }
@@ -192,16 +192,16 @@ eUnsetFromID(featureID: number) {
 [for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
         case [aClass.getImportedIDName(aStructFeature,modules)/]: {
     [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
-            this.[aStructFeature.generateGetCall()/].clear()
+            this.[aStructFeature.getGetterName()/]().clear()
     [elseif aStructFeature.isUnSet() and not aStructFeature.isPropertyAccessors()]
             this.[aStructFeature.getUnSetterName()/]()
     [elseif aStructFeature.oclIsKindOf(EReference)]
-			this.[aStructFeature.generateSetCall('null')/]
+			this.[aStructFeature.getSetterName()/](null)
 	[else]
         [let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
         [let defaultValue : String = aAttribute.getDefaultValue(modules)]
         [let newValue : String = if defaultValue <> '' then defaultValue else 'null' endif]
-			this.[aStructFeature.generateSetCall(newValue)/]
+			this.[aStructFeature.getSetterName()/]([if defaultValue <> ''][defaultValue/][else]null[/if])
 		[/let]
 		[/let]
         [/let]
@@ -243,7 +243,7 @@ eInvokeFromID(operationID: number , args: [if not aPackage.isEcorePackage()]ecor
 [/template]
 
 [template private generateVariableOrGetter(anStructFeature : EStructuralFeature) post (trim())]
-	[if isField()][anStructFeature.getVariableName()/][else][anStructFeature.generateGetCall()/][/if]
+	[if isField()][anStructFeature.getVariableName()/][else][anStructFeature.getGetterName()/]()[/if]
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim()){
@@ -286,7 +286,7 @@ eBasicInverseAdd(otherEnd: [if not aPackage.isEcorePackage()]ecore.[/if]EObject,
             return notifications
     [elseif aFeature.isListType()]
         [let type : String = aFeature.eGenericType.generateType(modules)]
-            let list = this.[aFeature.generateGetCall()/] as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
+            let list = this.[aFeature.getGetterName()/]() as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
             let end = otherEnd as [type/]
         [/let]      
             return list.addWithNotification(end, notifications);
@@ -302,7 +302,7 @@ eBasicInverseAdd(otherEnd: [if not aPackage.isEcorePackage()]ecore.[/if]EObject,
         [/if]
     [else]
             let msgs = notifications;
-			const [aFeature.name/] = this.[if aFeature.isProxy()]basic[aFeature.getGetterName().toUpperFirst()/]()[else][aFeature.generateGetCall()/][/if]	
+			const [aFeature.name/] = this.[if aFeature.isProxy()]basic[aFeature.getGetterName().toUpperFirst()/]()[else][aFeature.getGetterName()/]()[/if]	
             if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([aFeature.name/])) {
             [if aFeature.isContains()]
                 msgs = [aFeature.name/].eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aFeature,modules)/], msgs)
@@ -334,7 +334,7 @@ eBasicInverseRemove(otherEnd: [if not aPackage.isEcorePackage()]ecore.[/if]EObje
             return notifications
     [elseif aFeature.isListType()]
         [let type : String = aFeature.eGenericType.generateType(modules)]
-            let list = this.[aFeature.generateGetCall()/] as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
+            let list = this.[aFeature.getGetterName()/]() as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
             let end = otherEnd as [type/]
             return list.removeWithNotification(end, notifications)
         [/let]

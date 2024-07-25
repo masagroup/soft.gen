@@ -19,11 +19,12 @@
 [import soft::generator::ts::lib::generateCommon /]
 
 
-[template public generateDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
-[if isPropertyAccessors()]
-[aStructuralFeature.generatePropertyDeclaration(modules)/]
-[/if]
-[if isMethodAccessors()]
+[template public generatePropertyDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+[if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/]: [aStructuralFeature.generateType(modules)/]
+
+[/template]
+
+[template public generateMethodsDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
 [if isGet()]
 [aStructuralFeature.generateGetDeclaration(modules)/]
 [/if]
@@ -34,11 +35,6 @@
 [aStructuralFeature.generateUnSetDeclaration(modules)/]
 [/if]
 
-[/if]
-[/template]
-
-[template private generatePropertyDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
-[if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/]: [aStructuralFeature.generateType(modules)/]
 [/template]
 
 [template private generateGetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
@@ -159,8 +155,7 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 	isGet() and not isSet() and not isVolatile() and not isContainer()
 /]
 
-[template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny) ]
-[if isPropertyAccessors()]
+[template public generatePropertyImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny) ]
 [if isGet()]
 
 [aStructuralFeature.generatePropertyGetImplementation(aClass,modules)/]
@@ -173,8 +168,9 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 
 [aStructuralFeature.generatePropertySimpleSetImplementation(aClass,modules)/]
 [/if]
-[/if]
-[if isMethodAccessors() or aClass.isMapEntry()]
+[/template]
+
+[template public generateMethodsImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny) ]
 [if isGet()]
 
 [aStructuralFeature.generateMethodGetImplementation(aClass,modules)/]
@@ -190,7 +186,6 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 [if isUnSet()]
 
 [aStructuralFeature.generateUnSetImplementation(aClass,modules)/]
-[/if]
 [/if]
 
 [if isBasicGet()]
@@ -210,27 +205,18 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 [template private generatePropertyGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
 // get the value of [aStructuralFeature.name/]
 get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(modules)/] {
-[if isMethodAccessors() or aClass.isMapEntry()]
 	return this.[aStructuralFeature.getGetterName()/]()
-[else]
-[generateGetImplementation(aStructuralFeature,aClass,modules)/]
-[/if]
 }
 [/template]
 
-[template private generateMethodGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
-// get the value of [aStructuralFeature.name/]
-[aStructuralFeature.getGetterName()/](): [aStructuralFeature.generateType(modules)/] {
-[generateGetImplementation(aStructuralFeature,aClass,modules)/]
-}
-[/template]
-
-[template private generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+[template private generateMethodGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage =  aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
 	oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst();
 }]
+// get the value of [aStructuralFeature.name/]
+[aStructuralFeature.getGetterName()/](): [aStructuralFeature.generateType(modules)/] {
 [if isContainer()]
     if (this.eContainerFeatureID() == [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/]) {
         return this.eContainer() as [aStructuralFeature.generateType(modules)/]
@@ -305,6 +291,7 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 [else]
     throw new Error("get [aStructuralFeature.getPropertyName()/] not implemented")
 [/if]
+}
 [/template]
 
 [template private generatePropertySetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
@@ -312,11 +299,7 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 }]
 // set the value of [aStructuralFeature.name/]
 set [aStructuralFeature.getPropertyName()/]([newVarname/]: [aStructuralFeature.generateType(modules)/]) {
-[if isMethodAccessors() or aClass.isMapEntry()]
 	this.[aStructuralFeature.getSetterName()/]([newVarname/])
-[else]
-[generateSetImplementation(aStructuralFeature,aClass,modules)/]
-[/if]
 }
 [/template]
 
@@ -327,35 +310,24 @@ set [aStructuralFeature.getPropertyName()/]([newVarname/]: [aStructuralFeature.g
 }]
 // set the value of [aStructuralFeature.name/]
 set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]) {
-[if isMethodAccessors() or aClass.isMapEntry()]
-	this.[aStructuralFeature.getSetterName()/]([newVarName/])
-[else]
 [if aStructuralFeature.isListType()]
-	const l = this.[aStructuralFeature.generateGetCall()/]
+	const l = this.[aStructuralFeature.getGetterName()/]()
 	l.clear()
 	l.addAll([newVarName/])
 [else]
 	this.[varName/] = [newVarName/]
 [/if]
-[/if]
 }
 [/template]
 
-[template private generateMethodSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
-	newVarname : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
-}]
-// set the value of [aStructuralFeature.name/]
-[aStructuralFeature.getSetterName()/](new[aStructuralFeature.getPropertyName().toUpperFirst()/]: [aStructuralFeature.generateType(modules)/]): void {
-[generateSetImplementation(aStructuralFeature,aClass,modules)/]
-}
-[/template]
-
-[template private generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
+[template private generateMethodSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
 	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
 	oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst();
 }]
+// set the value of [aStructuralFeature.name/]
+[aStructuralFeature.getSetterName()/](new[aStructuralFeature.getPropertyName().toUpperFirst()/]: [aStructuralFeature.generateType(modules)/]): void {
 [if not isVolatile()]
     [if isContainer()]
     if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getImportedIDName(aStructuralFeature,modules)/])) {
@@ -418,6 +390,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 [else]
     throw new Error("set [aStructuralFeature.getPropertyName()/] not implemented")
 [/if]
+}
 [/template]
 
 [template private generateMethodSimpleSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
@@ -428,7 +401,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 // set the value of [aStructuralFeature.name/]
 [aStructuralFeature.getSetterName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]) {
 [if aStructuralFeature.isListType()]
-	const l = this.[aStructuralFeature.generateGetCall()/]
+	const l = this.[aStructuralFeature.getGetterName()/]()
 	l.clear()
 	l.addAll([newVarName/])
 [else]

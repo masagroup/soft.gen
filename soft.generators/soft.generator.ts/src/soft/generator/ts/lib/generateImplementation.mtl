@@ -76,7 +76,11 @@ export class [className/] extends [getImportedIdentifier(classExtend, modules)/]
         return get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]()
     }
 
-    [features.generateImplementation(aClass,modules)/]
+[let properties : OrderedSet(EStructuralFeature) = features->select( isPropertyAccessors() and (isGet() or isSet()))]
+	[properties.generatePropertyImplementation(aClass,modules)/]	
+[/let]
+
+    [features.generateMethodsImplementation(aClass,modules)/]
 
     [operations.generateImplementation(aClass,modules)/]
 

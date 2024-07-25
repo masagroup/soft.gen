@@ -136,6 +136,29 @@
 /]
 
 [**
+ * return true if feature accessors are defined as async 
+*/]
+[query public isAsync(aPackage : EPackage) : Boolean =
+ 	if aPackage.hasPackageProperty('async') then
+		aPackage.getPackageProperty('async') = 'true'
+	else
+		false
+	endif
+/]
+
+[**
+ * return true if element accessors are defined as async 
+*/]
+[query public isAsync(aTypedElement : ETypedElement) : Boolean =
+ 	if aTypedElement.hasKey('async') then
+		aTypedElement.valueKey('async') = 'true'
+	else
+		aTypedElement.getEPackage().isAsync()
+	endif
+/]
+
+
+[**
  * File Comments 
 */]
 [template public fileComment(aAny : OclAny)]
@@ -145,6 +168,7 @@
 [/template]
 
 [query public hasExtension( aModelElement : EModelElement ) : Boolean = hasKey('extension') and valueKey('extension' )='true'/]
+
 [query public isExported( aNamedElement : ENamedElement ) : Boolean = if ( hasKey('exported') ) then valueKey('exported') = 'true' else false endif/]
 
 [**
@@ -243,7 +267,17 @@ endif endif endif endif
 /]
 
 [** Accessors Names **/]
-[query private getterPrefix(feature : EStructuralFeature) : String = if feature.eType.name = 'EBoolean' then 'is' else 'get' endif/]
+[query private getterPrefix(feature : EStructuralFeature) : String = 
+	if feature.eType.name = 'EBoolean' then
+		if feature.isPropertyAccessors() then
+			'get'
+		else
+			'is'
+		endif 
+	else
+		'get'
+	endif 
+/]
 
 [query public getSetterName(feature : EStructuralFeature) : String   = feature.getElementName( feature.name.toUpperFirst(), 'setterName', 'set$1')/]
 

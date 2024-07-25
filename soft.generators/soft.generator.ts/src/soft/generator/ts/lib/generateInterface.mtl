@@ -64,21 +64,14 @@
 [aClass.generateImports('interface', types, modules)/]
 
 export interface [interfaceName/][for ( qualifiedIdentifier : String | interfaceExtends ) before (' extends ') separator (', ')][getImportedIdentifier( qualifiedIdentifier , modules)/][/for] {
-[let attributes : OrderedSet(EAttribute) = aClass.eAttributes->asOrderedSet()->select( isGet() or isSet() )]
-[if attributes->notEmpty()]
-    // Attributes
-    [attributes->asOrderedSet().generateDeclaration(modules)/]
-[/if]
+[let properties : OrderedSet(EStructuralFeature) = aClass.eStructuralFeatures->asOrderedSet()->select( isPropertyAccessors() and (isGet() or isSet()))]
+	[properties.generatePropertyDeclaration(modules)/]	
 [/let]
-[let references : OrderedSet(EReference) = aClass.eReferences->asOrderedSet()->select( isGet() or isSet() )]
-[if references->notEmpty()]
-    // References
-    [references.generateDeclaration(modules)/]
-[/if]
+[let methods : OrderedSet(EStructuralFeature) = aClass.eStructuralFeatures->asOrderedSet()->select( isMethodAccessors() and (isGet() or isSet()))]
+	[methods.generateMethodsDeclaration(modules)/]
 [/let]
 [let operations : OrderedSet(EOperation) = aClass.eOperations->asOrderedSet()]
 [if operations->notEmpty()]
-    // Operations
     [operations.generateDeclaration(modules)/]
 [/if]
 [/let]
