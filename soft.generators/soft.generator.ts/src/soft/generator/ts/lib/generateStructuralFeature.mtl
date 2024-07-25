@@ -27,11 +27,13 @@
 /]
 
 [template public generatePropertyDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+// [aStructuralFeature.name/] property
 [if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/]: [aStructuralFeature.generateType(modules)/]
 
 [/template]
 
 [template public generateMethodsDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+// [aStructuralFeature.name/]
 [if isGet()]
 [aStructuralFeature.generateGetDeclaration(modules)/]
 [/if]
