@@ -40,6 +40,10 @@
 [aClass.generateEGetDefinition(modules)/]
 
 [/if]
+[if aClass.getEGetFeatures()->notEmpty()]
+[aClass.generateEGetAsyncDefinition(modules)/]
+
+[/if]
 [if aClass.getESetFeatures()->notEmpty()]
 [aClass.generateESetDefinition(modules)/]
 
@@ -138,6 +142,27 @@ eGetFromID(featureID: number, resolve: boolean): any {
     }
 }
 [/let]
+[/template]
+
+[template private generateEGetAsyncDefinition(aClass : EClass,modules : OclAny){
+	aPackage : EPackage = aClass.ePackage;
+	proxies :Set(EStructuralFeature) =  aClass.getEGetFeatures()->select( isProxy() and not isListType())->asOrderedSet()->sortedBy(name);
+}]
+async eGetFromIDAsync(featureID: number, resolve: boolean): Promise<any> {
+[if proxies->isEmpty()]
+	return this.eGetFromID(featureID, resolve)
+[else]
+	if (resolve) {
+		switch (featureID) {
+    [for (aFeature : EStructuralFeature | proxies)]
+        	case [aClass.getImportedIDName(aFeature,modules)/]:
+    			return this.[aFeature.getGetterName()/]Async()
+    [/for]
+		}
+    }
+	return this.eGetFromID(featureID, resolve)
+[/if]    
+}
 [/template]
 
 
