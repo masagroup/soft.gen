@@ -241,8 +241,8 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 [elseif not isVolatile()]
     [if not isListType() and isProxy()]
     if (this.[varName/] != null && this.[varName/].eIsProxy()) {
-        let [oldVarName/] = this.[varName/]
-        let [newVarName/] = this.eResolveProxy([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
+        const [oldVarName/] = this.[varName/]
+        const [newVarName/] = this.eResolveProxy([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
         this.[varName/] = [newVarName/]
         if ([newVarName/] != [oldVarName/]) {
         [if isContains()]
@@ -320,8 +320,8 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 async [aStructuralFeature.getGetterName()/]Async(): Promise<[aStructuralFeature.generateType(modules)/]> {
 [if not isVolatile()]
     if (this.[varName/] != null && this.[varName/].eIsProxy()) {
-        let [oldVarName/] = this.[varName/]
-        let [newVarName/] = await this.eResolveProxyAsync([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
+        const [oldVarName/] = this.[varName/]
+        const [newVarName/] = await this.eResolveProxyAsync([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
         this.[varName/] = [newVarName/]
         if ([newVarName/] != [oldVarName/]) {
         [if isContains()]
@@ -418,7 +418,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
         this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [newVarName/], [newVarName/]))
     }
     [elseif isBidirectional() or isContains()]
-    let [oldVarName/] = this.[varName/]
+    const [oldVarName/] = this.[varName/]
     if ( [newVarName/] != [oldVarName/] ) {
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
         if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([oldVarName/])) {
@@ -447,7 +447,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
         [if isUnSettable()]
         [/if]
     [else]
-    let [oldVarName/] = this.[varName/]
+    const [oldVarName/] = this.[varName/]
     this.[varName/] = [newVarName/]
     if (this.eNotificationRequired()) {
         this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/]))
@@ -576,11 +576,11 @@ basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [a
     return this.eBasicSetContainer([newVarName/], [aClass.getImportedIDName(aStructuralFeature,modules)/], msgs)
 [elseif not isVolatile()]
     [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
-    let [oldVarName/] = this.[varName/]
+    const [oldVarName/] = this.[varName/]
     this.[varName/] = [newVarName/]
     let notifications = msgs
     if ( this.eNotificationRequired() ) {
-        let notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/])
+        const notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/])
         if (notifications != null ) {
             notifications.add( notification )
         } else {
@@ -604,11 +604,11 @@ basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [a
 }]
 basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain ): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
 [if not isVolatile()]
-    let [oldVarName/] = this.[varName/]
+    const [oldVarName/] = this.[varName/]
     let notifications = msgs
     this.[varName/] = null
     if (this.eNotificationRequired()) {
-        let notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], null)
+        const notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], null)
         if ( notifications != null ) {
             notifications.add( notification )
         } else {

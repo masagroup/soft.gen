@@ -311,8 +311,8 @@ eBasicInverseAdd(otherEnd: [if not aPackage.isEcorePackage()]ecore.[/if]EObject,
             return notifications
     [elseif aFeature.isListType()]
         [let type : String = aFeature.eGenericType.generateType(modules)]
-            let list = this.[aFeature.getGetterName()/]() as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
-            let end = otherEnd as [type/]
+            const list = this.[aFeature.getGetterName()/]() as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
+            const end = otherEnd as [type/]
         [/let]      
             return list.addWithNotification(end, notifications);
     [elseif aFeature.isContainer()]
@@ -359,8 +359,8 @@ eBasicInverseRemove(otherEnd: [if not aPackage.isEcorePackage()]ecore.[/if]EObje
             return notifications
     [elseif aFeature.isListType()]
         [let type : String = aFeature.eGenericType.generateType(modules)]
-            let list = this.[aFeature.getGetterName()/]() as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
-            let end = otherEnd as [type/]
+            const list = this.[aFeature.getGetterName()/]() as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
+            const end = otherEnd as [type/]
             return list.removeWithNotification(end, notifications)
         [/let]
     [elseif aFeature.isContainer() and not aFeature.isBasicSet()]
