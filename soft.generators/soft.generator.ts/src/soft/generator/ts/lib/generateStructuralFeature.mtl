@@ -395,7 +395,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
 }]
 // set the value of [aStructuralFeature.name/]
-[aStructuralFeature.getSetterName()/](new[aStructuralFeature.getPropertyName().toUpperFirst()/]: [aStructuralFeature.generateType(modules)/]): void {
+[aStructuralFeature.getSetterName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]): void {
 [if not isVolatile()]
     [if isContainer()]
     if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getImportedIDName(aStructuralFeature,modules)/])) {
