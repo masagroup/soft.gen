@@ -39,6 +39,11 @@
 /]
 
 
+[**
+ * return the package output directory. 
+ * property: packageDir
+ * default : .
+*/]
 [query public getPackageDirectory( anPackage : EPackage ) : String =
 	let replacement : String = if anPackage.hasPackageProperty('packageDir') 
 							   then anPackage.getPackageProperty('packageDir') 
@@ -46,6 +51,11 @@
 	anPackage.name.replaceFirst('(.*)', replacement)
 /]
 
+[**
+ * return the package module resolution. 
+ * property: moduleResolution
+ * default : nodenext
+*/]
 [query public getModuleResolution(anPackage : EPackage) : String =
  	if anPackage.hasPackageProperty('moduleResolution')
 	then anPackage.getPackageProperty('moduleResolution').toLower()
@@ -53,6 +63,11 @@
 	endif
 /]
 
+[**
+ * return the package test framework. 
+ * property: testFramework
+ * default : jest
+*/]
 [query public getTestFramework(anPackage : EPackage) : String =
  	if anPackage.hasPackageProperty('testFramework')
 	then anPackage.getPackageProperty('testFramework').toLower()
@@ -60,6 +75,10 @@
 	endif
 /]
 
+
+[**
+ * return true if the package test framework is vitest 
+*/]
 [query public isVitest(anPackage : EPackage) : Boolean =
 	anPackage.getTestFramework() = 'vitest' 
 /]
@@ -75,6 +94,70 @@
 	else false
 	endif
 /]
+
+[**
+ * return the package accessors type for features. 
+ * property: accessors
+ * default : method
+*/]
+[query public getAccessorsType(aPackage : EPackage) : Sequence(String) =
+	if aPackage.hasPackageProperty('accessors') then
+		aPackage.getPackageProperty('accessors').tokenize(',')
+	else
+		Sequence{'method'}
+	endif 
+/]
+
+[**
+ * return the accessors type for a feature. 
+ * property: accessors
+ * default : method
+*/]
+[query public getAccessorsType(aFeature : EStructuralFeature) : Sequence(String) =
+	if aFeature.hasKey('accessors') then
+		aFeature.valueKey('accessors').tokenize(',')
+	else 
+		aFeature.getEPackage().getAccessorsType()
+	endif	
+/]
+
+[**
+ * return true if feature accessors are defined as property 
+*/]
+[query public isPropertyAccessors(aFeature : EStructuralFeature) : Boolean =
+	aFeature.getAccessorsType()->includes('property')
+/]
+
+[**
+ * return true if feature accessors are defined as property 
+*/]
+[query public isMethodAccessors(aFeature : EStructuralFeature) : Boolean =
+	aFeature.getAccessorsType()->includes('method')
+/]
+
+[**
+ * return true if feature accessors are defined as async 
+*/]
+[query public isAsync(aPackage : EPackage) : Boolean =
+ 	if aPackage.hasPackageProperty('async') then
+		aPackage.getPackageProperty('async') = 'true'
+	else
+		false
+	endif
+/]
+
+[**
+ * return true if element accessors are defined as async 
+*/]
+[query public isAsync(aTypedElement : ETypedElement) : Boolean =
+ 	if aTypedElement.hasKey('async') then
+		aTypedElement.valueKey('async') = 'true'
+	else
+		aTypedElement.getEPackage().isAsync()
+	endif
+/]
+
+
 [**
  * File Comments 
 */]
@@ -85,6 +168,7 @@
 [/template]
 
 [query public hasExtension( aModelElement : EModelElement ) : Boolean = hasKey('extension') and valueKey('extension' )='true'/]
+
 [query public isExported( aNamedElement : ENamedElement ) : Boolean = if ( hasKey('exported') ) then valueKey('exported') = 'true' else false endif/]
 
 [**
@@ -183,10 +267,25 @@ endif endif endif endif
 /]
 
 [** Accessors Names **/]
-[query public getterPrefix(feature : EStructuralFeature) : String = if feature.eType.name = 'EBoolean' then 'Is' else 'Get' endif/]
+[query private getterPrefix(feature : EStructuralFeature) : String = 
+	if feature.eType.name = 'EBoolean' then
+		if feature.isPropertyAccessors() then
+			'get'
+		else
+			'is'
+		endif 
+	else
+		'get'
+	endif 
+/]
 
-[query public getUnSetterName(feature : EStructuralFeature) : String = feature.getElementName( name.toUpperFirst() , 'unSetterName', 'unSet$1')/]
-[query public getIsSetName(feature : EStructuralFeature) : String = feature.getElementName( name.toUpperFirst() , 'isSetName', 'isSet$1')/]
+[query public getSetterName(feature : EStructuralFeature) : String   = feature.getElementName( feature.name.toUpperFirst(), 'setterName', 'set$1')/]
+
+[query public getGetterName(feature : EStructuralFeature) : String   = feature.getElementName( feature.name.toUpperFirst(), 'getterName', feature.getterPrefix() + '$1')/]
+
+[query public getUnSetterName(feature : EStructuralFeature) : String = feature.getElementName( feature.name.toUpperFirst(), 'unSetterName', 'unSet$1')/]
+
+[query public getIsSetName(feature : EStructuralFeature) : String    = feature.getElementName( feature.name.toUpperFirst(), 'isSetName', 'isSet$1')/]
 
 [query public getOperationName(aOperation : EOperation ) : String = aOperation.getElementName( aOperation.name , 'operationName' )/]
 
@@ -195,6 +294,22 @@ endif endif endif endif
 	if n = 'arguments' then 'args'
 	else n
 	endif  
+/]
+
+[query public getPropertyName( aFeature : EStructuralFeature ) : String =
+if aFeature.eType.name = 'EBoolean' then 
+	'is' + aFeature.name.toUpperFirst() 
+else if getReservedKeywords()->exists(s | s = aFeature.name) then
+	aFeature.name + '_'
+else
+	aFeature.name 
+endif endif/]
+
+[query public getVariableName( aFeature : EStructuralFeature ) : String = 
+'_' + (if aFeature.eType.name = 'EBoolean' then 
+			'is' + aFeature.name.toUpperFirst() 
+	   else aFeature.name endif
+	  ) 
 /]
 
 [query public getReflectiveGetterName(anENamedElement : ENamedElement) : String = 

@@ -177,7 +177,7 @@ methodName.toUpperFirst()
 /]
 
 [** Accessors Names **/]
-[query public getterPrefix(feature : EStructuralFeature) : String = if feature.eType.name = 'EBoolean' then 'Is' else 'Get' endif/]
+[query private getterPrefix(feature : EStructuralFeature) : String = if feature.eType.name = 'EBoolean' then 'Is' else 'Get' endif/]
 [query private getAccessorName(feature : EStructuralFeature) : String =
 	if feature.eContainingClass.isMapEntry() then
 		'Typed' + name.toUpperFirst()

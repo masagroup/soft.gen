@@ -66,10 +66,10 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
     private constructor() {
         super()
-        this.name = [aPackage.getConstantsName()/].eNAME
-        this.nsPrefix = [aPackage.getConstantsName()/].eNS_PREFIX
-        this.nsURI = [aPackage.getConstantsName()/].eNS_URI
-        this.eFactoryInstance = get[aPackage.getFactoryName()/]()
+        this.setName([aPackage.getConstantsName()/].eNAME)
+        this.setNsPrefix([aPackage.getConstantsName()/].eNS_PREFIX)
+        this.setNsURI([aPackage.getConstantsName()/].eNS_URI)
+        this.setEFactoryInstance(get[aPackage.getFactoryName()/]())
         this.createPackageContents()
         this.initializePackageContents()
         this.createResource()
@@ -86,7 +86,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
     private createPackageContents(): void {
 [if allClasses->notEmpty() or allDataTypes->notEmpty()]
-        let factory = [if not aPackage.isEcorePackage()]ecore.[/if]getEcoreFactory();
+        const factory = [if not aPackage.isEcorePackage()]ecore.[/if]getEcoreFactory();
 [for (aClass : EClass | allClasses)]
     
         [aClass.generateCreation(modules)/]
@@ -121,15 +121,15 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 [if not aPackage.isEcorePackage()]
 [for (aAnnotationSource : String | annotationSources)]
     private initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations(): void {
-        let source = "[aAnnotationSource/]"
-        let factory = [if not aPackage.isEcorePackage()]ecore.[/if]getEcoreFactory();
+        const source = "[aAnnotationSource/]"
+        const factory = [if not aPackage.isEcorePackage()]ecore.[/if]getEcoreFactory();
         [for (eAnnotation : EAnnotation | aPackage.eAllContents(EAnnotation)->select( a | a.source = aAnnotationSource))]
         {
-            let eAnnotation = factory.createEAnnotationFromContainer([eAnnotation.eModelElement.getPackageGetter(modules)/])
-            eAnnotation.source = source
+            const eAnnotation = factory.createEAnnotationFromContainer([eAnnotation.eModelElement.getPackageGetter(modules)/])
+            eAnnotation.setSource(source)
             [for (eEntry : EStringToStringMapEntry | eAnnotation.details)]
             [let value : String = if eEntry.value.oclIsUndefined() then '' else eEntry.value endif]
-            eAnnotation.details.put("[eEntry.key/]","[value.replaceAll('\\\\','\\\\\\\\').replaceAll('"', '\\\\"').replaceAll('\\n','\\\\n').replaceAll('\\r','\\\\r')/]")
+            eAnnotation.getDetails().put("[eEntry.key/]","[value.replaceAll('\\\\','\\\\\\\\').replaceAll('"', '\\\\"').replaceAll('\\n','\\\\n').replaceAll('\\r','\\\\r')/]")
             [/let]
             [/for]
         }
@@ -192,7 +192,7 @@ private [anENamedElement.getElementInstance()/]: [aPackage.getMetaType(anENamedE
 [template private generateGetter(aFeature : EStructuralFeature, anEPackage : EPackage, modules : OclAny)]
 [let aClass : EClass = aFeature.eContainingClass]
 [aFeature.getReflectiveGetterName()/](): [anEPackage.getMetaType(aFeature,modules)/] {
-    return this.[aClass.getElementInstance()/].eStructuralFeatures.get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]) as [anEPackage.getMetaType(aFeature,modules)/]
+    return this.[aClass.getElementInstance()/].getEStructuralFeatures().get([aClass.eStructuralFeatures->indexOf(aFeature)-1/]) as [anEPackage.getMetaType(aFeature,modules)/]
 }
 [/let]
 [/template]
@@ -200,7 +200,7 @@ private [anENamedElement.getElementInstance()/]: [aPackage.getMetaType(anENamedE
 [template private generateGetter(aOperation : EOperation, anEPackage : EPackage, modules : OclAny)]
 [let aClass : EClass = aOperation.eContainingClass]
 [aOperation.getReflectiveGetterName()/](): [anEPackage.getMetaType(aOperation,modules)/] {
-    return this.[aClass.getElementInstance()/].eOperations.get([aClass.eOperations->indexOf(aOperation)-1/]) as [anEPackage.getMetaType(aOperation,modules)/]
+    return this.[aClass.getElementInstance()/].getEOperations().get([aClass.eOperations->indexOf(aOperation)-1/]) as [anEPackage.getMetaType(aOperation,modules)/]
 }
 [/let]
 [/template]
@@ -246,7 +246,7 @@ this.[anEDatatype.getElementInstance()/] = factory.createEDataTypeFromContainerA
 
 [template public initSuperTypes(aEClass : EClass, modules : OclAny )]
 [for (superClass : EClass | aEClass.eSuperTypes)]
-this.[aEClass.getElementInstance()/].eSuperTypes.add([superClass.getGetter(aEClass.ePackage,modules)/])
+this.[aEClass.getElementInstance()/].getESuperTypes().add([superClass.getGetter(aEClass.ePackage,modules)/])
 [/for]
 [/template]
 
@@ -271,7 +271,7 @@ this.initEOperation([anEOperation.getPackageGetter(modules)/], [anEOperation.eTy
 
 [template private generateInitialization(anEOperation : EOperation , aPackage : EPackage , modules : OclAny)? (anEOperation.eParameters->notEmpty())]
 {
-    let operation = [anEOperation.getPackageGetter(modules)/]
+    const operation = [anEOperation.getPackageGetter(modules)/]
     this.initEOperation(operation, [anEOperation.eType.getPackageGetter(anEOperation,modules)/], "[anEOperation.name.toString()/]", [anEOperation.lowerBound/], [anEOperation.upperBound/], [anEOperation.unique.toString()/], [anEOperation.ordered.toString()/])
     [for (anEParameter : EParameter | anEOperation.eParameters)]
     this.addEParameter(operation, [anEParameter.eType.getPackageGetter(anEParameter.eOperation,modules)/], "[anEParameter.name/]", 0, 1, [anEParameter.unique.toString()/], [anEParameter.ordered.toString()/])

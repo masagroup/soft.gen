@@ -18,6 +18,7 @@
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType/]
 [import soft::generator::ts::lib::generateCommon/]
+[import soft::generator::ts::lib::generateStructuralFeature/]
 
 [query public hasReflectives(aClass : EClass) : Boolean = 
     aClass.hasElementID() or
@@ -37,6 +38,10 @@
 [/if]
 [if aClass.getEGetFeatures()->notEmpty()]
 [aClass.generateEGetDefinition(modules)/]
+
+[/if]
+[if aClass.getEGetFeatures()->notEmpty()]
+[aClass.generateEGetAsyncDefinition(modules)/]
 
 [/if]
 [if aClass.getESetFeatures()->notEmpty()]
@@ -121,12 +126,13 @@ eGetFromID(featureID: number, resolve: boolean): any {
         case [aClass.getImportedIDName(anStructFeature,modules)/]: {
     [if anStructFeature.isProxy()]
         [if anStructFeature.isListType()]
-            return !resolve && [if not aPackage.isEcorePackage()]ecore.[/if]isEObjectList(this.[anStructFeature.getPropertyName()/]) ? this.[anStructFeature.getPropertyName()/].getUnResolvedList() : this.[anStructFeature.getPropertyName()/]
+			const list = this.[anStructFeature.getGetterName()/]()
+            return !resolve && [if not aPackage.isEcorePackage()]ecore.[/if]isEObjectList(list) ? list.getUnResolvedList() : list
         [else]
-			return resolve ? this.[anStructFeature.getPropertyName()/] : this.basicGet[anStructFeature.getPropertyName().toUpperFirst()/]()
+			return resolve ? this.[anStructFeature.getGetterName()/]() : this.basic[anStructFeature.getGetterName().toUpperFirst()/]()
         [/if]       
     [else] 
-            return this.[anStructFeature.getPropertyName()/]
+            return this.[anStructFeature.getGetterName()/]()
     [/if]
         }
     [/for]
@@ -136,6 +142,27 @@ eGetFromID(featureID: number, resolve: boolean): any {
     }
 }
 [/let]
+[/template]
+
+[template private generateEGetAsyncDefinition(aClass : EClass,modules : OclAny){
+	aPackage : EPackage = aClass.ePackage;
+	proxies :Set(EStructuralFeature) =  aClass.getEGetFeatures()->select( isProxy() and not isListType())->asOrderedSet()->sortedBy(name);
+}]
+async eGetFromIDAsync(featureID: number, resolve: boolean): Promise<any> {
+[if proxies->isEmpty()]
+	return this.eGetFromID(featureID, resolve)
+[else]
+	if (resolve) {
+		switch (featureID) {
+    [for (aFeature : EStructuralFeature | proxies)]
+        	case [aClass.getImportedIDName(aFeature,modules)/]:
+    			return this.[aFeature.getGetterName()/]Async()
+    [/for]
+		}
+    }
+	return this.eGetFromID(featureID, resolve)
+[/if]    
+}
 [/template]
 
 
@@ -162,16 +189,18 @@ eSetFromID(featureID: number, newValue: any) {
     [if anStructFeature.isMapType()]
     [let aPackage : EPackage = aClass.ePackage]
     [let aDataType : EGenericType = anStructFeature.eGenericType]
-            this.[anStructFeature.getPropertyName()/].clear()
-            this.[anStructFeature.getPropertyName()/].addAll(newValue as [if not aPackage.isEcorePackage()]ecore.[/if]EList<[if not aPackage.isEcorePackage()]ecore.[/if]EMapEntry<[aDataType.generateMapTypeParameters(modules)/]>>)
+			const list = this.[anStructFeature.getGetterName()/]()
+            list.clear()
+            list.addAll(newValue as [if not aPackage.isEcorePackage()]ecore.[/if]EList<[if not aPackage.isEcorePackage()]ecore.[/if]EMapEntry<[aDataType.generateMapTypeParameters(modules)/]>>)
     [/let]
     [/let]
     [elseif anStructFeature.isListType()]
-            this.[anStructFeature.getPropertyName()/].clear()
-            this.[anStructFeature.getPropertyName()/].addAll(newValue as [anStructFeature.generateType(modules)/])
+            const list = this.[anStructFeature.getGetterName()/]()
+            list.clear()
+            list.addAll(newValue as [anStructFeature.generateType(modules)/])
     [else]
-            this.[anStructFeature.getPropertyName()/] = newValue as [anStructFeature.generateType(modules)/]
-    [/if]
+			this.[anStructFeature.getSetterName()/](newValue as [anStructFeature.generateType(modules)/])
+	[/if]
             break
         }
 [/for]
@@ -188,20 +217,18 @@ eUnsetFromID(featureID: number) {
 [for (aStructFeature : EStructuralFeature | aClass.getEUnSetFeatures()->sortedBy(name))]
         case [aClass.getImportedIDName(aStructFeature,modules)/]: {
     [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
-            this.[aStructFeature.getPropertyName()/].clear()
-    [elseif aStructFeature.isUnSet() ]
+            this.[aStructFeature.getGetterName()/]().clear()
+    [elseif aStructFeature.isUnSet() and not aStructFeature.isPropertyAccessors()]
             this.[aStructFeature.getUnSetterName()/]()
     [elseif aStructFeature.oclIsKindOf(EReference)]
-            this.[aStructFeature.getPropertyName()/] = null
-    [else]
+			this.[aStructFeature.getSetterName()/](null)
+	[else]
         [let aAttribute : EAttribute = aStructFeature.oclAsType(EAttribute)]
         [let defaultValue : String = aAttribute.getDefaultValue(modules)]
-        [if defaultValue <> '']
-            this.[aStructFeature.getPropertyName()/] = [defaultValue/]
-        [else]
-            this.[aStructFeature.getPropertyName()/] = null
-        [/if]
-        [/let]
+        [let newValue : String = if defaultValue <> '' then defaultValue else 'null' endif]
+			this.[aStructFeature.getSetterName()/]([if defaultValue <> ''][defaultValue/][else]null[/if])
+		[/let]
+		[/let]
         [/let]
     [/if]
             break
@@ -240,44 +267,38 @@ eInvokeFromID(operationID: number , args: [if not aPackage.isEcorePackage()]ecor
 [eOperation.getOperationName()/]([for (eParameter : EParameter | eOperation.eParameters) separator (',')][let needCast : Boolean = not(not eParameter.oclIsUndefined() and eParameter.upperBound = 1 and not eParameter.eGenericType.oclIsUndefined() and eParameter.eGenericType.eClassifier.isAny())]args.get([i-1/])[if needCast] as [eParameter.generateType(modules)/][/if][/let][/for])
 [/template]
 
-[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
-[let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
-[let accessor : String = if isField() then aAttribute.getVariableName() else aAttribute.getPropertyName() endif]
-[if isListType()]
-    [if isField()]
-        this.[aAttribute.getPropertyName()/] != null && this.[aAttribute.getPropertyName()/].size() != 0
-    [else]
-        this.[aAttribute.getPropertyName()/].size() != 0
-    [/if]
-[else] 
-    this.[accessor/] != [aAttribute.getDefaultValue(modules)/]
-[/if]
-[/let]
-[/let]
+[template private generateVariableOrGetter(anStructFeature : EStructuralFeature) post (trim())]
+	[if isField()][anStructFeature.getVariableName()/][else][anStructFeature.getGetterName()/]()[/if]
 [/template]
 
-[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny ) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim())]
+[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim()){
+	aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute);
+}]
 [if isListType()]
-    [if isField()]
-        this.[anStructFeature.getPropertyName()/] != null && this.[anStructFeature.getPropertyName()/].size() != 0
+	[if isField()]this.[anStructFeature.getVariableName()/] && [/if]!this.[anStructFeature.generateVariableOrGetter()/].isEmpty()
+[else] 
+    this.[anStructFeature.generateVariableOrGetter()/] != [aAttribute.getDefaultValue(modules)/]
+[/if]
+[/template]
+
+[template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny ) ? (oclIsKindOf(EReference) and not eType.isAny()) post (trim()){
+	aReference : EReference = anStructFeature.oclAsType(EReference);
+}]
+[if isListType()]
+    [if isField()]this.[aReference.getVariableName()/] && [/if]!this.[aReference.generateVariableOrGetter()/].isEmpty()
+[elseif aReference.isBackReference() ]
+    [if aReference.eType.name <> 'EBoolean']
+    this.[aReference.generateVariableOrGetter()/] != null
     [else]
-        this.[anStructFeature.getPropertyName()/].size() != 0
-    [/if]
-[elseif anStructFeature.oclAsType(EReference).isBackReference() ]
-    [if anStructFeature.eType.name <> 'EBoolean']
-    this.[anStructFeature.getPropertyName()/] != null
-    [else]
-    this.[anStructFeature.getPropertyName()/]
+    this.[aReference.generateVariableOrGetter()/]
     [/if]
 [else]
-    [let accessor : String = if isField() then anStructFeature.getVariableName() else anStructFeature.getPropertyName() endif]
-        this.[accessor/] != [anStructFeature.eType.getDefaultValue(modules)/]
-    [/let]
+	this.[aReference.generateVariableOrGetter()/] != [aReference.getDefaultValue(modules)/]
 [/if]
 [/template]
 
 [template public generateComparison(anStructFeature : EStructuralFeature, modules : OclAny) ? (eType.isAny()) post (trim())]
-this.[anStructFeature.getPropertyName()/] != null
+this.[generateVariableOrGetter(anStructFeature)/] != null
 [/template]
 
 [template public generateEInverseAddDefinition(aClass : EClass,modules : OclAny) ]
@@ -290,8 +311,8 @@ eBasicInverseAdd(otherEnd: [if not aPackage.isEcorePackage()]ecore.[/if]EObject,
             return notifications
     [elseif aFeature.isListType()]
         [let type : String = aFeature.eGenericType.generateType(modules)]
-            let list = this.[aFeature.getPropertyName()/] as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
-            let end = otherEnd as [type/]
+            const list = this.[aFeature.getGetterName()/]() as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
+            const end = otherEnd as [type/]
         [/let]      
             return list.addWithNotification(end, notifications);
     [elseif aFeature.isContainer()]
@@ -306,16 +327,17 @@ eBasicInverseAdd(otherEnd: [if not aPackage.isEcorePackage()]ecore.[/if]EObject,
         [/if]
     [else]
             let msgs = notifications;
-            if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal(this.[aFeature.getPropertyName()/])) {
+			const [aFeature.name/] = this.[if aFeature.isProxy()]basic[aFeature.getGetterName().toUpperFirst()/]()[else][aFeature.getGetterName()/]()[/if]	
+            if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([aFeature.name/])) {
             [if aFeature.isContains()]
-                msgs = this.[aFeature.getPropertyName()/].eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aFeature,modules)/], msgs)
+                msgs = [aFeature.name/].eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aFeature,modules)/], msgs)
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-                msgs = this.[aFeature.getPropertyName()/].eInverseRemove(this, [reverseFeature.eContainingClass.getImportedIDName(reverseFeature,modules)/], msgs)
+                msgs = [aFeature.name/].eInverseRemove(this, [reverseFeature.eContainingClass.getImportedIDName(reverseFeature,modules)/], msgs)
                 [/let]
             [/if]
             }
-            return this.basicSet[aFeature.getPropertyName().toUpperFirst()/](otherEnd as [aFeature.generateType(modules)/],msgs)
+            return this.basic[aFeature.getSetterName().toUpperFirst()/](otherEnd as [aFeature.generateType(modules)/],msgs)
     [/if]
         }
 [/for]
@@ -337,8 +359,8 @@ eBasicInverseRemove(otherEnd: [if not aPackage.isEcorePackage()]ecore.[/if]EObje
             return notifications
     [elseif aFeature.isListType()]
         [let type : String = aFeature.eGenericType.generateType(modules)]
-            let list = this.[aFeature.getPropertyName()/] as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
-            let end = otherEnd as [type/]
+            const list = this.[aFeature.getGetterName()/]() as [if not aPackage.isEcorePackage()]ecore.[/if]ENotifyingList<[type/]>
+            const end = otherEnd as [type/]
             return list.removeWithNotification(end, notifications)
         [/let]
     [elseif aFeature.isContainer() and not aFeature.isBasicSet()]

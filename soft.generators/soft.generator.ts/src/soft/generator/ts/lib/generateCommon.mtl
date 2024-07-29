@@ -66,15 +66,5 @@
 /]
 
 
-[query public getPropertyName( aFeature : EStructuralFeature ) : String =
-if aFeature.eType.name = 'EBoolean' then 
-	'is' + aFeature.name.toUpperFirst() 
-else if getReservedKeywords()->exists(s | s = aFeature.name) then
-	aFeature.name + '_'
-else
-	aFeature.name 
-endif endif/]
 
-[query public getVariableName( aFeature : EStructuralFeature ) : String = 
-'_' + aFeature.getPropertyName()/]
 

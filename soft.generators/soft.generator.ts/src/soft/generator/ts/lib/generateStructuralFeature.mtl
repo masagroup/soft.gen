@@ -18,18 +18,47 @@
 [import soft::generator::ts::generateType /]
 [import soft::generator::ts::lib::generateCommon /]
 
+[query private isSimpleSet(aStructuralFeature : EStructuralFeature, aClass : EClass ) : Boolean =
+	isGet() and not isSet() and not isVolatile() and not isContainer()
+/]
 
-[template public generateDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
-[if isGet() or isSet()]
-[aStructuralFeature.generatePropertyDeclaration(modules)/]
+[query private isAsyncGet(aStructuralFeature : EStructuralFeature ) : Boolean =
+	isGet() and isProxy() and not isListType() and not isContainer()  
+/]
+
+[template public generatePropertyDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+// [aStructuralFeature.name/] property
+[if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/]: [aStructuralFeature.generateType(modules)/]
+
+[/template]
+
+[template public generateMethodsDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+// [aStructuralFeature.name/]
+[if isGet()]
+[aStructuralFeature.generateGetDeclaration(modules)/]
+[/if]
+[if isAsyncGet()]
+[aStructuralFeature.generateGetAsyncDeclaration(modules)/]
+[/if]
+[if isSet()]
+[aStructuralFeature.generateSetDeclaration(modules)/]
 [/if]
 [if isUnSet()]
 [aStructuralFeature.generateUnSetDeclaration(modules)/]
 [/if]
+
 [/template]
 
-[template private generatePropertyDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
-[if aStructuralFeature.isGet() and not aStructuralFeature.isSet()]readonly [/if][aStructuralFeature.getPropertyName()/]: [aStructuralFeature.generateType(modules)/]
+[template private generateGetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+[aStructuralFeature.getGetterName()/](): [aStructuralFeature.generateType(modules)/]
+[/template]
+
+[template private generateGetAsyncDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+[aStructuralFeature.getGetterName()/]Async(): Promise<[aStructuralFeature.generateType(modules)/]>
+[/template]
+
+[template private generateSetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
+[aStructuralFeature.getSetterName()/]( new[aStructuralFeature.getPropertyName().toUpperFirst()/] : [aStructuralFeature.generateType(modules)/] ): void
 [/template]
 
 [template private generateUnSetDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
@@ -41,6 +70,54 @@ protected [aStructuralFeature.getVariableName()/]: [aStructuralFeature.generateT
 
 [/template]
 
+[template private getMapConstructor( aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny) post(trim()){
+	aPackage : EPackage = aClass.ePackage;
+	aClassifier : EClassifier = aStructuralFeature.eType;
+	aType : EGenericType = aStructuralFeature.eGenericType;
+}]
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectMap<[aType.generateMapTypeParameters(modules)/]>([if aClassifier.ePackage.name <> aClass.ePackage.name][aClassifier.ePackage.name/].[/if]get[aClassifier.ePackage.getInterfaceName()/]().[aClassifier.getReflectiveGetterName()/]())
+[/template]
+
+[template private getListConstructor( aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny) post(trim())]
+[/template]
+
+[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass , modules : OclAny) ? (not anEAttribute.isFeatureMapType()) post(trim()){
+	aPackage : EPackage = aClass.ePackage;
+}]
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEDataTypeList<[anEAttribute.eGenericType.generateType(modules)/]>(this, [aClass.getImportedIDName(anEAttribute,modules)/])
+[/template]
+
+[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass , modules : OclAny) ? (anEAttribute.isFeatureMapType()) post(trim()) ]
+null
+[/template]
+
+[template private getListConstructor( anEReference : EReference , aClass : EClass , modules : OclAny) post(trim()) {
+	aPackage : EPackage = aClass.ePackage;
+	aType : String = anEReference.eGenericType.generateType(modules);
+}]
+[if (anEReference.containment)]
+    [if anEReference.eOpposite.oclIsUndefined() ]
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getImportedIDName(anEReference,modules)/] , -1, true, true, false, [anEReference.isProxy()/], [anEReference.isUnSettable()/])
+    [else]
+        [let reverseFeature :EReference = anEReference.eOpposite ]
+        [let reverseClass :EClass = reverseFeature.eContainingClass ]
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getImportedIDName(anEReference,modules)/] ,[reverseClass.getImportedIDName(reverseFeature,modules)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
+        [/let]
+        [/let]
+    [/if]
+[else]
+    [if anEReference.eOpposite.oclIsUndefined() ]     
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [anEReference.eContainingClass.getImportedIDName( anEReference ,modules)/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
+    [else]
+        [let reverseFeature :EReference = anEReference.eOpposite ]
+        [let reverseClass :EClass = reverseFeature.eContainingClass ]
+new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getImportedIDName(anEReference,modules)/] , [reverseClass.getImportedIDName(reverseFeature,modules)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
+        [/let]
+        [/let]
+    [/if]
+[/if]
+[/template]
+
 [template public generateVariableInitialization(aStructuralFeature : EStructuralFeature,modules : OclAny )]
 [/template]
 
@@ -49,12 +126,12 @@ this.[aReference.getVariableName()/] = null
 
 [/template]
 
-[template public generateVariableInitialization(aAttribute : EAttribute,modules : OclAny ) ]
-[let defaultValue : String = aAttribute.getDefaultValue(modules)]
+[template public generateVariableInitialization(aAttribute : EAttribute,modules : OclAny ){
+	defaultValue : String = aAttribute.getDefaultValue(modules);
+}]
 [if defaultValue <> '']
 this.[aAttribute.getVariableName()/] = [defaultValue/]
 [/if]
-[/let]
 [/template]
 
 [template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny) ? ( aStructuralFeature.getLazy() = 'function' )]
@@ -72,9 +149,10 @@ protected [aStructuralFeature.getInitializationMethodName()/](): [aStructuralFea
 
 [/template]
 
-[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny) ? ( aStructuralFeature.getLazy() = 'action' )]
+[template public generateVariableInitializationMethodDefinition(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny) ? ( aStructuralFeature.getLazy() = 'action' ) {
+	varName : String = aStructuralFeature.getVariableName();
+}]
 protected [aStructuralFeature.getInitializationMethodName()/](): void {
-[let varName : String = aStructuralFeature.getVariableName() ]
 [if isMapType()]
     this.[varName/] = [aStructuralFeature.getMapConstructor(aClass,modules)/]
 [elseif isListType()]
@@ -86,23 +164,46 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
     throw new Error("[aStructuralFeature.getInitializationMethodName()/] not implemented")
 [/if]
 }
-[/let]
 
 [/template]
 
-[template public generateImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny)]
+[template public generatePropertyImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny) ]
 [if isGet()]
 
-[aStructuralFeature.generateGetImplementation(aClass,modules)/]
+[aStructuralFeature.generatePropertyGetImplementation(aClass,modules)/]
 [/if]
 [if isSet()]
 
-[aStructuralFeature.generateSetImplementation(aClass,modules)/]
+[aStructuralFeature.generatePropertySetImplementation(aClass,modules)/]
 [/if]
-[if isGet() and not isSet() and not isVolatile() and not isContainer() and not isListType()]
+[if isSimpleSet(aClass)]
 
-[aStructuralFeature.generateInternalSetImplementation(aClass,modules)/]
+[aStructuralFeature.generatePropertySimpleSetImplementation(aClass,modules)/]
 [/if]
+[/template]
+
+[template public generateMethodsImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny) ]
+[if isGet()]
+
+[aStructuralFeature.generateMethodGetImplementation(aClass,modules)/]
+[/if]
+[if isAsyncGet()]
+
+[aStructuralFeature.generateMethodGetAsyncImplementation(aClass,modules)/]
+[/if]
+[if isSet()]
+
+[aStructuralFeature.generateMethodSetImplementation(aClass,modules)/]
+[/if]
+[if isSimpleSet(aClass)]
+
+[aStructuralFeature.generateMethodSimpleSetImplementation(aClass,modules)/]
+[/if]
+[if isUnSet()]
+
+[aStructuralFeature.generateUnSetImplementation(aClass,modules)/]
+[/if]
+
 [if isBasicGet()]
 
 [aStructuralFeature.generateBasicGetImplementation(aClass,modules)/]
@@ -111,21 +212,27 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 
 [aStructuralFeature.generateBasicSetImplementation(aClass,modules)/]
 [/if]
-[if isUnSet()]
-
-[aStructuralFeature.generateUnSetImplementation(aClass,modules)/]
-[/if]
 [if isBasicUnSet()]
 
 [aStructuralFeature.generateBasicUnSetImplementation(aClass,modules)/]
 [/if]
 [/template]
 
-[template public generateGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
-// get the value of [aStructuralFeature.getPropertyName()/]
+[template private generatePropertyGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
+// get the value of [aStructuralFeature.name/]
 get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(modules)/] {
-[let aPackage : EPackage =  aClass.ePackage ]
-[let varName : String = aStructuralFeature.getVariableName() ]
+	return this.[aStructuralFeature.getGetterName()/]()
+}
+[/template]
+
+[template private generateMethodGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+	aPackage : EPackage =  aClass.ePackage;
+	varName : String = aStructuralFeature.getVariableName();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
+	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
+}]
+// get the value of [aStructuralFeature.name/]
+[aStructuralFeature.getGetterName()/](): [aStructuralFeature.generateType(modules)/] {
 [if isContainer()]
     if (this.eContainerFeatureID() == [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/]) {
         return this.eContainer() as [aStructuralFeature.generateType(modules)/]
@@ -134,10 +241,8 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 [elseif not isVolatile()]
     [if not isListType() and isProxy()]
     if (this.[varName/] != null && this.[varName/].eIsProxy()) {
-        [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
-        [let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst()]
-        let [oldVarName/] = this.[varName/]
-        let [newVarName/] = this.eResolveProxy([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
+        const [oldVarName/] = this.[varName/]
+        const [newVarName/] = this.eResolveProxy([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
         this.[varName/] = [newVarName/]
         if ([newVarName/] != [oldVarName/]) {
         [if isContains()]
@@ -166,12 +271,10 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
                 notifications.Dispatch()
             }
         [/if]
-            if (this.eNotificationRequired) {
+            if (this.eNotificationRequired()) {
                 this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.RESOLVE, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/]))
             }
         }
-        [/let]
-        [/let]
     }
     [elseif aStructuralFeature.isLazy()]
         [let lazy : String = aStructuralFeature.getLazy()]
@@ -202,57 +305,97 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 [elseif hasKey('getterBody')]
     [valueKey('getterBody')/]
 [else]
-    throw new Error("get [aStructuralFeature.getPropertyName()/] not implemented")
+    throw new Error("[aStructuralFeature.getGetterName()/] not implemented")
 [/if]
-[/let]
-[/let]
 }
 [/template]
 
-[template public generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
-// get the basic value of [aStructuralFeature.getPropertyName()/] with no proxy resolution
-basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFeature.generateType(modules)/] {
-[let aPackage : EPackage =  aClass.ePackage ]
-[let varName : String = aStructuralFeature.getVariableName() ]
-[if isContainer()]
-    if (this.EContainerFeatureID() == [aClass.getImportedIDName(aStructuralFeature,modules)/]) {
-        return this.eInternalContainer() as [aStructuralFeature.generateType(modules)/]
-    } 
-    return null
-[elseif not isVolatile()]
-    [let lazy : String = aStructuralFeature.getLazy()]
-    [if lazy <> 'no']
-        [if  lazy = 'function']
-            [if aStructuralFeature.oclIsKindOf(EAttribute)]
-    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(modules)/]) {
+[template private generateMethodGetAsyncImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+	aPackage : EPackage =  aClass.ePackage;
+	varName : String = aStructuralFeature.getVariableName();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
+	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
+}]
+// get the value of [aStructuralFeature.name/] asynchronously
+async [aStructuralFeature.getGetterName()/]Async(): Promise<[aStructuralFeature.generateType(modules)/]> {
+[if not isVolatile()]
+    if (this.[varName/] != null && this.[varName/].eIsProxy()) {
+        const [oldVarName/] = this.[varName/]
+        const [newVarName/] = await this.eResolveProxyAsync([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
+        this.[varName/] = [newVarName/]
+        if ([newVarName/] != [oldVarName/]) {
+        [if isContains()]
+            let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
+            [if not isBidirectional()]
+            notifications = ([oldVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
             [else]
-    if (this.[varName/] == null) {
+                [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+                [let reverseClass : EClass = reverseFeature.eContainingClass]
+            notifications = ([oldVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[reverseClass.getImportedIDName(reverseFeature,modules)/],notifications)
+                [/let]
+                [/let]
             [/if]
-        this.[varName/] = this.[aStructuralFeature.getInitializationMethodName()/]()
-    }
-        [elseif lazy = 'action']
-    this.[aStructuralFeature.getInitializationMethodName()/]()
+            if ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInternalContainer() == null) {
+            [if not isBidirectional()]
+            notifications = ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
+            [else]
+                [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+                [let reverseClass : EClass = reverseFeature.eContainingClass]
+            notifications = ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this, [reverseClass.getImportedIDName(reverseFeature,modules)/],notifications)
+                [/let]
+                [/let]
+            [/if]
+            }
+            if notifications != null {
+                notifications.Dispatch()
+            }
         [/if]
-    [/if]
-    [/let]
-    return this.[varName/]
-[elseif hasKey('getterBody')]
-    [valueKey('getterBody')/]
+            if (this.eNotificationRequired()) {
+                this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.RESOLVE, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/]))
+            }
+        }
+    }
+	return this.[varName/]
 [else]
-    throw new Error("basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/] not implemented")
+	throw new Error("[aStructuralFeature.getGetterName()/]Async not implemented")
 [/if]
-[/let]
-[/let]
 }
 [/template]
 
-[template public generateSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny)]
-[let aPackage : EPackage = aClass.ePackage]
-[let varName : String = aStructuralFeature.getVariableName() ]
-[let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst() ]
-[let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst() ]
-// set the value of [aStructuralFeature.getPropertyName()/]
-set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
+[template private generatePropertySetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+	newVarname : String = 'new' + aStructuralFeature.name.toUpperFirst();
+}]
+// set the value of [aStructuralFeature.name/]
+set [aStructuralFeature.getPropertyName()/]([newVarname/]: [aStructuralFeature.generateType(modules)/]) {
+	this.[aStructuralFeature.getSetterName()/]([newVarname/])
+}
+[/template]
+
+[template private generatePropertySimpleSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+	aPackage : EPackage = aClass.ePackage;
+	varName : String = aStructuralFeature.getVariableName();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
+}]
+// set the value of [aStructuralFeature.name/]
+set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]) {
+[if aStructuralFeature.isListType()]
+	const l = this.[aStructuralFeature.getGetterName()/]()
+	l.clear()
+	l.addAll([newVarName/])
+[else]
+	this.[varName/] = [newVarName/]
+[/if]
+}
+[/template]
+
+[template private generateMethodSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
+	aPackage : EPackage = aClass.ePackage;
+	varName : String = aStructuralFeature.getVariableName();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
+	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
+}]
+// set the value of [aStructuralFeature.name/]
+[aStructuralFeature.getSetterName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]): void {
 [if not isVolatile()]
     [if isContainer()]
     if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getImportedIDName(aStructuralFeature,modules)/])) {
@@ -271,11 +414,11 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
         if ( notifications != null ) {
             notifications.dispatch()
         }
-    } else if (this.eNotificationRequired) {
+    } else if (this.eNotificationRequired()) {
         this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [newVarName/], [newVarName/]))
     }
     [elseif isBidirectional() or isContains()]
-    let [oldVarName/] = this.[varName/]
+    const [oldVarName/] = this.[varName/]
     if ( [newVarName/] != [oldVarName/] ) {
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
         if ([if not aPackage.isEcorePackage()]ecore.[/if]isEObjectInternal([oldVarName/])) {
@@ -304,127 +447,42 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.
         [if isUnSettable()]
         [/if]
     [else]
-    let [oldVarName/] = this.[varName/]
+    const [oldVarName/] = this.[varName/]
     this.[varName/] = [newVarName/]
-    if (this.eNotificationRequired) {
+    if (this.eNotificationRequired()) {
         this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/]))
     }
     [/if]
 [elseif hasKey('setterBody')]
     [valueKey('setterBody')/]
 [else]
-    throw new Error("set [aStructuralFeature.getPropertyName()/] not implemented")
+    throw new Error("[aStructuralFeature.getSetterName()/] not implemented")
 [/if]
 }
-[/let]
-[/let]
-[/let]
-[/let]
 [/template]
 
-[template public generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
-[let aPackage : EPackage = aClass.ePackage]
-[let varName : String = aStructuralFeature.getVariableName() ]
-[let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst()]
-basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [aStructuralFeature.generateType(modules)/] , msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain ): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
-[if isContainer()]
-    return this.eBasicSetContainer([newVarName/], [aClass.getImportedIDName(aStructuralFeature,modules)/], msgs)
-[elseif not isVolatile()]
-    [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
-    let [oldVarName/] = this.[varName/]
-    this.[varName/] = [newVarName/]
-    let notifications = msgs
-    if ( this.eNotificationRequired ) {
-        let notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/])
-        if (notifications != null ) {
-            notifications.add( notification )
-        } else {
-            notifications = notification
-        }
-    }
-    return notifications
-    [/let]
-[elseif (hasKey('setterBody'))]
-    [valueKey('setterBody')/]
+[template private generateMethodSimpleSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+	aPackage : EPackage = aClass.ePackage;
+	varName : String = aStructuralFeature.getVariableName();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
+}]
+// set the value of [aStructuralFeature.name/]
+[aStructuralFeature.getSetterName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]) {
+[if aStructuralFeature.isListType()]
+	const l = this.[aStructuralFeature.getGetterName()/]()
+	l.clear()
+	l.addAll([newVarName/])
 [else]
-    throw new Error("basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/] not implemented")
-[/if]
-}
-[/let]
-[/let]
-[/let]
-[/template]
-
-[template private generateInternalSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
-[let aPackage : EPackage = aClass.ePackage]
-[let varName : String = aStructuralFeature.getVariableName() ]
-[let newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst() ]
-/** @internal */
-set [aStructuralFeature.getPropertyName()/]([newVarName/] : [aStructuralFeature.generateType(modules)/] ) {
 	this.[varName/] = [newVarName/]
-}
-[/let]
-[/let]
-[/let]
-[/template]
-
-[template private getMapConstructor( aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny) post(trim())]
-[let aPackage : EPackage = aClass.ePackage]
-[let aClassifier : EClassifier = aStructuralFeature.eType]
-[let aType : EGenericType = aStructuralFeature.eGenericType]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectMap<[aType.generateMapTypeParameters(modules)/]>([if aClassifier.ePackage.name <> aClass.ePackage.name][aClassifier.ePackage.name/].[/if]get[aClassifier.ePackage.getInterfaceName()/]().[aClassifier.getReflectiveGetterName()/]())
-[/let]
-[/let]
-[/let]
-[/template]
-
-[template private getListConstructor( aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny) post(trim())]
-[/template]
-
-[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass , modules : OclAny) ? (not anEAttribute.isFeatureMapType()) post(trim()) ]
-[let aPackage : EPackage = aClass.ePackage]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEDataTypeList<[anEAttribute.eGenericType.generateType(modules)/]>(this, [aClass.getImportedIDName(anEAttribute,modules)/])
-[/let]
-[/template]
-
-[template private getListConstructor( anEAttribute : EAttribute , aClass : EClass , modules : OclAny) ? (anEAttribute.isFeatureMapType()) post(trim()) ]
-null
-[/template]
-
-
-[template private getListConstructor( anEReference : EReference , aClass : EClass , modules : OclAny) post(trim())]
-[let aPackage : EPackage = aClass.ePackage]
-[let aType : String = anEReference.eGenericType.generateType(modules)]
-[if (anEReference.containment)]
-    [if anEReference.eOpposite.oclIsUndefined() ]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getImportedIDName(anEReference,modules)/] , -1, true, true, false, [anEReference.isProxy()/], [anEReference.isUnSettable()/])
-    [else]
-        [let reverseFeature :EReference = anEReference.eOpposite ]
-        [let reverseClass :EClass = reverseFeature.eContainingClass ]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getImportedIDName(anEReference,modules)/] ,[reverseClass.getImportedIDName(reverseFeature,modules)/], true , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
-        [/let]
-        [/let]
-    [/if]
-[else]
-    [if anEReference.eOpposite.oclIsUndefined() ]     
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [anEReference.eContainingClass.getImportedIDName( anEReference ,modules)/] , -1 , false , false , false , [anEReference.isProxy()/] , [anEReference.isUnSettable()/])
-    [else]
-        [let reverseFeature :EReference = anEReference.eOpposite ]
-        [let reverseClass :EClass = reverseFeature.eContainingClass ]
-new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this, [aClass.getImportedIDName(anEReference,modules)/] , [reverseClass.getImportedIDName(reverseFeature,modules)/] , false , true , true , [anEReference.isProxy()/] , [anEReference.isUnSettable()/] )
-        [/let]
-        [/let]
-    [/if]
 [/if]
-[/let]
-[/let]
+}
 [/template]
 
-
-[template public generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny)]
-[let aPackage : EPackage = aClass.ePackage]
-[let varName : String = aStructuralFeature.getVariableName() ]
-[let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst() ]
+[template private generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
+	aPackage : EPackage = aClass.ePackage;
+	varName : String = aStructuralFeature.getVariableName();
+	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
+}]
 // [aStructuralFeature.getUnSetterName()/] unset the value of [varName/]
 [aStructuralFeature.getUnSetterName()/]() : void {
 [if not isVolatile()]
@@ -456,11 +514,11 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
         if ( notifications != null ) {
             notifications.dispatch()
         }
-    } else if (this.eNotificationRequired) {
+    } else if (this.eNotificationRequired()) {
         this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/],null,null))
     }
     [else]
-        if (this.eNotificationRequired) {
+        if (this.eNotificationRequired()) {
             this.eNotify(new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this,[if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/],null,null))
         }
     [/if]
@@ -470,22 +528,87 @@ new [if not aPackage.isEcorePackage()]ecore.[/if]BasicEObjectList<[aType/]>(this
     throw new Error("[aStructuralFeature.getUnSetterName()/] not implemented")
 [/if]
 }
-[/let]
-[/let]
-[/let]
 [/template]
 
-[template public generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny)]
-[let aPackage : EPackage = aClass.ePackage]
-[let varName : String = aStructuralFeature.getVariableName()]    
-[let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
+[template private generateBasicGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+	aPackage : EPackage =  aClass.ePackage;
+	varName : String = aStructuralFeature.getVariableName();
+}]
+// get the basic value of [aStructuralFeature.name/] with no proxy resolution
+basic[aStructuralFeature.getGetterName().toUpperFirst()/](): [aStructuralFeature.generateType(modules)/] {
+[if isContainer()]
+    if (this.EContainerFeatureID() == [aClass.getImportedIDName(aStructuralFeature,modules)/]) {
+        return this.eInternalContainer() as [aStructuralFeature.generateType(modules)/]
+    } 
+    return null
+[elseif not isVolatile()]
+    [let lazy : String = aStructuralFeature.getLazy()]
+    [if lazy <> 'no']
+        [if  lazy = 'function']
+            [if aStructuralFeature.oclIsKindOf(EAttribute)]
+    if (this.[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(modules)/]) {
+            [else]
+    if (this.[varName/] == null) {
+            [/if]
+        this.[varName/] = this.[aStructuralFeature.getInitializationMethodName()/]()
+    }
+        [elseif lazy = 'action']
+    this.[aStructuralFeature.getInitializationMethodName()/]()
+        [/if]
+    [/if]
+    [/let]
+    return this.[varName/]
+[elseif hasKey('getterBody')]
+    [valueKey('getterBody')/]
+[else]
+    throw new Error("basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/] not implemented")
+[/if]
+}
+[/template]
+
+[template private generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+	aPackage : EPackage = aClass.ePackage;
+	varName : String = aStructuralFeature.getVariableName();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
+}]
+basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [aStructuralFeature.generateType(modules)/], msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
+[if isContainer()]
+    return this.eBasicSetContainer([newVarName/], [aClass.getImportedIDName(aStructuralFeature,modules)/], msgs)
+[elseif not isVolatile()]
+    [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
+    const [oldVarName/] = this.[varName/]
+    this.[varName/] = [newVarName/]
+    let notifications = msgs
+    if ( this.eNotificationRequired() ) {
+        const notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.SET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], [newVarName/])
+        if (notifications != null ) {
+            notifications.add( notification )
+        } else {
+            notifications = notification
+        }
+    }
+    return notifications
+    [/let]
+[elseif (hasKey('setterBody'))]
+    [valueKey('setterBody')/]
+[else]
+    throw new Error("basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/] not implemented")
+[/if]
+}
+[/template]
+
+[template private generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
+	aPackage : EPackage = aClass.ePackage;
+	varName : String = aStructuralFeature.getVariableName();    
+	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
+}]
 basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain ): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
 [if not isVolatile()]
-    let [oldVarName/] = this.[varName/]
+    const [oldVarName/] = this.[varName/]
     let notifications = msgs
     this.[varName/] = null
     if (this.eNotificationRequired()) {
-        let notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], null)
+        const notification = new [if not aPackage.isEcorePackage()]ecore.[/if]Notification(this, [if not aPackage.isEcorePackage()]ecore.[/if]EventType.UNSET, [aClass.getImportedIDName(aStructuralFeature,modules)/], [oldVarName/], null)
         if ( notifications != null ) {
             notifications.add( notification )
         } else {
@@ -497,7 +620,21 @@ basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](msgs: [if not aPacka
     throw new Error("basic[aStructuralFeature.getUnSetterName().toUpperFirst()/] not implemented")
 [/if] 
 }
-[/let]
-[/let]
-[/let]
+[/template]
+
+
+[template public generateGetCall(aFeature : EStructuralFeature) post (trim())] 
+	[if aFeature.isMethodAccessors()]
+		[aFeature.getGetterName()/]()
+	[elseif aFeature.isPropertyAccessors()]
+		[aFeature.getPropertyName()/]
+	[/if] 
+[/template]
+
+[template public generateSetCall(aFeature : EStructuralFeature, value : String) post (trim())] 
+	[if aFeature.isMethodAccessors()]
+		[aFeature.getSetterName()/]([value/])
+	[elseif aFeature.isPropertyAccessors()]
+		[aFeature.getPropertyName()/] = [value/]
+	[/if] 
 [/template]
