@@ -534,8 +534,8 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 	aPackage : EPackage =  aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
 }]
-// get the basic value of [aStructuralFeature.getPropertyName()/] with no proxy resolution
-basicGet[aStructuralFeature.getPropertyName().toUpperFirst()/](): [aStructuralFeature.generateType(modules)/] {
+// get the basic value of [aStructuralFeature.name/] with no proxy resolution
+basic[aStructuralFeature.getGetterName().toUpperFirst()/](): [aStructuralFeature.generateType(modules)/] {
 [if isContainer()]
     if (this.EContainerFeatureID() == [aClass.getImportedIDName(aStructuralFeature,modules)/]) {
         return this.eInternalContainer() as [aStructuralFeature.generateType(modules)/]

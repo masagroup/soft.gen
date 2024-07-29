@@ -306,7 +306,11 @@ else
 endif endif/]
 
 [query public getVariableName( aFeature : EStructuralFeature ) : String = 
-'_' + aFeature.getPropertyName()/]
+'_' + (if aFeature.eType.name = 'EBoolean' then 
+			'is' + aFeature.name.toUpperFirst() 
+	   else aFeature.name endif
+	  ) 
+/]
 
 [query public getReflectiveGetterName(anENamedElement : ENamedElement) : String = 
 let getterName : String = 'get' + anENamedElement.getElementAccessorName() in
