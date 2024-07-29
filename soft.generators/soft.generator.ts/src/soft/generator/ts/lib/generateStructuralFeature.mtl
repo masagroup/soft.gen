@@ -228,8 +228,8 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 [template private generateMethodGetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage =  aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
-	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
-	oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
+	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
 }]
 // get the value of [aStructuralFeature.name/]
 [aStructuralFeature.getGetterName()/](): [aStructuralFeature.generateType(modules)/] {
@@ -313,8 +313,8 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 [template private generateMethodGetAsyncImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage =  aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
-	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
-	oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
+	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
 }]
 // get the value of [aStructuralFeature.name/] asynchronously
 async [aStructuralFeature.getGetterName()/]Async(): Promise<[aStructuralFeature.generateType(modules)/]> {
@@ -363,7 +363,7 @@ async [aStructuralFeature.getGetterName()/]Async(): Promise<[aStructuralFeature.
 [/template]
 
 [template private generatePropertySetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
-	newVarname : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
+	newVarname : String = 'new' + aStructuralFeature.name.toUpperFirst();
 }]
 // set the value of [aStructuralFeature.name/]
 set [aStructuralFeature.getPropertyName()/]([newVarname/]: [aStructuralFeature.generateType(modules)/]) {
@@ -374,7 +374,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarname/]: [aStructuralFeature.g
 [template private generatePropertySimpleSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
-	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
 }]
 // set the value of [aStructuralFeature.name/]
 set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]) {
@@ -391,8 +391,8 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 [template private generateMethodSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
-	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
-	oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
+	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
 }]
 // set the value of [aStructuralFeature.name/]
 [aStructuralFeature.getSetterName()/](new[aStructuralFeature.getPropertyName().toUpperFirst()/]: [aStructuralFeature.generateType(modules)/]): void {
@@ -464,7 +464,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 [template private generateMethodSimpleSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
-	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
 }]
 // set the value of [aStructuralFeature.name/]
 [aStructuralFeature.getSetterName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]) {
@@ -481,7 +481,7 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 [template private generateUnSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
-	oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst();
+	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
 }]
 // [aStructuralFeature.getUnSetterName()/] unset the value of [varName/]
 [aStructuralFeature.getUnSetterName()/]() : void {
@@ -569,13 +569,13 @@ basic[aStructuralFeature.getGetterName().toUpperFirst()/](): [aStructuralFeature
 [template private generateBasicSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
-	newVarName : String = 'new' + aStructuralFeature.getPropertyName().toUpperFirst();
+	newVarName : String = 'new' + aStructuralFeature.name.toUpperFirst();
 }]
 basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [aStructuralFeature.generateType(modules)/], msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
 [if isContainer()]
     return this.eBasicSetContainer([newVarName/], [aClass.getImportedIDName(aStructuralFeature,modules)/], msgs)
 [elseif not isVolatile()]
-    [let oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst()]
+    [let oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst()]
     const [oldVarName/] = this.[varName/]
     this.[varName/] = [newVarName/]
     let notifications = msgs
@@ -600,7 +600,7 @@ basicSet[aStructuralFeature.getPropertyName().toUpperFirst()/]([newVarName/]: [a
 [template private generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, modules : OclAny){
 	aPackage : EPackage = aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();    
-	oldVarName : String = 'old' + aStructuralFeature.getPropertyName().toUpperFirst();
+	oldVarName : String = 'old' + aStructuralFeature.name.toUpperFirst();
 }]
 basic[aStructuralFeature.getUnSetterName().toUpperFirst()/](msgs: [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain ): [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain {
 [if not isVolatile()]
