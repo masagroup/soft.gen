@@ -231,7 +231,7 @@ convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ec
 [/template]
 
 [template public generateCreateFunctionContent(aClass : EClass, aReference : EReference, addID : Boolean)]
-const element = new [if aClass.hasExtension()][aClass.getExtensionName()/][else][aClass.getImplementationName()/][/if]();
+const element = this.create[aClass.name/]()
 [if(addID)]
 [if aReference.isMethodAccessors()]
 element.set[aClass.getElementIDAccessorName()/]ID(classID)
