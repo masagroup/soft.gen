@@ -64,7 +64,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
         return this._instance
     }
 
-    private constructor() {
+    constructor() {
         super()
         this.setName([aPackage.getConstantsName()/].eNAME)
         this.setNsPrefix([aPackage.getConstantsName()/].eNS_PREFIX)
