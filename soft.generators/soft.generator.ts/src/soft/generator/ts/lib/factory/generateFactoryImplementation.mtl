@@ -56,11 +56,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
         }
         return this._instance
     }
-
-    protected constructor() {
-        super()
-    } 
-
+    
     create(eClass: [if not aPackage.isEcorePackage()]ecore.[/if]EClass): [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
         switch (eClass.getClassifierID()){
 [for (aClass : EClass | classes)]
