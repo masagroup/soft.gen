@@ -61,13 +61,9 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     public static getInstance(): [className/] {
         if (!this._instance) {
             this._instance = new [className/]()
+			this._instance.initialize(get[aPackage.getFactoryName()/](), [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('getEcoreFactory()'),modules )/])
         }
         return this._instance
-    }
-
-    constructor() {
-        super()
-        this.initialize(get[aPackage.getFactoryName()/](), [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('getEcoreFactory()'),modules )/])
     }
 
 	protected initialize(packageFactory: [getImportedIdentifier(aPackage.getQualifiedIdentifier(aPackage.getFactoryName()),modules )/],ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]) {
