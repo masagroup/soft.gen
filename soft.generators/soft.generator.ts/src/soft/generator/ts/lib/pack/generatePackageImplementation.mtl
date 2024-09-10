@@ -40,6 +40,7 @@
 								}->collect(t | ecorePackage.getQualifiedIdentifier(t)),
 								Set{aPackage.getInterfaceName(), 
 									aPackage.getConstantsName(),
+									aPackage.getFactoryName(),
 									'get' + aPackage.getFactoryName()
 								}->collect(t | aPackage.getQualifiedIdentifier(t)), 
 								aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage->collect(p | p.getQualifiedInterfaceIdentifier())
@@ -66,16 +67,10 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
     constructor() {
         super()
-        this.setName([aPackage.getConstantsName()/].eNAME)
-        this.setNsPrefix([aPackage.getConstantsName()/].eNS_PREFIX)
-        this.setNsURI([aPackage.getConstantsName()/].eNS_URI)
-        this.setEFactoryInstance(get[aPackage.getFactoryName()/]())
-        this.createPackageContents()
-        this.initializePackageContents()
-        this.createResource()
+        this.initialize(get[aPackage.getFactoryName()/](), [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('getEcoreFactory()'),modules )/])
     }
 
-	protected initialize(packageFactory:[getImportedIdentifier(aPackage.getQualifiedIdentifier(aPackage.getFactoryName()),modules )/],ecoreFactory:[getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]) {
+	protected initialize(packageFactory: [getImportedIdentifier(aPackage.getQualifiedIdentifier(aPackage.getFactoryName()),modules )/],ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]) {
 		this.setName([aPackage.getConstantsName()/].eNAME)
         this.setNsPrefix([aPackage.getConstantsName()/].eNS_PREFIX)
         this.setNsURI([aPackage.getConstantsName()/].eNS_URI)
@@ -94,7 +89,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     [allDataTypes.generateGetter(aPackage,modules)/]
 
 
-    private createPackageContents(ecoreFactory:[getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]): void {
+    private createPackageContents(ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]): void {
 [for (aClass : EClass | allClasses)]
     
         [aClass.generateCreation(modules)/]
@@ -104,7 +99,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
         [allDataTypes.generateCreation(modules)/]
     }
 
-    private initializePackageContents(ecoreFactory:[getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]): void {
+    private initializePackageContents(ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]): void {
 
 [if allClasses->notEmpty()]
         [allClasses.initSuperTypes(modules)/]
