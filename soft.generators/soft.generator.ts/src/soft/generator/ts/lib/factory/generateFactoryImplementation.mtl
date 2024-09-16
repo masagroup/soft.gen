@@ -56,11 +56,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
         }
         return this._instance
     }
-
-    protected constructor() {
-        super()
-    } 
-
+    
     create(eClass: [if not aPackage.isEcorePackage()]ecore.[/if]EClass): [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
         switch (eClass.getClassifierID()){
 [for (aClass : EClass | classes)]
@@ -235,7 +231,7 @@ convert[aDataType.name/]ToString(eDataType: [if not aPackage.isEcorePackage()]ec
 [/template]
 
 [template public generateCreateFunctionContent(aClass : EClass, aReference : EReference, addID : Boolean)]
-const element = new [if aClass.hasExtension()][aClass.getExtensionName()/][else][aClass.getImplementationName()/][/if]();
+const element = this.create[aClass.name/]()
 [if(addID)]
 [if aReference.isMethodAccessors()]
 element.set[aClass.getElementIDAccessorName()/]ID(classID)

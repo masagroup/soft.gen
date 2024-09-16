@@ -40,6 +40,7 @@
 								}->collect(t | ecorePackage.getQualifiedIdentifier(t)),
 								Set{aPackage.getInterfaceName(), 
 									aPackage.getConstantsName(),
+									aPackage.getFactoryName(),
 									'get' + aPackage.getFactoryName()
 								}->collect(t | aPackage.getQualifiedIdentifier(t)), 
 								aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage->collect(p | p.getQualifiedInterfaceIdentifier())
@@ -60,20 +61,20 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     public static getInstance(): [className/] {
         if (!this._instance) {
             this._instance = new [className/]()
+			this._instance.initialize(get[aPackage.getFactoryName()/](), [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('getEcoreFactory()'),modules )/])
         }
         return this._instance
     }
 
-    private constructor() {
-        super()
-        this.setName([aPackage.getConstantsName()/].eNAME)
+	protected initialize(packageFactory: [getImportedIdentifier(aPackage.getQualifiedIdentifier(aPackage.getFactoryName()),modules )/],ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]) {
+		this.setName([aPackage.getConstantsName()/].eNAME)
         this.setNsPrefix([aPackage.getConstantsName()/].eNS_PREFIX)
         this.setNsURI([aPackage.getConstantsName()/].eNS_URI)
-        this.setEFactoryInstance(get[aPackage.getFactoryName()/]())
-        this.createPackageContents()
-        this.initializePackageContents()
+        this.setEFactoryInstance(packageFactory)
+        this.createPackageContents(ecoreFactory)
+        this.initializePackageContents(ecoreFactory)
         this.createResource()
-    }
+	}
 
 [for (aClass : EClass | allClasses)]
     [aClass.generateGetter(aPackage,modules)/]
@@ -84,9 +85,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     [allDataTypes.generateGetter(aPackage,modules)/]
 
 
-    private createPackageContents(): void {
-[if allClasses->notEmpty() or allDataTypes->notEmpty()]
-        const factory = [if not aPackage.isEcorePackage()]ecore.[/if]getEcoreFactory();
+    private createPackageContents(ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]): void {
 [for (aClass : EClass | allClasses)]
     
         [aClass.generateCreation(modules)/]
@@ -94,10 +93,9 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 [/for]
 
         [allDataTypes.generateCreation(modules)/]
-[/if]
     }
 
-    private initializePackageContents(): void {
+    private initializePackageContents(ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]): void {
 
 [if allClasses->notEmpty()]
         [allClasses.initSuperTypes(modules)/]
@@ -113,19 +111,18 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 [if not aPackage.isEcorePackage()]
 
 [for (aAnnotationSource : String | annotationSources)]
-        this.initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations()
+        this.initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations(ecoreFactory)
 [/for]
 [/if]
     }
 
 [if not aPackage.isEcorePackage()]
 [for (aAnnotationSource : String | annotationSources)]
-    private initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations(): void {
+    private initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations(ecoreFactory:[getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]): void {
         const source = "[aAnnotationSource/]"
-        const factory = [if not aPackage.isEcorePackage()]ecore.[/if]getEcoreFactory();
         [for (eAnnotation : EAnnotation | aPackage.eAllContents(EAnnotation)->select( a | a.source = aAnnotationSource))]
         {
-            const eAnnotation = factory.createEAnnotationFromContainer([eAnnotation.eModelElement.getPackageGetter(modules)/])
+            const eAnnotation = ecoreFactory.createEAnnotationFromContainer([eAnnotation.eModelElement.getPackageGetter(modules)/])
             eAnnotation.setSource(source)
             [for (eEntry : EStringToStringMapEntry | eAnnotation.details)]
             [let value : String = if eEntry.value.oclIsUndefined() then '' else eEntry.value endif]
@@ -206,21 +203,21 @@ private [anENamedElement.getElementInstance()/]: [aPackage.getMetaType(anENamedE
 [/template]
 
 [template private generateCreation(aEClass : EClass, modules : OclAny)]
-this.[aEClass.getElementInstance()/] = factory.createEClassFromContainerAndClassID(this, [aEClass.getImportedIDName(modules)/])
+this.[aEClass.getElementInstance()/] = ecoreFactory.createEClassFromContainerAndClassID(this, [aEClass.getImportedIDName(modules)/])
 [/template]
 
 [template private generateCreation(anEAttribute : EAttribute, modules : OclAny)]
-factory.createEAttributeFromContainerAndClassID(this.[anEAttribute.eContainingClass.getElementInstance()/], [anEAttribute.eContainingClass.getImportedIDName(anEAttribute,modules)/])
+ecoreFactory.createEAttributeFromContainerAndClassID(this.[anEAttribute.eContainingClass.getElementInstance()/], [anEAttribute.eContainingClass.getImportedIDName(anEAttribute,modules)/])
 
 [/template]
 
 [template private generateCreation(anEReference : EReference, modules : OclAny)]
-factory.createEReferenceFromContainerAndClassID(this.[anEReference.eContainingClass.getElementInstance()/], [anEReference.eContainingClass.getImportedIDName(anEReference,modules)/])
+ecoreFactory.createEReferenceFromContainerAndClassID(this.[anEReference.eContainingClass.getElementInstance()/], [anEReference.eContainingClass.getImportedIDName(anEReference,modules)/])
 
 [/template] 
 
 [template private generateCreation(anEOperation : EOperation, modules : OclAny)]
-factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingClass.getElementInstance()/], [anEOperation.eContainingClass.getImportedIDName(anEOperation,modules)/])
+ecoreFactory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingClass.getElementInstance()/], [anEOperation.eContainingClass.getImportedIDName(anEOperation,modules)/])
 
 [/template]
 
@@ -228,12 +225,12 @@ factory.createEOperationFromContainerAndClassID(this.[anEOperation.eContainingCl
 [/template]
 
 [template private generateCreation(aEnum : EEnum, modules : OclAny)]
-this.[aEnum.getElementInstance()/] = factory.createEEnumFromContainerAndClassID(this, [aEnum.getImportedIDName(modules)/])
+this.[aEnum.getElementInstance()/] = ecoreFactory.createEEnumFromContainerAndClassID(this, [aEnum.getImportedIDName(modules)/])
 
 [/template]
 
 [template private generateCreation(anEDatatype : EDataType, modules : OclAny)]
-this.[anEDatatype.getElementInstance()/] = factory.createEDataTypeFromContainerAndClassID(this, [anEDatatype.getImportedIDName(modules)/])
+this.[anEDatatype.getElementInstance()/] = ecoreFactory.createEDataTypeFromContainerAndClassID(this, [anEDatatype.getImportedIDName(modules)/])
 
 [/template]
 
