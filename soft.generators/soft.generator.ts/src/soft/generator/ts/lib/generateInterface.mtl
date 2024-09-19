@@ -38,7 +38,7 @@
 								, Set{
 										if aClass.requiresList() then Set{ 'EList' } else Set{} endif,
 										if aClass.requiresMap() then Set{ 'EMap' } else Set{} endif
-									}->flatten()->collect(t | ecorePackage.getQualifiedIdentifier(t))
+									}->flatten()->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t))
 								}->flatten()->select(s | s <> '' and s <> aClass.getQualifiedInterfaceIdentifier() );
 	modules : OclAny = aClass.getModules('interface',types);
 }]
@@ -46,9 +46,9 @@
 [fileComment()/]
 
 [if isDebug()]
-// module : [aPackage.getModule()/]
-// path : [getModulePath(aPackage.getModule())/]
-// namespace : [getModuleNamespace(aPackage.getModule())/]
+// module : [aPackage.getInterfaceModule()/]
+// path : [getModulePath(aPackage.getInterfaceModule())/]
+// namespace : [getModuleNamespace(aPackage.getInterfaceModule())/]
 
 // types
 [for (type : String| types)]

@@ -29,15 +29,15 @@
 [query public getInterfaceExtends(aClass : EClass ) : Sequence(String) =
 	let ecore : EPackage = getEcorePackage() in
 	if ( aClass.isMapEntry() ) then
-		Sequence{ ecore.getQualifiedIdentifier('EObject'), ecore.getQualifiedIdentifier('EMapEntry<'+aClass.getMapKeyType()+','+aClass.getMapValueType()+'>')}
+		Sequence{ ecore.getQualifiedInterfaceIdentifier('EObject'), ecore.getQualifiedInterfaceIdentifier('EMapEntry<'+aClass.getMapKeyType()+','+aClass.getMapValueType()+'>')}
     else if ( aClass.eSuperTypes->isEmpty() ) then
 		let aPackage : EPackage = aClass.ePackage in 
 	    if ( aClass.name = 'EObject' ) then
-            Sequence{ecore.getQualifiedIdentifier('ENotifier')}
+            Sequence{ecore.getQualifiedInterfaceIdentifier('ENotifier')}
         else if ( aPackage.hasPackageProperty('rootExtendsInterface') ) then
 			Sequence{aPackage.getPackageProperty('rootExtendsInterface')}
 		else
-            Sequence{ecore.getQualifiedIdentifier('EObject')}
+            Sequence{ecore.getQualifiedInterfaceIdentifier('EObject')}
         endif endif
     else
         aClass.eSuperTypes->iterate( cl ; res : Sequence(String) = Sequence{} | res->append(cl.getQualifiedInterfaceIdentifier()))
@@ -50,11 +50,11 @@
 		let aPackage : EPackage = aClass.ePackage in 
         let ecore : EPackage = getEcorePackage() in
     	if ( aClass.name = 'EObject' ) then
-			 ecore.getQualifiedIdentifier('BasicEObject')
+			 ecore.getQualifiedImplementationIdentifier('BasicEObject')
         else if ( aPackage.hasPackageProperty('rootExtendsClass') ) then
 			aPackage.getPackageProperty('rootExtendsClass')
 		else
-			ecore.getQualifiedIdentifier('EObjectImpl')
+			ecore.getQualifiedImplementationIdentifier('EObjectImpl')
         endif endif  
     else
         if ( extendsClass.hasExtension() ) then

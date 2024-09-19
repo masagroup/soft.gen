@@ -35,8 +35,8 @@
 									'EOperation',
 									'EDataType',
 									'EPackage'
-									}->collect(t | ecorePackage.getQualifiedIdentifier(t)),
-								Set{ aPackage.getQualifiedIdentifier(aPackage.getImplementationName()) }
+									}->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t)),
+								Set{ aPackage.getQualifiedInterfaceIdentifier(aPackage.getImplementationName()) }
 							}->flatten();
 	modules : OclAny = aPackage.getModules('package-interface',types);
 }]

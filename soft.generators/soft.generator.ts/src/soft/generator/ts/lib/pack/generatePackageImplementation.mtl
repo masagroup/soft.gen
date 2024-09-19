@@ -37,12 +37,12 @@
 									'EcoreFactory',
 									'EPackageExt',
 									'getEcoreFactory'
-								}->collect(t | ecorePackage.getQualifiedIdentifier(t)),
+								}->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t)),
 								Set{aPackage.getInterfaceName(), 
 									aPackage.getConstantsName(),
 									aPackage.getFactoryName(),
 									'get' + aPackage.getFactoryName()
-								}->collect(t | aPackage.getQualifiedIdentifier(t)), 
+								}->collect(t | aPackage.getQualifiedInterfaceIdentifier(t)), 
 								aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage->collect(p | p.getQualifiedInterfaceIdentifier())
 	 						  }->flatten();
 	modules : OclAny = aPackage.getModules('package-implementation',types);
@@ -61,12 +61,12 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     public static getInstance(): [className/] {
         if (!this._instance) {
             this._instance = new [className/]()
-			this._instance.initialize(get[aPackage.getFactoryName()/](), [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('getEcoreFactory()'),modules )/])
+			this._instance.initialize(get[aPackage.getFactoryName()/](), [getImportedIdentifier(ecorePackage.getQualifiedInterfaceIdentifier('getEcoreFactory()'),modules )/])
         }
         return this._instance
     }
 
-	protected initialize(packageFactory: [getImportedIdentifier(aPackage.getQualifiedIdentifier(aPackage.getFactoryName()),modules )/],ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]) {
+	protected initialize(packageFactory: [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName()),modules )/],ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedInterfaceIdentifier('EcoreFactory'),modules )/]) {
 		this.setName([aPackage.getConstantsName()/].eNAME)
         this.setNsPrefix([aPackage.getConstantsName()/].eNS_PREFIX)
         this.setNsURI([aPackage.getConstantsName()/].eNS_URI)
@@ -85,7 +85,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
     [allDataTypes.generateGetter(aPackage,modules)/]
 
 
-    private createPackageContents(ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]): void {
+    private createPackageContents(ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedInterfaceIdentifier('EcoreFactory'),modules )/]): void {
 [for (aClass : EClass | allClasses)]
     
         [aClass.generateCreation(modules)/]
@@ -95,7 +95,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
         [allDataTypes.generateCreation(modules)/]
     }
 
-    private initializePackageContents(ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]): void {
+    private initializePackageContents(ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedInterfaceIdentifier('EcoreFactory'),modules )/]): void {
 
 [if allClasses->notEmpty()]
         [allClasses.initSuperTypes(modules)/]
@@ -118,7 +118,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
 [if not aPackage.isEcorePackage()]
 [for (aAnnotationSource : String | annotationSources)]
-    private initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations(ecoreFactory:[getImportedIdentifier(ecorePackage.getQualifiedIdentifier('EcoreFactory'),modules )/]): void {
+    private initialize[getAnnotationSourceIdentifier(aAnnotationSource)/]Annotations(ecoreFactory:[getImportedIdentifier(ecorePackage.getQualifiedInterfaceIdentifier('EcoreFactory'),modules )/]): void {
         const source = "[aAnnotationSource/]"
         [for (eAnnotation : EAnnotation | aPackage.eAllContents(EAnnotation)->select( a | a.source = aAnnotationSource))]
         {
@@ -153,7 +153,7 @@ export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]E
 
 [query private getPackageInstance(aClassifier : EClassifier, modules : OclAny ) : String =
 	let aPackage : EPackage = aClassifier.ePackage in 
-	getImportedIdentifier( aPackage.getQualifiedIdentifier('get'+ aPackage.getInterfaceName()+ '()'),modules )
+	getImportedIdentifier( aPackage.getQualifiedInterfaceIdentifier('get'+ aPackage.getInterfaceName()+ '()'),modules )
 /]
 
 [query private getPackageGetter(aModelElement : EModelElement, modules : OclAny) : String =
@@ -237,7 +237,7 @@ this.[anEDatatype.getElementInstance()/] = ecoreFactory.createEDataTypeFromConta
 [query private getGetter(aClassifier : EClassifier , aPackage : EPackage, modules : OclAny ) : String =
     if aClassifier.oclIsUndefined() then 'null'
     else if ( aClassifier.ePackage = aPackage ) or ( aClassifier.ePackage.name = aPackage.name ) then 'this.' + aClassifier.getElementInstance()
-    else getImportedIdentifier(aPackage.getQualifiedIdentifier('get'+aClassifier.ePackage.getInterfaceName()), modules)+ '().' + aClassifier.getReflectiveGetterName() + '()'
+    else getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('get'+aClassifier.ePackage.getInterfaceName()), modules)+ '().' + aClassifier.getReflectiveGetterName() + '()'
     endif endif
 /]
 
