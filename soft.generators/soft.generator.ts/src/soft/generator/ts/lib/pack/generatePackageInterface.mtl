@@ -36,7 +36,7 @@
 									'EDataType',
 									'EPackage'
 									}->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t)),
-								Set{ aPackage.getQualifiedInterfaceIdentifier(aPackage.getImplementationName()) }
+								Set{ aPackage.getQualifiedImplementationIdentifier(aPackage.getImplementationName()) }
 							}->flatten();
 	modules : OclAny = aPackage.getModules('package-interface',types);
 }]
@@ -45,7 +45,7 @@
 
 [aPackage.generateImports('package-interface', types, modules)/]
 
-export interface [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EPackage {
+export interface [className/] extends [getImportedIdentifier( ecorePackage.getQualifiedInterfaceIdentifier('EPackage') , modules)/] {
 [for (aClass : EClass | aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name))]
     [aClass.generateGetter(aPackage,modules)/]
     [aClass.eAttributes->sortedBy(name).generateGetter(aPackage,modules)/]
