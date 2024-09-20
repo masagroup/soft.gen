@@ -23,7 +23,9 @@
 
 [query private getQualifiedIdentifier( qualification : String, identifier : String ) : String = qualification + '/' + identifier/] 
 
-[query public getQualifiedIdentifier( aPackage : EPackage, identifier : String ) : String = getQualifiedIdentifier(aPackage.getModule(),identifier)/]
+[query public getQualifiedInterfaceIdentifier( aPackage : EPackage, identifier : String ) : String = getQualifiedIdentifier(aPackage.getInterfaceModule(),identifier)/]
+
+[query public getQualifiedImplementationIdentifier( aPackage : EPackage, identifier : String ) : String = getQualifiedIdentifier(aPackage.getImplementationModule(),identifier)/]
 
 [query public getQualifiedInterfaceIdentifier( aClassifier : EClassifier ) : String =
 	if aClassifier.oclIsUndefined() then 'any'
@@ -35,15 +37,15 @@
 
 [query public getQualifiedInterfaceIdentifier( aDataType : EDataType ) : String = aDataType.getType()/]
 
-[query public getQualifiedInterfaceIdentifier( aPackage : EPackage ) : String = aPackage.getQualifiedIdentifier( aPackage.getInterfaceName() ) /]
+[query public getQualifiedInterfaceIdentifier( aPackage : EPackage ) : String = aPackage.getQualifiedInterfaceIdentifier( aPackage.getInterfaceName() ) /]
 
-[query public getQualifiedInterfaceIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedIdentifier( aClass.getInterfaceName() ) /]
+[query public getQualifiedInterfaceIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedInterfaceIdentifier( aClass.getInterfaceName() ) /]
 
-[query public getQualifiedImplementationIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedIdentifier( aClass.getImplementationName() ) /]
+[query public getQualifiedImplementationIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedImplementationIdentifier( aClass.getImplementationName() ) /]
 
-[query public getQualifiedExtensionIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedIdentifier( aClass.getExtensionName() ) /]
+[query public getQualifiedExtensionIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedImplementationIdentifier( aClass.getExtensionName() ) /]
 
-[query public getQualifiedInterfaceIdentifier( aEnum : EEnum ) : String = aEnum.ePackage.getQualifiedIdentifier( aEnum.name ) /]
+[query public getQualifiedInterfaceIdentifier( aEnum : EEnum ) : String = aEnum.ePackage.getQualifiedInterfaceIdentifier( aEnum.name ) /]
 
 [query public getImportedIdentifier( qualifiedIdentifier : String, modules : OclAny ) : String =
 	if modules.oclIsUndefined() then
@@ -107,15 +109,15 @@
 /]
 
 [query public getImportedIDName( aClass : EClass, aFeature : EStructuralFeature, modules : OclAny) : String =
-	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.ePackage.getConstantsName()+'.'+ aClass.getFeatureIDName(aFeature)),modules)
+	getImportedIdentifier(aClass.ePackage.getQualifiedInterfaceIdentifier(aClass.ePackage.getConstantsName()+'.'+ aClass.getFeatureIDName(aFeature)),modules)
 /]
 
 [query public getImportedIDName( aClass : EClass, aOperation : EOperation, modules : OclAny) : String =
-	getImportedIdentifier(aClass.ePackage.getQualifiedIdentifier(aClass.ePackage.getConstantsName()+'.'+ aClass.getOperationIDName(aOperation)),modules)
+	getImportedIdentifier(aClass.ePackage.getQualifiedInterfaceIdentifier(aClass.ePackage.getConstantsName()+'.'+ aClass.getOperationIDName(aOperation)),modules)
 /]
 
 [query public getImportedIDName( aClassifier : EClassifier, modules : OclAny) : String =
-	getImportedIdentifier(aClassifier.ePackage.getQualifiedIdentifier(aClassifier.ePackage.getConstantsName()+'.'+ aClassifier.getClassifierIDName()),modules)
+	getImportedIdentifier(aClassifier.ePackage.getQualifiedInterfaceIdentifier(aClassifier.ePackage.getConstantsName()+'.'+ aClassifier.getClassifierIDName()),modules)
  /]
 
 [template public generateType(aElement : ETypedElement, modules : OclAny) post (trim())]
@@ -126,9 +128,9 @@ void
     [let aPackage : EPackage = aElement.getEPackage()]
 	[let ecore : EPackage = getEcorePackage()]
     [if aElement.isMapType()]
-		[getImportedIdentifier( ecore.getQualifiedIdentifier('EMap'), modules)/]<[aDataType.generateMapKeyType(modules)/], [aDataType.generateMapValueType(modules)/]>
+		[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EMap'), modules)/]<[aDataType.generateMapKeyType(modules)/], [aDataType.generateMapValueType(modules)/]>
 	[elseif aElement.isListType()]
-        [getImportedIdentifier( ecore.getQualifiedIdentifier('EList'), modules)/]<[aDataType.generateListTypeParameters(modules)/]>
+        [getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EList'), modules)/]<[aDataType.generateListTypeParameters(modules)/]>
     [else]
         [aDataType.generateType(modules)/][if aDataType.eClassifier.name <> 'EJavaClass' and aDataType.eTypeArguments->notEmpty()]<[for (g : EGenericType | aDataType.eTypeArguments) separator (',')][getImportedIdentifier(g.eClassifier.getType(),modules)/][/for]>[/if]
     [/if]
@@ -198,19 +200,19 @@ void
 		Sequence{ 'java.lang.Class' , 'any', 'null', ''},
 		Sequence{ 'java.lang.Object', 'any', 'null', 'null'},
 		Sequence{ 'java.lang.Long' , 'java.math.BigInteger', 'long' , 'number' , '0', '45'},
-        Sequence{ 'java.util.Map' , ecore.getQualifiedIdentifier('EMap'), 'null', 'null'},
-        Sequence{ 'java.util.Map$Entry' , ecore.getQualifiedIdentifier('EMapEntry'), 'null' , 'null'},
+        Sequence{ 'java.util.Map' , ecore.getQualifiedInterfaceIdentifier('EMap'), 'null', 'null'},
+        Sequence{ 'java.util.Map$Entry' , ecore.getQualifiedInterfaceIdentifier('EMapEntry'), 'null' , 'null'},
 		Sequence{ 'java.lang.Short' , 'short' , 'number' , '0', '2'},
         Sequence{ 'java.lang.String' , 'string', '""' , '"Test String"'},
 		
 
-		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', ecore.getQualifiedIdentifier('EDiagnosticChain'), 'null', 'null'},
-		Sequence{ 'org.eclipse.emf.common.util.EList', ecore.getQualifiedIdentifier('EList'), 'null', 'null'},
+		Sequence{ 'org.eclipse.emf.common.util.DiagnosticChain', ecore.getQualifiedInterfaceIdentifier('EDiagnosticChain'), 'null', 'null'},
+		Sequence{ 'org.eclipse.emf.common.util.EList', ecore.getQualifiedInterfaceIdentifier('EList'), 'null', 'null'},
 		Sequence{ 'org.eclipse.emf.common.util.Enumerator', 'any', 'null', 'null'},
 		Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap', 'any', 'null', 'null'},
         Sequence{ 'org.eclipse.emf.ecore.util.FeatureMap$Entry', 'any', 'null', 'null'},
-        Sequence{ 'org.eclipse.emf.ecore.resource.Resource', ecore.getQualifiedIdentifier('EResource'), 'null' , 'null'},
-        Sequence{ 'org.eclipse.emf.ecore.resource.ResourceSet', ecore.getQualifiedIdentifier('EResourceSet'), 'null' , 'null'},
+        Sequence{ 'org.eclipse.emf.ecore.resource.Resource', ecore.getQualifiedInterfaceIdentifier('EResource'), 'null' , 'null'},
+        Sequence{ 'org.eclipse.emf.ecore.resource.ResourceSet', ecore.getQualifiedInterfaceIdentifier('EResourceSet'), 'null' , 'null'},
 		Sequence{ 'org.eclipse.emf.common.util.TreeIterator', 'IterableIterator', 'null' , 'null'}
     }
 /]
@@ -290,14 +292,13 @@ void
 	if eLiterals->isEmpty() then
 		literal 
 	else
-		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(aEnum.name + '.' + eLiterals->first().getConstantsName()),modules)
+		getImportedIdentifier( aEnum.ePackage.getQualifiedInterfaceIdentifier(aEnum.name + '.' + eLiterals->first().getConstantsName()),modules)
 	endif
 /]
 
 [query private getDefaultValueFromLiteral(aDataType : EDataType, literal : String , modules : OclAny) : String = 
 	literal
 /]
-
 
 [query public getDefaultValue(aClassifier : EClassifier, modules : OclAny) : String =
     if aClassifier.oclIsKindOf( EEnum ) then aClassifier.oclAsType(EEnum).getDefaultValue(modules)
@@ -307,7 +308,7 @@ void
 
 [query public getDefaultValue(aEnum : EEnum, modules : OclAny) : String = 
 	if aEnum.eLiterals->notEmpty() then
-		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(aEnum.name + '.' + aEnum.eLiterals->at(1).getConstantsName()), modules) 
+		getImportedIdentifier( aEnum.ePackage.getQualifiedInterfaceIdentifier(aEnum.name + '.' + aEnum.eLiterals->at(1).getConstantsName()), modules) 
 	else 
 		0 
 	endif
@@ -351,7 +352,7 @@ void
 [query private getTestValue( aEnum : EEnum , modules : OclAny ) : String =
 	if aEnum.eLiterals->size() >= 1 then
 		let constant : String = aEnum.eLiterals->at(if aEnum.eLiterals->size() > 1 then 2 else 1 endif).getConstantsName() in
-		getImportedIdentifier( aEnum.ePackage.getQualifiedIdentifier(aEnum.name + '.' + constant), modules)
+		getImportedIdentifier( aEnum.ePackage.getQualifiedInterfaceIdentifier(aEnum.name + '.' + constant), modules)
 	else 0 endif/]
 
 [query private getTestValue( aDataType : EDataType, modules : OclAny) : String = 
@@ -376,7 +377,7 @@ void
 
 [query public getModules(element : ENamedElement, templates :String, types : Set(String)) : OclAny =
 	let currentPackage : EPackage = getCurrentPackage() in
-	let currentModule : String = currentPackage.getModule() in
+	let currentModule : String = currentPackage.getInterfaceModule() in
 	let currentNamespace : String = getModuleNamespace(currentModule) in
 	let modulesToNamespace : OclAny = mapNew('getModules_'+ templates + '_' + element.name)
 										.mapClear()

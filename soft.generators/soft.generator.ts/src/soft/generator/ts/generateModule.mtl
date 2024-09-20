@@ -33,11 +33,13 @@
         tokenized->iterate( p : String ; res : OclAny = packageToModule | (
         	let index : Integer = p.index('=') in 
             if index = -1 then
-				let nameIndex : Integer = p.lastIndex('/') in
+				let packIndex : Integer = p.index('#') in
+				let packModule : String = if packIndex = -1 then p else p.substring(1, packIndex-1) endif in
+				let nameIndex : Integer = packModule.lastIndex('/') in
 				if nameIndex = -1 then
-					res.mapPut('name:'+p,p)
+					res.mapPut('name:'+packModule,p)
 				else
-					res.mapPut('name:'+p.substring(nameIndex+1),p)
+					res.mapPut('name:'+packModule.substring(nameIndex+1),p)
 				endif
             else
                 res.mapPut('uri:'+p.substring(1,index-1),p.substring(index+1))
@@ -48,24 +50,42 @@
     endif
 /]
 
-[query public getModule(aPackage : EPackage): String =
- 	let packageToModule : OclAny = getPackageToModuleMap() in
-	let uriPath : OclAny = mapGet(packageToModule, 'uri:' + aPackage.nsURI) in
-	if not uriPath.oclIsUndefined() then
-		uriPath.oclAsType(String)
+[query private getModule(modules : String, index : Integer) : String =
+	let tokenized : Sequence(String) = modules.tokenize('#') in
+	let size : Integer = tokenized->size() in 
+	if index > size then
+		tokenized->at( size )
 	else
-		let namePath : OclAny = mapGet(packageToModule, 'name:' + aPackage.name) in
-		if not namePath.oclIsUndefined() then
-			namePath.oclAsType(String)
-		else
-			aPackage.name
-		endif
+		tokenized->at(index)
 	endif
+/]
+
+[query private getIndexModule(aPackage : EPackage, index : Integer) : String =
+	let packageToModules : OclAny = getPackageToModuleMap() in
+	let uriModule : OclAny = mapGet(packageToModules, 'uri:' + aPackage.nsURI) in
+	if not uriModule.oclIsUndefined() then
+		getModule(uriModule.oclAsType(String),index)
+	else
+		let nameModule : OclAny = mapGet(packageToModules, 'name:' + aPackage.name) in
+		if not nameModule.oclIsUndefined() then
+			getModule(nameModule.oclAsType(String),index)
+		else
+			aPackage.name + '/' + aPackage.name
+		endif
+	endif 	
+/] 
+
+[query public getInterfaceModule(aPackage : EPackage): String =
+ 	aPackage.getIndexModule(1)
+/]
+
+[query public getImplementationModule(aPackage : EPackage): String =
+ 	aPackage.getIndexModule(2)
 /]
 
 [query private getModuleToPathMap(any : OclAny) : OclAny =
  	let currentPackage : EPackage = getCurrentPackage() in
-	let currentModule : String = currentPackage.getModule() in
+	let currentModule : String = currentPackage.getInterfaceModule() in
 	let pathsProperty : OclAny = getProperty('paths') in 
 	let paths : String = (if pathsProperty.oclIsUndefined() or pathsProperty = '' then '' else pathsProperty.oclAsType(String) endif) + 
 						 (if currentPackage.hasKey('paths') then ';' + currentPackage.valueKey('paths') else '' endif) in
@@ -99,7 +119,7 @@
 
 [query private getModuleToNamespaceMap(any : OclAny) : OclAny =
 	let currentPackage : EPackage = getCurrentPackage() in
-	let currentModule : String = currentPackage.getModule() in
+	let currentModule : String = currentPackage.getInterfaceModule() in
 	let moduleToNamespace : OclAny = mapNew('getModuleToNamespaceMap_' + currentPackage.name)
 									.mapPut('@masagroup/ecore','ecore' )
 								    .mapPut(currentModule,'') in

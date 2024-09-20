@@ -26,7 +26,7 @@
                                                                   , aEnum.name.toLowerFirst() + 'FromString' 
                                                                   }
 													          )
-										  ))->collect(t | aPackage.getQualifiedIdentifier(t))->asSet()
+										  ))->collect(t | aPackage.getQualifiedInterfaceIdentifier(t))->asSet()
 /]
 
 [template public generateFactoryImplementation(aPackage : EPackage) { 
@@ -35,8 +35,9 @@
     classes : Sequence(EClass) = aPackage.eAllContents(EClass)->select( not interface and not abstract );
 	types : Set(String) = Set{ classes->collect(c | if c.hasExtension() then c.getQualifiedExtensionIdentifier() else c.getQualifiedImplementationIdentifier() endif)
                                         , aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceIdentifier() )
-										, Set{'EObject' , 'EClass', 'EFactoryExt' , 'EDataType'}->collect(t | ecorePackage.getQualifiedIdentifier(t))
-										, Set{aPackage.getConstantsName(), aPackage.getFactoryName()}->collect(t | aPackage.getQualifiedIdentifier(t))->asSet()
+										, Set{'EObject' , 'EClass', 'EFactoryExt' , 'EDataType'}->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t))
+										, Set{aPackage.getConstantsName(), aPackage.getFactoryName()}->collect(t | aPackage.getQualifiedInterfaceIdentifier(t))->asSet()
+										, Set{ecorePackage.getQualifiedImplementationIdentifier('EFactoryExt')}
 										, aPackage.getPackageEnumTypes()
 										}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
 	modules : OclAny = aPackage.getModules('factory-implemention',types);
@@ -46,7 +47,7 @@
 
 [aPackage.generateImports('factory-implemention', types, modules)/]	
 
-export class [className/] extends [if not aPackage.isEcorePackage()]ecore.[/if]EFactoryExt implements [aPackage.getFactoryName()/] {
+export class [className/] extends [getImportedIdentifier( ecorePackage.getQualifiedImplementationIdentifier('EFactoryExt') , modules)/] implements [aPackage.getFactoryName()/] {
     
     private static _instance: [className/] = null
 
