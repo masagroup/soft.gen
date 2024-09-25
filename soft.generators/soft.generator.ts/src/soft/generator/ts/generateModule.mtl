@@ -70,7 +70,7 @@
 		if not nameModule.oclIsUndefined() then
 			getModule(nameModule.oclAsType(String),index)
 		else
-			aPackage.name + '/' + aPackage.name
+			aPackage.name
 		endif
 	endif 	
 /] 
