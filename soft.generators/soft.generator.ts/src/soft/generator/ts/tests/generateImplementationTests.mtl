@@ -265,6 +265,8 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	o.eAdapters().add(adapter)
 	
 	// set value
+	when(mockValue.eClass()).thenReturn(null)
+	when(mockValue.eStaticClass()).thenReturn(null)
 	when(mockValue.eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,modules)/],null)).thenReturn(null)
 	when(mockValue.eResource()).thenReturn(resource)
 	o.[aStructuralFeature.generateSetCall('value')/]
@@ -288,6 +290,10 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	reset(mockAdapter)
 	reset(mockValue)
 	reset(mockResource)	
+	when(mockValue.eClass()).thenReturn(null)
+	when(mockValue.eStaticClass()).thenReturn(null)
+	when(mockOther.eClass()).thenReturn(null)
+	when(mockOther.eStaticClass()).thenReturn(null)
 	when(mockValue.eInverseRemove(o,[reverseClass.getImportedIDName(reverseFeature,modules)/],null)).thenReturn(null)
 	when(mockValue.eResource()).thenReturn(resource)
 	when(mockOther.eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,modules)/],null)).thenReturn(null)
@@ -323,6 +329,8 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	
 	// first value
 	[aStructuralFeature.eType.generateTestValue('value',modules)/]
+	when(mockValue.eClass()).thenReturn(null)
+	when(mockValue.eStaticClass()).thenReturn(null)
 	when(mockValue.eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,modules)/],null)).thenReturn(null)
 	o.[aStructuralFeature.generateSetCall('value')/]
 	verify(mockAdapter.notifyChanged(anything())).once() 
@@ -337,6 +345,10 @@ test("set[aStructuralFeature.name.toUpperFirst()/]", () => {
 	[aStructuralFeature.eType.generateTestValue('other',modules)/]
 	reset(mockAdapter)
 	reset(mockValue)
+	when(mockOther.eClass()).thenReturn(null)
+	when(mockOther.eStaticClass()).thenReturn(null)
+	when(mockValue.eClass()).thenReturn(null)
+	when(mockValue.eStaticClass()).thenReturn(null)
 	when(mockValue.eInverseRemove(o,[reverseClass.getImportedIDName(reverseFeature,modules)/],null)).thenReturn(null)
 	when(mockOther.eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,modules)/],null)).thenReturn(null)
 	o.[aStructuralFeature.generateSetCall('other')/]
@@ -583,6 +595,8 @@ expect(() => o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)
 [let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
 [let reverseClass : EClass = reverseFeature.eContainingClass]
 	[anStructuralFeature.eType.generateTestValue('value',modules)/]
+ 	when(mockValue.eClass()).thenReturn(null)
+    when(mockValue.eStaticClass()).thenReturn(null)
 	when(mockValue.eIsProxy()).thenReturn(false)
 	when(mockValue.eResource()).thenReturn(null)
 	when(mockValue.eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,modules)/],null)).thenReturn(null)
@@ -652,6 +666,8 @@ expect(() => o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)
 [/template]
 
 [template private generateFeatureMockAddedExpectations(anStructuralFeature : EStructuralFeature , mockName : String , aClass : EClass, modules : OclAny)]
+when([mockName/].eClass()).thenReturn(null)
+when([mockName/].eStaticClass()).thenReturn(null)
 [if anStructuralFeature.isContains()]
 	[let anEReference : EReference = anStructuralFeature.oclAsType(EReference)]
 	[if anEReference.eOpposite.oclIsUndefined()]
@@ -680,6 +696,8 @@ when([mockName/].eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,mo
 
 
 [template private generateFeatureMockAddedVerifications(anStructuralFeature : EStructuralFeature , mockName : String , aClass : EClass, modules : OclAny)]
+when([mockName/].eClass()).thenReturn(null)
+when([mockName/].eStaticClass()).thenReturn(null)
 [if anStructuralFeature.isContains()]
 	[let anEReference : EReference = anStructuralFeature.oclAsType(EReference)]
 	[if anEReference.eOpposite.oclIsUndefined()]
@@ -722,6 +740,8 @@ verify([mockName/].eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,
 [let reverseFeature : EStructuralFeature = anStructuralFeature.oclAsType(EReference).eOpposite]
 [let reverseClass : EClass = reverseFeature.eContainingClass]
 	[anStructuralFeature.eType.generateTestValue('value',modules)/]
+	when(mockValue.eClass()).thenReturn(null)
+    when(mockValue.eStaticClass()).thenReturn(null)
 	when(mockValue.eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,modules)/],null)).thenReturn(null)	
 	o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)/], value)
 	expect(o.eGetFromID([aClass.getImportedIDName(anStructuralFeature,modules)/], false)).toBe(value)
@@ -735,6 +755,8 @@ verify([mockName/].eInverseAdd(o,[reverseClass.getImportedIDName(reverseFeature,
 [template private generateFeatureESetFromIDTestImplementation(anStructuralFeature : EStructuralFeature ,aClass : EClass, modules : OclAny) ? (isContains())]
 {
 	[anStructuralFeature.eType.generateTestValue('value',modules)/]
+	when(mockValue.eClass()).thenReturn(null)
+    when(mockValue.eStaticClass()).thenReturn(null)
 	when(mockValue.eInverseAdd(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(anStructuralFeature,modules)/],anything())).thenReturn(null)
 	o.eSetFromID([aClass.getImportedIDName(anStructuralFeature,modules)/], value)
 	expect(o.eGetFromID([aClass.getImportedIDName(anStructuralFeature,modules)/], false)).toBe(value)
@@ -862,6 +884,8 @@ test("eBasicInverseAdd", () => {
 [template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass , modules : OclAny) ?(isContainer())]
 {
 	[aStructuralFeature.eType.generateTestValue('value',modules)/]
+	when(mockValue.eClass()).thenReturn(null)
+	when(mockValue.eStaticClass()).thenReturn(null)
 	when(mockValue.eResource()).thenReturn(null)
 	when(mockValue.eIsProxy()).thenReturn(false)
 	o.eBasicInverseAdd(value,[aClass.getImportedIDName(aStructuralFeature,modules)/],null)
@@ -888,6 +912,8 @@ test("eBasicInverseAdd", () => {
 [template private generateFeatureEInverseAddTestImplementation( aStructuralFeature : EStructuralFeature, aClass : EClass , modules : OclAny)]
 {
 	[aStructuralFeature.eType.generateTestValue('value',modules)/]
+	when(mockValue.eClass()).thenReturn(null)
+	when(mockValue.eStaticClass()).thenReturn(null)
 [if aStructuralFeature.isProxy()]
 	when(mockValue.eIsProxy()).thenReturn(false)
 [/if]
