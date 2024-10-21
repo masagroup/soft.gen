@@ -4,7 +4,7 @@ soft.generators.version := 1.6.0
 soft.generator.common.version := 1.4.1
 soft.generator.cpp.version := 1.2.4
 soft.generator.go.version := 1.9.2
-soft.generator.ts.version := 1.5.3
+soft.generator.ts.version := 1.5.4
 
 export DOCKER_BUILDKIT=1
 
