@@ -26,14 +26,17 @@
 [query public getMockExtends(aClass : EClass ) : Sequence(String) =
     let extendsClass : EClass = aClass.getClassExtendsClass() in
     if ( extendsClass.oclIsUndefined() ) then
+		let aPackage : EPackage = aClass.ePackage in 
 		let ecore : EPackage = getEcorePackage() in
-		if ( aClass.isMapEntry() ) then
-			Sequence{ ecore.getQualifiedInterfaceIdentifier('MockEObjectInternal'), ecore.getQualifiedInterfaceIdentifier('MockEMapEntry')}
-        else if ( aClass.name = 'EObject' ) then
+		if ( aClass.name = 'EObject' ) then
             Sequence{ecore.getQualifiedInterfaceIdentifier('MockENotifier')}
+		else if ( aPackage.hasPackageProperty('rootExtendsMock') ) then
+			aPackage.getPackageProperty('rootExtendsMock')
+		else if ( aClass.isMapEntry() ) then
+			Sequence{ ecore.getQualifiedMockIdentifier('MockEObjectInternal'), ecore.getQualifiedInterfaceIdentifier('MockEMapEntry')}
         else
-            Sequence{ecore.getQualifiedInterfaceIdentifier('MockEObjectInternal')}
-        endif endif
+            Sequence{ecore.getQualifiedMockIdentifier('MockEObjectInternal')}
+        endif endif endif
     else
         Sequence{ extendsClass.getQualifiedMockIdentifier()}
     endif 
