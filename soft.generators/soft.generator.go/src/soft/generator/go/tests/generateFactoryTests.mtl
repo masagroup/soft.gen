@@ -141,7 +141,8 @@ func TestFactoryConvert(t *testing.T) {
 }]
 {
 	mockEDataType := [if not aPackage.isEcorePackage()]ecore.[/if]NewMockEDataType(t)
-	mockEDataType.EXPECT().GetClassifierID().Return([getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aDataType.getClassifierIDName()), packagePath, imports)/]).Times([aEnum.eLiterals->size()/])
+	mockEDataType.EXPECT().GetClassifierID().Return([getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aDataType.getClassifierIDName()), packagePath, imports)/]).Times([aEnum.eLiterals->size()+1/])
+	assert.Panics(t,func() { factory.CreateFromString(mockEDataType, "") })
 [for (lit : EEnumLiteral | aEnum.eLiterals->asOrderedSet()->sortedBy(name) )]
 	assert.Equal(t,[getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(lit.getConstantsName()), packagePath, imports)/], factory.CreateFromString(mockEDataType, "[lit.getValueName()/]") )	
 [/for]
