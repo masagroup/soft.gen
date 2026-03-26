@@ -31,6 +31,7 @@
 
 [template public generateFactoryImplementation(aPackage : EPackage) { 
 	ecorePackage : EPackage = getEcorePackage(); 
+	extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension';
     className : String = aPackage.getFactoryImplementationName();
     classes : Sequence(EClass) = aPackage.eAllContents(EClass)->select( not interface and not abstract );
 	types : Set(String) = Set{ classes->collect(c | if c.hasExtension() then c.getQualifiedExtensionIdentifier() else c.getQualifiedImplementationIdentifier() endif)
@@ -49,6 +50,7 @@
 
 export class [className/] extends [getImportedIdentifier( ecorePackage.getQualifiedImplementationIdentifier('EFactoryExt') , modules)/] implements [aPackage.getFactoryName()/] {
     
+[if not extension]
     private static _instance: [className/] = null
 
     public static getInstance(): [className/] {
@@ -57,6 +59,7 @@ export class [className/] extends [getImportedIdentifier( ecorePackage.getQualif
         }
         return this._instance
     }
+[/if]
     
     create(eClass: [if not aPackage.isEcorePackage()]ecore.[/if]EClass): [if not aPackage.isEcorePackage()]ecore.[/if]EObject {
         switch (eClass.getClassifierID()){
