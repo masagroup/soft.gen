@@ -429,7 +429,7 @@ const (
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'float64')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v, _ := instanceValue.(float64)
-	return strconv.FormatFloat(v, 'f', -1, 64)
+	return [if not aPackage.isEcorePackage()]ecore.[/if]FormatFloatXSD(v, 64)
 }
 
 [/template]
@@ -437,7 +437,7 @@ const (
 [template private generateConvertToString( aPackage : EPackage , aDataType : EDataType , packagePath : String, imports : OclAny) ? (aDataType.getType() = 'float32')]
 [aPackage.generateFactoryImplementationMember()/] convert[aDataType.name/]ToString(eDataType [if not aPackage.isEcorePackage()]ecore.[/if]EDataType, instanceValue [aPackage.getAnyType()/]) string {
    	v, _ := instanceValue.(float32)
-	return strconv.FormatFloat(float64(v), 'f', -1, 32)
+	return [if not aPackage.isEcorePackage()]ecore.[/if]FormatFloatXSD(float64(v), 32)
 }
 
 [/template]
