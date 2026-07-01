@@ -208,6 +208,8 @@
         [else]
         [aClass.getReceiverName()/].as[aClass.getInterfaceName()/]().[aFeature.getSetterName()/]([aAttribute.eType.getType()/]{})
         [/if]
+        [if aFeature.hasIsSetFlag()][aClass.getReceiverName()/].[aFeature.getIsSetFlagName()/] = false
+        [/if]
         [/let]
         [/let]
     [/if]
@@ -248,7 +250,9 @@
 
 [template public generateComparison(anStructFeature : EStructuralFeature, aClass : EClass, packagePath : String, imports : OclAny) ? (oclIsKindOf(EAttribute) and not eType.isAny()) post (trim())]
 [let aAttribute : EAttribute = anStructFeature.oclAsType(EAttribute)]
-[if isListType()]
+[if anStructFeature.hasIsSetFlag()]
+    [aClass.getReceiverName()/].[anStructFeature.getIsSetFlagName()/]
+[elseif isListType()]
     [if isField()][aClass.generateGetAccessor(anStructFeature)/] != nil && [/if][aClass.generateGetAccessor(anStructFeature)/].Size() != 0
 [else]
     [if eType.oclIsKindOf(EEnum)]

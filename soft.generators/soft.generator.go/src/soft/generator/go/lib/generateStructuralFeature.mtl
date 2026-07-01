@@ -128,6 +128,9 @@ nil
 
 [template public generateVariableDeclaration(aStructuralFeature : EStructuralFeature, packagePath : String, imports : OclAny)]
 [aStructuralFeature.getVariableName()/] [aStructuralFeature.generateType(packagePath,imports)/]
+[if aStructuralFeature.hasIsSetFlag()]
+[aStructuralFeature.getIsSetFlagName()/] bool
+[/if]
 
 [/template]
 
@@ -581,7 +584,8 @@ func [testMethodName/](t *testing.T) {
     [else]
     [oldVarName/] := [aClass.getReceiverName()/].[varName/]
     [aClass.getReceiverName()/].[varName/] = [newVarName/]
-    if [aClass.getReceiverName()/].ENotificationRequired() {
+    [if aStructuralFeature.hasIsSetFlag()][aClass.getReceiverName()/].[aStructuralFeature.getIsSetFlagName()/] = true
+    [/if]if [aClass.getReceiverName()/].ENotificationRequired() {
         [aClass.getReceiverName()/].ENotify([if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]SET, [aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/], [oldVarName/], [newVarName/], [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
     }
     [/if]
@@ -730,6 +734,8 @@ func [testMethodName/](t *testing.T) {
 		[receiverName/].[varName/] = nil
 		[else]
 		[receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(packagePath,imports)/]
+		[if aStructuralFeature.hasIsSetFlag()][receiverName/].[aStructuralFeature.getIsSetFlagName()/] = false
+		[/if]
 		[/if]
 		if [receiverName/].ENotificationRequired() {
             [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/],[oldVarName/],nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))

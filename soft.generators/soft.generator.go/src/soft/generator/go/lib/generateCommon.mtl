@@ -86,3 +86,20 @@ func ([aClass.getReceiverName()/] *[aClass.getImplementationName()/])
 if aFeature.eType.getType() = 'bool' then 'is' + aFeature.name.toUpperFirst() 
 else if getReservedKeywords()->exists(s  | s = aFeature.name) then aFeature.name + '_' 
 else aFeature.name endif endif/]
+
+[** With the package property isSetFlags=true, a single-valued attribute stored as a field carries
+ * a flag recording whether it was set: comparing with the default cannot tell an explicit default
+ * from an untouched one. */]
+[query public hasIsSetFlag( aFeature : EStructuralFeature ) : Boolean =
+	aFeature.eContainingClass.ePackage.hasPackageProperty('isSetFlags')
+	and aFeature.eContainingClass.ePackage.getPackageProperty('isSetFlags') = 'true'
+	and aFeature.oclIsKindOf(EAttribute)
+	and aFeature.isField()
+	and aFeature.isSet()
+	and not aFeature.isListType()
+	and not aFeature.eType.isAny()
+/]
+
+[query public getIsSetFlagName( aFeature : EStructuralFeature ) : String =
+	aFeature.getVariableName() + 'IsSet'
+/]

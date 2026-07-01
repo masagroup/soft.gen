@@ -98,6 +98,10 @@ of an implementation do not mix with the objects of another: the setters of the 
 (soft.go `ecore.CheckSameImplementation`, when the program is built with the tag `ecore_check`; the
 property `checkImplementation=false` leaves these checks out of the generated code).
 
+With the property `isSetFlags=true`, a changeable single-valued attribute held in a field records that it
+was set: `EIsSet` is true for an attribute set to its default value, which a save then writes. Without it,
+`EIsSet` compares the value with the default.
+
 ```shell
 $ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.go -m /gen/model.ecore -o /gen -t generateInterfaces \
     -p packageInstance=interfaces -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/store/store -p module=example.com/m
