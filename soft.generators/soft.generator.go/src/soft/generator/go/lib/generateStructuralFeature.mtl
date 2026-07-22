@@ -13,6 +13,7 @@
 [module generateStructuralFeature('http://www.eclipse.org/emf/2002/Ecore')/]
 
 [import soft::generator::common::generateCommon/]
+[import soft::generator::common::generateElement/]
 [import soft::generator::common::generateStructuralFeature/]
 [import soft::generator::go::generateCommon/]
 [import soft::generator::go::generatePath/]
@@ -25,6 +26,33 @@
 [query public getInitializersInterface( aClass : EClass ) : String = aClass.getInterfaceName().toLowerFirst() + 'Initializers'/]
 
 [query public getBasicsInterface( aClass : EClass ) : String = aClass.getInterfaceName().toLowerFirst() + 'Basics'/]
+
+[** A list or map feature whose getter builds its backing list on first read; the object's
+ * mutex serializes that check-then-set. */]
+[query public hasGuardedLazyInitialization( aStructuralFeature : EStructuralFeature ) : Boolean =
+	aStructuralFeature.isListType()
+	and not aStructuralFeature.isReflectiveDelegation()
+	and not aStructuralFeature.isContainer()
+	and not aStructuralFeature.isVolatile()
+	and not aStructuralFeature.isLazy()
+/]
+
+[query public hasGuardedLazyInitialization( aClass : EClass ) : Boolean =
+	aClass.getImplementedFeatures()->exists( hasGuardedLazyInitialization() )
+/]
+
+[query public getGuardedLazyInitializationMutexName( aClass : EClass ) : String = 'lazyInitMutex'/]
+
+[query public getGuardedLazyInitializationMutexPackagePath( aClass : EClass ) : String = 'sync/sync'/]
+
+[query private getGuardedLazyInitializationMutexType( aClass : EClass ) : String =
+	aClass.getGuardedLazyInitializationMutexPackagePath() + '.Mutex'
+/]
+
+[template public generateGuardedLazyInitializationMutexDeclaration(aClass : EClass, packagePath : String, imports : OclAny)]
+// [aClass.getGuardedLazyInitializationMutexName()/] guards the lazy initialization of list and map features.
+[aClass.getGuardedLazyInitializationMutexName()/] [getImportedIdentifier(aClass.getGuardedLazyInitializationMutexType(),packagePath,imports)/]
+[/template]
 
 [query private getPackageInstance(aClassifier : EClassifier, packagePath : String , imports : OclAny ) : String = 
 	getImportedIdentifier( aClassifier.ePackage.getImplementationPackagePath() + '.GetPackage()', packagePath, imports )
@@ -327,6 +355,7 @@ func [testMethodName/](t *testing.T) {
 	aPackage : EPackage =  aClass.ePackage;
 	varName : String = aStructuralFeature.getVariableName();
 	receiverName : String = aClass.getReceiverName();
+	lazyMutexName : String = aClass.getGuardedLazyInitializationMutexName();
 }]
 // [aStructuralFeature.getGetterName()/] get the value of [aStructuralFeature.getVariableName()/]
 [aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getGetterName()/]() [aStructuralFeature.generateType(packagePath,imports)/] {
@@ -397,13 +426,17 @@ func [testMethodName/](t *testing.T) {
         [/if]
         [/let]
 	[elseif aStructuralFeature.isMapType()]
+	[receiverName/].[lazyMutexName/].Lock()
 	if [receiverName/].[varName/] == nil {
 		[receiverName/].[varName/] = [aStructuralFeature.getMapConstructor(aClass,packagePath,imports)/];
 	}
+	[receiverName/].[lazyMutexName/].Unlock()
 	[elseif aStructuralFeature.isListType()]
+	[receiverName/].[lazyMutexName/].Lock()
 	if [receiverName/].[varName/] == nil {
 		[receiverName/].[varName/] = [aStructuralFeature.getListConstructor(aClass,packagePath,imports)/]
 	}
+	[receiverName/].[lazyMutexName/].Unlock()
 	[/if]
     return [receiverName/].[varName/]
 [elseif hasKey('getterBody')]
