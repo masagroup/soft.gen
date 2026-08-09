@@ -345,8 +345,8 @@ func [testMethodName/](t *testing.T) {
         [let newVarName : String = 'new' + varName.toUpperFirst()]
         [oldVarName/] := [receiverName/].[varName/]
         [newVarName/] := [receiverName/].EResolveProxy([oldVarName/]).([aStructuralFeature.generateType(packagePath,imports)/])
-        [receiverName/].[varName/] = [newVarName/]
         if [newVarName/] != [oldVarName/] {
+            [receiverName/].[varName/] = [newVarName/]
         [if isContains()]
             var notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain
             [if not isBidirectional()]
