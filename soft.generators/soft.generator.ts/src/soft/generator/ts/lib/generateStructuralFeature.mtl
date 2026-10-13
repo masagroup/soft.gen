@@ -215,15 +215,15 @@ protected [aStructuralFeature.getInitializationMethodName()/](): void {
 [aStructuralFeature.generateUnSetImplementation(aClass,modules)/]
 [/if]
 
-[if isBasicGet()]
+[if isBasicGet() and not isReflectiveDelegation()]
 
 [aStructuralFeature.generateBasicGetImplementation(aClass,modules)/]
 [/if]
-[if isBasicSet()]
+[if isBasicSet() and not isReflectiveDelegation()]
 
 [aStructuralFeature.generateBasicSetImplementation(aClass,modules)/]
 [/if]
-[if isBasicUnSet()]
+[if isBasicUnSet() and not isReflectiveDelegation()]
 
 [aStructuralFeature.generateBasicUnSetImplementation(aClass,modules)/]
 [/if]
@@ -244,7 +244,9 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 }]
 // get the value of [aStructuralFeature.name/]
 [aStructuralFeature.getGetterName()/](): [aStructuralFeature.generateType(modules)/] {
-[if isContainer()]
+[if isReflectiveDelegation()]
+    return this.eGetFromID([aClass.getImportedIDName(aStructuralFeature,modules)/], true) as [aStructuralFeature.generateType(modules)/]
+[elseif isContainer()]
     if (this.eContainerFeatureID() == [aClass.ePackage.getConstantsName()/].[aClass.getFeatureIDName(aStructuralFeature)/]) {
         return this.eContainer() as [aStructuralFeature.generateType(modules)/]
     }
@@ -329,7 +331,9 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
 }]
 // get the value of [aStructuralFeature.name/] asynchronously
 async [aStructuralFeature.getGetterName()/]Async(): Promise<[aStructuralFeature.generateType(modules)/]> {
-[if not isVolatile()]
+[if isReflectiveDelegation()]
+    return (await this.eGetFromIDAsync([aClass.getImportedIDName(aStructuralFeature,modules)/], true)) as [aStructuralFeature.generateType(modules)/]
+[elseif not isVolatile()]
     if (this.[varName/] != null && this.[varName/].eIsProxy()) {
         const [oldVarName/] = this.[varName/]
         const [newVarName/] = await this.eResolveProxyAsync([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
@@ -393,6 +397,8 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 	const l = this.[aStructuralFeature.getGetterName()/]()
 	l.clear()
 	l.addAll([newVarName/])
+[elseif isReflectiveDelegation()]
+	this.eSetFromID([aClass.getImportedIDName(aStructuralFeature,modules)/], [newVarName/])
 [else]
 	this.[varName/] = [newVarName/]
 [/if]
@@ -407,7 +413,9 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 }]
 // set the value of [aStructuralFeature.name/]
 [aStructuralFeature.getSetterName()/]([newVarName/]: [aStructuralFeature.generateType(modules)/]): void {
-[if not isVolatile()]
+[if isReflectiveDelegation()]
+    this.eSetFromID([aClass.getImportedIDName(aStructuralFeature,modules)/], [newVarName/])
+[elseif not isVolatile()]
     [if isContainer()]
     if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getImportedIDName(aStructuralFeature,modules)/])) {
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
@@ -483,6 +491,8 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 	const l = this.[aStructuralFeature.getGetterName()/]()
 	l.clear()
 	l.addAll([newVarName/])
+[elseif isReflectiveDelegation()]
+	this.eSetFromID([aClass.getImportedIDName(aStructuralFeature,modules)/], [newVarName/])
 [else]
 	this.[varName/] = [newVarName/]
 [/if]
@@ -496,7 +506,9 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 }]
 // [aStructuralFeature.getUnSetterName()/] unset the value of [varName/]
 [aStructuralFeature.getUnSetterName()/]() : void {
-[if not isVolatile()]
+[if isReflectiveDelegation()]
+    this.eUnsetFromID([aClass.getImportedIDName(aStructuralFeature,modules)/])
+[elseif not isVolatile()]
     [if isListType()]
         [let lazy : String = aStructuralFeature.getLazy()]
         [if lazy = 'function']

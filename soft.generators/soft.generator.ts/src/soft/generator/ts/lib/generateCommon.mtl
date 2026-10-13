@@ -17,6 +17,12 @@
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType/]
 
+[query public isReflectiveDelegation(anPackage : EPackage ) : Boolean = anPackage.hasPackageProperty('featureDelegation') and anPackage.getPackageProperty('featureDelegation') = 'Reflective'/]
+
+[query public isReflectiveDelegation(aClass : EClass) : Boolean = aClass.ePackage.isReflectiveDelegation()/]
+
+[query public isReflectiveDelegation(anFeature : EStructuralFeature ) : Boolean = anFeature.eContainingClass.isReflectiveDelegation()/]
+
 [query private getMapTypeParameter(aClass : EClass , featureName : String) : String =
 	let aFeature : EStructuralFeature = aClass.getEStructuralFeature(featureName) in
 	aFeature.generateType(null)
@@ -53,9 +59,11 @@
 			 ecore.getQualifiedImplementationIdentifier('BasicEObject')
         else if ( aPackage.hasPackageProperty('rootExtendsClass') ) then
 			aPackage.getPackageProperty('rootExtendsClass')
+		else if ( aPackage.isReflectiveDelegation() ) then
+			ecore.getQualifiedImplementationIdentifier('EStoreEObjectImpl')
 		else
 			ecore.getQualifiedImplementationIdentifier('EObjectImpl')
-        endif endif  
+        endif endif endif
     else
         if ( extendsClass.hasExtension() ) then
             extendsClass.getQualifiedExtensionIdentifier()

@@ -33,19 +33,20 @@
     classExtend : String = aClass.getClassExtends(); 
     classImplement : String = aClass.getQualifiedInterfaceIdentifier();
 	features : OrderedSet(EStructuralFeature) = aClass.getImplementedFeatures()->sortedBy( getVariableName() );
-    variableFeatures : Collection(EStructuralFeature) = features->select(isField());
-    initializerFeatures : Collection(EStructuralFeature) = features->select(hasInitializationMethod());
+    reflectiveDelegation : Boolean = aClass.isReflectiveDelegation();
+    variableFeatures : Collection(EStructuralFeature) = if reflectiveDelegation then OrderedSet(EStructuralFeature){} else features->select(isField()) endif;
+    initializerFeatures : Collection(EStructuralFeature) = if reflectiveDelegation then OrderedSet(EStructuralFeature){} else features->select(hasInitializationMethod()) endif;
     operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName());
     
 	types : OrderedSet(String) = Set{ aClass.getReferencedTypes()
 											->select( cls | not cls.oclIsTypeOf(EClass) or not cls.oclAsType(EClass).isMapEntry())
 											->collect( cls | cls.getType() )->asSet()
 									, Set{
-										 	if aClass.requiresMap()  then Set{'EMap','BasicEObjectMap','EMapEntry'} else Set{} endif,
-											if aClass.requiresList() then Set{'EList','BasicEList','BasicEObjectList','BasicEDataTypeList'} else Set{} endif,
-		 									if aClass.hasReflectives() then Set{'EObject','EObjectInternal','EList','ENotifyingList','ENotificationChain','isEObjectList'} else Set{} endif,
-											if features->exists(requiresNotification()) then Set{'ENotification','ENotificationChain','EventType','Notification','EOPPOSITE_FEATURE_BASE'} else Set{} endif,
-											Set{'EClass','isEObjectInternal'}
+										 	if aClass.requiresMap()  then if reflectiveDelegation then Set{'EMap','EMapEntry'} else Set{'EMap','BasicEObjectMap','EMapEntry'} endif else Set{} endif,
+											if aClass.requiresList() then if reflectiveDelegation then Set{'EList'} else Set{'EList','BasicEList','BasicEObjectList','BasicEDataTypeList'} endif else Set{} endif,
+		 									if aClass.hasReflectives() and not reflectiveDelegation then Set{'EObject','EObjectInternal','EList','ENotifyingList','ENotificationChain','isEObjectList'} else Set{} endif,
+											if features->exists(requiresNotification()) and not reflectiveDelegation then Set{'ENotification','ENotificationChain','EventType','Notification','EOPPOSITE_FEATURE_BASE'} else Set{} endif,
+											if reflectiveDelegation then Set{'EClass'} else Set{'EClass','isEObjectInternal'} endif
 									    }->flatten()->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t))->asSet()
 									, Set { 
 											aPackage.getConstantsName(), 
@@ -86,9 +87,11 @@
 [aClass.generateImports('implementation', types, modules)/]
 
 export class [className/] extends [getImportedIdentifier(classExtend, modules)/] implements [getImportedIdentifier(classImplement,modules)/] {
+[if not reflectiveDelegation]
 [let dataDeclarationFeatures : OrderedSet(EStructuralFeature) = features->select(isField())->asOrderedSet()->sortedBy(getVariableName())]
     [dataDeclarationFeatures.generateVariableDeclaration(modules)/]
 [/let]
+[/if]
 
     constructor() {
         super()
@@ -98,6 +101,12 @@ export class [className/] extends [getImportedIdentifier(classExtend, modules)/]
     eStaticClass(): [if not aPackage.isEcorePackage()]ecore.[/if]EClass {
         return get[aPackage.getInterfaceName()/]().[aClass.getReflectiveGetterName()/]()
     }
+[if reflectiveDelegation]
+
+    eStaticFeatureCount(): number {
+        return 0
+    }
+[/if]
 
 [let properties : OrderedSet(EStructuralFeature) = features->select( isPropertyAccessors() and (isGet() or isSet()))]
 	[properties.generatePropertyImplementation(aClass,modules)/]	

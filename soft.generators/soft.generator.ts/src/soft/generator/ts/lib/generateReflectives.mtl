@@ -31,7 +31,7 @@
     aClass.getEInverseRemoveFeatures()->notEmpty()/]
 
 [template public generateReflectivesDefinition(aClass : EClass,modules : OclAny)]
-[if aClass.hasReflectives()]
+[if aClass.hasReflectives() and not aClass.isReflectiveDelegation()]
 [if aClass.hasElementID()]
 [aClass.generateElementIDDefinition(modules)/]
 
