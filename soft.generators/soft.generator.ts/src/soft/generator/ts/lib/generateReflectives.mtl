@@ -31,7 +31,13 @@
     aClass.getEInverseRemoveFeatures()->notEmpty()/]
 
 [template public generateReflectivesDefinition(aClass : EClass,modules : OclAny)]
-[if aClass.hasReflectives() and not aClass.isReflectiveDelegation()]
+[if aClass.isReflectiveDelegation()]
+[comment The reflective accessors are delegated, but the IDs of the features of the mixin classes must still be mapped. /]
+[if aClass.hasElementID()]
+[aClass.generateElementIDDefinition(modules)/]
+
+[/if]
+[elseif aClass.hasReflectives()]
 [if aClass.hasElementID()]
 [aClass.generateElementIDDefinition(modules)/]
 
@@ -99,7 +105,7 @@ eDerivedOperationID(eContainer: [if not aPackage.isEcorePackage()]ecore.[/if]EOb
     let eClass = eContainer as [if not aPackage.isEcorePackage()]ecore.[/if]EClass;
 [for (aMixinClass : EClass | mixinClasses)]
     if (eClass == get[aPackage.getInterfaceName()/]().get[aMixinClass.getElementAccessorName()/]()) {
-        switch (featureID) {
+        switch (operationID) {
 [for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
             case [aMixinClass.getImportedIDName(aOperation,modules)/] : {
                 return [aClass.getImportedIDName(aOperation,modules)/];
@@ -111,7 +117,7 @@ eDerivedOperationID(eContainer: [if not aPackage.isEcorePackage()]ecore.[/if]EOb
         }
     }
 [/for]  
-    return super.eDerivedOperationID(eContainer, featureID);
+    return super.eDerivedOperationID(eContainer, operationID);
 }
 [/if]
 [/let]
