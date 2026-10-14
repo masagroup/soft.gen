@@ -20,7 +20,13 @@
 [import soft::generator::go::generateType/]
 
 [template public generateReflectivesDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
-[if not aClass.isReflectiveDelegation()]
+[if aClass.isReflectiveDelegation()]
+[comment The reflective accessors are delegated, but the IDs of the features of the mixin classes must still be mapped. /]
+[if aClass.hasElementID()]
+[aClass.generateElementIDDefinition(packagePath,imports)/]
+
+[/if]
+[else]
 [if aClass.hasElementID() or
 	aClass.getEGetFeatures()->notEmpty() or
     aClass.getESetFeatures()->notEmpty() or
