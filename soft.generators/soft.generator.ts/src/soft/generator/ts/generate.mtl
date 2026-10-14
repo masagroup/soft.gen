@@ -22,6 +22,7 @@
 [import soft::generator::ts::lib::pack::generatePackageImplementation/]
 [import soft::generator::ts::lib::pack::generatePackageInterface/]
 [import soft::generator::ts::tests::generateImplementationTests/]
+[import soft::generator::ts::lib::generateCommon/]
 [import soft::generator::ts::tests::generateFactoryTests/]
 
 
@@ -53,7 +54,7 @@
 [template public generateTests(aPackage : EPackage)]
 [comment @main/]
 [for (aClass : EClass | aPackage.eAllContents(EClass))]
-	[if not aClass.interface]
+	[if not aClass.interface and not aClass.isReflectiveDelegation()]
 		[aClass.generateImplementationTests()/]
 	[/if]
 [/for]
