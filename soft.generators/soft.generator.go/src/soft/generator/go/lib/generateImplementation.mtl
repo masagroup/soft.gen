@@ -43,11 +43,13 @@
 	basicFeatures : Collection(EStructuralFeature) = features->select(not isReflectiveDelegation(aPackage) and (isBasicGet() or isBasicSet() or isBasicUnSet()));
 	operations : Collection(EOperation) = aClass.getImplementedOperations()->sortedBy( getOperationName() );
 	ecorePrefix : String = if aPackage.isEcorePackage() then '' else 'ecore.' endif;
+	hasLazyMutex : Boolean = aClass.hasGuardedLazyInitialization();
 	packages : Set(String) = Set{ Set{getIdentifierPackagePath(classExtend) , aPackage.getInterfacePackagePath() } 
 								 ,if not aPackage.isEcorePackage() then Set{ ecore.getInterfacePackagePath()} else Set{} endif
 								 ,if not aPackage.isEcorePackage() and aClass.getReferencedMapTypes()->exists( cls | cls.ePackage.isEcorePackage() ) then Set{ ecore.getInterfacePackagePath()} else Set{} endif
 								 ,aClass.getAllReferencedTypes()->collect( cls | cls.getInterfacePackagePath() )->asSet()
 								 ,aClass.getInterfaceExtends()->collect( i | getIdentifierPackagePath(i) )->asSet()
+								 ,if hasLazyMutex then Set{ aClass.getGuardedLazyInitializationMutexPackagePath() } else Set{} endif
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
@@ -65,6 +67,9 @@ type [implementationName/] struct {
 [let dataDeclarationFeatures : OrderedSet(EStructuralFeature) = features->select( isField() )]
     [ dataDeclarationFeatures.generateVariableDeclaration(packagePath,imports)/]
 [/let]
+[/if]
+[if hasLazyMutex]
+    [aClass.generateGuardedLazyInitializationMutexDeclaration(packagePath,imports)/]
 [/if]
 }
 [if initializerFeatures->notEmpty()]
