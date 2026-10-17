@@ -350,8 +350,12 @@ endif
 	endif
 /]
 
-[query private getDefaultValueFromLiteral(aDataType : EDataType, literal : String ,packagePath : String, imports : OclAny) : String = 
-	literal
+[query private getDefaultValueFromLiteral(aDataType : EDataType, literal : String ,packagePath : String, imports : OclAny) : String =
+	if aDataType.getInstanceTypeName() = 'string' then
+		'"' + literal.replaceAll('\\\\','\\\\\\\\').replaceAll('"', '\\\\"') + '"'
+	else
+		literal
+	endif
 /]
 
 
