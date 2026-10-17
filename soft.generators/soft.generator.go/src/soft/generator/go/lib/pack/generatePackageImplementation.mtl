@@ -47,6 +47,48 @@
 [query private getPackageInstance(aClassifier1 : EClassifier ,aClassifier2 : EClassifier , packagePath : String, imports : OclAny) : String = if(aClassifier1.ePackage.name = aClassifier2.ePackage.name ) then 'p' else aClassifier1.getPackageInstance(packagePath,imports) endif/]
 [query private getPackageGetter(anEClassifier : EClassifier, anOperation: EOperation, packagePath : String, imports : OclAny) : String = if anOperation.eType.oclIsUndefined() or anOperation.eTypeParameters->notEmpty() then 'nil' else getPackageInstance(anEClassifier, anOperation.eContainingClass,packagePath,imports) + '.' +anEClassifier.getReflectiveGetterName() + '()' endif/]
 
+[comment Objects held in an annotation's contents are rebuilt reflectively, so only their packages'
+ GetFactory and GetPackage are imported. /]
+
+[comment An attribute value as a Go literal: enums typed, strings quoted and escaped. /]
+[query private encodeAttr(value : OclAny, attr : EAttribute, packagePath : String, imports : OclAny) : String =
+	if value.oclIsUndefined() then 'nil'
+	else if attr.eType.oclIsKindOf(EEnum) then
+		getImportedIdentifier(attr.eType.ePackage.getQualifiedInterfaceIdentifier(attr.eType.name), packagePath, imports) + '(' + attr.eType.oclAsType(EEnum).eLiterals->select(l : EEnumLiteral | l.name = value.toString() or l.literal = value.toString())->first().value.toString() + ')'
+	else if attr.eType.name = 'EString' then
+		'"' + value.toString().replaceAll('\\\\','\\\\\\\\').replaceAll('"', '\\\\"').replaceAll('\\n','\\\\n').replaceAll('\\r','\\\\r') + '"'
+	else value.toString()
+	endif endif endif/]
+
+[comment The implementation packages of the objects held in annotation contents. /]
+[query private getContentPackagePaths(aPackage : EPackage) : Set(String) =
+	aPackage.eAllContents(EAnnotation).contents.eClass().ePackage.getImplementationPackagePath()->asSet()/]
+
+[template private generateContent(eObject : EObject, depth : Integer, packagePath : String, imports : OclAny)]
+[let cls : EClass = eObject.eClass()]
+o[depth/] := [getImportedIdentifier(cls.ePackage.getImplementationPackagePath() + '.GetFactory()', packagePath, imports)/].Create([getImportedIdentifier(cls.ePackage.getImplementationPackagePath() + '.GetPackage()', packagePath, imports)/].GetEClassifier("[cls.name/]").([getImportedIdentifier(getEcorePackage().getQualifiedInterfaceIdentifier('EClass'), packagePath, imports)/]))
+[for (a : EAttribute | cls.eAllAttributes->select(x | eObject.eIsSet(x)))]
+[if a.many]
+[for (v : OclAny | eObject.eGet(a))]
+o[depth/].EGetResolve(o[depth/].EClass().GetEStructuralFeatureFromName("[a.name/]"), false).([getImportedIdentifier(getEcorePackage().getQualifiedInterfaceIdentifier('EList'), packagePath, imports)/]).Add([encodeAttr(v, a, packagePath, imports)/])
+[/for]
+[else]
+o[depth/].ESet(o[depth/].EClass().GetEStructuralFeatureFromName("[a.name/]"), [encodeAttr(eObject.eGet(a), a, packagePath, imports)/])
+[/if]
+[/for]
+[for (child : EObject | eObject.eContents())]
+{
+[child.generateContent(depth + 1, packagePath, imports)/]
+[if child.eContainmentFeature().many]
+o[depth/].EGetResolve(o[depth/].EClass().GetEStructuralFeatureFromName("[child.eContainmentFeature().name/]"), false).([getImportedIdentifier(getEcorePackage().getQualifiedInterfaceIdentifier('EList'), packagePath, imports)/]).Add(o[depth + 1/])
+[else]
+o[depth/].ESet(o[depth/].EClass().GetEStructuralFeatureFromName("[child.eContainmentFeature().name/]"), o[depth + 1/])
+[/if]
+}
+[/for]
+[/let]
+[/template]
+
 
 [template private generateDataMember(anENamedElement : ENamedElement, aPackage : EPackage, packagePath : String, imports : OclAny)] 
 [anENamedElement.getElementInstance()/] [getMetaType(anENamedElement,packagePath,imports)/] 
@@ -190,6 +232,7 @@ p.InitEDataType([aDataType.getPackageGetter(packagePath,imports)/], "[aDataType.
 								 , if interfacePath <> packagePath then Set{ interfacePath } else Set{} endif
 								 , Set{ecore.getInterfacePackagePath(), ecore.getImplementationPackagePath()}
 								 , aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.getPackageInstancePath()->asSet()
+								 , aPackage.getContentPackagePaths()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
@@ -280,6 +323,12 @@ func (p *[className/])initialize[getAnnotationSourceIdentifier(aAnnotationSource
 		[let value : String = if eEntry.value.oclIsUndefined() then '' else eEntry.value endif]
 		eAnnotation.GetDetails().Put("[eEntry.key/]","[value.replaceAll('\\\\','\\\\\\\\').replaceAll('"', '\\\\"').replaceAll('\\n','\\\\n').replaceAll('\\r','\\\\r')/]")
 		[/let]
+		[/for]
+		[for (content : EObject | eAnnotation.contents)]
+		{
+		[content.generateContent(0, packagePath, imports)/]
+		eAnnotation.GetContents().Add(o0)
+		}
 		[/for]
 	}
 	[/for]	    
