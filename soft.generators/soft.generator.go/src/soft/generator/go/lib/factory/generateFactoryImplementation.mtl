@@ -98,11 +98,13 @@ func new[className.toUpperFirst()/]() *[className/] {
 }
 [if isSharedPackage and not dataTypesOnly]
 
-// SetDefault makes this implementation the default implementation of the package shared by the
-// implementations of the model: the factory instance of the package, and the resource sets without
-// a factory registered for its nsURI, create its objects with GetFactory.
-func SetDefault() {
-	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('SetDefaultFactory') ,packagePath, imports)/]([aPackage.getPackageInstanceIdentifier(packagePath, imports)/], GetFactory())
+// Register makes this implementation the implementation of the package shared by the implementations
+// of the model in registry: it registers the package and the factory the objects of the package are
+// created with (the resource set, or the session, of registry chooses this implementation).
+func Register(registry [getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EPackageRegistry') ,packagePath, imports)/]) {
+	pack := [aPackage.getPackageInstanceIdentifier(packagePath, imports)/]
+	registry.RegisterPackage(pack)
+	registry.RegisterFactory(GetFactory())
 }
 [/if]
 
@@ -112,12 +114,11 @@ func SetDefault() {
 }
 
 [if dataTypesOnly]
-// Create creates the object of eClass with the default factory (see ecore.SetDefaultFactory)
+// Create panics: the package is shared by the implementations of the model, and the objects are
+// created by the factory of the implementation registered for the package (PutFactory, the generated
+// Register of an implementation) or by the factory of an implementation
 [aPackage.generateFactoryImplementationMember()/] Create(eClass [ecorePrefix/]EClass) [ecorePrefix/]EObject {
-	if defaultFactory := [aPackage.getFactoryReceiverName()/].GetDefaultFactory(); defaultFactory != nil {
-		return defaultFactory.Create(eClass)
-	}
-	panic("Create: " + eClass.GetName() + " (" + strconv.Itoa(eClass.GetClassifierID()) + ") of " + [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NS_URI'), packagePath, imports)/] + " has no default implementation: create it with the factory of an implementation")
+	panic("Create: " + eClass.GetName() + " (" + strconv.Itoa(eClass.GetClassifierID()) + ") of " + [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NS_URI'), packagePath, imports)/] + ": no implementation chosen, register the factory of an implementation (PutFactory, Register)")
 }
 
 [else]

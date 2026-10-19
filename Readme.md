@@ -108,9 +108,10 @@ $ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.go -m /gen/mod
     -p packageInstance=interfaces -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/memory/memory -p module=example.com/m
 ```
 
-A resource set chooses its implementation with `resourceSet.GetPackageRegistry().PutFactory(nsURI, memory.GetFactory())`.
-The factory instance of the package creates objects with the default implementation, set by the `SetDefault()`
-function of an implementation (`store.SetDefault()`), and panics without one.
+A resource set chooses its implementation in its package registry: the generated `Register(registry)` of an
+implementation registers the package and the factory of the implementation (`memory.Register(resourceSet.GetPackageRegistry())`,
+or `registry.RegisterFactory(memory.GetFactory())`). There is no global default implementation: the factory
+instance of the package only converts data types, and its `Create` panics.
 
 ## Quick Build ##
 If you want to bootstrap generators yourself, you'll need:
