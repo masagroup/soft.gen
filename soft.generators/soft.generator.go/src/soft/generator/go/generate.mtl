@@ -42,6 +42,43 @@
 [aPackage.generateFactoryImplementation()/]
 [/template]
 
+[**
+ * Generates the interfaces of the model: the interfaces of the classes, the enums, and the package
+ * and factory interfaces. With an implementation package path distinct from the interface package
+ * path (packages property: uri=interface#implementation), the implementation is generated apart by
+ * generateImplementations, so several implementations of the model can be generated, each by a run
+ * of its own with its options (featureDelegation, rootExtendsClass) and its implementation path,
+ * sharing the interfaces generated once. With equal paths, the package and factory instances
+ * (GetPackage, GetFactory) are generated with the interfaces.
+ * generateModel generates both.
+ */]
+[template public generateInterfaces(aPackage : EPackage)]
+[comment @main/]
+[for (aClass : EClass | aPackage.eAllContents(EClass))]
+    [aClass.generateInterface()/]
+[/for]
+[for (anEEnum : EEnum | aPackage.eAllContents(EEnum))]
+    [anEEnum.generateEnum()/]
+[/for]
+[aPackage.generatePackageInterface()/]
+[aPackage.generateFactoryInterface()/]
+[/template]
+
+[**
+ * Generates an implementation of the model: the implementations of the classes, the package and the
+ * factory, in the implementation package path. With a path distinct from the interface package path,
+ * it is a complete implementation, with its package and factory instances (GetPackage, GetFactory).
+ * See generateInterfaces.
+ */]
+[template public generateImplementations(aPackage : EPackage)]
+[comment @main/]
+[for (aClass : EClass | aPackage.eAllContents(EClass)->select(not interface))]
+    [aClass.generateImplementation()/]
+[/for]
+[aPackage.generatePackageImplementation()/]
+[aPackage.generateFactoryImplementation()/]
+[/template]
+
 [template public generateTests(aPackage : EPackage)]
 [comment @main/]
 [for (aClass : EClass | aPackage.eAllContents(EClass))]

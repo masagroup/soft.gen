@@ -58,6 +58,7 @@
 								, if requiresInterface then Set { aPackage.getInterfacePackagePath() } else Set{} endif
 								, referencedTypes->collect( cls | cls.getTestPackagePath())->asSet()
 								, referencedTypes->collect( cls | cls.getInterfacePackagePath())->asSet()
+								, aClass.getMixinClasses()->select( cls | cls.getImplementedFeatures()->notEmpty() or cls.getImplementedOperations()->notEmpty() )->collect( cls | cls.ePackage.getImplementationPackagePath() )->select( p | p <> packagePath )->asSet()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
@@ -634,7 +635,7 @@ func Test[aClass.name.toUpperFirst()/]EDerivedFeatureID(t *testing.T) {
 	}
 [for (aMixinClass : EClass | mixinClasses)]
 	{
-		eClass := GetPackage().Get[aMixinClass.getElementAccessorName()/]()
+		eClass := [getImportedIdentifier(aMixinClass.ePackage.getImplementationPackagePath() + '.GetPackage()', packagePath, imports)/].Get[aMixinClass.getElementAccessorName()/]()
 		assert.Equal(t,-1, o.EDerivedFeatureID(eClass, -1))
 	[for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
 		assert.Equal(t,[aClass.getImportedIDName(aFeature,packagePath,imports)/], o.EDerivedFeatureID(eClass, [aMixinClass.getImportedIDName(aFeature, packagePath, imports)/]))
@@ -653,7 +654,7 @@ func Test[aClass.name.toUpperFirst()/]EDerivedOperationID(t *testing.T) {
 	}
 [for (aMixinClass : EClass | mixinClasses)]
 	{
-		eClass := GetPackage().Get[aMixinClass.getElementAccessorName()/]()
+		eClass := [getImportedIdentifier(aMixinClass.ePackage.getImplementationPackagePath() + '.GetPackage()', packagePath, imports)/].Get[aMixinClass.getElementAccessorName()/]()
 		assert.Equal(t,-1, o.EDerivedOperationID(eClass, -1))
 	[for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
 		assert.Equal(t,[aClass.getOperationIDName(aOperation)/], o.EDerivedOperationID(eClass, [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aMixinClass.getOperationIDName(aOperation)), packagePath, imports)/]))

@@ -48,6 +48,8 @@
 								 ,if not aPackage.isEcorePackage() and aClass.getReferencedMapTypes()->exists( cls | cls.ePackage.isEcorePackage() ) then Set{ ecore.getInterfacePackagePath()} else Set{} endif
 								 ,aClass.getAllReferencedTypes()->collect( cls | cls.getInterfacePackagePath() )->asSet()
 								 ,aClass.getInterfaceExtends()->collect( i | getIdentifierPackagePath(i) )->asSet()
+								 ,aClass.getReferencedMapTypes()->collect( cls | cls.ePackage.getImplementationPackagePath() )->select( p | p <> packagePath )->asSet()
+								 ,aClass.getMixinClasses()->select( cls | cls.getImplementedFeatures()->notEmpty() or cls.getImplementedOperations()->notEmpty() )->collect( cls | cls.ePackage.getImplementationPackagePath() )->select( p | p <> packagePath )->asSet()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]

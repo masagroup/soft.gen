@@ -17,6 +17,7 @@
 [import soft::generator::common::generateReflectives/]
 [import soft::generator::go::lib::generateCommon/]
 [import soft::generator::go::generateCommon/]
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 
 [template public generateReflectivesDefinition(aClass : EClass, packagePath : String, imports : OclAny)]
@@ -77,7 +78,7 @@
 [aClass.generateFunctionImplementationReceiver()/] EDerivedFeatureID(eContainer [if not aPackage.isEcorePackage()]ecore.[/if]EObject, featureID int) int {
 	eClass , _ := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
 [for (aMixinClass : EClass | mixinClasses)]
-    if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
+    if (eClass == [getImportedIdentifier(aMixinClass.ePackage.getImplementationPackagePath() + '.GetPackage()', packagePath, imports)/].Get[aMixinClass.getElementAccessorName()/]()) {
         switch featureID {
 [for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
             case [aMixinClass.getImportedIDName(aFeature, packagePath,imports)/]: return [aClass.getImportedIDName(aFeature, packagePath,imports)/]
@@ -94,7 +95,7 @@
 [aClass.generateFunctionImplementationReceiver()/] EDerivedOperationID(eContainer [if not aPackage.isEcorePackage()]ecore.[/if]EObject, operationID int) int {
 	eClass , _ := eContainer.([if not aPackage.isEcorePackage()]ecore.[/if]EClass)
 [for (aMixinClass : EClass | mixinClasses)]
-    if (eClass == GetPackage().Get[aMixinClass.getElementAccessorName()/]()) {
+    if (eClass == [getImportedIdentifier(aMixinClass.ePackage.getImplementationPackagePath() + '.GetPackage()', packagePath, imports)/].Get[aMixinClass.getElementAccessorName()/]()) {
         switch operationID {
 [for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
             case [aMixinClass.getImportedIDName(aOperation, packagePath,imports)/]: return [aClass.getImportedIDName(aOperation, packagePath,imports)/]

@@ -61,6 +61,33 @@ Usage: [-hsv] -m=<model> -o=<folder> [-p=<property=value>]... [-P=<propertyfile>
   -v, --version                     print version information and exit
 ```
 
+## Several implementations of a model (Go) ##
+
+`generateModel` generates the interfaces of a model and one implementation of it. The templates
+`generateInterfaces` and `generateImplementations` generate them apart: with an implementation
+package path distinct from the interface package path (`packages` property:
+`<nsURI>=<interface path>#<implementation path>`), each implementation is a complete package, with its
+own package and factory instances (`GetPackage`, `GetFactory`), and several implementations of the same
+model, with different options, can be generated beside the same interfaces, one run each:
+
+```shell
+# the interfaces, once
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.go -m /gen/model.ecore -o /gen -t generateInterfaces \
+    -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/store/store -p module=example.com/m
+# an implementation with reflective feature delegation
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.go -m /gen/model.ecore -o /gen -t generateImplementations \
+    -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/store/store -p module=example.com/m \
+    -p featureDelegation=Reflective
+# an implementation with typed fields
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.go -m /gen/model.ecore -o /gen -t generateImplementations \
+    -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/fields/fields -p module=example.com/m
+```
+
+The implementations have the same nsURI and classifier IDs: a program chooses one by registering its
+package (in the package registry of a resource set, for example). With equal interface and
+implementation paths, the package and factory instances are generated with the interfaces:
+use `generateModel`.
+
 ## Quick Build ##
 If you want to bootstrap generators yourself, you'll need:
 - Make
