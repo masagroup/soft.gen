@@ -48,6 +48,7 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 	packagePath : String = if dataTypesOnly then aPackage.getInterfacePackagePath() else aPackage.getImplementationPackagePath() endif;
 	outputDirectory : String = if dataTypesOnly then aPackage.getInterfaceOutputDirectory() else aPackage.getImplementationOutputDirectory() endif;
 	isSharedPackage : Boolean = aPackage.isSharedPackage();
+	delegatesDataTypes : Boolean = isSharedPackage and not dataTypesOnly;
 	interfacePath : String = aPackage.getInterfacePackagePath();
 	className : String = aPackage.getFactoryImplementationName(); 
 	ecore : EPackage = getEcorePackage(); 
@@ -57,11 +58,11 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 	packages : Set(String) = Set{ Set{'strconv/strconv',interfacePath}
 								, if isFactoryInstance then Set{ interfacePath , 'sync/sync'} else Set{} endif
 								, if not aPackage.isEcorePackage() then Set{ecore.getInterfacePackagePath()} else Set{} endif
-								, dataTypes->collect(getInstanceTypeName())
+								, if delegatesDataTypes then Set{} else dataTypes->collect(getInstanceTypeName())
 										   ->select(t | isFactoryImplemented(t))
 										   ->collect(t | getIdentifierPackagePath(t))
 										   ->select(s | s <> '' )
-										   ->asSet()
+										   ->asSet() endif
 								}->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
@@ -77,6 +78,7 @@ package [getPackageNameFromPath(packagePath)/]
 [aPackage.generateFactoryInstance(packagePath,imports)/]
 [/if]
 
+[if not delegatesDataTypes]
 type [aPackage.getFactoryInternalName()/] interface {
 [for (aDataType : EDataType | dataTypes)]
     create[aDataType.name/]FromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/]
@@ -85,6 +87,7 @@ type [aPackage.getFactoryInternalName()/] interface {
     convert[aDataType.name/]ToString(eDataType [ecorePrefix/]EDataType, literalValue [aPackage.getAnyType()/]) string
 [/for]
 }
+[/if]
 
 type [className/] struct {
 	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactoryExt') ,packagePath, imports)/]
@@ -109,9 +112,11 @@ func Register(registry [getImportedIdentifier( ecore.getQualifiedInterfaceIdenti
 [/if]
 
 
+[if not delegatesDataTypes]
 [aPackage.generateFactoryImplementationMember()/] AsInternal() [aPackage.getFactoryInternalName()/] {
 	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryInternalName()/])
 }
+[/if]
 
 [if dataTypesOnly]
 // Create panics: the package is shared by the implementations of the model, and the objects are
@@ -163,6 +168,19 @@ func Register(registry [getImportedIdentifier( ecore.getQualifiedInterfaceIdenti
 [/let]
 [/for]
 [/if]
+[if delegatesDataTypes]
+// CreateFromString converts literalValue with the factory of the data types of the package shared by
+// the implementations of the model
+[aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/] {
+	return [aPackage.getPackageInstanceIdentifier(packagePath, imports)/].GetEFactoryInstance().CreateFromString(eDataType, literalValue)
+}
+
+// ConvertToString converts instanceValue with the factory of the data types of the package shared by
+// the implementations of the model
+[aPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType [ecorePrefix/]EDataType, instanceValue [aPackage.getAnyType()/]) string {
+	return [aPackage.getPackageInstanceIdentifier(packagePath, imports)/].GetEFactoryInstance().ConvertToString(eDataType, instanceValue)
+}
+[else]
 [aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/] {
 	classID  := eDataType.GetClassifierID()
 	switch classID {
@@ -190,6 +208,7 @@ func Register(registry [getImportedIdentifier( ecore.getQualifiedInterfaceIdenti
 [aPackage.generateCreateFromString(aDataType,packagePath,imports)/]
 [aPackage.generateConvertToString(aDataType,packagePath,imports)/]
 [/for]
+[/if]
 [/file]
 [/template]
 

@@ -48,7 +48,9 @@ package [getPackageNameFromPath(packagePath)/]
 
 func TestFactoryAs(t *testing.T) {
 	factory := new[aPackage.name.toUpperFirst()/]FactoryImpl()
+[if not aPackage.isSharedPackage()]
 	assert.Equal(t, factory, factory.AsInternal())
+[/if]
 	assert.Equal(t, factory, factory.AsEFactory())
 }
 
