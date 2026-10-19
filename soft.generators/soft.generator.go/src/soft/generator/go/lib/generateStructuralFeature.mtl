@@ -27,7 +27,7 @@
 [query public getBasicsInterface( aClass : EClass ) : String = aClass.getInterfaceName().toLowerFirst() + 'Basics'/]
 
 [query private getPackageInstance(aClassifier : EClassifier, packagePath : String , imports : OclAny ) : String = 
-	getImportedIdentifier( aClassifier.ePackage.getImplementationPackagePath() + '.GetPackage()', packagePath, imports )
+	aClassifier.ePackage.getPackageInstanceIdentifier(packagePath, imports)
 /]
 
 [template public generateDeclaration(aStructuralFeature : EStructuralFeature, packagePath : String, imports : OclAny)]
@@ -527,6 +527,9 @@ func [testMethodName/](t *testing.T) {
 [if isReflectiveDelegation()]
 	[receiverName/].ESetFromID([aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/],[newVarName/])
 [elseif not isVolatile()]
+    [if aPackage.isCheckImplementation() and aStructuralFeature.oclIsKindOf(EReference) and not isContainer() and not isContains()]
+    ecore.CheckSameImplementation([receiverName/], [newVarName/])
+    [/if]
     [if isContainer()]
     if ( [newVarName/] != [receiverName/].EInternalContainer() || ([newVarName/] != nil && [receiverName/].EContainerFeatureID() !=  [aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/])) {
         var notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain

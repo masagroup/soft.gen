@@ -48,8 +48,8 @@
 								 ,if not aPackage.isEcorePackage() and aClass.getReferencedMapTypes()->exists( cls | cls.ePackage.isEcorePackage() ) then Set{ ecore.getInterfacePackagePath()} else Set{} endif
 								 ,aClass.getAllReferencedTypes()->collect( cls | cls.getInterfacePackagePath() )->asSet()
 								 ,aClass.getInterfaceExtends()->collect( i | getIdentifierPackagePath(i) )->asSet()
-								 ,aClass.getReferencedMapTypes()->collect( cls | cls.ePackage.getImplementationPackagePath() )->select( p | p <> packagePath )->asSet()
-								 ,aClass.getMixinClasses()->select( cls | cls.getImplementedFeatures()->notEmpty() or cls.getImplementedOperations()->notEmpty() )->collect( cls | cls.ePackage.getImplementationPackagePath() )->select( p | p <> packagePath )->asSet()
+								 ,aClass.getReferencedMapTypes()->collect( cls | cls.ePackage.getPackageInstancePath() )->select( p | p <> packagePath )->asSet()
+								 ,aClass.getMixinClasses()->select( cls | cls.getImplementedFeatures()->notEmpty() or cls.getImplementedOperations()->notEmpty() )->collect( cls | cls.ePackage.getPackageInstancePath() )->select( p | p <> packagePath )->asSet()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
@@ -116,12 +116,20 @@ func [aClass.getConstructorName()/]() *[implementationName/] {
 
 
 [aClass.generateFunctionImplementationReceiver()/] EStaticClass() [ecorePrefix/]EClass {
-    return GetPackage().[aClass.getReflectiveGetterName()/]()
+    return [aPackage.getPackageInstanceIdentifier(packagePath, imports)/].[aClass.getReflectiveGetterName()/]()
 }
 
 [aClass.generateFunctionImplementationReceiver()/] EStaticFeatureCount() int {
     return [if aClass.isReflectiveDelegation()]0[else][getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aClass.getFeatureCountIDName()), packagePath, imports)/][/if]
 }
+[if aPackage.isSharedPackage()]
+
+// EFactory returns the factory of the implementation of this object: its package is shared by
+// the implementations of the model, and objects of different implementations do not mix.
+[aClass.generateFunctionImplementationReceiver()/] EFactory() [ecorePrefix/]EFactory {
+    return GetFactory()
+}
+[/if]
 [if aClass.isMapEntry()]
 [let keyFeature : EStructuralFeature = aClass.getEStructuralFeature('key')]
 [let valueFeature : EStructuralFeature = aClass.getEStructuralFeature('value')]

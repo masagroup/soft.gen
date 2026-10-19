@@ -31,8 +31,23 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 [/template]
 
 
-[template public generateFactoryImplementation(aPackage : EPackage) {
-	packagePath : String = aPackage.getImplementationPackagePath();
+[template public generateFactoryImplementation(aPackage : EPackage)]
+[aPackage.generateFactory(false)/]
+[/template]
+
+[**
+ * Generates the factory of the data types of a shared package (see isSharedPackage), with the
+ * interfaces: it converts the values of the data types, the same for all implementations, and
+ * creates no object (Create panics): objects are created by the factory of an implementation.
+ */]
+[template public generateDataTypeFactory(aPackage : EPackage)]
+[aPackage.generateFactory(true)/]
+[/template]
+
+[template private generateFactory(aPackage : EPackage, dataTypesOnly : Boolean) {
+	packagePath : String = if dataTypesOnly then aPackage.getInterfacePackagePath() else aPackage.getImplementationPackagePath() endif;
+	outputDirectory : String = if dataTypesOnly then aPackage.getInterfaceOutputDirectory() else aPackage.getImplementationOutputDirectory() endif;
+	isSharedPackage : Boolean = aPackage.isSharedPackage();
 	interfacePath : String = aPackage.getInterfacePackagePath();
 	className : String = aPackage.getFactoryImplementationName(); 
 	ecore : EPackage = getEcorePackage(); 
@@ -51,7 +66,7 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 	imports : OclAny = getPackageImports(packages);
 }]
 
-[file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
+[file (outputDirectory + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
 package [getPackageNameFromPath(packagePath)/]
@@ -79,14 +94,33 @@ func new[className.toUpperFirst()/]() *[className/] {
     factory := new([className/])
     factory.SetInterfaces(factory)
 	factory.Initialize()
-    return factory 
+    return factory
 }
+[if isSharedPackage and not dataTypesOnly]
+
+// SetDefault makes this implementation the default implementation of the package shared by the
+// implementations of the model: the factory instance of the package, and the resource sets without
+// a factory registered for its nsURI, create its objects with GetFactory.
+func SetDefault() {
+	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('SetDefaultFactory') ,packagePath, imports)/]([aPackage.getPackageInstanceIdentifier(packagePath, imports)/], GetFactory())
+}
+[/if]
 
 
 [aPackage.generateFactoryImplementationMember()/] AsInternal() [aPackage.getFactoryInternalName()/] {
 	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryInternalName()/])
 }
 
+[if dataTypesOnly]
+// Create creates the object of eClass with the default factory (see ecore.SetDefaultFactory)
+[aPackage.generateFactoryImplementationMember()/] Create(eClass [ecorePrefix/]EClass) [ecorePrefix/]EObject {
+	if defaultFactory := [aPackage.getFactoryReceiverName()/].GetDefaultFactory(); defaultFactory != nil {
+		return defaultFactory.Create(eClass)
+	}
+	panic("Create: " + eClass.GetName() + " (" + strconv.Itoa(eClass.GetClassifierID()) + ") of " + [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NS_URI'), packagePath, imports)/] + " has no default implementation: create it with the factory of an implementation")
+}
+
+[else]
 [let factoryName : String = getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName()), packagePath, imports)]
 [aPackage.generateFactoryImplementationMember()/] AsEFactory()  [factoryName/] {
 	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([factoryName/])
@@ -127,6 +161,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 [/let]
 [/let]
 [/for]
+[/if]
 [aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/] {
 	classID  := eDataType.GetClassifierID()
 	switch classID {

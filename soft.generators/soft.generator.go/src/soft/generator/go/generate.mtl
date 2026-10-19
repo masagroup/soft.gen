@@ -12,6 +12,7 @@
 [comment encoding = UTF-8 /]
 [module generate('http://www.eclipse.org/emf/2002/Ecore')/]
 
+[import soft::generator::go::generatePath/]
 [import soft::generator::go::lib::generateEnum/]
 [import soft::generator::go::lib::generateInterface/]
 [import soft::generator::go::lib::generateImplementation/]
@@ -39,6 +40,9 @@
     [aClass.generateImplementation()/]
 [/for]
 [aPackage.generatePackageImplementation()/]
+[if aPackage.isSharedPackage()]
+[aPackage.generateDataTypeFactory()/]
+[/if]
 [aPackage.generateFactoryImplementation()/]
 [/template]
 
@@ -50,6 +54,9 @@
  * of its own with its options (featureDelegation, rootExtendsClass) and its implementation path,
  * sharing the interfaces generated once. With equal paths, the package and factory instances
  * (GetPackage, GetFactory) are generated with the interfaces.
+ * With the property packageInstance=interfaces and distinct paths, the package instance (GetPackage)
+ * and a factory of the data types of the model are generated with the interfaces: the
+ * implementations share this package and its classes, each one with a factory of its own.
  * generateModel generates both.
  */]
 [template public generateInterfaces(aPackage : EPackage)]
@@ -62,12 +69,19 @@
 [/for]
 [aPackage.generatePackageInterface()/]
 [aPackage.generateFactoryInterface()/]
+[if aPackage.isSharedPackage()]
+[aPackage.generatePackageImplementation()/]
+[aPackage.generateDataTypeFactory()/]
+[/if]
 [/template]
 
 [**
  * Generates an implementation of the model: the implementations of the classes, the package and the
  * factory, in the implementation package path. With a path distinct from the interface package path,
  * it is a complete implementation, with its package and factory instances (GetPackage, GetFactory).
+ * With the property packageInstance=interfaces, the package is the one generated with the
+ * interfaces: the implementation holds its classes, whose EClass is the shared one, and its factory
+ * (GetFactory), whose package is the shared one.
  * See generateInterfaces.
  */]
 [template public generateImplementations(aPackage : EPackage)]
@@ -75,7 +89,9 @@
 [for (aClass : EClass | aPackage.eAllContents(EClass)->select(not interface))]
     [aClass.generateImplementation()/]
 [/for]
+[if not aPackage.isSharedPackage()]
 [aPackage.generatePackageImplementation()/]
+[/if]
 [aPackage.generateFactoryImplementation()/]
 [/template]
 

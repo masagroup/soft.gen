@@ -26,7 +26,7 @@
 [query private getElementInstance(anENamedElement : ENamedElement) : String = anENamedElement.getMemberName()/]
 
 [query private getPackageInstance(aClassifier : EClassifier, packagePath : String, imports : OclAny ) : String = 
-	getImportedIdentifier( aClassifier.ePackage.getImplementationPackagePath() + '.GetPackage()',packagePath, imports )
+	aClassifier.ePackage.getPackageInstanceIdentifier(packagePath, imports)
 /]
 
 [query private getPackageGetter(aModelElement : EModelElement, packagePath : String, imports : OclAny) : String =
@@ -177,21 +177,23 @@ p.InitEDataType([aDataType.getPackageGetter(packagePath,imports)/], "[aDataType.
 [/template]
 
 [template public generatePackageImplementation(aPackage : EPackage){
-	packagePath : String = aPackage.getImplementationPackagePath();
+	packagePath : String = aPackage.getPackageInstancePath();
 	interfacePath : String = aPackage.getInterfacePackagePath(); 
 	className : String = aPackage.getImplementationName();
 	allClasses :  OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
 	allDataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
 	annotationSources : OrderedSet(String) = aPackage.getAnnotationSources();
 	ecore : EPackage = getEcorePackage();
-	isPackageInstance : Boolean = interfacePath <> packagePath;
-	packages : Set(String) = Set { if isPackageInstance then Set{ interfacePath , 'sync/sync' } else Set{} endif
+	isSharedPackage : Boolean = aPackage.isSharedPackage();
+	isPackageInstance : Boolean = interfacePath <> packagePath or isSharedPackage;
+	packages : Set(String) = Set { if isPackageInstance then Set{ 'sync/sync' } else Set{} endif
+								 , if interfacePath <> packagePath then Set{ interfacePath } else Set{} endif
 								 , Set{ecore.getInterfacePackagePath(), ecore.getImplementationPackagePath()}
-								 , aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.getImplementationPackagePath()->asSet()
+								 , aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage.getPackageInstancePath()->asSet()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
-[file (aPackage.getImplementationOutputDirectory() + '/'+ aPackage.getImplementationFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
+[file (aPackage.getPackageInstanceOutputDirectory() + '/'+ aPackage.getImplementationFileName(aPackage.getPackageName() ) , false, 'UTF-8')]
 [fileComment()/]
 
 package [getPackageNameFromPath(packagePath)/]
@@ -212,11 +214,11 @@ type [className/] struct {
 func new[className.toUpperFirst()/]() *[className/] {
     p := new([className/])
     p.SetInterfaces(p)
-	p.Initialize(GetFactory(),[getImportedIdentifier( ecore.getQualifiedImplementationIdentifier('GetFactory') , packagePath,imports)/]())
+	p.Initialize([if isSharedPackage]new[if aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension'][aPackage.getFactoryExtensionName().toUpperFirst()/][else][aPackage.getFactoryImplementationName().toUpperFirst()/][/if]()[else]GetFactory()[/if],[getImportedIdentifier( ecore.getQualifiedImplementationIdentifier('GetFactory') , packagePath,imports)/]())
     return p
 }
 
-func (p *[className/])Initialize(packageFactory [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName()) ,packagePath, imports)/],ecoreFactory [getImportedIdentifier(ecore.getQualifiedInterfaceIdentifier('EcoreFactory'),packagePath, imports)/]) {
+func (p *[className/])Initialize(packageFactory [if isSharedPackage][getImportedIdentifier(ecore.getQualifiedInterfaceIdentifier('EFactory'),packagePath, imports)/][else][getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName()) ,packagePath, imports)/][/if],ecoreFactory [getImportedIdentifier(ecore.getQualifiedInterfaceIdentifier('EcoreFactory'),packagePath, imports)/]) {
 	p.EPackageExt.Initialize()
 	p.SetName([getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NAME') ,packagePath, imports)/])
     p.SetNsPrefix([getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NS_PREFIX') ,packagePath, imports)/])

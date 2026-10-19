@@ -91,6 +91,10 @@ endif
 
 [query public getQualifiedMockIdentifier( aClass : EClass ) : String = aClass.ePackage.getQualifiedMockIdentifier( aClass.getMockName() ) /]
 
+[query public getPackageInstanceIdentifier( aPackage : EPackage, packagePath : String, imports : OclAny ) : String =
+	getImportedIdentifier( aPackage.getPackageInstancePath() + '.GetPackage()', packagePath, imports )
+/]
+
 [query public getImportedIdentifier( qualifiedIdentifier : String, packagePath : String, imports : OclAny ) : String =
 	if imports.oclIsUndefined() then
 		qualifiedIdentifier
