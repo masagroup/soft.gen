@@ -63,6 +63,8 @@ public class Generate extends Generator {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            // a failed generation must fail the scripts running the generator
+            System.exit(1);
         }
     }
 }
