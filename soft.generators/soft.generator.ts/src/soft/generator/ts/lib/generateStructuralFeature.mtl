@@ -261,27 +261,27 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
         [if isContains()]
             let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
             [if not isBidirectional()]
-            notifications = ([oldVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
+            notifications = ([oldVarName/] as unknown as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
             [else]
                 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
                 [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = ([oldVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[reverseFeature.getImportedOppositeIDName(oldVarName,modules)/],notifications)
+            notifications = ([oldVarName/] as unknown as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[reverseFeature.getImportedOppositeIDName(oldVarName,modules)/],notifications)
                 [/let]
                 [/let]
             [/if]
-            if ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInternalContainer() == null) {
+            if (([newVarName/] as unknown as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInternalContainer() == null) {
             [if not isBidirectional()]
-            notifications = ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
+            notifications = ([newVarName/] as unknown as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
             [else]
                 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
                 [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this, [reverseFeature.getImportedOppositeIDName(newVarName,modules)/],notifications)
+            notifications = ([newVarName/] as unknown as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this, [reverseFeature.getImportedOppositeIDName(newVarName,modules)/],notifications)
                 [/let]
                 [/let]
             [/if]
             }
-            if notifications != null {
-                notifications.Dispatch()
+            if (notifications != null) {
+                notifications.dispatch()
             }
         [/if]
             if (this.eNotificationRequired()) {
@@ -342,27 +342,27 @@ async [aStructuralFeature.getGetterName()/]Async(): Promise<[aStructuralFeature.
         [if isContains()]
             let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
             [if not isBidirectional()]
-            notifications = ([oldVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
+            notifications = ([oldVarName/] as unknown as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
             [else]
                 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
                 [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = ([oldVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[reverseFeature.getImportedOppositeIDName(oldVarName,modules)/],notifications)
+            notifications = ([oldVarName/] as unknown as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseRemove(this,[reverseFeature.getImportedOppositeIDName(oldVarName,modules)/],notifications)
                 [/let]
                 [/let]
             [/if]
-            if ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInternalContainer() == null) {
+            if (([newVarName/] as unknown as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInternalContainer() == null) {
             [if not isBidirectional()]
-            notifications = ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
+            notifications = ([newVarName/] as unknown as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this,[if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE-[aClass.getImportedIDName(aStructuralFeature,modules)/],notifications)
             [else]
                 [let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
                 [let reverseClass : EClass = reverseFeature.eContainingClass]
-            notifications = ([newVarName/] as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this, [reverseFeature.getImportedOppositeIDName(newVarName,modules)/],notifications)
+            notifications = ([newVarName/] as unknown as [if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).eInverseAdd(this, [reverseFeature.getImportedOppositeIDName(newVarName,modules)/],notifications)
                 [/let]
                 [/let]
             [/if]
             }
-            if notifications != null {
-                notifications.Dispatch()
+            if (notifications != null) {
+                notifications.dispatch()
             }
         [/if]
             if (this.eNotificationRequired()) {
