@@ -21,11 +21,11 @@
 [template public generatePackageTests(aPackage : EPackage){
 	allClasses : OrderedSet(EClass) = aPackage.eAllContents(EClass)->asOrderedSet()->sortedBy(name);
 	allDataTypes : OrderedSet(EDataType) = aPackage.eAllContents(EDataType)->asOrderedSet()->sortedBy(name);
-	packagePath : String = aPackage.getImplementationPackagePath();
+	packagePath : String = aPackage.getPackageInstancePath();
 	packages : Set(String) = Set{ 'testing/testing' , 'github.com/stretchr/testify/assert/assert', aPackage.getInterfacePackagePath()}->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
-[file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getPackageTestFileName(aPackage.name), false, 'UTF-8') ]
+[file (aPackage.getPackageInstanceOutputDirectory() + '/' + aPackage.getPackageTestFileName(aPackage.name), false, 'UTF-8') ]
 [fileComment()/]
 
 package [getPackageNameFromPath(packagePath)/]

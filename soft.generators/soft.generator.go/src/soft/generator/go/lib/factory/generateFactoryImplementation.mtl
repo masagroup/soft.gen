@@ -31,8 +31,24 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 [/template]
 
 
-[template public generateFactoryImplementation(aPackage : EPackage) {
-	packagePath : String = aPackage.getImplementationPackagePath();
+[template public generateFactoryImplementation(aPackage : EPackage)]
+[aPackage.generateFactory(false)/]
+[/template]
+
+[**
+ * Generates the factory of the data types of a shared package (see isSharedPackage), with the
+ * interfaces: it converts the values of the data types, the same for all implementations, and
+ * creates no object (Create panics): objects are created by the factory of an implementation.
+ */]
+[template public generateDataTypeFactory(aPackage : EPackage)]
+[aPackage.generateFactory(true)/]
+[/template]
+
+[template private generateFactory(aPackage : EPackage, dataTypesOnly : Boolean) {
+	packagePath : String = if dataTypesOnly then aPackage.getInterfacePackagePath() else aPackage.getImplementationPackagePath() endif;
+	outputDirectory : String = if dataTypesOnly then aPackage.getInterfaceOutputDirectory() else aPackage.getImplementationOutputDirectory() endif;
+	isSharedPackage : Boolean = aPackage.isSharedPackage();
+	delegatesDataTypes : Boolean = isSharedPackage and not dataTypesOnly;
 	interfacePath : String = aPackage.getInterfacePackagePath();
 	className : String = aPackage.getFactoryImplementationName(); 
 	ecore : EPackage = getEcorePackage(); 
@@ -42,16 +58,16 @@ func ([anEPackage.getFactoryReceiverName()/] *[anEPackage.getFactoryImplementati
 	packages : Set(String) = Set{ Set{'strconv/strconv',interfacePath}
 								, if isFactoryInstance then Set{ interfacePath , 'sync/sync'} else Set{} endif
 								, if not aPackage.isEcorePackage() then Set{ecore.getInterfacePackagePath()} else Set{} endif
-								, dataTypes->collect(getInstanceTypeName())
+								, if delegatesDataTypes then Set{} else dataTypes->collect(getInstanceTypeName())
 										   ->select(t | isFactoryImplemented(t))
 										   ->collect(t | getIdentifierPackagePath(t))
 										   ->select(s | s <> '' )
-										   ->asSet()
+										   ->asSet() endif
 								}->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
 
-[file (aPackage.getImplementationOutputDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
+[file (outputDirectory + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
 [fileComment()/]
 
 package [getPackageNameFromPath(packagePath)/]
@@ -62,6 +78,7 @@ package [getPackageNameFromPath(packagePath)/]
 [aPackage.generateFactoryInstance(packagePath,imports)/]
 [/if]
 
+[if not delegatesDataTypes]
 type [aPackage.getFactoryInternalName()/] interface {
 [for (aDataType : EDataType | dataTypes)]
     create[aDataType.name/]FromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/]
@@ -70,6 +87,7 @@ type [aPackage.getFactoryInternalName()/] interface {
     convert[aDataType.name/]ToString(eDataType [ecorePrefix/]EDataType, literalValue [aPackage.getAnyType()/]) string
 [/for]
 }
+[/if]
 
 type [className/] struct {
 	[getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EFactoryExt') ,packagePath, imports)/]
@@ -79,14 +97,36 @@ func new[className.toUpperFirst()/]() *[className/] {
     factory := new([className/])
     factory.SetInterfaces(factory)
 	factory.Initialize()
-    return factory 
+    return factory
 }
+[if isSharedPackage and not dataTypesOnly]
+
+// Install makes this implementation the implementation of the package shared by the implementations
+// of the model in registry: it registers the package and the factory the objects of the package are
+// created with (the resource set, or the session, of registry chooses this implementation).
+func Install(registry [getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EPackageRegistry') ,packagePath, imports)/]) {
+	pack := [aPackage.getPackageInstanceIdentifier(packagePath, imports)/]
+	registry.RegisterPackage(pack)
+	registry.RegisterFactory(GetFactory())
+}
+[/if]
 
 
+[if not delegatesDataTypes]
 [aPackage.generateFactoryImplementationMember()/] AsInternal() [aPackage.getFactoryInternalName()/] {
 	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([aPackage.getFactoryInternalName()/])
 }
+[/if]
 
+[if dataTypesOnly]
+// Create panics: the package is shared by the implementations of the model, and the objects are
+// created by the factory of the implementation registered for the package (PutFactory, the generated
+// Install of an implementation) or by the factory of an implementation
+[aPackage.generateFactoryImplementationMember()/] Create(eClass [ecorePrefix/]EClass) [ecorePrefix/]EObject {
+	panic("Create: " + eClass.GetName() + " (" + strconv.Itoa(eClass.GetClassifierID()) + ") of " + [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NS_URI'), packagePath, imports)/] + ": no implementation chosen, register the factory of an implementation (PutFactory, Install)")
+}
+
+[else]
 [let factoryName : String = getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName()), packagePath, imports)]
 [aPackage.generateFactoryImplementationMember()/] AsEFactory()  [factoryName/] {
 	return [aPackage.getFactoryReceiverName()/].GetInterfaces().([factoryName/])
@@ -127,6 +167,20 @@ func new[className.toUpperFirst()/]() *[className/] {
 [/let]
 [/let]
 [/for]
+[/if]
+[if delegatesDataTypes]
+// CreateFromString converts literalValue with the factory of the data types of the package shared by
+// the implementations of the model
+[aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/] {
+	return [aPackage.getPackageInstanceIdentifier(packagePath, imports)/].GetEFactoryInstance().CreateFromString(eDataType, literalValue)
+}
+
+// ConvertToString converts instanceValue with the factory of the data types of the package shared by
+// the implementations of the model
+[aPackage.generateFactoryImplementationMember()/] ConvertToString(eDataType [ecorePrefix/]EDataType, instanceValue [aPackage.getAnyType()/]) string {
+	return [aPackage.getPackageInstanceIdentifier(packagePath, imports)/].GetEFactoryInstance().ConvertToString(eDataType, instanceValue)
+}
+[else]
 [aPackage.generateFactoryImplementationMember()/] CreateFromString(eDataType [ecorePrefix/]EDataType, literalValue string) [aPackage.getAnyType()/] {
 	classID  := eDataType.GetClassifierID()
 	switch classID {
@@ -154,6 +208,7 @@ func new[className.toUpperFirst()/]() *[className/] {
 [aPackage.generateCreateFromString(aDataType,packagePath,imports)/]
 [aPackage.generateConvertToString(aDataType,packagePath,imports)/]
 [/for]
+[/if]
 [/file]
 [/template]
 

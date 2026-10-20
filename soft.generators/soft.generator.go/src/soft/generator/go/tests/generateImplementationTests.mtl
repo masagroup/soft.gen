@@ -55,10 +55,10 @@
 											}->flatten()->select( not oclIsUndefined() );
 	packages : Set(String) = Set{ Set { 'testing/testing' , 'github.com/stretchr/testify/assert/assert', 'github.com/stretchr/testify/mock/mock' , aPackage.getMockPackagePath()}
 								, if requiresEcore then Set{ getEcorePackage().getInterfacePackagePath() } else Set{} endif
-								, if requiresInterface then Set { aPackage.getInterfacePackagePath() } else Set{} endif
+								, if requiresInterface or aPackage.isSharedPackage() then Set { aPackage.getInterfacePackagePath() } else Set{} endif
 								, referencedTypes->collect( cls | cls.getTestPackagePath())->asSet()
 								, referencedTypes->collect( cls | cls.getInterfacePackagePath())->asSet()
-								, aClass.getMixinClasses()->select( cls | cls.getImplementedFeatures()->notEmpty() or cls.getImplementedOperations()->notEmpty() )->collect( cls | cls.ePackage.getImplementationPackagePath() )->select( p | p <> packagePath )->asSet()
+								, aClass.getMixinClasses()->select( cls | cls.getImplementedFeatures()->notEmpty() or cls.getImplementedOperations()->notEmpty() )->collect( cls | cls.ePackage.getPackageInstancePath() )->select( p | p <> packagePath )->asSet()
 								 }->flatten();
 	imports : OclAny = getPackageImports(packages);
 }]
@@ -91,7 +91,7 @@ func Test[aClass.name.toUpperFirst()/]As[aClass.name.toUpperFirst()/](t *testing
 
 func Test[aClass.name.toUpperFirst()/]StaticClass(t *testing.T) {
 	o := [aClass.getConstructorName()/]()
-	assert.Equal(t, GetPackage().[aClass.getReflectiveGetterName()/]() , o.EStaticClass() )
+	assert.Equal(t, [aPackage.getPackageInstanceIdentifier(packagePath, imports)/].[aClass.getReflectiveGetterName()/]() , o.EStaticClass() )
 }
 
 func Test[aClass.name.toUpperFirst()/]FeatureCount(t *testing.T) {
@@ -221,7 +221,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	[let reverseClass : EClass = reverseFeature.eContainingClass]
 	[let featureIDName : String = reverseClass.getImportedIDName(reverseFeature, packagePath, imports)]
 	mockClass := [ecorePrefix/]NewMockEClass(t)
-	mockClass.EXPECT().GetFeatureID(GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
+	mockClass.EXPECT().GetFeatureID([aClass.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
 	mockValue.EXPECT().EClass().Return(mockClass).Once()
 	mockValue.EXPECT().EInverseAdd(o, [featureIDName/], nil).Return(nil).Once()
 	mockValue.EXPECT().EResource().Return(nil).Once()
@@ -237,7 +237,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]G
 	[let reverseClass : EClass = reverseFeature.eContainingClass]
 	[let featureIDName : String = reverseClass.getImportedIDName(reverseFeature, packagePath, imports)]
 	mockClass := [ecorePrefix/]NewMockEClass(t)
-	mockClass.EXPECT().GetFeatureID(GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
+	mockClass.EXPECT().GetFeatureID([aClass.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
 	mockValue.EXPECT().EClass().Return(mockClass).Once()
 	mockValue.EXPECT().EInverseAdd(o,[featureIDName/],nil).Return(nil).Once()
 	[/let]
@@ -357,7 +357,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	mockResource := [ecorePrefix/]NewMockEResource(t)
 	mockClass := [ecorePrefix/]NewMockEClass(t)
 	mockValue.EXPECT().EClass().Return(mockClass).Once()
-	mockClass.EXPECT().GetFeatureID(GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
+	mockClass.EXPECT().GetFeatureID([aClass.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
 	mockValue.EXPECT().EInverseAdd(o, [featureIDName/], nil).Return(nil).Once()
 	mockValue.EXPECT().EResource().Return(mockResource).Once()
 	mockResource.EXPECT().Attached(o).Once()
@@ -374,11 +374,11 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	mockValue2 := [aStructuralFeature.eType.getTestValue(packagePath,imports)/]	
 	mockResource2 := [ecorePrefix/]NewMockEResource(t)
 	mockValue.EXPECT().EClass().Return(mockClass).Once()
-	mockClass.EXPECT().GetFeatureID(GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
+	mockClass.EXPECT().GetFeatureID([aClass.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
 	mockValue.EXPECT().EInverseRemove(o, [featureIDName/], nil).Return(nil).Once()
 	mockValue.EXPECT().EResource().Return(mockResource).Once()
 	mockValue2.EXPECT().EClass().Return(mockClass).Once()
-	mockClass.EXPECT().GetFeatureID(GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
+	mockClass.EXPECT().GetFeatureID([aClass.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
 	mockValue2.EXPECT().EInverseAdd(o, [featureIDName/], nil).Return(nil).Once()
 	mockValue2.EXPECT().EResource().Return(mockResource2).Once()
 	mockResource.EXPECT().Detached(o).Once()
@@ -455,7 +455,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	mockValue1 := [aStructuralFeature.eType.getTestValue(packagePath,imports)/]
 	mockClass := [ecorePrefix/]NewMockEClass(t)
 	mockValue1.EXPECT().EClass().Return(mockClass).Once()
-	mockClass.EXPECT().GetFeatureID(GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
+	mockClass.EXPECT().GetFeatureID([aClass.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
 	mockValue1.EXPECT().EInverseAdd(o,[featureIDName/],nil).Return(nil).Once()
 	mockAdapter.EXPECT().NotifyChanged( mock.Anything).Once()
 	o.[aStructuralFeature.getSetterName()/](mockValue1)
@@ -464,10 +464,10 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	// second value
 	mockValue2 := [aStructuralFeature.eType.getTestValue(packagePath,imports)/]
 	mockValue1.EXPECT().EClass().Return(mockClass).Once()
-	mockClass.EXPECT().GetFeatureID(GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
+	mockClass.EXPECT().GetFeatureID([aClass.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
 	mockValue1.EXPECT().EInverseRemove(o,[featureIDName/],nil).Return(nil).Once()
 	mockValue2.EXPECT().EClass().Return(mockClass).Once()
-	mockClass.EXPECT().GetFeatureID(GetPackage().[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
+	mockClass.EXPECT().GetFeatureID([aClass.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].[reverseFeature.getReflectiveGetterName()/]()).Return([featureIDName/]).Once()
 	mockValue2.EXPECT().EInverseAdd(o,[featureIDName/],nil).Return(nil).Once()	
 	mockAdapter.EXPECT().NotifyChanged( mock.Anything).Once()
 	o.[aStructuralFeature.getSetterName()/](mockValue2)
@@ -635,7 +635,7 @@ func Test[aClass.name.toUpperFirst()/]EDerivedFeatureID(t *testing.T) {
 	}
 [for (aMixinClass : EClass | mixinClasses)]
 	{
-		eClass := [getImportedIdentifier(aMixinClass.ePackage.getImplementationPackagePath() + '.GetPackage()', packagePath, imports)/].Get[aMixinClass.getElementAccessorName()/]()
+		eClass := [aMixinClass.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].Get[aMixinClass.getElementAccessorName()/]()
 		assert.Equal(t,-1, o.EDerivedFeatureID(eClass, -1))
 	[for (aFeature : EStructuralFeature | aMixinClass.getImplementedFeatures() )]
 		assert.Equal(t,[aClass.getImportedIDName(aFeature,packagePath,imports)/], o.EDerivedFeatureID(eClass, [aMixinClass.getImportedIDName(aFeature, packagePath, imports)/]))
@@ -654,7 +654,7 @@ func Test[aClass.name.toUpperFirst()/]EDerivedOperationID(t *testing.T) {
 	}
 [for (aMixinClass : EClass | mixinClasses)]
 	{
-		eClass := [getImportedIdentifier(aMixinClass.ePackage.getImplementationPackagePath() + '.GetPackage()', packagePath, imports)/].Get[aMixinClass.getElementAccessorName()/]()
+		eClass := [aMixinClass.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].Get[aMixinClass.getElementAccessorName()/]()
 		assert.Equal(t,-1, o.EDerivedOperationID(eClass, -1))
 	[for (aOperation : EOperation | aMixinClass.getImplementedOperations() )]
 		assert.Equal(t,[aClass.getOperationIDName(aOperation)/], o.EDerivedOperationID(eClass, [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aMixinClass.getOperationIDName(aOperation)), packagePath, imports)/]))

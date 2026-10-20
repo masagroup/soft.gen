@@ -89,6 +89,41 @@
 	aPackage.getIndexPath(3)
 /]
 
+[**
+ * Returns true when the package instance (GetPackage) of aPackage is shared by its implementations:
+ * the packageInstance property is 'interfaces' and the implementation package path is distinct
+ * from the interface package path. The package and a factory of its data types are then generated
+ * with the interfaces, and each implementation only holds its classes and a factory of its own.
+ */]
+[query public isSharedPackage(aPackage : EPackage) : Boolean =
+	not aPackage.isEcorePackage()
+	and aPackage.hasPackageProperty('packageInstance')
+	and aPackage.getPackageProperty('packageInstance') = 'interfaces'
+	and aPackage.getInterfacePackagePath() <> aPackage.getImplementationPackagePath()
+/]
+
+[**
+ * Returns the path of the go package holding the package instance (GetPackage) of aPackage.
+ */]
+[**
+ * Returns true when the classes of an implementation of a shared package check, in their setters,
+ * that the objects of the implementations of the package do not mix (soft.go
+ * ecore.CheckSameImplementation, when built with the tag ecore_check): the property
+ * checkImplementation=false leaves the checks out of the generated code.
+ */]
+[query public isCheckImplementation(aPackage : EPackage) : Boolean =
+	aPackage.isSharedPackage()
+	and not (aPackage.hasPackageProperty('checkImplementation') and aPackage.getPackageProperty('checkImplementation') = 'false')
+/]
+
+[query public getPackageInstancePath(aPackage : EPackage) : String =
+	if aPackage.isSharedPackage() then aPackage.getInterfacePackagePath() else aPackage.getImplementationPackagePath() endif
+/]
+
+[query public getPackageInstanceOutputDirectory(aPackage : EPackage) : String =
+	if aPackage.isSharedPackage() then aPackage.getInterfaceOutputDirectory() else aPackage.getImplementationOutputDirectory() endif
+/]
+
 
 [query private hasModulePath(aPackage : EPackage) : Boolean =
 	aPackage.hasPackageProperty('module')

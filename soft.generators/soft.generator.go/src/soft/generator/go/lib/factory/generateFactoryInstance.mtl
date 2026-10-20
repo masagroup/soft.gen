@@ -27,9 +27,16 @@ var factoryInstance [importedClassName/]
 // GetFactory returns the factory for the model [aPackage.name/]
 func GetFactory() [importedClassName/] {
 	factoryOnce.Do(func(){
-[let extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension']
+[let extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension' and not aPackage.isSharedPackage()]
 [let factoryName : String = if extension then aPackage.getFactoryExtensionName() else aPackage.getFactoryImplementationName() endif] 
+[if aPackage.isSharedPackage()]
+		factory := new[factoryName.toUpperFirst()/]()
+		// the package of the factory is the package shared by the implementations of the model
+		factory.SetSharedEPackage([aPackage.getPackageInstanceIdentifier(packagePath, imports)/])
+		factoryInstance = factory
+[else]
 		factoryInstance = new[factoryName.toUpperFirst()/]()
+[/if]
 [/let]
 [/let]
 	})

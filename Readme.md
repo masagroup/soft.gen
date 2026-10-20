@@ -88,6 +88,31 @@ package (in the package registry of a resource set, for example). With equal int
 implementation paths, the package and factory instances are generated with the interfaces:
 use `generateModel`.
 
+### One package shared by the implementations ###
+
+With the property `packageInstance=interfaces` (and distinct paths), the package instance (`GetPackage`)
+is generated with the interfaces, by `generateInterfaces`, with a factory of the data types of the model,
+and shared by the implementations: `generateImplementations` generates the classes, whose `EClass` is
+the shared one, and a factory (`GetFactory`) whose package is the shared one, but no package. The objects
+of an implementation do not mix with the objects of another: the setters of the references check it
+(soft.go `ecore.CheckSameImplementation`, when the program is built with the tag `ecore_check`; the
+property `checkImplementation=false` leaves these checks out of the generated code).
+
+```shell
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.go -m /gen/model.ecore -o /gen -t generateInterfaces \
+    -p packageInstance=interfaces -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/store/store -p module=example.com/m
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.go -m /gen/model.ecore -o /gen -t generateImplementations \
+    -p packageInstance=interfaces -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/store/store -p module=example.com/m \
+    -p featureDelegation=Reflective
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.go -m /gen/model.ecore -o /gen -t generateImplementations \
+    -p packageInstance=interfaces -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/memory/memory -p module=example.com/m
+```
+
+A resource set chooses its implementation in its package registry: the generated `Install(registry)` of an
+implementation registers the package and the factory of the implementation (`memory.Install(resourceSet.GetPackageRegistry())`,
+or `registry.RegisterFactory(memory.GetFactory())`). There is no global default implementation: the factory
+instance of the package only converts data types, and its `Create` panics.
+
 ## Quick Build ##
 If you want to bootstrap generators yourself, you'll need:
 - Make
