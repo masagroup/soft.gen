@@ -101,10 +101,10 @@ func new[className.toUpperFirst()/]() *[className/] {
 }
 [if isSharedPackage and not dataTypesOnly]
 
-// Register makes this implementation the implementation of the package shared by the implementations
+// Install makes this implementation the implementation of the package shared by the implementations
 // of the model in registry: it registers the package and the factory the objects of the package are
 // created with (the resource set, or the session, of registry chooses this implementation).
-func Register(registry [getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EPackageRegistry') ,packagePath, imports)/]) {
+func Install(registry [getImportedIdentifier( ecore.getQualifiedInterfaceIdentifier('EPackageRegistry') ,packagePath, imports)/]) {
 	pack := [aPackage.getPackageInstanceIdentifier(packagePath, imports)/]
 	registry.RegisterPackage(pack)
 	registry.RegisterFactory(GetFactory())
@@ -121,9 +121,9 @@ func Register(registry [getImportedIdentifier( ecore.getQualifiedInterfaceIdenti
 [if dataTypesOnly]
 // Create panics: the package is shared by the implementations of the model, and the objects are
 // created by the factory of the implementation registered for the package (PutFactory, the generated
-// Register of an implementation) or by the factory of an implementation
+// Install of an implementation) or by the factory of an implementation
 [aPackage.generateFactoryImplementationMember()/] Create(eClass [ecorePrefix/]EClass) [ecorePrefix/]EObject {
-	panic("Create: " + eClass.GetName() + " (" + strconv.Itoa(eClass.GetClassifierID()) + ") of " + [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NS_URI'), packagePath, imports)/] + ": no implementation chosen, register the factory of an implementation (PutFactory, Register)")
+	panic("Create: " + eClass.GetName() + " (" + strconv.Itoa(eClass.GetClassifierID()) + ") of " + [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('NS_URI'), packagePath, imports)/] + ": no implementation chosen, register the factory of an implementation (PutFactory, Install)")
 }
 
 [else]
