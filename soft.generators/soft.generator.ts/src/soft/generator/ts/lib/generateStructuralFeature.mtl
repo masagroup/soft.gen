@@ -256,8 +256,8 @@ get [aStructuralFeature.getPropertyName()/](): [aStructuralFeature.generateType(
     if (this.[varName/] != null && this.[varName/].eIsProxy()) {
         const [oldVarName/] = this.[varName/]
         const [newVarName/] = this.eResolveProxy([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
-        this.[varName/] = [newVarName/]
         if ([newVarName/] != [oldVarName/]) {
+            this.[varName/] = [newVarName/]
         [if isContains()]
             let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
             [if not isBidirectional()]
@@ -337,8 +337,8 @@ async [aStructuralFeature.getGetterName()/]Async(): Promise<[aStructuralFeature.
     if (this.[varName/] != null && this.[varName/].eIsProxy()) {
         const [oldVarName/] = this.[varName/]
         const [newVarName/] = await this.eResolveProxyAsync([oldVarName/]) as [aStructuralFeature.generateType(modules)/]
-        this.[varName/] = [newVarName/]
         if ([newVarName/] != [oldVarName/]) {
+            this.[varName/] = [newVarName/]
         [if isContains()]
             let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null
             [if not isBidirectional()]
