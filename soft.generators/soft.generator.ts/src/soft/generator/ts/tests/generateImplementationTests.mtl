@@ -21,6 +21,7 @@
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::generateElement /]
 [import soft::generator::ts::generateType /]
+[import soft::generator::ts::generateModule /]
 [import soft::generator::ts::lib::generateCommon /]
 [import soft::generator::ts::lib::generateStructuralFeature /]
 [import soft::generator::ts::lib::generateReflectives /]
@@ -41,11 +42,15 @@
 											if features->exists(requiresNotification()) then Set{'ENotification','ENotificationChain','EventType','Notification','EOPPOSITE_FEATURE_BASE'} else Set{} endif,
 											Set{'EResource','EResourceSet','EAdapter','URI'}
 									    }->flatten()->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t))->asSet()
-									, Set{ 
-											aClass.getImplementationName(), 
+									, Set{
 											aPackage.getConstantsName(),
 											'get'+ aPackage.getInterfaceName()
 										 }->collect(t | aPackage.getQualifiedInterfaceIdentifier(t))->asSet()
+									, Set{ if aPackage.isSharedPackage() then
+											aClass.getQualifiedImplementationIdentifier()
+										   else
+											aPackage.getQualifiedInterfaceIdentifier(aClass.getImplementationName())
+										   endif }
 									}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
 	modules : OclAny = aClass.getModules('implementation-tests',types);
 }]

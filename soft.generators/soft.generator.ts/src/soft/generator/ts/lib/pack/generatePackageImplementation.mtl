@@ -17,6 +17,7 @@
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::generateType /]
+[import soft::generator::ts::generateModule /]
 [import soft::generator::ts::lib::pack::generateCommon/]
 
 
@@ -37,11 +38,18 @@
 									'EcoreFactory',
 									'getEcoreFactory'
 								}->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t)),
-								Set{aPackage.getInterfaceName(), 
-									aPackage.getConstantsName(),
-									aPackage.getFactoryName(),
-									'get' + aPackage.getFactoryName()
-								}->collect(t | aPackage.getQualifiedInterfaceIdentifier(t)), 
+								if aPackage.isSharedPackage() then
+									Set{aPackage.getInterfaceName(),
+										aPackage.getConstantsName(),
+										aPackage.getDataTypeFactoryName()
+									}->collect(t | aPackage.getQualifiedInterfaceIdentifier(t))->including(ecorePackage.getQualifiedInterfaceIdentifier('EFactory'))
+								else
+									Set{aPackage.getInterfaceName(),
+										aPackage.getConstantsName(),
+										aPackage.getFactoryName(),
+										'get' + aPackage.getFactoryName()
+									}->collect(t | aPackage.getQualifiedInterfaceIdentifier(t))
+								endif,
 								aPackage.eClassifiers->filter(EClass).eAllStructuralFeatures.eType.ePackage->collect(p | p.getQualifiedInterfaceIdentifier()),
 								Set{ecorePackage.getQualifiedImplementationIdentifier('EPackageExt')}
 	 						  }->flatten();
@@ -61,12 +69,17 @@ export class [className/] extends [getImportedIdentifier( ecorePackage.getQualif
     public static getInstance(): [className/] {
         if (!this._instance) {
             this._instance = new [className/]()
+[if aPackage.isSharedPackage()]
+			[comment the factory instance of a shared package builds its data types: each implementation has a factory of its own /]
+			this._instance.initialize(new [aPackage.getDataTypeFactoryName()/](), [getImportedIdentifier(ecorePackage.getQualifiedInterfaceIdentifier('getEcoreFactory()'),modules )/])
+[else]
 			this._instance.initialize(get[aPackage.getFactoryName()/](), [getImportedIdentifier(ecorePackage.getQualifiedInterfaceIdentifier('getEcoreFactory()'),modules )/])
+[/if]
         }
         return this._instance
     }
 
-	protected initialize(packageFactory: [getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName()),modules )/],ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedInterfaceIdentifier('EcoreFactory'),modules )/]) {
+	protected initialize(packageFactory: [if aPackage.isSharedPackage()][getImportedIdentifier(ecorePackage.getQualifiedInterfaceIdentifier('EFactory'),modules )/][else][getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier(aPackage.getFactoryName()),modules )/][/if],ecoreFactory: [getImportedIdentifier(ecorePackage.getQualifiedInterfaceIdentifier('EcoreFactory'),modules )/]) {
 		this.setName([aPackage.getConstantsName()/].eNAME)
         this.setNsPrefix([aPackage.getConstantsName()/].eNS_PREFIX)
         this.setNsURI([aPackage.getConstantsName()/].eNS_URI)

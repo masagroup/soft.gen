@@ -113,6 +113,31 @@ implementation registers the package and the factory of the implementation (`mem
 or `registry.RegisterFactory(memory.GetFactory())`). There is no global default implementation: the factory
 instance of the package only converts data types, and its `Create` panics.
 
+## One package shared by the implementations (TypeScript) ##
+
+soft.generator.ts generates the same way, with one run per output directory: `generateInterfaces` writes the
+interfaces, the enums, the constants, the package (`getXPackage`), a factory of the data types of the model
+and the module files (`internal.ts`, `index.ts`); each `generateImplementations` run writes the classes of an
+implementation, whose `EClass` is the shared one, its factory (`getFactory()`, whose package is the shared one),
+`install(registry)` and its module files. The `packages` property names the interface and the implementation
+modules (`<nsURI>=<interfaces>#<implementation>`), and the `paths` property of an implementation run gives
+the path of the interfaces module. The setters of the references check that objects of two implementations
+are not mixed (`ecore.checkSameImplementation`, effective once `setImplementationChecks(true)` is called; the
+property `checkImplementation=false` leaves these checks out of the generated code).
+
+```shell
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.ts -m /gen/model.ecore -o /gen -t generateInterfaces \
+    -p packageInstance=interfaces -p packageDir=src/model -p packages=<nsURI>=model#model/typed
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.ts -m /gen/model.ecore -o /gen -t generateImplementations \
+    -p packageInstance=interfaces -p packageDir=src/typed -p packages=<nsURI>=model#model/typed -p paths=model=../model/internal.js
+$ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator.ts -m /gen/model.ecore -o /gen -t generateImplementations \
+    -p packageInstance=interfaces -p packageDir=src/reflective -p packages=<nsURI>=model#model/reflective -p paths=model=../model/internal.js \
+    -p featureDelegation=Reflective
+```
+
+A resource set chooses its implementation in its package registry: `typed.install(resourceSet.getPackageRegistry())`,
+or `registry.registerFactory(typed.getFactory())`. See soft.ts `examples/coexistence`.
+
 ## Quick Build ##
 If you want to bootstrap generators yourself, you'll need:
 - Make
