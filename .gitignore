@@ -1,1 +1,4 @@
-dist
+# build output
+bin/
+# v1 release archives
+dist/

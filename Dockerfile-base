@@ -1,5 +1,0 @@
-# Build generators stage
-FROM maven:3.9.11-amazoncorretto-25 AS build
-COPY . /home/soft.gen/src
-RUN --mount=type=cache,target=/root/.m2 mvn -f /home/soft.gen/src/soft.acceleo/pom.xml -s /home/soft.gen/src/settings.xml -Pdocker clean install \
- && mvn -f /home/soft.gen/src/soft.generators/pom.xml -s /home/soft.gen/src/settings.xml -Pdocker clean verify
