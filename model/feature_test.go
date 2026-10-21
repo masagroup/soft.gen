@@ -8,13 +8,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestFeatureBidirectionalReference checks a single resolving bidirectional
+// non-containment reference (references Husband.wife <-> Wife.husband): a
+// field and a proxy with every single valued accessor but unset.
 func TestFeatureBidirectionalReference(t *testing.T) {
-	m := loadModel(t, "library")
-	f := m.Feature(featureNamed(t, m, "Book", "author"))
-	assert.Same(t, classNamed(t, m, "Book"), f.Class)
+	m := loadModel(t, "references")
+	f := m.Feature(featureNamed(t, m, "Husband", "wife"))
+	assert.Same(t, classNamed(t, m, "Husband"), f.Class)
 	require.NotNil(t, f.Reference)
 	assert.Nil(t, f.Attribute)
-	assert.Same(t, featureNamed(t, m, "Writer", "books"), f.Opposite)
+	assert.Same(t, featureNamed(t, m, "Wife", "husband"), f.Opposite)
 	assert.True(t, f.IsBidirectional)
 	assert.False(t, f.IsContainer)
 	assert.False(t, f.IsContainment)
@@ -36,20 +39,34 @@ func TestFeatureBidirectionalReference(t *testing.T) {
 	assert.True(t, f.BasicSet)
 	assert.False(t, f.BasicUnset)
 	assert.True(t, f.RequiresNotification)
-	assert.Equal(t, LazyInfo{Mode: "no", InitMethodName: "initAuthor", Deferred: true}, f.Lazy)
+	assert.Equal(t, LazyInfo{Mode: "no", InitMethodName: "initWife", Deferred: true}, f.Lazy)
 	assert.False(t, f.Lazy.IsLazy())
+
+	// the many side of a bidirectional reference is a list without single accessor
+	friends := m.Feature(featureNamed(t, m, "Husband", "friends"))
+	assert.True(t, friends.IsBidirectional)
+	assert.True(t, friends.IsList)
+	assert.True(t, friends.IsProxy)
+	assert.False(t, friends.Set)
+	assert.False(t, friends.BasicSet)
+	assert.False(t, friends.BasicGet)
+	assert.Equal(t, "reference list", friends.Kind)
 }
 
+// TestFeatureContainmentList checks the containment references: a list has
+// no single accessor and no notification, a single one has set and basic set
+// but no basic get; a containment is never a proxy.
 func TestFeatureContainmentList(t *testing.T) {
-	m := loadModel(t, "library")
-	f := m.Feature(featureNamed(t, m, "Library", "writers"))
+	m := loadModel(t, "references")
+	// a containment list without opposite (resolveProxies defaults to true)
+	f := m.Feature(featureNamed(t, m, "Root", "items"))
 	assert.True(t, f.IsContainment)
 	assert.False(t, f.IsContainer)
 	assert.False(t, f.IsBidirectional)
 	assert.Nil(t, f.Opposite)
 	assert.True(t, f.IsList)
 	assert.False(t, f.IsMap)
-	assert.False(t, f.IsProxy) // resolveProxies="false", and a containment anyway
+	assert.False(t, f.IsProxy) // a containment
 	assert.True(t, f.IsField)
 	assert.False(t, f.IsBackReference)
 	assert.Equal(t, "containment reference list", f.Kind)
@@ -60,28 +77,31 @@ func TestFeatureContainmentList(t *testing.T) {
 	assert.False(t, f.RequiresNotification)
 	assert.True(t, f.Lazy.Deferred)
 
-	// a bidirectional containment
-	branches := m.Feature(featureNamed(t, m, "Library", "branches"))
-	assert.True(t, branches.IsContainment)
-	assert.True(t, branches.IsBidirectional)
-	assert.True(t, branches.IsList)
-	assert.False(t, branches.BasicSet)
-	assert.Equal(t, "containment reference list", branches.Kind)
+	// a bidirectional containment list
+	children := m.Feature(featureNamed(t, m, "Root", "children"))
+	assert.True(t, children.IsContainment)
+	assert.True(t, children.IsBidirectional)
+	assert.True(t, children.IsList)
+	assert.False(t, children.BasicSet)
+	assert.Equal(t, "containment reference list", children.Kind)
 
 	// a single containment
-	proprietary := m.Feature(featureNamed(t, m, "Library", "proprietary"))
-	assert.True(t, proprietary.IsContainment)
-	assert.False(t, proprietary.IsList)
-	assert.False(t, proprietary.IsProxy)
-	assert.True(t, proprietary.Set)
-	assert.True(t, proprietary.BasicSet)
-	assert.False(t, proprietary.BasicGet)
-	assert.Equal(t, "containment reference", proprietary.Kind)
+	optional := m.Feature(featureNamed(t, m, "Root", "optional"))
+	assert.True(t, optional.IsContainment)
+	assert.False(t, optional.IsList)
+	assert.False(t, optional.IsProxy)
+	assert.True(t, optional.Set)
+	assert.True(t, optional.BasicSet)
+	assert.False(t, optional.BasicGet)
+	assert.Equal(t, "containment reference", optional.Kind)
 }
 
+// TestFeatureContainer checks a container reference (the opposite of a
+// containment): a back reference, neither a field nor a proxy, with a basic
+// set only when changeable.
 func TestFeatureContainer(t *testing.T) {
-	m := loadModel(t, "library")
-	f := m.Feature(featureNamed(t, m, "Library", "parentBranch"))
+	m := loadModel(t, "references")
+	f := m.Feature(featureNamed(t, m, "Child", "parent"))
 	assert.True(t, f.IsContainer)
 	assert.True(t, f.IsBidirectional)
 	assert.False(t, f.IsContainment)
@@ -96,38 +116,66 @@ func TestFeatureContainer(t *testing.T) {
 	assert.False(t, f.Unset)
 	assert.False(t, f.IsSet)
 	assert.False(t, f.Lazy.Deferred)
+
+	// a non changeable container has neither set nor basic set
+	owner := m.Feature(featureNamed(t, m, "Fixed", "owner"))
+	assert.True(t, owner.IsContainer)
+	assert.False(t, owner.IsChangeable)
+	assert.False(t, owner.Set)
+	assert.False(t, owner.BasicSet)
+	assert.False(t, owner.RequiresNotification)
 }
 
+// TestFeatureMap checks the maps (lists of Map$Entry typed elements), the
+// feature maps (FeatureMap$Entry typed attributes) and the map entry classes
+// (a Map$Entry instance type with a key and a value feature).
 func TestFeatureMap(t *testing.T) {
-	m := loadModel(t, "library")
-	indexes := m.Feature(featureNamed(t, m, "Book", "indexes"))
-	assert.True(t, indexes.IsList)
-	assert.True(t, indexes.IsMap)
-	assert.False(t, indexes.IsFeatureMap)
-	assert.False(t, indexes.IsContainment)
-	assert.Equal(t, "reference list", indexes.Kind)
+	m := loadModel(t, "maps")
+	values := m.Feature(featureNamed(t, m, "Holder", "values"))
+	assert.True(t, values.IsMap)
+	assert.True(t, values.IsList)
+	assert.True(t, values.IsContainment)
+	assert.False(t, values.IsFeatureMap)
+	assert.Equal(t, "map", values.Kind)
+	// the type of a map is a Map$Entry instance type, whatever its features
+	pseudos := m.Feature(featureNamed(t, m, "Holder", "pseudos"))
+	assert.True(t, pseudos.IsMap)
+	assert.Equal(t, "map", pseudos.Kind)
 
-	xmlns := m.Feature(featureNamed(t, m, "DocumentRoot", "xMLNSPrefixMap"))
-	assert.True(t, xmlns.IsMap)
-	assert.True(t, xmlns.IsContainment)
-	assert.Equal(t, "map", xmlns.Kind)
+	assert.True(t, m.Class(classNamed(t, m, "NamesToAnyEntry")).IsMapEntry)
+	assert.True(t, m.Class(classNamed(t, m, "OwnedEntry")).IsMapEntry)
+	assert.False(t, m.Class(classNamed(t, m, "PseudoEntry")).IsMapEntry) // no key nor value
+	assert.False(t, m.Class(classNamed(t, m, "Holder")).IsMapEntry)
+	assert.True(t, m.Feature(featureNamed(t, m, "NamesToAnyEntry", "key")).IsList)
 
-	people := m.Feature(featureNamed(t, m, "Library", "people"))
-	assert.True(t, people.IsFeatureMap)
-	assert.False(t, people.IsMap)
-	assert.True(t, people.IsList)
-	assert.NotNil(t, people.Attribute)
-	assert.Equal(t, "attribute list", people.Kind)
+	// a non containment list of map entries is a map but a reference list
+	// (no fixture has one: added to the loaded model)
+	indexes := ecore.GetFactory().CreateEReferenceFromContainer(classNamed(t, m, "Holder"))
+	indexes.SetName("indexes")
+	indexes.SetUpperBound(-1)
+	indexes.SetEType(classNamed(t, m, "NamesToAnyEntry"))
+	indexesInfo := m.Feature(indexes)
+	assert.True(t, indexesInfo.IsList)
+	assert.True(t, indexesInfo.IsMap)
+	assert.False(t, indexesInfo.IsContainment)
+	assert.Equal(t, "reference list", indexesInfo.Kind)
 
-	bookIndex := m.Class(classNamed(t, m, "BookIndex"))
-	assert.True(t, bookIndex.IsMapEntry)
-	assert.False(t, m.Class(classNamed(t, m, "Book")).IsMapEntry)
-	assert.True(t, m.Feature(featureNamed(t, m, "BookIndex", "value")).IsList)
+	// a feature map attribute
+	ma := loadModel(t, "attributes")
+	mixed := ma.Feature(featureNamed(t, ma, "Holder", "mixed"))
+	assert.True(t, mixed.IsFeatureMap)
+	assert.False(t, mixed.IsMap)
+	assert.True(t, mixed.IsList)
+	assert.NotNil(t, mixed.Attribute)
+	assert.Equal(t, "attribute list", mixed.Kind)
+	assert.False(t, ma.Feature(featureNamed(t, ma, "Holder", "tags")).IsFeatureMap)
 }
 
+// TestFeatureUnsettable checks an unsettable single attribute (shop
+// Product.category): set, unset and is set accessors, no basic accessor.
 func TestFeatureUnsettable(t *testing.T) {
-	m := loadModel(t, "library")
-	f := m.Feature(featureNamed(t, m, "Book", "category"))
+	m := loadModel(t, "shop")
+	f := m.Feature(featureNamed(t, m, "Product", "category"))
 	require.NotNil(t, f.Attribute)
 	assert.Nil(t, f.Reference)
 	assert.True(t, f.IsUnsettable)
@@ -138,19 +186,27 @@ func TestFeatureUnsettable(t *testing.T) {
 	assert.False(t, f.BasicUnset) // not a reference
 	assert.True(t, f.RequiresNotification)
 	assert.Equal(t, "attribute", f.Kind)
-	assert.Equal(t, "BookCategory", f.Feature.GetEType().GetName())
+	assert.Equal(t, "Category", f.Feature.GetEType().GetName())
 }
 
+// TestFeatureVolatile checks the volatile features: not a field, no
+// initialization method; a feature is volatile when its opposite is.
 func TestFeatureVolatile(t *testing.T) {
-	m := loadModel(t, "library")
-	name := m.Feature(featureNamed(t, m, "Writer", "name"))
-	assert.True(t, name.IsVolatile)
-	assert.False(t, name.IsField)
-	assert.True(t, name.Set)
-	assert.False(t, name.Lazy.HasInitMethod)
+	m := loadModel(t, "volatile")
+	label := m.Feature(featureNamed(t, m, "Holder", "label"))
+	assert.True(t, label.IsVolatile)
+	assert.False(t, label.IsField)
+	assert.True(t, label.Set)
+	assert.False(t, label.Lazy.HasInitMethod)
+	// a volatile containment still has a basic set (its body is user code)
+	owned := m.Feature(featureNamed(t, m, "Holder", "owned"))
+	assert.True(t, owned.IsVolatile)
+	assert.True(t, owned.IsContainment)
+	assert.False(t, owned.IsField)
+	assert.True(t, owned.BasicSet)
 
 	// a feature is volatile when its opposite is
-	me := loadModel(t, "ecore")
+	me := ecoreMetamodel(t)
 	eAttributeType := me.Feature(featureNamed(t, me, "EAttribute", "eAttributeType"))
 	assert.True(t, eAttributeType.IsVolatile)
 	assert.False(t, eAttributeType.IsChangeable)
@@ -160,6 +216,8 @@ func TestFeatureVolatile(t *testing.T) {
 	assert.True(t, eAttributeType.BasicGet)
 }
 
+// TestFeatureBasicUnset checks that a changeable unsettable single bidirectional
+// reference has a basic unset, and that a shared aggregation is a back reference.
 func TestFeatureBasicUnset(t *testing.T) {
 	// a changeable unsettable single bidirectional reference has a basic unset
 	p := ecore.GetFactory().CreateEPackage()
@@ -194,8 +252,9 @@ func TestFeatureBasicUnset(t *testing.T) {
 	assert.False(t, m.Feature(ab).IsBackReference)
 }
 
+// TestFeatureEcoreAccessors checks the accessors of real Ecore features.
 func TestFeatureEcoreAccessors(t *testing.T) {
-	m := loadModel(t, "ecore")
+	m := ecoreMetamodel(t)
 	// EStructuralFeature.eContainingClass is a container
 	eContainingClass := m.Feature(featureNamed(t, m, "EStructuralFeature", "eContainingClass"))
 	assert.True(t, eContainingClass.IsContainer)

@@ -8,8 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestAnnotation checks the generator annotation of an element: the one of the
+// model source, its keys and values, on the real Ecore elements.
 func TestAnnotation(t *testing.T) {
-	m := loadModel(t, "ecore")
+	m := ecoreMetamodel(t)
 	root := m.Annotation(m.Root())
 	assert.True(t, root.Exists())
 	require.NotNil(t, root.EAnnotation())
@@ -42,8 +44,10 @@ func TestAnnotation(t *testing.T) {
 	assert.Equal(t, "GetEStructuralFeatureFromName", m.Annotation(operationNamed(t, m, "EClass", "getEStructuralFeature", 1)).Value("operationName"))
 }
 
+// TestAnnotationLookup checks the lookup of a key on an element then its
+// ancestors (feature or operation, class, package), on the real Ecore elements.
 func TestAnnotationLookup(t *testing.T) {
-	m := loadModel(t, "ecore")
+	m := ecoreMetamodel(t)
 	eSuperTypes := featureNamed(t, m, "EClass", "eSuperTypes")
 	eAttributes := featureNamed(t, m, "EClass", "eAttributes")
 

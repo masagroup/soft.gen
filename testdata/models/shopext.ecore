@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="shop" nsURI="http://soft.gen/test/shopext" nsPrefix="shopext">
+  <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+    <details key="factory" value="extension"/>
+    <details key="module" value="github.com/x/ext"/>
+    <details key="packages" value="github.com/x/ext/shop/shop#github.com/x/ext/impl/impl"/>
+  </eAnnotations>
+  <eClassifiers xsi:type="ecore:EClass" name="Shop">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="products" upperBound="-1"
+        eType="#//Product" containment="true" eOpposite="#//Product/shop"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Product">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="price" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="shop" eType="#//Shop" eOpposite="#//Shop/products"/>
+  </eClassifiers>
+</ecore:EPackage>

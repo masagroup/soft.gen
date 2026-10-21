@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const libraryModel = "../../testdata/models/library.ecore"
+const shopModel = "../../testdata/models/shop.ecore"
 
 func TestHelpAndVersion(t *testing.T) {
 	var out, errOut bytes.Buffer
@@ -39,11 +39,11 @@ func TestErrors(t *testing.T) {
 	assert.Contains(t, errOut.String(), `unknown language "cobol"`)
 
 	errOut.Reset()
-	assert.Equal(t, 1, run([]string{"go", "-m", libraryModel}, &out, &errOut))
+	assert.Equal(t, 1, run([]string{"go", "-m", shopModel}, &out, &errOut))
 	assert.Contains(t, errOut.String(), "required")
 
 	errOut.Reset()
-	assert.Equal(t, 1, run([]string{"go", "-m", libraryModel, "-o", t.TempDir(), "-p", "novalue"}, &out, &errOut))
+	assert.Equal(t, 1, run([]string{"go", "-m", shopModel, "-o", t.TempDir(), "-p", "novalue"}, &out, &errOut))
 
 	errOut.Reset()
 	assert.Equal(t, 1, run([]string{"go", "-m", "missing.ecore", "-o", t.TempDir()}, &out, &errOut))
@@ -52,24 +52,24 @@ func TestErrors(t *testing.T) {
 func TestDryRunAndDiff(t *testing.T) {
 	dir := t.TempDir()
 	var out, errOut bytes.Buffer
-	code := run([]string{"go", "-m", libraryModel, "-o", dir, "-t", "generateModel", "--dry-run"}, &out, &errOut)
+	code := run([]string{"go", "-m", shopModel, "-o", dir, "-t", "generateModel", "--dry-run"}, &out, &errOut)
 	assert.Equal(t, 0, code, errOut.String())
 	assert.Contains(t, out.String(), "file generated: ")
 	entries, _ := os.ReadDir(dir)
 	assert.Empty(t, entries, "dry run writes nothing")
 
 	out.Reset()
-	code = run([]string{"go", "-m", libraryModel, "-o", dir, "-t", "generateModel", "--diff", "-s"}, &out, &errOut)
+	code = run([]string{"go", "-m", shopModel, "-o", dir, "-t", "generateModel", "--diff", "-s"}, &out, &errOut)
 	assert.Equal(t, 1, code, "nothing exists yet: everything differs")
-	assert.Contains(t, out.String(), "+++ library/")
+	assert.Contains(t, out.String(), "+++ shop/")
 
 	out.Reset()
-	code = run([]string{"go", "-m", libraryModel, "-o", dir, "-t", "generateModel", "-s"}, &out, &errOut)
+	code = run([]string{"go", "-m", shopModel, "-o", dir, "-t", "generateModel", "-s"}, &out, &errOut)
 	assert.Equal(t, 0, code, errOut.String())
-	assert.FileExists(t, filepath.Join(dir, "library", "librarypackage.go"))
+	assert.FileExists(t, filepath.Join(dir, "shop", "shoppackage.go"))
 
 	out.Reset()
-	code = run([]string{"go", "-m", libraryModel, "-o", dir, "-t", "generateModel", "--diff"}, &out, &errOut)
+	code = run([]string{"go", "-m", shopModel, "-o", dir, "-t", "generateModel", "--diff"}, &out, &errOut)
 	assert.Equal(t, 0, code, "the generated files are up to date")
 	assert.Empty(t, out.String())
 }

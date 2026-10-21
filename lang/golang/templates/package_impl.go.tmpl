@@ -79,6 +79,9 @@ func (p *{{ .Name }}) initializePackageContents({{ .EcoreFactoryParam }} {{ .Eco
 {{ blank }}
 {{- range .DataTypeInitializations }}
 {{ indent 1 (include (printf "package/init.%s" .Kind) .) }}
+{{- if .BlankAfter }}
+{{ blank }}
+{{- end }}
 {{- end }}
 {{ blank }}
 {{- range .AnnotationSources }}

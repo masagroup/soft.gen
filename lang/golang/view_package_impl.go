@@ -182,6 +182,9 @@ type dataTypeInitView struct {
 	Serializable string
 	// Literals lists the literals of an enum, in model order.
 	Literals []enumLiteralInitView
+	// BlankAfter leaves a blank line after the initialization: v1 ends the
+	// block of an enum with one, not the line of a data type.
+	BlankAfter bool
 }
 
 // enumLiteralInitView is the registration of a literal of an enum.
@@ -499,6 +502,7 @@ func (g *gen) dataTypeInitialization(dt ecore.EDataType, scope *fileScope) dataT
 	init := dataTypeInitView{Getter: g.elementGetter(dt), Name: dt.GetName()}
 	if enum, ok := dt.(ecore.EEnum); ok {
 		init.Kind = "enum"
+		init.BlankAfter = true
 		init.InstanceTypeName = "int32"
 		if enum.GetInstanceTypeName() != "" {
 			init.InstanceTypeName = g.instanceTypeName(enum)
@@ -527,20 +531,15 @@ func (g *gen) dataTypeInitialization(dt ecore.EDataType, scope *fileScope) dataT
 // annotationInitializers lists, per annotation source of the package, the
 // annotations of the source in model order (v1 initialize<Source>Annotations).
 func (g *gen) annotationInitializers(p ecore.EPackage, scope *fileScope) []annotationSourceView {
-	var annotations []ecore.EAnnotation
-	for it := p.EAllContents(); it.HasNext(); {
-		if a, ok := it.Next().(ecore.EAnnotation); ok {
-			annotations = append(annotations, a)
-		}
-	}
+	info := g.m.Package(p)
 	var sources []annotationSourceView
-	for _, source := range g.m.Package(p).AnnotationSources {
+	for _, source := range info.AnnotationSources {
 		view := annotationSourceView{Identifier: source.Identifier, URI: source.URI}
-		for _, a := range annotations {
+		for _, a := range info.Annotations {
 			if a.GetSource() != source.URI {
 				continue
 			}
-			annotation := annotationView{Container: g.annotatedElementGetter(a.GetEModelElement())}
+			annotation := annotationView{Container: g.annotatedElementGetter(a.GetEModelElement(), scope)}
 			for _, entry := range a.GetDetails().ToArray() {
 				entry := entry.(ecore.EMapEntry)
 				key, _ := entry.GetKey().(string)
@@ -557,12 +556,30 @@ func (g *gen) annotationInitializers(p ecore.EPackage, scope *fileScope) []annot
 // annotatedElementGetter is the expression of the element an annotation is
 // created in (v1 getPackageGetter(EModelElement)): p for a package, the
 // literal found by name in its enum, the getter of a named element, nil otherwise.
-func (g *gen) annotatedElementGetter(el ecore.EModelElement) string {
+// Two cases differ from v1, which got them wrong:
+//   - a parameter is reached through its operation (v1 called a getter named
+//     after the parameter, which does not exist or is another element's);
+//   - a nested annotation is reached through its parent annotation, found by
+//     source in its container (v1 created it in nil, so it was lost); the
+//     parent must exist, which holds when its source sorts before the nested
+//     one's, the initializations running in source order.
+func (g *gen) annotatedElementGetter(el ecore.EModelElement, scope *fileScope) string {
 	switch el := el.(type) {
 	case ecore.EPackage:
 		return "p"
 	case ecore.EEnumLiteral:
 		return g.elementGetter(el.GetEEnum()) + `.GetEEnumLiteralByName("` + el.GetName() + `")`
+	case ecore.EParameter:
+		op := el.GetEOperation()
+		index := op.GetEParameters().IndexOf(el)
+		parameter := scope.qualify(g.qualifiedInterfaceIdentifier(g.m.Ecore(), "EParameter"))
+		return g.elementGetter(op) + ".GetEParameters().Get(" + strconv.Itoa(index) + ").(" + parameter + ")"
+	case ecore.EAnnotation:
+		parent := g.annotatedElementGetter(el.GetEModelElement(), scope)
+		if parent == "nil" {
+			return parent
+		}
+		return parent + `.GetEAnnotation("` + escapeLiteral(el.GetSource()) + `")`
 	case ecore.ENamedElement:
 		return g.elementGetter(el)
 	}

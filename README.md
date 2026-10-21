@@ -193,13 +193,19 @@ and its `Create` panics.
 ## Development
 
 ```shell
-go test ./...          # unit tests; the golden tests run when soft.go is checked out beside this repository (../go)
+go test ./...          # unit tests, and the fixtures compared with their expected files
 make image image.test  # the docker image and its version check
 ```
 
-The golden tests compare the generated files with the v1 output committed in
-`soft.go` (and `soft.ts`): set `SOFT_GEN_GOLDEN_ROOT` to point at a checkout
-elsewhere.
+The fixtures are small models in `testdata/models`, each about one topic,
+whose expected output is committed in `testdata/golden`; together they render
+every template of the generator. After an intended change of the output:
+
+```shell
+go test ./lang/golang -run TestFixtures -update   # write the new expected files, then review them with git
+```
+
+See [TEMPLATES.md](TEMPLATES.md#golden-tests) for the v1 cross-check.
 
 How the generators are organized, the template conventions and how to add a
 language: [TEMPLATES.md](TEMPLATES.md). Changes from v1: [CHANGELOG.md](CHANGELOG.md).

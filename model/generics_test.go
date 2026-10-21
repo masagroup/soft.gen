@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestStripGenerics checks that the generic elements give their eType and are
+// dropped, and that a document without generics is returned as is.
 func TestStripGenerics(t *testing.T) {
 	input := `<?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="p">
@@ -57,7 +59,7 @@ func TestStripGenerics(t *testing.T) {
 	assert.Equal(t, 1, strings.Count(result, `eType="#//EInt"`))
 
 	// a document without generics is returned as is
-	plain, err := os.ReadFile("../testdata/models/library.ecore")
+	plain, err := os.ReadFile("../testdata/models/references.ecore")
 	require.NoError(t, err)
 	same, err := stripGenerics(plain)
 	require.NoError(t, err)

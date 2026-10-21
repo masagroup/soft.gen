@@ -65,7 +65,7 @@ language runs `Validate` in its tests.
 6. No `{{ "\n" }}`, no two consecutive blank lines.
 
 Blank lines matter: `gofmt` collapses runs of blank lines but never adds or
-removes one, and the golden tests compare the formatted output with the v1
+removes one, and the expected files of the fixtures are the formatted v1
 output. When v1 left a blank line somewhere odd, the template reproduces it.
 
 ## Qualified identifiers and imports (Go)
@@ -81,11 +81,33 @@ prefix itself.
 
 ## Golden tests
 
-`engine/goldentest` generates a model into a temporary directory and compares
-the files with the output of the v1 generators committed in the downstream
-repositories (`soft.go`, `soft.ts`). Each checkpoint of a port selects the
-files it covers with glob patterns. The tests skip when the downstream
-repository is not beside this one (`SOFT_GEN_GOLDEN_ROOT` points elsewhere).
+The generated code is checked against **fixtures**: small purpose-built models
+in `testdata/models`, each about one topic (attributes, references, maps,
+volatile, lazy, operations, inheritance, enums, naming, annotations, a package
+named `ecore`, and the package options on `shop`). A case is a model, entry
+points and properties, registered from `init` in
+`lang/golang/fixtures_<topic>_test.go`; its expected files are committed in
+`testdata/golden/go/<case>`, laid out as the output folder.
+
+- **`TestFixtures`** generates every case and compares it with its expected
+  files (`engine/goldentest`). After an intended change of the output, run it
+  with `-update` to write the new expected files, and review them with git.
+- **`TestTemplateCoverage`** fails when a template define is rendered by no
+  case: a new variant needs a fixture. The few defines no model can reach are
+  listed in `unreachableTemplates`, each with its reason.
+- **`TestV1`** compares the cases with the v1 generator, the reference of the
+  expected files. It runs when `SOFT_GEN_V1_IMAGE` names the v1 image and
+  docker is available:
+
+  ```shell
+  SOFT_GEN_V1_IMAGE=masagroup/soft.generator.go:v1.13.1 go test ./lang/golang -run TestV1
+  ```
+
+  The files where v2 differs from v1 on purpose (v1 being wrong) are listed in
+  the `V1Differences` of their case with the reason; a case v1 cannot generate
+  at all has a `V1Skip` reason. With `-v1update`, the test writes v1's
+  formatted output as the expected files, keeping the listed differences: this
+  is how the expected files of a new fixture are made.
 
 Debugging a difference:
 
@@ -103,5 +125,7 @@ Debugging a difference:
 2. Add `_ "github.com/masagroup/soft.gen/v2/lang/<name>"` to `cmd/soft-gen/main.go`.
 3. Write the facts of the language (paths, names, types) as small documented
    functions, then one `view_*.go` per kind of file with its template.
-4. Add a `TestValidate` and golden tests against the v1 output.
+4. Add a `TestValidate`, fixtures with their expected files (made from the v1
+   generator when there is one) and a template coverage test, as
+   `lang/golang` does.
 5. Document its properties and entry points in the README.

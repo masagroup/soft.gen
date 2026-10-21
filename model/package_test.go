@@ -8,19 +8,52 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestPackageClassifiers checks the split of the classifiers of a package into
+// classes, enums and data types, in model order, and that the All* lists of a
+// package without sub package are the same.
 func TestPackageClassifiers(t *testing.T) {
-	m := loadModel(t, "library")
-	info := m.Package(m.Root())
-	assert.Same(t, m.Root(), info.Package)
-	assert.Len(t, info.Classes, 16)
-	assert.Equal(t, []string{"BookCategory"}, names(info.Enums))
-	assert.Empty(t, info.DataTypes)
-	assert.Empty(t, info.SubPackages)
-	assert.Equal(t, names(info.Classes), names(info.AllClasses))
-	assert.Equal(t, names(info.Enums), names(info.AllEnums))
-	assert.Empty(t, info.AllDataTypes)
+	tests := []struct {
+		model          string
+		classes, enums []string
+		dataTypes      []string
+	}{
+		{
+			model:   "shop",
+			classes: []string{"Named", "Tagged", "Shop", "Product", "Customer", "Order"},
+			enums:   []string{"Category"},
+		},
+		{
+			model:   "enums",
+			classes: []string{"Lamp"},
+			enums:   []string{"Color", "Light", "Empty", "Single", "Status", "Level"},
+		},
+		{
+			model:   "attributes",
+			classes: []string{"Holder"},
+			dataTypes: []string{
+				"StringType", "BoolType", "IntType", "LongType", "Int32Type", "Int8Type", "ShortType", "ByteType",
+				"BytesType", "DoubleType", "FloatType", "ClassType", "DateType", "ObjectType", "UnknownType",
+				"Celsius", "Point", "EChar", "Octet", "Opaque",
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.model, func(t *testing.T) {
+			m := loadModel(t, test.model)
+			info := m.Package(m.Root())
+			assert.Same(t, m.Root(), info.Package)
+			assert.Equal(t, orEmpty(test.classes), names(info.Classes))
+			assert.Equal(t, orEmpty(test.enums), names(info.Enums))
+			assert.Equal(t, orEmpty(test.dataTypes), names(info.DataTypes))
+			assert.Empty(t, info.SubPackages)
+			assert.Equal(t, names(info.Classes), names(info.AllClasses))
+			assert.Equal(t, names(info.Enums), names(info.AllEnums))
+			assert.Equal(t, names(info.DataTypes), names(info.AllDataTypes))
+		})
+	}
 
-	me := loadModel(t, "ecore")
+	// the real ecore package
+	me := ecoreMetamodel(t)
 	infoEcore := me.Package(me.Root())
 	assert.Len(t, infoEcore.Classes, 20)
 	assert.Len(t, infoEcore.Enums, 0)
@@ -30,6 +63,7 @@ func TestPackageClassifiers(t *testing.T) {
 	assert.Equal(t, names(infoEcore.DataTypes), names(infoEcore.AllDataTypes))
 }
 
+// TestPackageSubPackages checks the sub packages and the All* lists over them.
 func TestPackageSubPackages(t *testing.T) {
 	p := ecore.GetFactory().CreateEPackage()
 	p.SetName("p")
@@ -56,35 +90,45 @@ func TestPackageSubPackages(t *testing.T) {
 	assert.Equal(t, []ecore.EClass{b}, m.Package(sub).Classes)
 }
 
+// TestOrderedClasses checks that the first super type chain of a class
+// precedes it, the classes keeping the model order otherwise, while a mixin
+// may follow the class (as in v1).
 func TestOrderedClasses(t *testing.T) {
-	m := loadModel(t, "library")
+	// operations.ecore with Circle (Shape, Measurable) moved first: Shape is
+	// placed before it, Measurable, a mixin, stays after it
+	m := loadModel(t, "operations")
+	m.Root().GetEClassifiers().Move(5, 0)
+	require.Equal(t, "Circle", m.Root().GetEClassifiers().Get(0).(ecore.EClass).GetName())
 	info := m.Package(m.Root())
 	ordered := info.OrderedClasses
-	assert.Equal(t, []string{
-		"Item", "CirculatingItem", "Book", "BookIndex", "Addressable", "Library", "Person", "Writer",
-		"Lendable", "Periodical", "AudioVisualItem", "BookOnTape", "VideoCassette", "Borrower", "Employee", "DocumentRoot",
-	}, names(ordered))
+	assert.Equal(t, []string{"Shape", "Circle", "Calculator", "Greeter", "Polite", "Measurable"}, names(ordered))
 	assert.ElementsMatch(t, names(info.Classes), names(ordered))
-	// the first super type chain precedes a class (a mixin may not: Lendable
-	// comes after CirculatingItem, as in v1)
+	// stable
+	assert.Equal(t, names(ordered), names(orderedClasses(m.Root())))
+
+	// the classes already ordered keep the model order
+	for _, name := range []string{"inheritance", "shop", "metamodel"} {
+		mf := loadModel(t, name)
+		assert.Equal(t, names(mf.Package(mf.Root()).Classes), names(mf.Package(mf.Root()).OrderedClasses), name)
+	}
+
+	// the real ecore package: EAttribute is declared first
+	me := ecoreMetamodel(t)
+	orderedEcore := me.Package(me.Root()).OrderedClasses
+	assert.Equal(t, []string{"EModelElement", "ENamedElement", "ETypedElement", "EStructuralFeature", "EAttribute", "EAnnotation", "EClassifier", "EClass"}, names(orderedEcore[:8]))
+	assert.Len(t, orderedEcore, 20)
 	position := map[ecore.EClass]int{}
-	for i, c := range ordered {
+	for i, c := range orderedEcore {
 		position[c] = i
 	}
-	for _, c := range ordered {
+	for _, c := range orderedEcore {
 		if base := firstSuperType(c); base != nil {
 			assert.Less(t, position[base], position[c], "%s before %s", base.GetName(), c.GetName())
 		}
 	}
-	// stable
-	assert.Equal(t, names(ordered), names(orderedClasses(m.Root())))
-
-	me := loadModel(t, "ecore")
-	orderedEcore := me.Package(me.Root()).OrderedClasses
-	assert.Equal(t, []string{"EModelElement", "ENamedElement", "ETypedElement", "EStructuralFeature", "EAttribute", "EAnnotation", "EClassifier", "EClass"}, names(orderedEcore[:8]))
-	assert.Len(t, orderedEcore, 20)
 }
 
+// TestOrderedClassesForeignSuperType checks that a super type of another package is skipped.
 func TestOrderedClassesForeignSuperType(t *testing.T) {
 	// a super type of another package is skipped
 	p := ecore.GetFactory().CreateEPackage()
@@ -105,43 +149,39 @@ func TestOrderedClassesForeignSuperType(t *testing.T) {
 	assert.Equal(t, []ecore.EClass{mid, leaf}, orderedClasses(p))
 }
 
+// TestAnnotationSources checks the annotation sources of a package: the
+// distinct sources of the annotations of its contents (nested annotations
+// included), sorted, minus those the supressAnnotations key of the generator
+// annotation of the model source lists.
 func TestAnnotationSources(t *testing.T) {
-	m := loadModel(t, "library")
+	m := loadModel(t, "annotations")
+	// GenGo suppresses http://soft.gen/test/hidden
 	assert.Equal(t, []AnnotationSource{
-		{URI: "http:///org/eclipse/emf/ecore/util/ExtendedMetaData", Identifier: "ExtendedMetaData"},
 		{URI: genGoSource, Identifier: "GenGo"},
+		{URI: "http://soft.gen/test/doc", Identifier: "doc"},
+		{URI: "http://soft.gen/test/nested", Identifier: "nested"},
 	}, m.Package(m.Root()).AnnotationSources)
 
+	// the suppression is read from the annotation of the model source: the
+	// GenGo key does not apply to a GenTS model
 	ts := FromPackage(m.Root(), genTSSource)
 	assert.Equal(t, []AnnotationSource{
-		{URI: "http:///org/eclipse/emf/ecore/util/ExtendedMetaData", Identifier: "ExtendedMetaData"},
-		{URI: genTSSource, Identifier: "GenTS"},
+		{URI: genGoSource, Identifier: "GenGo"},
+		{URI: "http://soft.gen/test/doc", Identifier: "doc"},
+		{URI: "http://soft.gen/test/hidden", Identifier: "hidden"},
+		{URI: "http://soft.gen/test/nested", Identifier: "nested"},
 	}, ts.Package(m.Root()).AnnotationSources)
 
-	// without a generator annotation nothing is suppressed
-	all := FromPackage(m.Root(), "http://example.com/none")
-	assert.Equal(t, []string{
-		"http:///org/eclipse/emf/ecore/util/ExtendedMetaData",
-		"http://net.masagroup/soft/2018/GenCpp",
-		genGoSource,
-		genTSSource,
-	}, func() []string {
-		var uris []string
-		for _, s := range all.Package(m.Root()).AnnotationSources {
-			uris = append(uris, s.URI)
-		}
-		return uris
-	}())
-
-	me := loadModel(t, "ecore")
+	// the real ecore package: sorted by uri, http:///org... < http://net... < http://www...
+	me := ecoreMetamodel(t)
 	var identifiers []string
 	for _, s := range me.Package(me.Root()).AnnotationSources {
 		identifiers = append(identifiers, s.Identifier)
 	}
-	// sorted by uri: http:///org... < http://net... < http://www...
 	assert.Equal(t, []string{"ExtendedMetaData", "GenCpp", "GenGo", "GenTS", "Ecore"}, identifiers)
 }
 
+// TestAnnotationSourceIdentifier checks the identifier of a source: its last path segment.
 func TestAnnotationSourceIdentifier(t *testing.T) {
 	assert.Equal(t, "GenGo", annotationSourceIdentifier("http://net.masagroup/soft/2019/GenGo"))
 	assert.Equal(t, "GenGo", annotationSourceIdentifier("http://net.masagroup/soft/2019/GenGo/"))

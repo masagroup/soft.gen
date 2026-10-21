@@ -39,6 +39,10 @@ func (g *gen) dataTypes() []dataTypeRow {
 		{[]string{"java.util.Map"}, ecoreType("EMap"), "nil", "nil", ""},
 		{[]string{"java.util.Map$Entry"}, ecoreType("EMapEntry"), "nil", "nil", ""},
 		{[]string{"java.lang.Short", "short"}, "int16", "0", "2", ""},
+		// Go types without a Java name, reached through instanceTypeName (v1
+		// had no row: its test values T() did not compile)
+		{nil, "int32", "0", "32", ""},
+		{nil, "int8", "0", "8", ""},
 		{[]string{"java.lang.String"}, "string", `""`, `"Test String"`, ""},
 		{[]string{"java.lang.Error"}, "error", "nil", `errors/errors.New("Error")`, ""},
 		{[]string{"com.google.common.primitives.UnsignedLong"}, "uint64", "0", "1", ""},
@@ -313,7 +317,11 @@ func (g *gen) testValue(c ecore.EClassifier) string {
 		}
 		return g.qualifiedInterfaceIdentifier(c.GetEPackage(), g.constantsName(literals.Get(index).(ecore.EEnumLiteral)))
 	case ecore.EDataType:
-		return convertedValue(g.typeOfClassifier(c), g.testValueOfDataType(c))
+		if raw := g.testValueOfDataType(c); raw != "" {
+			return convertedValue(g.typeOfClassifier(c), raw)
+		}
+		// a type the type table does not know, without testValue: its zero value
+		return zeroValueOf(g.typeOfClassifier(c))
 	}
 	return ""
 }
@@ -379,4 +387,10 @@ func (g *gen) testPackagePathOfClassifier(c ecore.EClassifier) string {
 		return g.mockPackagePath(c.GetEPackage())
 	}
 	return ""
+}
+
+// zeroValueOf is the zero value of any type t, *new(t): the value of a data
+// type the type table does not know (T{} would only suit a struct type).
+func zeroValueOf(t string) string {
+	return "*new(" + t + ")"
 }

@@ -45,6 +45,31 @@ removed from the tree; they remain in the history, up to the `v1.x` tags.
   type; v1 read them through EMF generics. The output is unchanged for the
   models of the project.
 
+The fixtures (see TEMPLATES.md) revealed these v1 bugs, which v2 fixes; on
+every other construct the output is the v1 output:
+
+- The unsetter and the basic unsetter of an unsettable single containment or
+  bidirectional reference declare their notification chain with `var` (v1's
+  output did not parse).
+- A string default value literal is escaped (v1 wrote quotes and backslashes
+  raw, which did not parse).
+- An attribute of a Go type the type table does not know, without default
+  value, uses the zero value `*new(T)` in `EIsSetFromID`, `EUnsetFromID` and
+  the tests (v1 wrote nothing, which did not parse).
+- The type table has `int32` and `int8` rows: their test values are `int32(32)`
+  and `int8(8)` (v1 wrote `int32()`, which did not compile).
+- The `EDerivedOperationID` test qualifies the operation ids of the class
+  outside the interface package; the mock tests of a class with operations
+  only import `ecore` for `NewMockRun`; testify's `mock` and a model package
+  named `mock` get distinct aliases (all three did not compile).
+- The annotation of a parameter is created in the parameter (v1 called a
+  getter named after the parameter, which did not exist or was another
+  element's), and a nested annotation in its parent annotation (v1 created it
+  in nil: it was lost).
+- The features of a mixin extending a class keep their declaration order in
+  `EDerivedFeatureID` (v1 used the order of a set difference).
+- `rootExtendsMock` works (v1 failed generating the mocks).
+
 ### Not ported yet
 
 - The TypeScript and C++ generators: use the v1 images

@@ -7,8 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestOperation checks the operation facts on the real Ecore operations, and the
+// default key.
 func TestOperation(t *testing.T) {
-	m := loadModel(t, "ecore")
+	m := ecoreMetamodel(t)
 	eClass := classNamed(t, m, "EClass")
 
 	isSuperTypeOf := m.Operation(operationNamed(t, m, "EClass", "isSuperTypeOf", 0))
@@ -58,4 +60,44 @@ func TestOperation(t *testing.T) {
 	assert.Empty(t, mp.Operation(op).ReferencedTypes)
 	annotation.GetDetails().Put("default", "no")
 	assert.False(t, FromPackage(p, genGoSource).Operation(op).IsDefault)
+}
+
+// TestOperationFixtures checks the operation facts on operations.ecore: void
+// without type, default unless default=false, the identifier suffixed by the
+// type of the single parameter or of the first and last parameters, the
+// referenced types (return then parameters, without duplicate), list/map.
+func TestOperationFixtures(t *testing.T) {
+	m := loadModel(t, "operations")
+	tests := []struct {
+		class, operation string
+		identifier       string
+		isVoid           bool
+		isDefault        bool
+		referencedTypes  []string
+		isList           bool
+	}{
+		{"Calculator", "clear", "clear_EBoolean", true, true, []string{"EBoolean"}, false},
+		{"Calculator", "compute", "compute_EInt_EDouble", false, true, []string{"EDouble", "EInt"}, false},
+		{"Calculator", "custom", "custom_EString", false, false, []string{"EString"}, false},
+		{"Calculator", "filter", "filter_EEList", false, true, []string{"EEList"}, false},
+		{"Calculator", "names", "names", false, true, []string{"EString"}, true},
+		{"Calculator", "process", "process_EJavaObject_EJavaObject", false, true, []string{"EJavaObject"}, false},
+		{"Calculator", "reset", "reset", true, true, nil, false},
+		{"Calculator", "sum", "sum_EInt", false, true, []string{"EInt"}, false},
+		{"Calculator", "table", "table", false, true, []string{"EMap"}, false},
+		{"Calculator", "peer", "peer_Greeter", false, true, []string{"Greeter"}, false},
+		{"Greeter", "greet", "greet_EString", false, true, []string{"EString"}, false},
+	}
+	for _, test := range tests {
+		t.Run(test.class+"."+test.operation, func(t *testing.T) {
+			info := m.Operation(operationNamed(t, m, test.class, test.operation, 0))
+			assert.Same(t, classNamed(t, m, test.class), info.Class)
+			assert.Equal(t, test.identifier, info.Identifier)
+			assert.Equal(t, test.isVoid, info.IsVoid, "IsVoid")
+			assert.Equal(t, test.isDefault, info.IsDefault, "IsDefault")
+			assert.Equal(t, orEmpty(test.referencedTypes), names(info.ReferencedTypes), "ReferencedTypes")
+			assert.Equal(t, test.isList, info.IsList, "IsList")
+			assert.False(t, info.IsMap) // no list of map entries
+		})
+	}
 }
