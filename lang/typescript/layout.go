@@ -92,6 +92,15 @@ func breakLine(line string, width int) string {
 	if strings.HasPrefix(content, "//") {
 		return line
 	}
+	if groups := memberChain(content); groups != nil {
+		inner := indentation + indentUnit
+		var b strings.Builder
+		b.WriteString(indentation + groups[0])
+		for _, group := range groups[1:] {
+			b.WriteString("\n" + breakLine(inner+group, width))
+		}
+		return b.String()
+	}
 	open, closing, items := firstList(content)
 	if items == nil {
 		return line
@@ -118,6 +127,118 @@ func breakLine(line string, width int) string {
 	}
 	b.WriteString(indentation + content[closing:])
 	return b.String()
+}
+
+// memberChain returns the groups of a statement that prettier prints as an
+// expanded member chain when it does not fit (prettier member-chain.js): the
+// head (an identifier and its property accesses) then one group per call
+// (.getDetails(), .put(...)), when there are more groups than the cutoff:
+// 2, or 3 when the head is this, a short name or a factory name (Object,
+// _). nil when the statement is not such a chain.
+func memberChain(content string) []string {
+	head := 0
+	for head < len(content) && (content[head] == '_' || content[head] == '$' || isAlphanumeric(content[head])) {
+		head++
+	}
+	if head == 0 {
+		return nil
+	}
+	name := content[:head]
+	// the head absorbs the property accesses not followed by a call
+	type segment struct {
+		text   string
+		called bool
+	}
+	var segments []segment
+	for i := head; i < len(content); {
+		if content[i] != '.' {
+			return nil
+		}
+		j := i + 1
+		for j < len(content) && (content[j] == '_' || content[j] == '$' || isAlphanumeric(content[j])) {
+			j++
+		}
+		if j == i+1 {
+			return nil
+		}
+		called := false
+		if j < len(content) && content[j] == '(' {
+			end := matchingParenthesis(content, j)
+			if end < 0 {
+				return nil
+			}
+			j, called = end+1, true
+		}
+		segments = append(segments, segment{text: content[i:j], called: called})
+		i = j
+	}
+	groups := []string{name}
+	headLength := 1
+	for len(segments) > 0 && !segments[0].called && len(segments) > 1 && !segments[1].called {
+		groups[0] += segments[0].text
+		segments = segments[1:]
+		headLength++
+	}
+	current := ""
+	calls := 0
+	for _, s := range segments {
+		current += s.text
+		if s.called {
+			groups = append(groups, current)
+			current = ""
+			calls++
+		}
+	}
+	if current != "" || calls < 2 {
+		return nil
+	}
+	cutoff := 2
+	if headLength == 1 && (name == "this" || len(name) <= len(indentUnit) || isFactory(name)) {
+		cutoff = 3
+	}
+	if len(groups) <= cutoff {
+		return nil
+	}
+	return groups
+}
+
+// isFactory reports whether a name is a factory as prettier sees it: a
+// capitalized name, or made of $ and _.
+func isFactory(name string) bool {
+	return (name[0] >= 'A' && name[0] <= 'Z') || strings.Trim(name, "$_") == ""
+}
+
+// isAlphanumeric reports whether c is an ASCII letter or digit.
+func isAlphanumeric(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+}
+
+// matchingParenthesis returns the offset of the parenthesis closing the one
+// at open, strings skipped; -1 when unbalanced.
+func matchingParenthesis(content string, open int) int {
+	depth := 0
+	var quote byte
+	for i := open; i < len(content); i++ {
+		c := content[i]
+		switch {
+		case quote != 0:
+			if c == '\\' {
+				i++
+			} else if c == quote {
+				quote = 0
+			}
+		case c == '"' || c == '\'' || c == '`':
+			quote = c
+		case c == '(':
+			depth++
+		case c == ')':
+			depth--
+			if depth == 0 {
+				return i
+			}
+		}
+	}
+	return -1
 }
 
 // splitLogical splits an expression on its top-level || operators, else on

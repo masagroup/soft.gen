@@ -1,7 +1,6 @@
 package typescript
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/masagroup/soft.go/ecore"
@@ -188,19 +187,26 @@ func (s *scope) classifierDefaultValue(t ecore.EClassifier) string {
 		if value, ok := g.KeyValue(t, "defaultValue"); ok {
 			return value
 		}
-		// soft.go gives EString the default "" where EMF has none: an empty
-		// default is the default of the row
 		if t.GetName() != "EChar" {
-			if value := t.GetDefaultValue(); value != nil && fmt.Sprint(value) != "" {
-				return fmt.Sprint(value)
+			if value, ok := javaPrimitiveDefaults[t.GetInstanceTypeName()]; ok {
+				return value
 			}
 		}
+		// as v1, the row is found by the TypeScript type: number finds the
+		// row of java.lang.Integer
 		if row, ok := g.findDataType(g.instanceTypeName(t)); ok {
 			return s.qualify(row.defaultValue)
 		}
 		return ""
 	}
 	return "null"
+}
+
+// javaPrimitiveDefaults are the default values EMF gives the data types of a
+// Java primitive instance class, as Java writes them (v1 ran on EMF:
+// defaultValue.toString()).
+var javaPrimitiveDefaults = map[string]string{
+	"boolean": "false", "byte": "0", "char": "\x00", "double": "0.0", "float": "0.0", "int": "0", "long": "0", "short": "0",
 }
 
 // testValue is the value the tests set (v1 getTestValue): a comment for a
