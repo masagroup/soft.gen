@@ -40,7 +40,7 @@ lint:
 
 .PHONY: image
 image:
-	DOCKER_BUILDKIT=1 docker build --build-arg VERSION=$(VERSION) --tag $(IMAGE) .
+	docker build --build-arg VERSION=$(VERSION) --tag $(IMAGE) .
 
 .PHONY: image.test
 image.test:
