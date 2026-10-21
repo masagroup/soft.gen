@@ -136,7 +136,7 @@ func (g *gen) defaultValue(f ecore.EStructuralFeature, scope *fileScope) string 
 // each (v1 generateImplementation(EStructuralFeature) and the
 // generate*Implementation templates).
 func (g *gen) featureStrategies(v *featureView, c ecore.EClass, info *model.FeatureInfo) {
-	reflective := g.isReflectiveDelegation()
+	reflective := g.IsReflectiveDelegation()
 	v.GetterStrategy = g.getterStrategy(v, info, reflective)
 	v.Accessors = append(v.Accessors, "getter")
 	if info.BasicGet && !reflective {

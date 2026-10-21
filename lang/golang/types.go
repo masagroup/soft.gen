@@ -77,7 +77,7 @@ func (g *gen) findDataType(instanceTypeName string) (dataTypeRow, bool) {
 
 // goVersion is the goVersion property, default 1.19.
 func (g *gen) goVersion() string {
-	if v, ok := g.packageProperty("goVersion"); ok {
+	if v, ok := g.PackageProperty("goVersion"); ok {
 		return v
 	}
 	return "1.19"
@@ -128,7 +128,7 @@ func compareVersions(a, b string) int {
 // else the interface of a class; mapped through the data type table.
 func (g *gen) instanceTypeName(c ecore.EClassifier) string {
 	name := ""
-	if v, ok := g.keyValue(c, "instanceTypeName"); ok {
+	if v, ok := g.KeyValue(c, "instanceTypeName"); ok {
 		name = v
 	} else if n := c.GetInstanceTypeName(); n != "" {
 		name = n
@@ -239,7 +239,7 @@ func (g *gen) defaultValueOfClassifier(c ecore.EClassifier) string {
 // default of its instance class (except EChar), nil for a pointer type, else
 // the default of the data type table.
 func (g *gen) defaultValueOfDataType(dt ecore.EDataType) string {
-	if v, ok := g.keyValue(dt, "defaultValue"); ok {
+	if v, ok := g.KeyValue(dt, "defaultValue"); ok {
 		return v
 	}
 	if dt.GetName() != "EChar" {
@@ -329,7 +329,7 @@ func (g *gen) testValue(c ecore.EClassifier) string {
 // testValueOfDataType is the raw test value of a data type: the testValue
 // annotation, nil for a pointer type, else the table value.
 func (g *gen) testValueOfDataType(dt ecore.EDataType) string {
-	if v, ok := g.keyValue(dt, "testValue"); ok {
+	if v, ok := g.KeyValue(dt, "testValue"); ok {
 		return v
 	}
 	typeName := g.instanceTypeName(dt)

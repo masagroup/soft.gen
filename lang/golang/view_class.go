@@ -156,7 +156,7 @@ func (g *gen) implementationFile(c ecore.EClass) []engine.File {
 	pkg := c.GetEPackage()
 	scope := newFileScope(g.implementationPackagePath(pkg))
 	info := g.m.Class(c)
-	reflective := g.isReflectiveDelegation()
+	reflective := g.IsReflectiveDelegation()
 	extends := g.classExtends(c)
 	view := &implementationView{
 		ecoreNames:    g.ecoreNames(scope),

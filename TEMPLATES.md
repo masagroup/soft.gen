@@ -39,7 +39,8 @@ functions with explicit names, where they can be read and unit-tested.
 | `naming` | Word splitting, case changes, naming rules (`pattern:replacement`, `{0}` formats), keyword avoidance. |
 | `tmpl` | Loading of the template files, the shared template functions, the convention linter. |
 | `writer` | Writing of the files: header, line endings, user code regions, formatter, dry run, diff. |
-| `engine` | The `Language` contract, the run loop, the manifests, the registry, `Validate`, the golden test harness. |
+| `engine` | The `Language` contract, the run loop, the manifests, the registry, `Validate`, the golden tests (`goldentest`: the fixture suite, the template coverage, the v1 cross-check). |
+| `lang/internal/common` | What the builders of every language share: package properties, generator annotation keys, naming rules with the name style of the language, list properties (`packages`, `paths`...). |
 | `lang/<name>` | One language: its facts (paths, imports, names, types), its view models (`view_*.go`) and its templates (`templates/`). |
 
 A language never recomputes a fact of `model`; if a fact is missing there, add
@@ -86,15 +87,17 @@ in `testdata/models`, each about one topic (attributes, references, maps,
 volatile, lazy, operations, inheritance, enums, naming, annotations, a package
 named `ecore`, and the package options on `shop`). A case is a model, entry
 points and properties, registered from `init` in
-`lang/golang/fixtures_<topic>_test.go`; its expected files are committed in
-`testdata/golden/go/<case>`, laid out as the output folder.
+`lang/golang/fixtures_<topic>_test.go` into the `goldentest.Suite` of the
+language; its expected files are committed in `testdata/golden/go/<case>`,
+laid out as the output folder. The suite runs the three tests below for any
+language.
 
 - **`TestFixtures`** generates every case and compares it with its expected
   files (`engine/goldentest`). After an intended change of the output, run it
   with `-update` to write the new expected files, and review them with git.
 - **`TestTemplateCoverage`** fails when a template define is rendered by no
   case: a new variant needs a fixture. The few defines no model can reach are
-  listed in `unreachableTemplates`, each with its reason.
+  listed in the `Unreachable` map of the suite, each with its reason.
 - **`TestV1`** compares the cases with the v1 generator, the reference of the
   expected files. It runs when `SOFT_GEN_V1_IMAGE` names the v1 image and
   docker is available:
@@ -123,13 +126,16 @@ Debugging a difference:
 ## Adding a language
 
 1. Create `lang/<name>` with a `Language` type implementing `engine.Language`
-   (name, generator name, annotation source, properties, entry points,
-   templates, functions, regions, formatter, name style) and an `init`
-   registering it.
+   (name, annotation source, properties, entry points, templates, functions,
+   regions, formatter, name style) and an `init` registering it. Its builder
+   embeds `lang/internal/common.Gen`: package properties, annotation keys,
+   naming rules and list properties (`packages`...) are the same for every
+   language.
 2. Add `_ "github.com/masagroup/soft.gen/v2/lang/<name>"` to `cmd/soft-gen/main.go`.
 3. Write the facts of the language (paths, names, types) as small documented
    functions, then one `view_*.go` per kind of file with its template.
-4. Add a `TestValidate`, fixtures with their expected files (made from the v1
-   generator when there is one) and a template coverage test, as
-   `lang/golang` does.
+4. Add a `TestValidate` and a `goldentest.Suite` with fixtures and their
+   expected files (made from the v1 generator when there is one), whose
+   `TestFixtures`, `TestTemplateCoverage` and `TestV1` the language tests
+   call, as `lang/golang` does.
 5. Document its properties and entry points in the README.

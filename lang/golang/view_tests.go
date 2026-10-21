@@ -123,7 +123,7 @@ func (g *gen) implementationTestFile(c ecore.EClass) []engine.File {
 	pkg := c.GetEPackage()
 	scope := newFileScope(g.implementationPackagePath(pkg))
 	info := g.m.Class(c)
-	reflective := g.isReflectiveDelegation()
+	reflective := g.IsReflectiveDelegation()
 	names := &implTestNames{
 		testNames:   testNamesOf(scope, true),
 		Class:       naming.UpperFirst(c.GetName()),
@@ -203,7 +203,7 @@ func (g *gen) featureTestView(c ecore.EClass, f ecore.EStructuralFeature, names 
 		Unsetter:      g.unsetterName(f),
 		Var:           g.variableName(f),
 		ID:            g.featureID(c, f, scope),
-		Reflective:    g.isReflectiveDelegation(),
+		Reflective:    g.IsReflectiveDelegation(),
 		IsProxy:       info.IsProxy,
 		IsContainer:   info.IsContainer,
 		Any:           g.anyType(),
@@ -306,7 +306,7 @@ func (g *gen) defaultValueWithTypeIn(f ecore.EStructuralFeature, scope *fileScop
 
 // featureTestKinds chooses the variant of every test of the feature.
 func (g *gen) featureTestKinds(v *featureTestView, info *model.FeatureInfo) {
-	reflective := g.isReflectiveDelegation()
+	reflective := g.IsReflectiveDelegation()
 	if info.Get {
 		v.GetKind = getTestKind(info)
 	}

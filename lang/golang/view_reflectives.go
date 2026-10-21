@@ -62,7 +62,7 @@ func (g *gen) reflectiveMethods(c ecore.EClass, views map[ecore.EStructuralFeatu
 	if info.HasElementID {
 		methods = append(methods, g.derivedIDMethods(c, scope)...)
 	}
-	if g.isReflectiveDelegation() {
+	if g.IsReflectiveDelegation() {
 		return methods
 	}
 	method := func(kind string, features []ecore.EStructuralFeature, strategy func(reflectiveCaseView, *model.FeatureInfo) reflectiveCaseView) {

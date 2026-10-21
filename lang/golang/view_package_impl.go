@@ -252,7 +252,7 @@ func (g *gen) packageImplementationFile(p ecore.EPackage) []engine.File {
 		// the factory of a shared package is its data type factory (or its
 		// hand-written extension), an ecore.EFactory
 		factory := g.factoryImplementationName(p)
-		if g.keyIs(p, "factory", "extension") {
+		if g.KeyIs(p, "factory", "extension") {
 			factory = g.factoryExtensionName(p)
 		}
 		view.PackageFactory = constructorName(factory) + "()"

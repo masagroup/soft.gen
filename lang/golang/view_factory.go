@@ -294,7 +294,7 @@ func (g *gen) factoryInstanceView(p ecore.EPackage, scope *fileScope) *factoryIn
 		Once:        scope.qualify("sync/sync.Once"),
 		Constructor: constructorName(g.factoryImplementationName(p)),
 	}
-	if g.keyIs(p, "factory", "extension") && !shared {
+	if g.KeyIs(p, "factory", "extension") && !shared {
 		view.Constructor = constructorName(g.factoryExtensionName(p))
 	}
 	if shared {
@@ -328,7 +328,7 @@ func (g *gen) factoryCreates(p ecore.EPackage, scope *fileScope, implementation 
 		typ := scope.qualify(g.classInterface(c))
 		create := "Create" + c.GetName()
 		constructor := constructorName(g.classImplementation(c))
-		if g.hasExtension(c) {
+		if g.HasExtension(c) {
 			constructor = constructorName(g.classExtension(c))
 		}
 		if implementation {
