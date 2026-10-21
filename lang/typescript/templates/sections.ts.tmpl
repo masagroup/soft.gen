@@ -1,0 +1,22 @@
+{{/* A class or an interface made of sections of lines separated by a blank line (an empty one is {}), then a function. */}}
+{{ define "sections.ts" -}}
+{{ .Declaration }} {
+{{- range $i, $section := .Sections }}
+{{- if $i }}
+{{ blank }}
+{{- end }}
+{{- range $section }}
+    {{ . }}
+{{- end }}
+{{- end }}
+{{- if .Sections }}
+}
+{{- else }}}
+{{- end }}
+{{- if .Function }}
+{{ blank }}
+{{- range .Function }}
+{{ . }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -89,6 +89,14 @@ func (m *Model) isMapType(e ecore.ETypedElement) bool {
 	return isListType(e) && e.GetEType() != nil && m.IsMapEntryName(e.GetEType().GetInstanceTypeName())
 }
 
+// IsListType reports whether a typed element (a feature, an operation, a
+// parameter) is many valued (v1 isListType).
+func IsListType(e ecore.ETypedElement) bool { return isListType(e) }
+
+// IsMapType reports whether a typed element is a list of map entries (v1
+// isMapType).
+func (m *Model) IsMapType(e ecore.ETypedElement) bool { return m.isMapType(e) }
+
 // FeatureKind returns the kind of f (v1 getFeatureKind): "attribute",
 // "reference", "containment reference", "container reference" or "map", with
 // " list" appended when f is many and not a map.

@@ -22,6 +22,7 @@ import (
 
 	// The languages register themselves.
 	_ "github.com/masagroup/soft.gen/v2/lang/golang"
+	_ "github.com/masagroup/soft.gen/v2/lang/typescript"
 )
 
 // developerBuild is the version of a build that sets none.
