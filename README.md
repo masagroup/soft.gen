@@ -18,7 +18,7 @@ the properties and the annotation keys are the ones of v1.
 One docker image holds every language:
 
 ```shell
-docker run --rm masagroup/soft.generator go -v
+docker run --rm masagroup/soft-gen go -v
 soft.generator.go version: v2.0.0
 ```
 
@@ -52,7 +52,7 @@ soft-gen <language> [-hsv] -m=<model> -o=<folder> [-p=<property=value>]... [-P=<
 The docker image runs `soft-gen`; the language is its first argument:
 
 ```shell
-docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator go -m /gen/model.ecore -o /gen
+docker run --rm -v "$PWD":/gen -w /gen masagroup/soft-gen go -m /gen/model.ecore -o /gen
 ```
 
 `soft-gen <language> -h` prints the templates and the properties of the language.
@@ -144,14 +144,14 @@ one run each:
 
 ```shell
 # the interfaces, once
-docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator go -m /gen/model.ecore -o /gen -t generateInterfaces \
+docker run --rm -v "$PWD":/gen -w /gen masagroup/soft-gen go -m /gen/model.ecore -o /gen -t generateInterfaces \
     -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/store/store -p module=example.com/m
 # an implementation with reflective feature delegation
-docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator go -m /gen/model.ecore -o /gen -t generateImplementations \
+docker run --rm -v "$PWD":/gen -w /gen masagroup/soft-gen go -m /gen/model.ecore -o /gen -t generateImplementations \
     -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/store/store -p module=example.com/m \
     -p featureDelegation=Reflective
 # an implementation with typed fields
-docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator go -m /gen/model.ecore -o /gen -t generateImplementations \
+docker run --rm -v "$PWD":/gen -w /gen masagroup/soft-gen go -m /gen/model.ecore -o /gen -t generateImplementations \
     -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/fields/fields -p module=example.com/m
 ```
 
@@ -174,12 +174,12 @@ the objects of another: the setters of the references check it (soft.go
 out of the generated code).
 
 ```shell
-docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator go -m /gen/model.ecore -o /gen -t generateInterfaces \
+docker run --rm -v "$PWD":/gen -w /gen masagroup/soft-gen go -m /gen/model.ecore -o /gen -t generateInterfaces \
     -p packageInstance=interfaces -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/store/store -p module=example.com/m
-docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator go -m /gen/model.ecore -o /gen -t generateImplementations \
+docker run --rm -v "$PWD":/gen -w /gen masagroup/soft-gen go -m /gen/model.ecore -o /gen -t generateImplementations \
     -p packageInstance=interfaces -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/store/store -p module=example.com/m \
     -p featureDelegation=Reflective
-docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator go -m /gen/model.ecore -o /gen -t generateImplementations \
+docker run --rm -v "$PWD":/gen -w /gen masagroup/soft-gen go -m /gen/model.ecore -o /gen -t generateImplementations \
     -p packageInstance=interfaces -p packages=<nsURI>=example.com/m/model/model#example.com/m/model/memory/memory -p module=example.com/m
 ```
 

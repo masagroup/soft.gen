@@ -15,8 +15,8 @@ removed from the tree; they remain in the history, up to the `v1.x` tags.
 
 ### Changed
 
-- One docker image, `masagroup/soft.generator`, holds every language; the
-  language is the first argument: `masagroup/soft.generator go -m ...` replaces
+- One docker image, `masagroup/soft-gen`, holds every language; the
+  language is the first argument: `masagroup/soft-gen go -m ...` replaces
   `masagroup/soft.generator.go -m ...`. The per-language images remain for v1.
 - The version is computed from Git by `version.sh` (the tag of the build, or a
   Go pseudo-version between tags) and is the same for every language; v1
