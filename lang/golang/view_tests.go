@@ -246,9 +246,17 @@ func (v *featureTestView) TypeClass() string {
 	return v.values.g.metaObject(v.values.f.GetEType(), v.values.scope)
 }
 
-// Default is the default value converted to the type (v1 getDefaultValueWithType).
+// Default is the default value converted to the type (v1 getDefaultValueWithType),
+// or the zero value *new(T) of a single attribute without default (a data type the
+// type table does not know): v1 wrote nothing there, which did not compile.
 func (v *featureTestView) Default() string {
-	return v.values.g.defaultValueWithTypeIn(v.values.f, v.values.scope)
+	value := v.values.g.defaultValueWithTypeIn(v.values.f, v.values.scope)
+	if value == "" && !v.values.f.IsMany() {
+		if _, attribute := v.values.f.(ecore.EAttribute); attribute {
+			return zeroValueOf(v.values.scope.qualify(v.values.g.typeOfClassifier(v.values.f.GetEType())))
+		}
+	}
+	return value
 }
 
 // KeyTestValue is the test value of the key of the map entry type of the feature.

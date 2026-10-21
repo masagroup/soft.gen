@@ -185,7 +185,7 @@ func esetCase(v reflectiveCaseView, info *model.FeatureInfo) reflectiveCaseView 
 // eunsetCase is the variant of an EUnsetFromID case (v1
 // generateEUnSetDefinition): clear (a list that is not unsettable), unset
 // (the unsetter) or set with Value: nil for a reference, the default of an
-// attribute, or its zero value T{} without default.
+// attribute, or its zero value *new(T) without default.
 func (g *gen) eunsetCase(v reflectiveCaseView, info *model.FeatureInfo) reflectiveCaseView {
 	switch {
 	case info.IsList && !info.IsUnsettable:
@@ -194,12 +194,20 @@ func (g *gen) eunsetCase(v reflectiveCaseView, info *model.FeatureInfo) reflecti
 		v.Strategy = "unset"
 	case info.Reference != nil:
 		v.Strategy, v.Value = "set", "nil"
-	case v.Default != "":
-		v.Strategy, v.Value = "set", v.Default
 	default:
-		v.Strategy, v.Value = "set", v.Type+"{}"
+		v.Strategy, v.Value = "set", zeroValue(v.featureView)
 	}
 	return v
+}
+
+// zeroValue is the value an attribute has when it is not set: its default, or
+// the zero value *new(T) of its type when it has none (a data type the type table
+// does not know, without defaultValue).
+func zeroValue(v *featureView) string {
+	if v.Default != "" {
+		return v.Default
+	}
+	return zeroValueOf(v.Type)
 }
 
 // eissetCase gives an EIsSetFromID case its comparison (v1 generateComparison).
@@ -239,7 +247,7 @@ func (g *gen) comparison(v *featureView, info *model.FeatureInfo) string {
 				}
 			}
 		}
-		return value + " != " + v.Default
+		return value + " != " + zeroValue(v)
 	case !any && info.IsBackReference:
 		return value + " != nil"
 	}

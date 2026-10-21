@@ -393,7 +393,13 @@ func (g *gen) mockTestValue(c ecore.EClassifier, scope *fileScope) string {
 		return scope.qualify(g.testValue(c))
 	}
 	t := g.typeOfClassifier(dt)
-	value := "(" + scope.qualify(g.testValueOfDataType(dt)) + ")"
+	raw := g.testValueOfDataType(dt)
+	if raw == "" {
+		// a type the type table does not know, without testValue: its zero
+		// value (v1 wrote the conversion T(), which does not compile)
+		return zeroValueOf(scope.qualify(t))
+	}
+	value := "(" + scope.qualify(raw) + ")"
 	if strings.HasPrefix(t, "*") {
 		return "(" + scope.qualify(t) + ")" + value
 	}
