@@ -7,7 +7,7 @@ import (
 
 	"github.com/urfave/cli/v3"
 
-	"github.com/masagroup/soft.gen/v2/engine"
+	"github.com/masagroup/soft.gen/v2/internal/engine"
 )
 
 // newApp builds the root command: one subcommand per registered language,

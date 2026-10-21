@@ -334,7 +334,7 @@ whose expected output is committed in `testdata/golden`; together they render
 every template of the generator. After an intended change of the output:
 
 ```shell
-go test ./lang/golang -run TestFixtures -update   # write the new expected files, then review them with git
+go test ./internal/lang/golang -run TestFixtures -update   # write the new expected files, then review them with git
 ```
 
 See [TEMPLATES.md](TEMPLATES.md#golden-tests) for the v1 cross-check.
