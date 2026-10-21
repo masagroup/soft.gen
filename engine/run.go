@@ -98,6 +98,9 @@ func Run(ctx context.Context, req Request) (*Report, error) {
 			report.Files = append(report.Files, FileResult{Path: file.Path, Status: status})
 		}
 	}
+	if req.NoManifest {
+		return report, nil
+	}
 	return report, writeManifests(out, manifestOf(req, m), report)
 }
 

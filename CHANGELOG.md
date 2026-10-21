@@ -28,6 +28,7 @@ removed from the tree; they remain in the history, up to the `v1.x` tags.
 - Every folder a run generates files in holds a manifest, `.soft-gen.yaml`: the
   generator, the version of the language and the nsURI of the package. A new
   version changes the manifests only, not the generated files.
+  `--manifest=false` leaves them out.
 - Property files (`-P`) may be Java `.properties`, YAML or JSON, by extension.
 - The command line is built with urfave/cli v3: the options keep their v1
   names and short forms, and may also come from `SOFT_GEN_*` environment

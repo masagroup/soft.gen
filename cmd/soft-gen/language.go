@@ -27,6 +27,7 @@ const (
 	optionDryRun     = "dry-run"
 	optionDiff       = "diff"
 	optionFormat     = "format"
+	optionManifest   = "manifest"
 	optionConfig     = "config"
 )
 
@@ -45,7 +46,7 @@ func languageCommand(lang engine.Language, version string) *cli.Command {
 	return &cli.Command{
 		Name:        lang.Name(),
 		Usage:       "generates " + lang.Name() + " code (" + engine.GeneratorOf(lang) + " " + version + ")",
-		UsageText:   "soft-gen " + lang.Name() + " -m <model> -o <folder> [-p key=value]... [-P file]... [-t template]... [-s] [--dry-run] [--diff] [--format] [--config file]",
+		UsageText:   "soft-gen " + lang.Name() + " -m <model> -o <folder> [-p key=value]... [-P file]... [-t template]... [-s] [--dry-run] [--diff] [--format] [--manifest=false] [--config file]",
 		Description: languageDescription(lang),
 		Flags:       languageFlags(opts),
 		Before:      opts.config.check,
@@ -73,6 +74,7 @@ func languageFlags(opts *options) []cli.Flag {
 		&cli.BoolFlag{Name: optionDryRun, Usage: "list the files without writing them", Sources: config.sources(optionDryRun)},
 		&cli.BoolFlag{Name: optionDiff, Usage: "print the differences with the existing files, write nothing, exit 1 on any difference", Sources: config.sources(optionDiff)},
 		&cli.BoolFlag{Name: optionFormat, Usage: "run the external formatter of the language on the generated files", Sources: config.sources(optionFormat)},
+		&cli.BoolFlag{Name: optionManifest, Value: true, Usage: "write the manifest (" + engine.ManifestName + ") in every folder of generated files; --manifest=false leaves it out", Sources: config.sources(optionManifest)},
 		versionFlag(),
 	}
 }
@@ -141,6 +143,7 @@ func request(cmd *cli.Command, lang engine.Language, version string, opts *optio
 		DryRun:      cmd.Bool(optionDryRun),
 		Diff:        cmd.Bool(optionDiff),
 		Format:      cmd.Bool(optionFormat),
+		NoManifest:  !cmd.Bool(optionManifest),
 		Output:      cmd.Writer,
 		ErrOutput:   errWriter(cmd),
 	}, nil

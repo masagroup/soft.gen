@@ -42,7 +42,7 @@ go install github.com/masagroup/soft.gen/v2/cmd/soft-gen@latest
 ## Usage
 
 ```
-soft-gen <language> -m <model> -o <folder> [-p key=value]... [-P file]... [-t template]... [-s] [--dry-run] [--diff] [--format] [--config file]
+soft-gen <language> -m <model> -o <folder> [-p key=value]... [-P file]... [-t template]... [-s] [--dry-run] [--diff] [--format] [--manifest=false] [--config file]
   --config, -c file       read the options from a configuration file (.yaml, .yml, .json, .toml)   $SOFT_GEN_CONFIG
   --model, -m string      the input model                                                          $SOFT_GEN_MODEL
   --output, -o string     the output folder                                                        $SOFT_GEN_OUTPUT
@@ -53,6 +53,7 @@ soft-gen <language> -m <model> -o <folder> [-p key=value]... [-P file]... [-t te
   --dry-run               list the files without writing them                                      $SOFT_GEN_DRY_RUN
   --diff                  print the differences with the existing files, write nothing, exit 1 on any difference   $SOFT_GEN_DIFF
   --format                run the external formatter of the language on the generated files        $SOFT_GEN_FORMAT
+  --manifest              write the manifest (.soft-gen.yaml) in every folder of generated files (default: true)   $SOFT_GEN_MANIFEST
   --version, -v           print version information and exit
   --help, -h              show help
 ```
@@ -93,6 +94,12 @@ runs into one folder (interfaces, implementations, tests) agree on it. A new
 version of the language changes one line of each manifest, and no generated
 file. `--dry-run` lists the manifests and `--diff` compares them as the other
 files.
+
+`--manifest=false` (or `SOFT_GEN_MANIFEST=false`, or `manifest: false` in the
+configuration file) leaves the manifests out, for a generation into a
+temporary folder or a project that records the version elsewhere. It does not
+delete a manifest an earlier run wrote: that one is left as it is, and stale.
+The runs into one folder should all write the manifest, or none.
 
 ### Configuration file and environment
 

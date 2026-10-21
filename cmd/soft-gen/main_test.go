@@ -112,6 +112,31 @@ func TestLanguageVersions(t *testing.T) {
 	assert.Contains(t, errOut, `invalid LanguageVersions: unknown language "cobol"`)
 }
 
+// TestManifestOption checks --manifest: on by default, off from the command
+// line, the environment or the configuration file.
+func TestManifestOption(t *testing.T) {
+	manifest := func(dir string) string { return filepath.Join(dir, "shop", ".soft-gen.yaml") }
+	generate := func(t *testing.T, args ...string) string {
+		t.Helper()
+		dir := t.TempDir()
+		code, _, errOut := soft(t, append([]string{"go", "-s", "-m", shopModel, "-o", dir, "-t", "generateInterfaces"}, args...)...)
+		require.Equal(t, 0, code, errOut)
+		assert.FileExists(t, filepath.Join(dir, "shop", "shop.go"))
+		return dir
+	}
+
+	assert.FileExists(t, manifest(generate(t)), "on by default")
+	assert.NoFileExists(t, manifest(generate(t, "--manifest=false")), "off from the command line")
+
+	config := filepath.Join(t.TempDir(), "soft-gen.yaml")
+	require.NoError(t, os.WriteFile(config, []byte("manifest: false\n"), 0o644))
+	assert.NoFileExists(t, manifest(generate(t, "--config", config)), "off from the configuration file")
+	assert.FileExists(t, manifest(generate(t, "--config", config, "--manifest")), "the command line wins over the file")
+
+	t.Setenv("SOFT_GEN_MANIFEST", "false")
+	assert.NoFileExists(t, manifest(generate(t)), "off from the environment")
+}
+
 func TestDryRunAndDiff(t *testing.T) {
 	dir := t.TempDir()
 	code, out, errOut := soft(t, "go", "-m", shopModel, "-o", dir, "-t", "generateModel", "--dry-run")
