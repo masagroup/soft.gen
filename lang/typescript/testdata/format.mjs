@@ -5,12 +5,14 @@
 // The golden tests of lang/typescript run it on the output of the v1
 // generator and on the expected files.
 //
-// Usage: node format.mjs <tools> <printWidth> <dir> [--keep-imports]
+// Usage: node format.mjs <tools> <printWidth> <dir> [--keep-imports] [--lenient]
 //
 //   tools        a directory whose node_modules resolve prettier and oxlint
 //                (soft.ts/ecore, or the npm workspace root)
 //   printWidth   the prettier printWidth (120 for the soft.ts examples)
 //   --keep-imports  only run prettier
+//   --lenient       leave a file prettier can not parse as it is (the output of
+//                   v1 may not parse)
 
 import { spawnSync } from "node:child_process"
 import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs"
@@ -101,8 +103,17 @@ if (!flags.includes("--keep-imports")) removeUnusedImports(root)
 const prettierModule = await import(pathToFileURL(require.resolve("prettier")).href)
 const prettier = prettierModule.format ? prettierModule : prettierModule.default
 const options = { parser: "typescript", printWidth: Number(printWidth), tabWidth: 4, semi: false, trailingComma: "none" }
+let failed = false
 for (const file of tsFiles(root)) {
     const text = readFileSync(file, "utf8")
-    const formatted = await prettier.format(text, options)
-    if (formatted !== text) writeFileSync(file, formatted)
+    try {
+        const formatted = await prettier.format(text, options)
+        if (formatted !== text) writeFileSync(file, formatted)
+    } catch (e) {
+        if (flags.includes("--lenient")) continue
+        // the message of a syntax error, without the source prettier appends
+        console.error(`${file}: ${String(e.message).split("\n")[0].slice(0, 300)}`)
+        failed = true
+    }
 }
+if (failed) process.exit(1)

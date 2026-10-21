@@ -29,6 +29,11 @@ func indent(n int, s string) string {
 // quote writes a string literal in double quotes, escaping the backslashes,
 // the double quotes and the line breaks.
 func quote(s string) string {
+	// prettier prefers double quotes, but single quotes for a string holding
+	// more double quotes than single ones
+	if strings.Count(s, `"`) > strings.Count(s, `'`) {
+		return `'` + strings.NewReplacer(`\`, `\\`, `'`, `\'`, "\n", `\n`, "\r", `\r`).Replace(s) + `'`
+	}
 	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`, "\n", `\n`, "\r", `\r`).Replace(s) + `"`
 }
 
@@ -92,20 +97,47 @@ func breakLine(line string, width int) string {
 	if strings.HasPrefix(content, "//") {
 		return line
 	}
-	if groups := memberChain(content); groups != nil {
-		inner := indentation + indentUnit
+	inner := indentation + indentUnit
+	// a parenthesized logical expression keeps its first operand after the
+	// parenthesis, the others indented: (a &&\n    b)
+	if operands, suffix := parenthesizedLogical(content); operands != nil {
+		var b strings.Builder
+		b.WriteString(breakLine(indentation+"("+operands[0], width))
+		for i, operand := range operands[1:] {
+			if i == len(operands)-2 {
+				operand += ")" + suffix
+			}
+			b.WriteString("\n" + breakLine(inner+operand, width))
+		}
+		return b.String()
+	}
+	body, suffix := strings.TrimSuffix(content, ","), ""
+	if body != content {
+		suffix = ","
+	}
+	if groups := memberChain(body); groups != nil {
 		var b strings.Builder
 		b.WriteString(indentation + groups[0])
-		for _, group := range groups[1:] {
+		for i, group := range groups[1:] {
+			if i == len(groups)-2 {
+				group += suffix
+			}
 			b.WriteString("\n" + breakLine(inner+group, width))
 		}
 		return b.String()
 	}
+	// a conditional expression is broken before ? and :
+	if test, consequent, alternate, ok := splitConditional(content); ok {
+		return breakLine(indentation+test, width) + "\n" + breakLine(inner+"? "+consequent, width) + "\n" + breakLine(inner+": "+alternate, width)
+	}
 	open, closing, items := chooseList(content, len(indentation), width)
 	if items == nil {
+		// an assignment whose value has nothing to break is broken after =
+		if target, value, ok := splitAssignment(content); ok {
+			return indentation + target + " =\n" + breakLine(inner+value, width)
+		}
 		return line
 	}
-	inner := indentation + indentUnit
 	var b strings.Builder
 	b.WriteString(indentation + content[:open+1] + "\n")
 	if len(items) == 1 {
@@ -157,24 +189,38 @@ func chooseList(content string, column, width int) (open, closing int, items []s
 func topLevelLists(content string) [][2]int {
 	var lists [][2]int
 	depth, start := 0, -1
+	// grouping holds, per open parenthesis, whether it groups an expression
+	// ((await f(x)) as T): transparent, the lists inside it are top-level
+	var grouping []bool
 	var quote byte
 	for i := 0; i < len(content); i++ {
 		c := content[i]
 		switch {
 		case quote != 0:
-			if c == '\\' {
+			switch c {
+			case '\\':
 				i++
-			} else if c == quote {
+			case quote:
 				quote = 0
 			}
 		case c == '"' || c == '\'' || c == '`':
 			quote = c
+		case c == '(' && depth == 0 && isGroupingParenthesis(content, i):
+			grouping = append(grouping, true)
 		case c == '(' || c == '[' || c == '{' || c == '<':
-			if c == '(' && depth == 0 {
-				start = i
+			if c == '(' {
+				grouping = append(grouping, false)
+				if depth == 0 {
+					start = i
+				}
 			}
 			depth++
+		case c == ')' && len(grouping) > 0 && grouping[len(grouping)-1]:
+			grouping = grouping[:len(grouping)-1]
 		case c == ')' || c == ']' || c == '}' || (c == '>' && (i == 0 || content[i-1] != '=')):
+			if c == ')' && len(grouping) > 0 {
+				grouping = grouping[:len(grouping)-1]
+			}
 			depth--
 			if c == ')' && depth == 0 && start >= 0 {
 				lists = append(lists, [2]int{start, i})
@@ -185,6 +231,37 @@ func topLevelLists(content string) [][2]int {
 	return lists
 }
 
+// isGroupingParenthesis reports whether the parenthesis at i groups an
+// expression rather than opening a list of arguments or parameters: it does
+// not follow a name, a call or an index.
+func isGroupingParenthesis(content string, i int) bool {
+	j := i - 1
+	for j >= 0 && content[j] == ' ' {
+		j--
+	}
+	if j < 0 {
+		return true
+	}
+	c := content[j]
+	if c == ')' || c == ']' || c == '>' {
+		return false
+	}
+	if c != '_' && c != '$' && !isAlphanumeric(c) {
+		return true
+	}
+	// a keyword before a parenthesis groups (return (a), await (b)), but if,
+	// for, while and switch open their condition
+	k := j
+	for k >= 0 && (content[k] == '_' || content[k] == '$' || isAlphanumeric(content[k])) {
+		k--
+	}
+	switch content[k+1 : j+1] {
+	case "return", "await", "typeof", "in", "of", "new", "case", "throw", "void", "yield":
+		return true
+	}
+	return false
+}
+
 // memberChain returns the groups of a statement that prettier prints as an
 // expanded member chain when it does not fit (prettier member-chain.js): the
 // head (an identifier and its property accesses) then one group per call
@@ -192,6 +269,21 @@ func topLevelLists(content string) [][2]int {
 // 2, or 3 when the head is this, a short name or a factory name (Object,
 // _). nil when the statement is not such a chain.
 func memberChain(content string) []string {
+	// a returned chain, and a chain followed by a type assertion
+	prefix := ""
+	if strings.HasPrefix(content, "return ") {
+		prefix, content = "return ", content[len("return "):]
+	}
+	groups := chain(content)
+	if groups == nil {
+		return nil
+	}
+	groups[0] = prefix + groups[0]
+	return groups
+}
+
+// chain is memberChain on an expression, a type assertion (as T) ending it.
+func chain(content string) []string {
 	head := 0
 	for head < len(content) && (content[head] == '_' || content[head] == '$' || isAlphanumeric(content[head])) {
 		head++
@@ -215,8 +307,13 @@ func memberChain(content string) []string {
 		called bool
 	}
 	var segments []segment
+	assertion := ""
 	for i := head; i < len(content); {
 		if content[i] != '.' {
+			if strings.HasPrefix(content[i:], " as ") {
+				assertion = content[i:]
+				break
+			}
 			return nil
 		}
 		j := i + 1
@@ -242,8 +339,10 @@ func memberChain(content string) []string {
 	if headCalled {
 		headLength = 2
 	}
-	for !headCalled && len(segments) > 0 && !segments[0].called && len(segments) > 1 && !segments[1].called {
+	last := name
+	for !headCalled && len(segments) > 1 && !segments[0].called {
 		groups[0] += segments[0].text
+		last = strings.TrimPrefix(segments[0].text, ".")
 		segments = segments[1:]
 		headLength++
 	}
@@ -261,12 +360,16 @@ func memberChain(content string) []string {
 		return nil
 	}
 	cutoff := 2
-	if headLength == 1 && (name == "this" || len(name) <= len(indentUnit) || isFactory(name)) {
+	switch {
+	case headLength == 1 && (name == "this" || len(name) <= len(indentUnit) || isFactory(name)):
+		cutoff = 3
+	case headLength > 1 && !headCalled && isFactory(last):
 		cutoff = 3
 	}
 	if len(groups) <= cutoff {
 		return nil
 	}
+	groups[len(groups)-1] += assertion
 	return groups
 }
 
@@ -290,9 +393,10 @@ func matchingParenthesis(content string, open int) int {
 		c := content[i]
 		switch {
 		case quote != 0:
-			if c == '\\' {
+			switch c {
+			case '\\':
 				i++
-			} else if c == quote {
+			case quote:
 				quote = 0
 			}
 		case c == '"' || c == '\'' || c == '`':
@@ -322,9 +426,10 @@ func splitLogical(expression string) []string {
 			c := expression[i]
 			switch {
 			case quote != 0:
-				if c == '\\' {
+				switch c {
+				case '\\':
 					i++
-				} else if c == quote {
+				case quote:
 					quote = 0
 				}
 			case c == '"' || c == '\'' || c == '`':
@@ -356,9 +461,10 @@ func firstList(content string) (open, closing int, items []string) {
 		c := content[i]
 		switch {
 		case quote != 0:
-			if c == '\\' {
+			switch c {
+			case '\\':
 				i++
-			} else if c == quote {
+			case quote:
 				quote = 0
 			}
 		case c == '"' || c == '\'' || c == '`':
@@ -390,9 +496,10 @@ func splitTopLevel(list string) []string {
 		c := list[i]
 		switch {
 		case quote != 0:
-			if c == '\\' {
+			switch c {
+			case '\\':
 				i++
-			} else if c == quote {
+			case quote:
 				quote = 0
 			}
 		case c == '"' || c == '\'' || c == '`':
@@ -412,3 +519,112 @@ func splitTopLevel(list string) []string {
 // lines joins lines with line breaks: the template function writing lines
 // built in Go.
 func lines(items []string) string { return strings.Join(items, "\n") }
+
+// scanner walks an expression outside its strings, tracking the depth of
+// its brackets.
+type scanner struct {
+	text  string
+	i     int
+	depth int
+	quote byte
+}
+
+// next advances to the next character outside strings and reports it with
+// the depth before it; ok is false at the end.
+func (s *scanner) next() (c byte, depth int, ok bool) {
+	for s.i < len(s.text) {
+		c = s.text[s.i]
+		s.i++
+		if s.quote != 0 {
+			switch c {
+			case '\\':
+				s.i++
+			case s.quote:
+				s.quote = 0
+			}
+			continue
+		}
+		switch c {
+		case '"', '\'', '`':
+			s.quote = c
+			continue
+		case '(', '[', '{':
+			s.depth++
+			return c, s.depth - 1, true
+		case ')', ']', '}':
+			s.depth--
+			return c, s.depth, true
+		}
+		return c, s.depth, true
+	}
+	return 0, s.depth, false
+}
+
+// parenthesizedLogical returns the operands of a line made of a
+// parenthesized logical expression, optionally followed by an operator or a
+// comma, and that suffix; nil otherwise.
+func parenthesizedLogical(content string) (operands []string, suffix string) {
+	if !strings.HasPrefix(content, "(") {
+		return nil, ""
+	}
+	end := matchingParenthesis(content, 0)
+	if end < 0 {
+		return nil, ""
+	}
+	suffix = content[end+1:]
+	switch suffix {
+	case "", " ||", " &&", ",":
+	default:
+		return nil, ""
+	}
+	operands = splitLogical(content[1:end])
+	if len(operands) < 2 {
+		return nil, ""
+	}
+	return operands, suffix
+}
+
+// splitConditional splits a conditional expression on its top-level ? and :.
+func splitConditional(content string) (test, consequent, alternate string, ok bool) {
+	question, colon := -1, -1
+	s := scanner{text: content}
+	for {
+		c, depth, more := s.next()
+		if !more {
+			break
+		}
+		at := s.i - 1
+		if depth != 0 || at == 0 || at+1 >= len(content) || content[at-1] != ' ' || content[at+1] != ' ' {
+			continue
+		}
+		switch {
+		case c == '?' && question < 0:
+			question = at
+		case c == ':' && question >= 0 && colon < 0:
+			colon = at
+		}
+	}
+	if question < 0 || colon < 0 {
+		return "", "", "", false
+	}
+	return content[:question-1], content[question+2 : colon-1], content[colon+2:], true
+}
+
+// splitAssignment splits an assignment or a declaration with a value on its
+// =: the target (const x, this.x) and the value.
+func splitAssignment(content string) (target, value string, ok bool) {
+	s := scanner{text: content}
+	for {
+		c, depth, more := s.next()
+		if !more {
+			return "", "", false
+		}
+		at := s.i - 1
+		if c == '=' && depth == 0 && at > 0 && at+1 < len(content) && content[at-1] == ' ' && content[at+1] == ' ' {
+			return content[:at-1], content[at+2:], true
+		}
+		if c == '(' && depth == 0 {
+			return "", "", false
+		}
+	}
+}

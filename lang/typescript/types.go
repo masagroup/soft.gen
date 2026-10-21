@@ -168,6 +168,11 @@ func (s *scope) defaultValueFromLiteral(t ecore.EClassifier, literal string) str
 			}
 		}
 	}
+	// a string is a string literal (v1 wrote the literal as is, which did not
+	// parse)
+	if _, ok := t.(ecore.EEnum); !ok && s.g.instanceTypeName(t) == "string" {
+		return quote(literal)
+	}
 	return literal
 }
 
@@ -236,7 +241,9 @@ func (s *scope) testValue(t ecore.EClassifier) string {
 		if value := g.dataTypeValue(g.instanceTypeName(t), func(r dataTypeRow) string { return r.testValue }); value != "" {
 			return s.qualify(value)
 		}
-		return ""
+		// a type the table does not know: null (v1 wrote nothing, which did
+		// not parse)
+		return "null"
 	}
 	return ""
 }

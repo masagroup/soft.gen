@@ -250,5 +250,5 @@ func (g *gen) addDataTypeConversions(view *classView, data factoryView, p ecore.
 
 // PackageGetter is the call of the getter of the package (getLibraryPackage()).
 func (v factoryView) PackageGetter() string {
-	return v.s.qualify(v.s.g.interfaceIdentifier(v.pkg, "get"+v.s.g.packageInterfaceName(v.pkg))) + "()"
+	return v.s.qualify(v.s.g.packageGetterIdentifier(v.pkg)) + "()"
 }

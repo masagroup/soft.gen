@@ -1,9 +1,11 @@
-{{/* A class made of members separated by a blank line. */}}
+{{/* A class made of members separated by a blank line (but a tight one). */}}
 {{ define "class.ts" -}}
 {{ .Declaration }} {
 {{- range $i, $m := .Members }}
 {{- if $i }}
+{{- if not $m.Tight }}
 {{ blank }}
+{{- end }}
 {{- end }}
 {{ indent 1 (include $m.Template $m.Data) }}
 {{- end }}

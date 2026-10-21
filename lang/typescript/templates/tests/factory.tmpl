@@ -72,7 +72,9 @@ test("create{{ .DataType }}FromString", () => {
     const mockDataType = mock<{{ .Ecore "EDataType" }}>()
     const eDataType = instance(mockDataType)
     when(mockDataType.getClassifierID()).thenReturn({{ .ID }})
+{{- if ne .Strategy "none" }}
 {{ indent 1 (include (printf "tests/factory.createfrom.%s" .Strategy) .) }}
+{{- end }}
 })
 {{- end }}
 
@@ -117,7 +119,9 @@ test("convert{{ .DataType }}ToString", () => {
     const mockDataType = mock<{{ .Ecore "EDataType" }}>()
     const eDataType = instance(mockDataType)
     when(mockDataType.getClassifierID()).thenReturn({{ .ID }})
+{{- if ne .Strategy "none" }}
 {{ indent 1 (include (printf "tests/factory.convertto.%s" .Strategy) .) }}
+{{- end }}
 })
 {{- end }}
 

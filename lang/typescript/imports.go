@@ -176,10 +176,10 @@ func (g *gen) constantsIdentifier(p ecore.EPackage, member string) string {
 	return g.interfaceIdentifier(p, g.constantsName(p)+"."+member)
 }
 
-// packageGetterIdentifier is the function returning the package instance
-// (getLibraryPackage).
+// packageGetterIdentifier is the function returning the package instance,
+// named after the package interface (getLibraryPackage).
 func (g *gen) packageGetterIdentifier(p ecore.EPackage) string {
-	return g.interfaceIdentifier(p, "get"+g.packageName(p))
+	return g.interfaceIdentifier(p, "get"+g.packageInterfaceName(p))
 }
 
 // scannedModule is a module of functions the templates write by their name
@@ -237,7 +237,7 @@ func calls(body, name string) bool {
 		if start > 0 {
 			before = body[start-1]
 		}
-		if end < len(body) && (body[end] == '(' || body[end] == '<') && !(before == '.' || before == '_' || before == '$' || isAlphanumeric(before)) {
+		if end < len(body) && (body[end] == '(' || body[end] == '<') && before != '.' && before != '_' && before != '$' && !isAlphanumeric(before) {
 			return true
 		}
 		i = end

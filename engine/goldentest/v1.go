@@ -34,7 +34,7 @@ type V1 struct {
 	// Dir rewrites a whole directory before the comparison, both v1's output
 	// and a copy of the expected files (a formatter run once on all the
 	// files); nil does nothing.
-	Dir func(t *testing.T, dir string)
+	Dir func(t *testing.T, f Fixture, dir string)
 }
 
 // TestV1 compares the v1 generator with the expected files of every fixture:
@@ -68,7 +68,7 @@ func (s *Suite) TestV1(t *testing.T, v1 V1) {
 				if err := copyDir(expected, s.ExpectedDir(f)); err != nil {
 					t.Fatal(err)
 				}
-				v1.Dir(t, expected)
+				v1.Dir(t, f, expected)
 			}
 			compareV1(t, f, out, expected)
 		})
@@ -128,7 +128,7 @@ func (s *Suite) runV1(t *testing.T, image string, f Fixture, out string, v1 V1) 
 		}
 	}
 	if v1.Dir != nil {
-		v1.Dir(t, out)
+		v1.Dir(t, f, out)
 	}
 }
 

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="inheritance" nsURI="http://soft.gen/test/inheritance" nsPrefix="inheritance">
+  <eClassifiers xsi:type="ecore:EClass" name="Identified" abstract="true" interface="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Base" abstract="true" eSuperTypes="#//Identified">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="base" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Left" eSuperTypes="#//Base">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="left" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Right" eSuperTypes="#//Base">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="right" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="partner" eType="#//Left"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Bottom" eSuperTypes="#//Left #//Right">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="bottom" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Tagged" abstract="true" interface="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="tags" upperBound="-1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Item" eSuperTypes="#//Identified #//Tagged">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="weight" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EFloat"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Ext">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="extension" value="true"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SubExt" eSuperTypes="#//Ext">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="extra" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Holder">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="classes" upperBound="-1"
+        eType="#//EClass" containment="true" eOpposite="#//EClass/holder"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="attributes" upperBound="-1"
+        eType="#//EAttribute" containment="true" eOpposite="#//EAttribute/holder"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="operation" eType="#//EOperation"
+        containment="true" eOpposite="#//EOperation/holder"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//EObject"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="classifier" eType="#//EClassifier"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EObject">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="label" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EClassifier" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="classifierID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EClass" eSuperTypes="#//EClassifier">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="holder" eType="#//Holder"
+        eOpposite="#//Holder/classes"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EAttribute">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="featureID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="holder" eType="#//Holder"
+        eOpposite="#//Holder/attributes"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EOperation">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="operationID" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="holder" eType="#//Holder"
+        eOpposite="#//Holder/operation"/>
+  </eClassifiers>
+</ecore:EPackage>

@@ -94,6 +94,9 @@ func (g *gen) factoryTestFile(p ecore.EPackage) engine.File {
 		test.DataType, test.ID = dt.GetName(), s.classifierID(dt)
 		if e, ok := dt.(ecore.EEnum); ok {
 			test.Strategy = "enum"
+			if e.GetELiterals().Empty() {
+				test.Strategy = "none"
+			}
 			for _, l := range sortedByName(enumLiterals(e)) {
 				constant := s.qualify(g.enumIdentifier(e) + "." + literalConstantName(l))
 				test.CreateLines = append(test.CreateLines, "expect(factory.createFromString(eDataType, "+quote(l.GetName())+")).toStrictEqual("+constant+")")

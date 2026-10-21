@@ -219,7 +219,7 @@ func (g *gen) addReflectives(view *classView, c ecore.EClass, s *scope) {
 // the mixin classes to their ids in the class (v1 generateElementIDDefinition).
 func (g *gen) addDerivedIDs(view *classView, c ecore.EClass, s *scope) {
 	p := c.GetEPackage()
-	getter := s.qualify(g.interfaceIdentifier(p, "get"+g.packageInterfaceName(p))) + "()"
+	getter := s.qualify(g.packageGetterIdentifier(p)) + "()"
 	features := derivedView{names: names{s}}
 	operations := derivedView{names: names{s}}
 	hasFeatures, hasOperations := false, false
@@ -276,7 +276,7 @@ func (s *scope) operationInvoke(op ecore.EOperation) string {
 	for i := 0; i < op.GetEParameters().Size(); i++ {
 		p := op.GetEParameters().Get(i).(ecore.EParameter)
 		arg := "args.get(" + strconv.Itoa(i) + ")"
-		if !(p.GetUpperBound() == 1 && p.GetEType() != nil && g.m.IsAny(p.GetEType())) {
+		if p.GetUpperBound() != 1 || p.GetEType() == nil || !g.m.IsAny(p.GetEType()) {
 			arg += " as " + s.typedElementType(p)
 		}
 		args = append(args, arg)

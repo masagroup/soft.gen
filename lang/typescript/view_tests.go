@@ -117,7 +117,7 @@ func (g *gen) implementationTestFile(c ecore.EClass) engine.File {
 	}
 
 	static := newTest(nil, "eStaticClass", "")
-	static.Expected = s.qualify(g.interfaceIdentifier(c.GetEPackage(), "get"+g.packageInterfaceName(c.GetEPackage()))) + "()." + g.ReflectiveGetterName(c) + "()"
+	static.Expected = s.qualify(g.packageGetterIdentifier(c.GetEPackage())) + "()." + g.ReflectiveGetterName(c) + "()"
 	add("tests/feature.static", static)
 	for _, f := range features {
 		info := g.m.Feature(f)
@@ -226,7 +226,7 @@ func (g *gen) addReflectiveTests(view *testsView, c ecore.EClass, s *scope, newT
 		view.Tests = append(view.Tests, member{Template: template, Data: t})
 	}
 	p := c.GetEPackage()
-	packageGetter := s.qualify(g.interfaceIdentifier(p, "get"+g.packageInterfaceName(p))) + "()"
+	packageGetter := s.qualify(g.packageGetterIdentifier(p)) + "()"
 	derived := func(name string, ids func(mixin ecore.EClass) [][2]string) {
 		t := newTest(nil, name, "")
 		for _, mixin := range info.Mixins {

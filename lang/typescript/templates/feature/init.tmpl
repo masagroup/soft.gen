@@ -27,8 +27,10 @@ protected {{ .Name }}(): {{ .Type }} {
 protected {{ .Name }}(): void {
 {{- if eq .Strategy "value" }}
     this.{{ .Var }} = {{ .Value }}
+}
 {{- else if eq .Strategy "panic" }}
     throw new Error("{{ .Name }} not implemented")
-{{- end }}
 }
+{{- else }}}
+{{- end }}
 {{- end }}

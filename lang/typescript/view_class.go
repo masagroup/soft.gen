@@ -75,7 +75,7 @@ func (g *gen) implementationFile(c ecore.EClass) engine.File {
 	view.add("impl/members.staticclass", struct {
 		names
 		Getter, ClassGetter string
-	}{n, s.qualify(g.interfaceIdentifier(p, "get"+g.packageInterfaceName(p))), g.ReflectiveGetterName(c)})
+	}{n, s.qualify(g.packageGetterIdentifier(p)), g.ReflectiveGetterName(c)})
 	if reflective {
 		view.add("impl/members.staticfeaturecount", nil)
 	}
@@ -131,10 +131,13 @@ func (g *gen) implementationFile(c ecore.EClass) engine.File {
 			view.add("feature/basicunset", fv)
 		}
 	}
+	// v1 writes no blank line after the async variant of an operation
+	afterAsync := false
 	for _, op := range g.implementedOperations(c) {
 		if g.isDefaultOperation(op) {
-			view.add("operation/impl", s.operationView(op))
-			if g.isAsync(op) {
+			view.Members = append(view.Members, member{Template: "operation/impl", Data: s.operationView(op), Tight: afterAsync})
+			afterAsync = g.isAsync(op)
+			if afterAsync {
 				view.add("operation/impl.async", s.operationView(op))
 			}
 		}
@@ -210,6 +213,13 @@ type mapEntryAdapterView struct {
 // addMapEntryAdapters adds the generic map entry accessors of a map entry
 // class whose key or value accessors are renamed.
 func (g *gen) addMapEntryAdapters(view *classView, c ecore.EClass, s *scope) {
+	// v1 writes the adapters without blank lines between them
+	first := len(view.Members)
+	defer func() {
+		for i := first + 1; i < len(view.Members); i++ {
+			view.Members[i].Tight = true
+		}
+	}()
 	for _, name := range []string{"key", "value"} {
 		f := c.GetEStructuralFeatureFromName(name)
 		if f == nil {

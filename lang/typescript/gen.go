@@ -30,9 +30,6 @@ func newGen(ctx *engine.Context) *gen {
 	return &gen{Gen: common.NewGen(ctx), m: ctx.Model, pkg: ctx.Model.Root()}
 }
 
-// isEcore reports whether the generated package is the ecore package itself.
-func (g *gen) isEcore() bool { return g.m.IsEcore(g.pkg) }
-
 // propertyIsTrue reports whether a package property is "true".
 func (g *gen) propertyIsTrue(key string) bool { return g.PackagePropertyIs(key, "true") }
 
@@ -45,6 +42,3 @@ func (g *gen) printWidth() int {
 	}
 	return 120
 }
-
-// isExported reports whether the element has the key exported=true.
-func (g *gen) isExported(el ecore.EModelElement) bool { return g.KeyIs(el, "exported", "true") }

@@ -323,7 +323,7 @@ func (s *scope) packageInstance(t ecore.EClassifier, owner ecore.EClass) string 
 	if t.GetEPackage().GetName() == owner.GetEPackage().GetName() {
 		return "this"
 	}
-	return s.qualify(s.g.interfaceIdentifier(t.GetEPackage(), "get"+s.g.packageInterfaceName(t.GetEPackage()))) + "()"
+	return s.qualify(s.g.packageGetterIdentifier(t.GetEPackage())) + "()"
 }
 
 // classGetter is the meta object of a super class: the field of this package,
@@ -332,7 +332,7 @@ func (s *scope) classGetter(c ecore.EClass, p ecore.EPackage) string {
 	if c.GetEPackage() == p || c.GetEPackage().GetName() == p.GetName() {
 		return "this." + s.g.elementInstance(c)
 	}
-	return s.qualify(s.g.interfaceIdentifier(p, "get"+s.g.packageInterfaceName(c.GetEPackage()))) + "()." + s.g.ReflectiveGetterName(c) + "()"
+	return s.qualify(s.g.packageGetterIdentifier(c.GetEPackage())) + "()." + s.g.ReflectiveGetterName(c) + "()"
 }
 
 // annotationInitializers lists, per annotation source of the package, the
