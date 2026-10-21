@@ -11,22 +11,27 @@
 # state by version.sh (a Go pseudo-version such as
 # v2.0.0-20261021125246-3166c30bb912, or the v2 tag of the commit).
 #
-# <language>.version, the version of a language ("soft-gen <language> -v"), is
-# the version of the runtime its templates target: go.version follows soft.go,
-# ts.version soft.ts.
-# Change it here when the templates follow a new runtime version.
+# The version of a language ("soft-gen <language> -v"), the version of the
+# runtime its templates target, is the VERSION file of its package, embedded
+# in the binary: internal/lang/golang/VERSION follows soft.go,
+# internal/lang/typescript/VERSION soft.ts. Every build has it, "go run
+# .../cmd/soft-gen@v2.x" included.
+#
+#   make versions                    print the version of each language
+#   make version.go                  print the version of a language
+#   make version.go TO=v1.14.0       set it (then commit the VERSION file)
 
 ifndef VERSION
 VERSION := $(shell ./version.sh)
 endif
-go.version := v1.13.1
-ts.version := v1.7.0
-# the versions of the languages, as "soft-gen" reads them: language=version
-# pairs separated by commas (no spaces: they pass unquoted to -ldflags)
-LANGUAGE_VERSIONS := go=$(go.version),ts=$(ts.version)
-LDFLAGS := -X main.Version=$(VERSION) -X main.LanguageVersions=$(LANGUAGE_VERSIONS)
-comma := ,
+LDFLAGS := -X main.Version=$(VERSION)
 IMAGE ?= masagroup/soft-gen
+# the languages, and the package of each one under internal/lang
+LANGUAGES := go ts
+lang.package.go := golang
+lang.package.ts := typescript
+# version.file returns the VERSION file of a language
+version.file = internal/lang/$(lang.package.$(1))/VERSION
 # the golangci-lint image of `make lint`: its Go must support the go directive
 # of go.mod
 GOLANGCI_LINT_IMAGE ?= golangci/golangci-lint:v2.14.0-alpine
@@ -34,6 +39,19 @@ GOLANGCI_LINT_IMAGE ?= golangci/golangci-lint:v2.14.0-alpine
 .PHONY: build
 build:
 	go build -ldflags "$(LDFLAGS)" -o bin/soft-gen ./cmd/soft-gen
+
+.PHONY: versions
+versions:
+	@$(foreach lang,$(LANGUAGES),echo "$(lang) $$(cat $(call version.file,$(lang)))";)
+
+.PHONY: $(addprefix version.,$(LANGUAGES))
+# Without TO, prints the version of the language; with TO=vX.Y.Z, writes it in
+# its VERSION file.
+$(addprefix version.,$(LANGUAGES)): version.%:
+	@if [ -z "$(TO)" ]; then echo "$* $$(cat $(call version.file,$*))"; exit 0; fi; \
+	echo "$(TO)" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$$' || { echo "TO=$(TO): expected vX.Y.Z"; exit 1; }; \
+	echo "$(TO)" > $(call version.file,$*); \
+	echo "$* $(TO) (in $(call version.file,$*))"
 
 .PHONY: test
 test:
@@ -53,21 +71,21 @@ lint:
 
 .PHONY: image
 image:
-	docker build --build-arg VERSION=$(VERSION) --build-arg LANGUAGE_VERSIONS=$(LANGUAGE_VERSIONS) --tag $(IMAGE) .
+	docker build --build-arg VERSION=$(VERSION) --tag $(IMAGE) .
 
 .PHONY: image.test
-# The version of soft-gen, then the version of each language of
-# LANGUAGE_VERSIONS ("soft-gen go version: v1.13.1").
+# The version of soft-gen, then the version of each language, which must be
+# the one of the sources ("soft-gen go version: v1.13.1").
 image.test:
 	@version=$$(docker run --rm $(IMAGE) -v); \
 	expected="soft-gen version: $(VERSION)"; \
 	if [ "$$version" != "$$expected" ]; then echo "image: got '$$version', expected '$$expected'"; exit 1; fi; \
 	echo "image: $$version"
-	@for pair in $(subst $(comma), ,$(LANGUAGE_VERSIONS)); do \
-		lang=$${pair%%=*}; expected=$${pair#*=}; \
+	@for lang in $(LANGUAGES); do \
+		expected=$$(go run ./cmd/soft-gen $$lang -v) || exit 1; \
 		version=$$(docker run --rm $(IMAGE) $$lang -v) || exit 1; \
-		case "$$version" in *" version: $$expected") echo "image: $$version";; \
-		*) echo "image: got '$$version', expected the $$lang version $$expected"; exit 1;; esac; \
+		if [ "$$version" != "$$expected" ]; then echo "image: got '$$version', expected '$$expected'"; exit 1; fi; \
+		echo "image: $$version"; \
 	done
 
 .PHONY: publish

@@ -6,10 +6,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/masagroup/soft.gen/v2/internal/engine"
+	"github.com/masagroup/soft.gen/v2/internal/lang/golang"
+	"github.com/masagroup/soft.gen/v2/internal/lang/typescript"
 )
 
 const shopModel = "../../testdata/models/shop.ecore"
@@ -26,7 +31,7 @@ func TestHelpAndVersion(t *testing.T) {
 	code, out, _ := soft(t)
 	assert.Equal(t, 0, code)
 	assert.Contains(t, out, "soft-gen <language> [options]")
-	assert.Contains(t, out, "generates go code (soft-gen go "+developerLanguageVersion+")")
+	assert.Contains(t, out, "generates go code (soft-gen go "+golang.Version+")")
 
 	code, out, _ = soft(t, "-v")
 	assert.Equal(t, 0, code)
@@ -34,16 +39,14 @@ func TestHelpAndVersion(t *testing.T) {
 
 	code, out, _ = soft(t, "go", "-v")
 	assert.Equal(t, 0, code)
-	assert.Equal(t, "soft-gen go version: "+developerLanguageVersion+"\n", out)
+	assert.Equal(t, "soft-gen go version: "+golang.Version+"\n", out)
+	_, out, _ = soft(t, "ts", "-v")
+	assert.Equal(t, "soft-gen ts version: "+typescript.Version+"\n", out, "each language has its own version")
 
-	Version, LanguageVersions = "v2.1.0", "go=v1.13.1"
-	defer func() { Version, LanguageVersions = developerBuild, "" }()
+	Version = "v2.1.0"
+	defer func() { Version = developerBuild }()
 	_, out, _ = soft(t, "--version")
 	assert.Equal(t, "soft-gen version: v2.1.0\n", out, "the root prints the version of the binary")
-	_, out, _ = soft(t, "go", "--version")
-	assert.Equal(t, "soft-gen go version: v1.13.1\n", out, "a language prints its own version")
-	_, out, _ = soft(t)
-	assert.Contains(t, out, "generates go code (soft-gen go v1.13.1)")
 
 	code, out, _ = soft(t, "go", "-h")
 	assert.Equal(t, 0, code)
@@ -77,39 +80,6 @@ func TestErrors(t *testing.T) {
 	code, _, errOut = soft(t, "go", "--config", config)
 	assert.Equal(t, 1, code)
 	assert.Contains(t, errOut, `unsupported extension ".ini"`)
-}
-
-// TestLanguageVersions checks the parsing of LanguageVersions, the versions
-// the Makefile sets for each language, and that an invalid value fails any run.
-func TestLanguageVersions(t *testing.T) {
-	for _, tc := range []struct {
-		value string
-		want  languageVersions
-		err   string
-	}{
-		{value: "", want: languageVersions{}},
-		{value: "go=v1.13.1", want: languageVersions{"go": "v1.13.1"}},
-		{value: " go = v1.13.1 ", want: languageVersions{"go": "v1.13.1"}},
-		{value: "go", err: `"go" is not language=version`},
-		{value: "=v1", err: `"=v1" is not language=version`},
-		{value: "go=", err: "language go: no version"},
-		{value: "go=v1,go=v2", err: "language go: version set twice"},
-		{value: "go=v1.13.1,cobol=v1", err: `unknown language "cobol"`},
-	} {
-		got, err := parseLanguageVersions(tc.value)
-		if tc.err != "" {
-			assert.ErrorContains(t, err, tc.err, tc.value)
-			continue
-		}
-		require.NoError(t, err, tc.value)
-		assert.Equal(t, tc.want, got, tc.value)
-	}
-
-	LanguageVersions = "cobol=v1"
-	defer func() { LanguageVersions = "" }()
-	code, _, errOut := soft(t, "go", "-v")
-	assert.Equal(t, 1, code)
-	assert.Contains(t, errOut, `invalid LanguageVersions: unknown language "cobol"`)
 }
 
 // TestManifestOption checks --manifest: on by default, off from the command
@@ -229,4 +199,13 @@ func TestPrecedence(t *testing.T) {
 	code, _, errOut = soft(t, "go", "-o", filepath.Join(dir, "from-cli"), "-t", "generateModel")
 	require.Equal(t, 0, code, errOut)
 	assert.FileExists(t, filepath.Join(dir, "from-cli", "shop", "shop_impl.go"), "the command line wins over the environment")
+}
+
+// TestLanguageVersionFormat checks the VERSION file of every language: a
+// semantic version vX.Y.Z, as make version.<language> writes it.
+func TestLanguageVersionFormat(t *testing.T) {
+	semver := regexp.MustCompile(`^v[0-9]+\.[0-9]+\.[0-9]+$`)
+	for _, lang := range engine.Languages() {
+		assert.Regexp(t, semver, lang.Version(), "the version of %s", lang.Name())
+	}
 }

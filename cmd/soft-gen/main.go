@@ -32,12 +32,6 @@ const developerBuild = "v2.0.0-developer-build"
 // from version.sh: -ldflags "-X main.Version=v2.1.0".
 var Version = developerBuild
 
-// LanguageVersions is the version of each language, set by the Makefile and
-// the Dockerfile: -ldflags "-X main.LanguageVersions=go=v1.13.1,ts=v1.7.0".
-// The version of a language is the version of the runtime (soft.go, soft.ts...)
-// its templates target, printed by "soft-gen <language> -v".
-var LanguageVersions string
-
 // version returns the version of the build: Version when the build set it,
 // else the module version Go stamped in the binary (go install ...@v2.1.0),
 // else the developer build version.
@@ -58,13 +52,8 @@ func main() {
 // run executes the command line and returns the exit code: 0 on success, the
 // code of a cli.ExitCoder error, 1 on any other error.
 func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
-	versions, err := parseLanguageVersions(LanguageVersions)
-	if err != nil {
-		fmt.Fprintln(stderr, "invalid LanguageVersions:", err)
-		return 1
-	}
-	app := newApp(stdout, stderr, versions)
-	err = app.Run(ctx, append([]string{app.Name}, args...))
+	app := newApp(stdout, stderr)
+	err := app.Run(ctx, append([]string{app.Name}, args...))
 	return exitCode(err, stderr)
 }
 
