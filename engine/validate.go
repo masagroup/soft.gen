@@ -16,9 +16,6 @@ func Validate(lang Language) error {
 	if lang.Name() == "" {
 		fail("the language has no name")
 	}
-	if lang.GeneratorName() == "" {
-		fail("language %s: no generator name", lang.Name())
-	}
 	if lang.AnnotationSource() == "" {
 		fail("language %s: no annotation source", lang.Name())
 	}

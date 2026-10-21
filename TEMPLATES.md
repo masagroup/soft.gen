@@ -34,12 +34,12 @@ functions with explicit names, where they can be read and unit-tested.
 
 | Package | Holds |
 |---|---|
-| `model` | Every fact about an Ecore model that does not depend on the language: feature classification, accessors, hierarchy, ids, ordering, lazy modes, annotation sources. The port of `soft.generator.common`. |
+| `model` | Every fact about an Ecore model that does not depend on the language: feature classification, accessors, hierarchy, ids, ordering, lazy modes, annotation sources. The port of the common part of the v1 generators. |
 | `props` | The properties of a run: declarations, resolution (command line > files > package annotation > default), property file formats. |
 | `naming` | Word splitting, case changes, naming rules (`pattern:replacement`, `{0}` formats), keyword avoidance. |
 | `tmpl` | Loading of the template files, the shared template functions, the convention linter. |
 | `writer` | Writing of the files: header, line endings, user code regions, formatter, dry run, diff. |
-| `engine` | The `Language` contract, the run loop, the registry, `Validate`, the golden test harness. |
+| `engine` | The `Language` contract, the run loop, the manifests, the registry, `Validate`, the golden test harness. |
 | `lang/<name>` | One language: its facts (paths, imports, names, types), its view models (`view_*.go`) and its templates (`templates/`). |
 
 A language never recomputes a fact of `model`; if a fact is missing there, add
@@ -103,6 +103,10 @@ points and properties, registered from `init` in
   SOFT_GEN_V1_IMAGE=masagroup/soft.generator.go:v1.13.1 go test ./lang/golang -run TestV1
   ```
 
+  The first line of every file, which names the generator, is the v2 one in
+  the comparison, and the manifests (`.soft-gen.yaml`) are v2 only: they are
+  compared by `TestFixtures`, whose cases write them with the version
+  `v0.0.0-test`.
   The files where v2 differs from v1 on purpose (v1 being wrong) are listed in
   the `V1Differences` of their case with the reason; a case v1 cannot generate
   at all has a `V1Skip` reason. With `-v1update`, the test writes v1's

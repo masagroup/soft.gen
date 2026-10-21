@@ -8,7 +8,7 @@
 // class ordering of the package constants, the lazy initialization mode and the
 // annotation sources of a package.
 //
-// It is the port of soft.generator.common (generateCommon.mtl,
+// It is the port of the common part of the v1 generators (generateCommon.mtl,
 // generateElement.mtl, generatePackage.mtl, generateReflectives.mtl,
 // generateStructuralFeature.mtl) and of GenerateUtils.java. A language package
 // never recomputes one of these facts: it reads them from Model.

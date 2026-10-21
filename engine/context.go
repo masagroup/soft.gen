@@ -37,6 +37,9 @@ type Request struct {
 	ModelPath string
 	// OutDir is the output directory.
 	OutDir string
+	// Version is the version of the language, written in the manifests; empty
+	// leaves it out.
+	Version string
 	// Props holds the -p key=value entries.
 	Props map[string]string
 	// PropFiles holds the -P files, in order.

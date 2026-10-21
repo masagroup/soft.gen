@@ -55,7 +55,7 @@ image:
 
 .PHONY: image.test
 # The version of soft-gen, then the version of each language of
-# LANGUAGE_VERSIONS ("soft.generator.go version: v1.13.1").
+# LANGUAGE_VERSIONS ("soft-gen go version: v1.13.1").
 image.test:
 	@version=$$(docker run --rm $(IMAGE) -v); \
 	expected="soft-gen version: $(VERSION)"; \

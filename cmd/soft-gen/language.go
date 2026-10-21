@@ -44,7 +44,7 @@ func languageCommand(lang engine.Language, version string) *cli.Command {
 	opts := &options{config: &configFile{}, properties: &keyValues{}}
 	return &cli.Command{
 		Name:        lang.Name(),
-		Usage:       "generates " + lang.Name() + " code (" + lang.GeneratorName() + " " + version + ")",
+		Usage:       "generates " + lang.Name() + " code (" + engine.GeneratorOf(lang) + " " + version + ")",
 		UsageText:   "soft-gen " + lang.Name() + " -m <model> -o <folder> [-p key=value]... [-P file]... [-t template]... [-s] [--dry-run] [--diff] [--format] [--config file]",
 		Description: languageDescription(lang),
 		Flags:       languageFlags(opts),
@@ -99,10 +99,10 @@ func languageDescription(lang engine.Language) string {
 // generation; with --diff, any difference exits with code 1.
 func generate(ctx context.Context, cmd *cli.Command, lang engine.Language, version string, opts *options) error {
 	if cmd.Bool("version") {
-		fmt.Fprintf(cmd.Writer, "%s version: %s\n", lang.GeneratorName(), version)
+		fmt.Fprintf(cmd.Writer, "%s version: %s\n", engine.GeneratorOf(lang), version)
 		return nil
 	}
-	req, err := request(cmd, lang, opts)
+	req, err := request(cmd, lang, version, opts)
 	if err != nil {
 		return err
 	}
@@ -117,8 +117,9 @@ func generate(ctx context.Context, cmd *cli.Command, lang engine.Language, versi
 }
 
 // request builds the engine request from the options of a language command;
-// the model and the output folder are required.
-func request(cmd *cli.Command, lang engine.Language, opts *options) (engine.Request, error) {
+// the model and the output folder are required; version is the version of the
+// language, written in the manifests.
+func request(cmd *cli.Command, lang engine.Language, version string, opts *options) (engine.Request, error) {
 	model, output := cmd.String(optionModel), cmd.String(optionOutput)
 	if model == "" || output == "" {
 		_ = cli.ShowSubcommandHelp(cmd)
@@ -130,6 +131,7 @@ func request(cmd *cli.Command, lang engine.Language, opts *options) (engine.Requ
 	}
 	return engine.Request{
 		Lang:        lang,
+		Version:     version,
 		ModelPath:   model,
 		OutDir:      output,
 		Props:       properties,

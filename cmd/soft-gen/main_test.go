@@ -26,7 +26,7 @@ func TestHelpAndVersion(t *testing.T) {
 	code, out, _ := soft(t)
 	assert.Equal(t, 0, code)
 	assert.Contains(t, out, "soft-gen <language> [options]")
-	assert.Contains(t, out, "generates go code (soft.generator.go "+developerLanguageVersion+")")
+	assert.Contains(t, out, "generates go code (soft-gen go "+developerLanguageVersion+")")
 
 	code, out, _ = soft(t, "-v")
 	assert.Equal(t, 0, code)
@@ -34,16 +34,16 @@ func TestHelpAndVersion(t *testing.T) {
 
 	code, out, _ = soft(t, "go", "-v")
 	assert.Equal(t, 0, code)
-	assert.Equal(t, "soft.generator.go version: "+developerLanguageVersion+"\n", out)
+	assert.Equal(t, "soft-gen go version: "+developerLanguageVersion+"\n", out)
 
 	Version, LanguageVersions = "v2.1.0", "go=v1.13.1"
 	defer func() { Version, LanguageVersions = developerBuild, "" }()
 	_, out, _ = soft(t, "--version")
 	assert.Equal(t, "soft-gen version: v2.1.0\n", out, "the root prints the version of the binary")
 	_, out, _ = soft(t, "go", "--version")
-	assert.Equal(t, "soft.generator.go version: v1.13.1\n", out, "a language prints its own version")
+	assert.Equal(t, "soft-gen go version: v1.13.1\n", out, "a language prints its own version")
 	_, out, _ = soft(t)
-	assert.Contains(t, out, "generates go code (soft.generator.go v1.13.1)")
+	assert.Contains(t, out, "generates go code (soft-gen go v1.13.1)")
 
 	code, out, _ = soft(t, "go", "-h")
 	assert.Equal(t, 0, code)
