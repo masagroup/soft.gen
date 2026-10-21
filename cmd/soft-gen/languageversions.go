@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/masagroup/soft.gen/v2/engine"
+	"github.com/masagroup/soft.gen/v2/internal/engine"
 )
 
 // developerLanguageVersion is the version of a language in a build that sets

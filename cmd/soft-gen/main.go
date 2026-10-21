@@ -21,8 +21,8 @@ import (
 	"github.com/urfave/cli/v3"
 
 	// The languages register themselves.
-	_ "github.com/masagroup/soft.gen/v2/lang/golang"
-	_ "github.com/masagroup/soft.gen/v2/lang/typescript"
+	_ "github.com/masagroup/soft.gen/v2/internal/lang/golang"
+	_ "github.com/masagroup/soft.gen/v2/internal/lang/typescript"
 )
 
 // developerBuild is the version of a build that sets none.

@@ -1,0 +1,213 @@
+package goldentest
+
+import (
+	"bytes"
+	"flag"
+	"os"
+	"os/exec"
+	"path"
+	"path/filepath"
+	"sort"
+	"testing"
+
+	"github.com/masagroup/soft.gen/v2/internal/engine"
+	"github.com/masagroup/soft.gen/v2/internal/writer"
+)
+
+// v1update is the -v1update flag: write v1's normalized output as the expected
+// files of the fixtures (the files of V1Differences and the manifests are
+// kept).
+var v1update = flag.Bool("v1update", false, "write the v1 generator's normalized output as the expected files of the fixtures")
+
+// V1 describes the cross-check of a suite with the v1 generator of its
+// language, run from a docker image.
+type V1 struct {
+	// ImageEnv is the environment variable naming the v1 image
+	// (SOFT_GEN_V1_IMAGE); the cross-check is skipped when it is unset.
+	ImageEnv string
+	// Image is an example of image, for the skip message
+	// (masagroup/soft.generator.go:v1.13.1).
+	Image string
+	// File rewrites a file of v1's output before the comparison (line endings
+	// are already normalized): the v1 header line, gofmt... nil keeps it.
+	File func(file string, content []byte) ([]byte, error)
+	// Dir rewrites a whole directory before the comparison, both v1's output
+	// and a copy of the expected files (a formatter run once on all the
+	// files); nil does nothing.
+	Dir func(t *testing.T, f Fixture, dir string)
+}
+
+// TestV1 compares the v1 generator with the expected files of every fixture:
+// the v1 image generates the fixture with the same model, entry points,
+// property files and properties, its files are normalized, and every file
+// must equal its expected file, but the V1Differences of the fixture. The
+// manifests are v2 only. It is skipped without the image or docker.
+func (s *Suite) TestV1(t *testing.T, v1 V1) {
+	t.Helper()
+	image := os.Getenv(v1.ImageEnv)
+	if image == "" {
+		t.Skipf("set %s (%s) to compare with the v1 generator", v1.ImageEnv, v1.Image)
+	}
+	if _, err := exec.LookPath("docker"); err != nil {
+		t.Skip("docker not found")
+	}
+	for _, f := range s.Fixtures() {
+		t.Run(f.Name, func(t *testing.T) {
+			if f.V1Skip != "" {
+				t.Skip(f.V1Skip)
+			}
+			out := t.TempDir()
+			s.runV1(t, image, f, out, v1)
+			if *v1update {
+				s.writeV1Expected(t, f, out)
+				return
+			}
+			expected := s.ExpectedDir(f)
+			if v1.Dir != nil {
+				expected = t.TempDir()
+				if err := copyDir(expected, s.ExpectedDir(f)); err != nil {
+					t.Fatal(err)
+				}
+				v1.Dir(t, f, expected)
+			}
+			compareV1(t, f, out, expected)
+		})
+	}
+}
+
+// runV1 generates the fixture with the v1 image into out and normalizes its
+// files.
+func (s *Suite) runV1(t *testing.T, image string, f Fixture, out string, v1 V1) {
+	t.Helper()
+	models, _ := filepath.Abs(s.ModelsDir)
+	args := []string{"run", "--rm", "-v", models + ":/models", "-v", out + ":/out"}
+	var propArgs []string
+	for i, file := range s.PropFiles {
+		abs, _ := filepath.Abs(file)
+		mount := "/props" + string(rune('0'+i))
+		args = append(args, "-v", filepath.Dir(abs)+":"+mount)
+		propArgs = append(propArgs, "-P", mount+"/"+filepath.Base(abs))
+	}
+	args = append(args, image, "-s", "-m", "/models/"+f.Model, "-o", "/out")
+	args = append(args, propArgs...)
+	for _, entry := range f.EntryPoints {
+		args = append(args, "-t", entry)
+	}
+	keys := make([]string, 0, len(f.Props))
+	for key := range f.Props {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		args = append(args, "-p", key+"="+f.Props[key])
+	}
+	cmd := exec.Command("docker", args...)
+	cmd.Env = append(os.Environ(), "MSYS_NO_PATHCONV=1")
+	if output, err := cmd.CombinedOutput(); err != nil || bytes.Contains(output, []byte("Exception")) {
+		t.Fatalf("v1 generation failed: %v\n%s", err, output)
+	}
+	files, err := ListFiles(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, file := range files {
+		full := filepath.Join(out, filepath.FromSlash(file))
+		content, err := os.ReadFile(full)
+		if err != nil {
+			t.Fatal(err)
+		}
+		content = bytes.ReplaceAll(content, []byte("\r\n"), []byte("\n"))
+		if v1.File != nil {
+			if content, err = v1.File(file, content); err != nil {
+				t.Errorf("%s: %v", file, err)
+				continue
+			}
+		}
+		if err := os.WriteFile(full, content, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if v1.Dir != nil {
+		v1.Dir(t, f, out)
+	}
+}
+
+// isManifest reports whether a file is a manifest, which v1 does not write.
+func isManifest(file string) bool { return path.Base(file) == engine.ManifestName }
+
+// compareV1 compares v1's output with the expected files of the fixture.
+func compareV1(t *testing.T, f Fixture, out, expectedDir string) {
+	t.Helper()
+	got, _ := ListFiles(out)
+	want, _ := ListFiles(expectedDir)
+	gotSet := map[string]bool{}
+	for _, file := range got {
+		gotSet[file] = true
+		if _, deliberate := f.V1Differences[file]; deliberate {
+			continue
+		}
+		v1, _ := os.ReadFile(filepath.Join(out, filepath.FromSlash(file)))
+		expected, err := os.ReadFile(filepath.Join(expectedDir, filepath.FromSlash(file)))
+		if err != nil {
+			t.Errorf("%s: generated by v1 but not expected", file)
+			continue
+		}
+		expected = bytes.ReplaceAll(expected, []byte("\r\n"), []byte("\n"))
+		if !bytes.Equal(v1, expected) {
+			t.Errorf("%s: v1 differs from the expected file:\n%s", file, writer.UnifiedDiff(file, expected, v1))
+		}
+	}
+	for _, file := range want {
+		if _, deliberate := f.V1Differences[file]; !gotSet[file] && !deliberate && !isManifest(file) {
+			t.Errorf("%s: expected but not generated by v1", file)
+		}
+	}
+}
+
+// writeV1Expected writes v1's output as the expected files of the fixture,
+// keeping the files of V1Differences and the manifests.
+func (s *Suite) writeV1Expected(t *testing.T, f Fixture, out string) {
+	t.Helper()
+	expected, _ := ListFiles(s.ExpectedDir(f))
+	for _, file := range expected {
+		if _, deliberate := f.V1Differences[file]; !deliberate && !isManifest(file) {
+			continue
+		}
+		content, err := os.ReadFile(filepath.Join(s.ExpectedDir(f), filepath.FromSlash(file)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		target := filepath.Join(out, filepath.FromSlash(file))
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(target, content, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := ReplaceDir(s.ExpectedDir(f), out); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// copyDir copies the files of src into dst.
+func copyDir(dst, src string) error {
+	files, err := ListFiles(src)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		content, err := os.ReadFile(filepath.Join(src, filepath.FromSlash(file)))
+		if err != nil {
+			return err
+		}
+		target := filepath.Join(dst, filepath.FromSlash(file))
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(target, content, 0o644); err != nil {
+			return err
+		}
+	}
+	return nil
+}

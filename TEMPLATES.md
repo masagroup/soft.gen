@@ -32,16 +32,19 @@ functions with explicit names, where they can be read and unit-tested.
 
 ## Where things are
 
+The command is `cmd/soft-gen`; every other package is under `internal/`: the
+module has no public Go API, and a language is added in this repository.
+
 | Package | Holds |
 |---|---|
-| `model` | Every fact about an Ecore model that does not depend on the language: feature classification, accessors, hierarchy, ids, ordering, lazy modes, annotation sources. The port of the common part of the v1 generators. |
-| `props` | The properties of a run: declarations, resolution (command line > files > package annotation > default), property file formats. |
-| `naming` | Word splitting, case changes, naming rules (`pattern:replacement`, `{0}` formats), keyword avoidance. |
-| `tmpl` | Loading of the template files, the shared template functions, the convention linter. |
-| `writer` | Writing of the files: header, line endings, user code regions, formatter, dry run, diff. |
-| `engine` | The `Language` contract, the run loop, the manifests, the registry, `Validate`, the golden tests (`goldentest`: the fixture suite, the template coverage, the v1 cross-check). |
-| `lang/internal/common` | What the builders of every language share: package properties, generator annotation keys, naming rules with the name style of the language, list properties (`packages`, `paths`...). |
-| `lang/<name>` | One language: its facts (paths, imports, names, types), its view models (`view_*.go`) and its templates (`templates/`). |
+| `internal/model` | Every fact about an Ecore model that does not depend on the language: feature classification, accessors, hierarchy, ids, ordering, lazy modes, annotation sources. The port of the common part of the v1 generators. |
+| `internal/props` | The properties of a run: declarations, resolution (command line > files > package annotation > default), property file formats. |
+| `internal/naming` | Word splitting, case changes, naming rules (`pattern:replacement`, `{0}` formats), keyword avoidance. |
+| `internal/tmpl` | Loading of the template files, the shared template functions, the convention linter. |
+| `internal/writer` | Writing of the files: header, line endings, user code regions, formatter, dry run, diff. |
+| `internal/engine` | The `Language` contract, the run loop, the manifests, the registry, `Validate`, the golden tests (`goldentest`: the fixture suite, the template coverage, the v1 cross-check). |
+| `internal/lang/common` | What the builders of every language share: package properties, generator annotation keys, naming rules with the name style of the language, list properties (`packages`, `paths`...). |
+| `internal/lang/<name>` | One language: its facts (paths, imports, names, types), its view models (`view_*.go`) and its templates (`templates/`). |
 
 A language never recomputes a fact of `model`; if a fact is missing there, add
 it there with the name of the v1 query it ports.
@@ -106,10 +109,10 @@ it runs when `SOFT_GEN_TS_TOOLS` names a folder whose `node_modules` hold
 prettier and oxlint (soft.ts's `ecore`, after `npm install`):
 
 ```shell
-SOFT_GEN_TS_TOOLS=../soft.ts/ecore go test ./lang/typescript -run TestPrettier
+SOFT_GEN_TS_TOOLS=../soft.ts/ecore go test ./internal/lang/typescript -run TestPrettier
 # TestV1: v1 and v2 formatted as soft.ts does (unused imports removed, prettier); the shared
 # package cases need an image of the v1 branch head (masa/v1), built from Dockerfile-ts
-SOFT_GEN_V1_TS_IMAGE=masagroup/soft.generator.ts:v1.7.0 SOFT_GEN_TS_TOOLS=../soft.ts/ecore go test ./lang/typescript -run TestV1
+SOFT_GEN_V1_TS_IMAGE=masagroup/soft.generator.ts:v1.7.0 SOFT_GEN_TS_TOOLS=../soft.ts/ecore go test ./internal/lang/typescript -run TestV1
 ```
 
 ## Golden tests
@@ -119,14 +122,14 @@ in `testdata/models`, each about one topic (attributes, references, maps,
 volatile, lazy, operations, inheritance, enums, naming, annotations, a package
 named `ecore`, and the package options on `shop`). A case is a model, entry
 points and properties, registered from `init` in
-`lang/golang/fixtures_<topic>_test.go` into the `goldentest.Suite` of the
+`internal/lang/golang/fixtures_<topic>_test.go` into the `goldentest.Suite` of the
 language; its expected files are committed in `testdata/golden/go/<case>`,
-laid out as the output folder (TypeScript: `lang/typescript/fixtures_test.go`,
+laid out as the output folder (TypeScript: `internal/lang/typescript/fixtures_test.go`,
 `testdata/golden/ts`, its own models in `testdata/models/ts`). The suite runs
 the three tests below for any language.
 
 - **`TestFixtures`** generates every case and compares it with its expected
-  files (`engine/goldentest`). After an intended change of the output, run it
+  files (`internal/engine/goldentest`). After an intended change of the output, run it
   with `-update` to write the new expected files, and review them with git.
 - **`TestTemplateCoverage`** fails when a template define is rendered by no
   case: a new variant needs a fixture. The few defines no model can reach are
@@ -136,7 +139,7 @@ the three tests below for any language.
   docker is available:
 
   ```shell
-  SOFT_GEN_V1_IMAGE=masagroup/soft.generator.go:v1.13.1 go test ./lang/golang -run TestV1
+  SOFT_GEN_V1_IMAGE=masagroup/soft.generator.go:v1.13.1 go test ./internal/lang/golang -run TestV1
   ```
 
   The first line of every file, which names the generator, is the v2 one in
@@ -158,17 +161,17 @@ Debugging a difference:
 
 ## Adding a language
 
-1. Create `lang/<name>` with a `Language` type implementing `engine.Language`
+1. Create `internal/lang/<name>` with a `Language` type implementing `engine.Language`
    (name, annotation source, properties, entry points, templates, functions,
    regions, formatter, name style) and an `init` registering it. Its builder
-   embeds `lang/internal/common.Gen`: package properties, annotation keys,
+   embeds `internal/lang/common.Gen`: package properties, annotation keys,
    naming rules and list properties (`packages`...) are the same for every
    language.
-2. Add `_ "github.com/masagroup/soft.gen/v2/lang/<name>"` to `cmd/soft-gen/main.go`.
+2. Add `_ "github.com/masagroup/soft.gen/v2/internal/lang/<name>"` to `cmd/soft-gen/main.go`.
 3. Write the facts of the language (paths, names, types) as small documented
    functions, then one `view_*.go` per kind of file with its template.
 4. Add a `TestValidate` and a `goldentest.Suite` with fixtures and their
    expected files (made from the v1 generator when there is one), whose
    `TestFixtures`, `TestTemplateCoverage` and `TestV1` the language tests
-   call, as `lang/golang` does.
+   call, as `internal/lang/golang` does.
 5. Document its properties and entry points in the README.

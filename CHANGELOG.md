@@ -47,6 +47,8 @@ removed from the tree; they remain in the history, up to the `v1.x` tags.
 - A user code region that the model does not generate any more is reported as
   a warning; v1 wrote a `.lost` file beside the generated file.
 - `--help` lists the templates and the properties of a language.
+- The packages of the generator are internal (`internal/...`): the module
+  exposes the command only, `cmd/soft-gen`.
 
 ### Fixed (Go)
 
