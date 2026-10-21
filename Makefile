@@ -1,4 +1,4 @@
-# soft.gen: the generators.
+# soft-gen: the generators.
 #
 #   make build       build ./bin/soft-gen
 #   make test        go vet + go test
@@ -12,7 +12,7 @@
 ifndef VERSION
 VERSION := $(shell ./version.sh)
 endif
-IMAGE ?= masagroup/soft.generator
+IMAGE ?= masagroup/soft-gen
 
 .PHONY: build
 build:

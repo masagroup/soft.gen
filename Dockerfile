@@ -1,5 +1,5 @@
 # The image of the generators: soft-gen, every language included, so that
-#   docker run --rm -v "$PWD":/gen -w /gen masagroup/soft.generator go -m /gen/model.ecore -o /gen
+#   docker run --rm -v "$PWD":/gen -w /gen masagroup/soft-gen go -m /gen/model.ecore -o /gen
 # runs "soft-gen go -m /gen/model.ecore -o /gen".
 ARG GO_VERSION=1.27
 
