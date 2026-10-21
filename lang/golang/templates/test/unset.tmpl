@@ -1,0 +1,36 @@
+{{/* The test of the unsetter of a feature, by variant (v1 generateUnSetTestImplementation). */}}
+{{ define "test/unset.volatile" -}}
+func Test{{ .Class }}{{ .Name }}UnSet(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Panics(t, func() { o.{{ .Unsetter }}() })
+}
+{{- end }}
+
+{{ define "test/unset.list" -}}
+func Test{{ .Class }}{{ .Name }}UnSet(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	o.{{ .Unsetter }}()
+	l := o.{{ .Getter }}()
+	{{ .Assert }}True(t, l.Empty())
+}
+{{- end }}
+
+{{ define "test/unset.default" -}}
+func Test{{ .Class }}{{ .Name }}UnSet(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	mockAdapter := {{ .Ecore }}NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	o.EAdapters().Add(mockAdapter)
+
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}MatchedBy(func(notification {{ .Ecore }}ENotification) bool {
+		return notification.GetEventType() == {{ .Ecore }}UNSET && notification.GetFeatureID() == {{ .ID }}
+	})).Once()
+	o.{{ .Unsetter }}()
+{{- if .DefaultNil }}
+	{{ .Assert }}Nil(t, o.{{ .Getter }}())
+{{- else }}
+	{{ .Assert }}Equal(t, {{ .Default }}, o.{{ .Getter }}())
+{{- end }}
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter)
+}
+{{- end }}

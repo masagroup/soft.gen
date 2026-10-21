@@ -1,0 +1,11 @@
+{{/* The mock container of a creation from a container: the element is added to the list of the opposite, or set as the opposite. */}}
+{{ define "test/factorycontainer" -}}
+	mockContainer := {{ .MockContainer }}
+{{- if .OppositeMany }}
+	mockList := {{ .MockEList }}(t)
+	mockList.EXPECT().Add({{ .Mock }}Anything).Return(true).Once()
+	mockContainer.EXPECT().Get{{ .Opposite }}().Return(mockList).Once()
+{{- else }}
+	mockContainer.EXPECT().Set{{ .Opposite }}({{ .Mock }}Anything).Once()
+{{- end }}
+{{- end }}

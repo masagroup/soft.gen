@@ -1,0 +1,96 @@
+{{/* The test of the creation of a data type value from a string, by kind (v1 generateCreateFrom). */}}
+{{ define "test/createfromstring.enum" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }}).Times({{ .Times }})
+		{{ .Assert }}Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
+{{- range .Literals }}
+		{{ $.Assert }}Equal(t, {{ .Const }}, factory.CreateFromString(mockEDataType, "{{ .Name }}"))
+{{- end }}
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/createfromstring.string" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, "test", factory.CreateFromString(mockEDataType, "test"))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/createfromstring.int" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, {{ .Type }}(3), factory.CreateFromString(mockEDataType, "3"))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/createfromstring.float" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, {{ .Type }}(3), factory.CreateFromString(mockEDataType, "3"))
+		{{ .Assert }}Equal(t, {{ .Type }}(3.2), factory.CreateFromString(mockEDataType, "3.2"))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/createfromstring.byte" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, "golang\u0000", factory.CreateFromString(mockEDataType, ""))
+		{{ .Assert }}Equal(t, byte('a'), factory.CreateFromString(mockEDataType, "a"))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/createfromstring.bytes" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, []byte("ab"), factory.CreateFromString(mockEDataType, "ab"))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/createfromstring.bool" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, true, factory.CreateFromString(mockEDataType, "true"))
+		{{ .Assert }}Equal(t, false, factory.CreateFromString(mockEDataType, "false"))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{/* reflect.Type: no test, the import is used. */}}
+{{ define "test/createfromstring.reflect" -}}
+	{
+		_ = {{ .Reflect }}Ptr
+	}
+{{- end }}
+
+{{ define "test/createfromstring.time" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		date := factory.CreateFromString(mockEDataType, "2007-06-02T10:26:13.000Z")
+		expected := {{ .Time }}Date(2007, {{ .Time }}June, 2, 10, 26, 13, 0, {{ .Time }}UTC)
+		{{ .Assert }}Equal(t, &expected, date)
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/createfromstring.unsupported" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}

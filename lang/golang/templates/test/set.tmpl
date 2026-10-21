@@ -1,0 +1,199 @@
+{{/* The test of the setter of a feature, by variant (v1 generateSetTestImplementation). Blank lines and the repeated mockClass of the reflective container follow v1. */}}
+{{ define "test/set.volatile" -}}
+func Test{{ .Class }}{{ .Name }}Set(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	v := {{ .TestValue }}
+	{{ .Assert }}Panics(t, func() { o.{{ .Setter }}(v) })
+}
+{{- end }}
+
+{{ define "test/set.reflectivecontainer" -}}
+func Test{{ .Class }}{{ .Name }}Set(t *{{ .T }}) {
+	// object
+	o := {{ .Constructor }}()
+
+	// add listener
+	mockAdapter := {{ .Ecore }}NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	o.EAdapters().Add(mockAdapter)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter)
+
+	// set with the mock value
+	mockValue := {{ .TestValue }}
+	mockResource := {{ .Ecore }}NewMockEResource(t)
+	mockClass := {{ .Ecore }}NewMockEClass(t)
+	mockValue.EXPECT().EClass().Return(mockClass).Once()
+	mockClass.EXPECT().GetFeatureID({{ .ReverseGetter }}).Return({{ .ReverseID }}).Once()
+	mockValue.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockValue.EXPECT().EResource().Return(mockResource).Once()
+	mockResource.EXPECT().Attached(o).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockClass, mockValue, mockResource, mockClass)
+
+	// set with the same mock value
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockClass, mockValue, mockResource)
+
+	// another value - in a different resource
+	mockValue2 := {{ .TestValue }}
+	mockResource2 := {{ .Ecore }}NewMockEResource(t)
+	mockValue.EXPECT().EClass().Return(mockClass).Once()
+	mockClass.EXPECT().GetFeatureID({{ .ReverseGetter }}).Return({{ .ReverseID }}).Once()
+	mockValue.EXPECT().EInverseRemove(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockValue.EXPECT().EResource().Return(mockResource).Once()
+	mockValue2.EXPECT().EClass().Return(mockClass).Once()
+	mockClass.EXPECT().GetFeatureID({{ .ReverseGetter }}).Return({{ .ReverseID }}).Once()
+	mockValue2.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockValue2.EXPECT().EResource().Return(mockResource2).Once()
+	mockResource.EXPECT().Detached(o).Once()
+	mockResource2.EXPECT().Attached(o).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue2)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockClass, mockValue, mockResource, mockValue2, mockResource2)
+}
+{{- end }}
+
+{{ define "test/set.container" -}}
+func Test{{ .Class }}{{ .Name }}Set(t *{{ .T }}) {
+	// object
+	o := {{ .Constructor }}()
+
+	// add listener
+	mockAdapter := {{ .Ecore }}NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	o.EAdapters().Add(mockAdapter)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter)
+
+	// set with the mock value
+	mockValue := {{ .TestValue }}
+	mockResource := {{ .Ecore }}NewMockEResource(t)
+	mockValue.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockValue.EXPECT().EResource().Return(mockResource).Once()
+	mockResource.EXPECT().Attached(o).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResource)
+
+	// set with the same mock value
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResource)
+
+	// another value - in a different resource
+	mockValue2 := {{ .TestValue }}
+	mockResource2 := {{ .Ecore }}NewMockEResource(t)
+	mockValue.EXPECT().EClass().Return({{ .TypeClass }}).Once()
+	mockValue.EXPECT().EInverseRemove(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockValue.EXPECT().EResource().Return(mockResource).Once()
+	mockValue2.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockValue2.EXPECT().EResource().Return(mockResource2).Once()
+	mockResource.EXPECT().Detached(o).Once()
+	mockResource2.EXPECT().Attached(o).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue2)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResource, mockValue2, mockResource2)
+}
+{{- end }}
+
+{{ define "test/set.reflectivebidirectional" -}}
+func Test{{ .Class }}{{ .Name }}Set(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+
+	// add listener
+	mockAdapter := {{ .Ecore }}NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	o.EAdapters().Add(mockAdapter)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter)
+
+	// first value
+	mockValue1 := {{ .TestValue }}
+	mockClass := {{ .Ecore }}NewMockEClass(t)
+	mockValue1.EXPECT().EClass().Return(mockClass).Once()
+	mockClass.EXPECT().GetFeatureID({{ .ReverseGetter }}).Return({{ .ReverseID }}).Once()
+	mockValue1.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue1)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue1, mockClass)
+
+	// second value
+	mockValue2 := {{ .TestValue }}
+	mockValue1.EXPECT().EClass().Return(mockClass).Once()
+	mockClass.EXPECT().GetFeatureID({{ .ReverseGetter }}).Return({{ .ReverseID }}).Once()
+	mockValue1.EXPECT().EInverseRemove(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockValue2.EXPECT().EClass().Return(mockClass).Once()
+	mockClass.EXPECT().GetFeatureID({{ .ReverseGetter }}).Return({{ .ReverseID }}).Once()
+	mockValue2.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue2)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue1, mockValue2, mockClass)
+}
+{{- end }}
+
+{{ define "test/set.bidirectional" -}}
+func Test{{ .Class }}{{ .Name }}Set(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+
+	// add listener
+	mockAdapter := {{ .Ecore }}NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	o.EAdapters().Add(mockAdapter)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter)
+
+	// first value
+	mockValue1 := {{ .TestValue }}
+	mockValue1.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue1)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue1)
+
+	// second value
+	mockValue2 := {{ .TestValue }}
+	mockValue1.EXPECT().EInverseRemove(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockValue2.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue2)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue1, mockValue2)
+}
+{{- end }}
+
+{{ define "test/set.containment" -}}
+func Test{{ .Class }}{{ .Name }}Set(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+
+	// add listener
+	mockAdapter := {{ .Ecore }}NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	o.EAdapters().Add(mockAdapter)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter)
+
+	mockValue1 := {{ .TestValue }}
+	mockValue1.EXPECT().EInverseAdd(o, {{ .Ecore }}EOPPOSITE_FEATURE_BASE-{{ .ID }}, {{ .Mock }}Anything).Return(nil).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue1)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue1)
+
+	// second value
+	mockValue2 := {{ .TestValue }}
+	mockValue1.EXPECT().EInverseRemove(o, {{ .Ecore }}EOPPOSITE_FEATURE_BASE-{{ .ID }}, nil).Return(nil).Once()
+	mockValue2.EXPECT().EInverseAdd(o, {{ .Ecore }}EOPPOSITE_FEATURE_BASE-{{ .ID }}, nil).Return(nil).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.{{ .Setter }}(mockValue2)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue1, mockValue2)
+
+}
+{{- end }}
+
+{{ define "test/set.default" -}}
+func Test{{ .Class }}{{ .Name }}Set(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	v := {{ .TestValue }}
+	mockAdapter := {{ .Ecore }}NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}Anything).Once()
+	o.EAdapters().Add(mockAdapter)
+	o.{{ .Setter }}(v)
+	mockAdapter.AssertExpectations(t)
+}
+{{- end }}

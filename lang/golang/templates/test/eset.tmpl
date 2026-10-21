@@ -1,0 +1,128 @@
+{{/* The test of ESetFromID (v1 generateESetFromIDTestImplementation): each feature case by variant, then a blank line, as v1 did. */}}
+{{ define "test/eset" -}}
+func Test{{ .Class }}ESetFromID(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Panics(t, func() { o.ESetFromID(-1, nil) })
+{{- range .Features }}
+{{ include (printf "test/eset.%s" .ESetKind) . }}
+{{- end }}
+
+}
+{{- end }}
+
+{{ define "test/eset.volatile" -}}
+	{{ .Assert }}Panics(t, func() { o.ESetFromID({{ .ID }}, nil) })
+{{- end }}
+
+{{ define "test/eset.container" -}}
+	{
+		mockValue := {{ .TestValue }}
+		mockValue.EXPECT().EIsProxy().Return(false).Once()
+		mockValue.EXPECT().EResource().Return(nil).Once()
+		mockValue.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+		o.ESetFromID({{ .ID }}, mockValue)
+		{{ .Assert }}Equal(t, mockValue, o.EGetFromID({{ .ID }}, false))
+		{{ .Mock }}AssertExpectationsForObjects(t, mockValue)
+	}
+{{- end }}
+
+{{ define "test/eset.map" -}}
+	{
+		// list with a value
+		mockMap := {{ .Ecore }}NewMockEMap(t)
+		mockEntry := {{ .Ecore }}NewMockEMapEntry(t)
+		mockIterator := {{ .Ecore }}NewMockEIterator(t)
+		mockKey := {{ .KeyTestValue }}
+		mockValue := {{ .ValueTestValue }}
+		mockMap.EXPECT().Iterator().Return(mockIterator).Once()
+		mockIterator.EXPECT().HasNext().Return(true).Once()
+		mockIterator.EXPECT().Next().Return(mockEntry).Once()
+		mockIterator.EXPECT().HasNext().Return(false).Once()
+		mockEntry.EXPECT().GetKey().Return(mockKey).Once()
+		mockEntry.EXPECT().GetValue().Return(mockValue).Once()
+
+		// set list with new contents
+		o.ESetFromID({{ .ID }}, mockMap)
+		{{ .Assert }}Equal(t, map[{{ .Any }}]{{ .Any }}{mockKey: mockValue}, o.{{ .Getter }}().ToMap())
+		{{ .Mock }}AssertExpectationsForObjects(t, mockMap, mockEntry)
+	}
+{{- end }}
+
+{{/* A reference list: the added element is inversely added (v1 generateFeatureMockAddedExpectations). */}}
+{{ define "test/eset.referencelist" -}}
+	{
+		// list with a value
+		mockValue := {{ .TestValue }}
+		l := {{ .Ecore }}NewImmutableEList([]{{ .Any }}{mockValue})
+{{- if .IsProxy }}
+		mockValue.EXPECT().EIsProxy().Return(false).Once()
+{{- end }}
+{{- if .InverseAddID }}
+		mockValue.EXPECT().EInverseAdd(o, {{ .InverseAddID }}, {{ .Mock }}Anything).Return(nil).Once()
+{{- end }}
+
+		// set list with new contents
+		o.ESetFromID({{ .ID }}, l)
+		// checks
+		{{ .Assert }}Equal(t, 1, o.{{ .Getter }}().Size())
+		{{ .Assert }}Equal(t, mockValue, o.{{ .Getter }}().Get(0))
+		{{ .Mock }}AssertExpectationsForObjects(t, mockValue)
+	}
+{{- end }}
+
+{{ define "test/eset.list" -}}
+	{
+		l := {{ .Ecore }}NewImmutableEList([]{{ .Any }}{})
+		o.ESetFromID({{ .ID }}, l)
+		{{ .Assert }}True(t, o.{{ .Getter }}().Empty())
+	}
+{{- end }}
+
+{{ define "test/eset.bidirectional" -}}
+	{
+		mockValue := {{ .TestValue }}
+		mockValue.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+		o.ESetFromID({{ .ID }}, mockValue)
+		{{ .Assert }}Equal(t, mockValue, o.EGetFromID({{ .ID }}, false))
+		{{ .Mock }}AssertExpectationsForObjects(t, mockValue)
+
+		mockValue.EXPECT().EInverseRemove(o, {{ .ReverseID }}, nil).Return(nil).Once()
+		o.ESetFromID({{ .ID }}, nil)
+		{{ .Mock }}AssertExpectationsForObjects(t, mockValue)
+		{{ .Assert }}Nil(t, o.EGetFromID({{ .ID }}, false))
+
+	}
+{{- end }}
+
+{{ define "test/eset.containment" -}}
+	{
+		mockValue := {{ .TestValue }}
+		mockValue.EXPECT().EInverseAdd(o, {{ .Ecore }}EOPPOSITE_FEATURE_BASE-{{ .ID }}, {{ .Mock }}Anything).Return(nil).Once()
+		o.ESetFromID({{ .ID }}, mockValue)
+		{{ .Assert }}Equal(t, mockValue, o.EGetFromID({{ .ID }}, false))
+		{{ .Mock }}AssertExpectationsForObjects(t, mockValue)
+
+		mockValue.EXPECT().EInverseRemove(o, {{ .Ecore }}EOPPOSITE_FEATURE_BASE-{{ .ID }}, {{ .Mock }}Anything).Return(nil).Once()
+		o.ESetFromID({{ .ID }}, nil)
+		{{ .Mock }}AssertExpectationsForObjects(t, mockValue)
+		{{ .Assert }}Nil(t, o.EGetFromID({{ .ID }}, false))
+	}
+{{- end }}
+
+{{ define "test/eset.reference" -}}
+	{
+		v := {{ .TestValue }}
+		o.ESetFromID({{ .ID }}, v)
+		{{ .Assert }}Equal(t, v, o.EGetFromID({{ .ID }}, false))
+
+		o.ESetFromID({{ .ID }}, nil)
+	}
+{{- end }}
+
+{{ define "test/eset.attribute" -}}
+	{
+		v := {{ .TestValue }}
+		o.ESetFromID({{ .ID }}, v)
+		{{ .Assert }}Equal(t, v, o.EGetFromID({{ .ID }}, false))
+	}
+{{- end }}

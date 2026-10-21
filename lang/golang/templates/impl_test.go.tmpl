@@ -1,0 +1,70 @@
+{{/* The tests of an implementation: the discard function, the cast, the static class, the feature count, the map entry accessors, the accessor tests of the features, the operation tests (without blank line between them, as v1 did) and the tests of the reflective methods. */}}
+{{ define "impl_test.go" -}}
+func discard{{ .Class }}() {
+	_ = {{ .Assert }}Equal
+	_ = {{ .Mock }}Anything
+	_ = {{ .Coverage }}
+	_ = {{ .MockConstructor }}
+{{- if .EcoreADD }}
+	_ = {{ .EcoreADD }}
+{{- end }}
+}
+
+func Test{{ .Class }}As{{ .Class }}(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Equal(t, o, o.{{ .AsInterface }}())
+}
+
+func Test{{ .Class }}StaticClass(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Equal(t, {{ .StaticClass }}, o.EStaticClass())
+}
+
+func Test{{ .Class }}FeatureCount(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Equal(t, {{ .FeatureCount }}, o.EStaticFeatureCount())
+}
+{{- if .MapEntry }}
+
+func Test{{ .Class }}GetKey(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Equal(t, o.{{ .MapEntry.KeyGetter }}(), o.GetKey())
+}
+
+func Test{{ .Class }}GetValue(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Equal(t, o.{{ .MapEntry.ValueGetter }}(), o.GetValue())
+}
+{{- end }}
+{{- range .Features }}
+{{- if .GetKind }}
+
+{{ include (printf "test/get.%s" .GetKind) . }}
+{{- end }}
+{{- if .SetKind }}
+
+{{ include (printf "test/set.%s" .SetKind) . }}
+{{- end }}
+{{- if .BasicSet }}
+
+{{ include "test/basicset" . }}
+{{- end }}
+{{- if .UnsetKind }}
+
+{{ include (printf "test/unset.%s" .UnsetKind) . }}
+{{- end }}
+{{- end }}
+{{- if .Operations }}
+{{ blank }}
+{{- range .Operations }}
+func Test{{ $.Class }}{{ .Name }}Operation(t *{{ $.T }}) {
+	o := {{ $.Constructor }}()
+	{{ $.Assert }}Panics(t, func() { o.{{ .Name }}({{ .Args }}) })
+}
+{{- end }}
+{{- end }}
+{{- range .Reflectives }}
+
+{{ include (printf "test/%s" .Kind) . }}
+{{- end }}
+{{- end }}
