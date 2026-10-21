@@ -44,7 +44,7 @@ func (a Annotation) Value(key string) string {
 }
 
 // Lookup returns the value of the detail key on the element, else on its
-// ancestors (v1 getAnnotationValue of soft.generator.go generateCommon.mtl):
+// ancestors (v1 getAnnotationValue of generateCommon.mtl):
 // a feature or an operation is looked up, then its containing class, then the
 // package of the class. The lookup stops at the package: a parent package, a
 // data type or an enum has no ancestor (v1 getAncestor).

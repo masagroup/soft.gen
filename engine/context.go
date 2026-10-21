@@ -37,6 +37,9 @@ type Request struct {
 	ModelPath string
 	// OutDir is the output directory.
 	OutDir string
+	// Version is the version of the language, written in the manifests; empty
+	// leaves it out.
+	Version string
 	// Props holds the -p key=value entries.
 	Props map[string]string
 	// PropFiles holds the -P files, in order.
@@ -52,6 +55,9 @@ type Request struct {
 	// Format applies the formatter of the language (always on for in-process
 	// formatters; external ones need it).
 	Format bool
+	// NoManifest leaves the manifests out: the folders the run generates files
+	// in get no .soft-gen.yaml (an existing one is left as it is).
+	NoManifest bool
 	// OnRender, when set, is called with the name of every template rendered
 	// (the coverage tests record them).
 	OnRender func(template string)

@@ -24,6 +24,10 @@ import (
 )
 
 // update is the -update flag of the test binaries that import this package.
+// Version is the version of the language in the manifests of the expected
+// files: a fixed value, so that a version change in the Makefile leaves them.
+const Version = "v0.0.0-test"
+
 var update = flag.Bool("update", false, "write the generated files as the expected files of the golden cases")
 
 // Updating reports whether the test runs with -update.
@@ -60,7 +64,8 @@ func Run(t *testing.T, c Case) {
 		out := t.TempDir()
 		req := engine.Request{
 			Lang: c.Lang, ModelPath: c.Model, OutDir: out,
-			Props: c.Props, PropFiles: c.PropFiles, EntryPoints: c.EntryPoints,
+			Version: Version,
+			Props:   c.Props, PropFiles: c.PropFiles, EntryPoints: c.EntryPoints,
 			Silent: true, Output: io.Discard, ErrOutput: os.Stderr,
 		}
 		if _, err := engine.Run(context.Background(), req); err != nil {

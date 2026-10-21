@@ -18,11 +18,10 @@ import (
 // that lays it out. Every fact about the model comes from the model package,
 // every property from the props package, every name rule from naming.
 type Language interface {
-	// Name is the command-line subcommand and the docker image suffix: "go", "ts", "cpp".
+	// Name is the command-line subcommand: "go", "ts", "cpp". The generator of
+	// the language is named after it in the header of the generated files and
+	// in the manifests: "soft-gen go".
 	Name() string
-	// GeneratorName is the name of the generator in the header of the files
-	// and in the version banner: "soft.generator.go".
-	GeneratorName() string
 	// AnnotationSource is the source of the EAnnotations the language reads:
 	// "http://net.masagroup/soft/2019/GenGo".
 	AnnotationSource() string

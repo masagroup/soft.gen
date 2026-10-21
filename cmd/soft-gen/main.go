@@ -1,6 +1,6 @@
 // Command soft-gen generates code from an Ecore model.
 //
-//	soft-gen <language> -m <model> -o <folder> [-p key=value]... [-P file]... [-t template]... [-s] [--dry-run] [--diff] [--format] [--config file]
+//	soft-gen <language> -m <model> -o <folder> [-p key=value]... [-P file]... [-t template]... [-s] [--dry-run] [--diff] [--format] [--manifest=false] [--config file]
 //	soft-gen <language> -v
 //	soft-gen -h
 //

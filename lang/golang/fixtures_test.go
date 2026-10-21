@@ -11,8 +11,9 @@ import (
 // The fixtures are small purpose-built models (testdata/models), each about
 // one topic, generated with entry points and properties into the committed
 // expected files of testdata/golden/go/<case>. The expected files are the
-// output of the v1 generator (soft.generator.go 1.13.1) once formatted, except
-// the files of V1Differences, where v2 differs from v1 on purpose:
+// output of the v1 Go generator (1.13.1) once formatted, with the v2 header
+// line and the v2 manifests, except the files of V1Differences, where v2
+// differs from v1 on purpose:
 //
 //	go test ./lang/golang -run TestFixtures            compare v2 with the expected files
 //	go test ./lang/golang -run TestFixtures -update    write v2's output as the expected files

@@ -26,7 +26,7 @@ func TestHelpAndVersion(t *testing.T) {
 	code, out, _ := soft(t)
 	assert.Equal(t, 0, code)
 	assert.Contains(t, out, "soft-gen <language> [options]")
-	assert.Contains(t, out, "generates go code (soft.generator.go "+developerLanguageVersion+")")
+	assert.Contains(t, out, "generates go code (soft-gen go "+developerLanguageVersion+")")
 
 	code, out, _ = soft(t, "-v")
 	assert.Equal(t, 0, code)
@@ -34,16 +34,16 @@ func TestHelpAndVersion(t *testing.T) {
 
 	code, out, _ = soft(t, "go", "-v")
 	assert.Equal(t, 0, code)
-	assert.Equal(t, "soft.generator.go version: "+developerLanguageVersion+"\n", out)
+	assert.Equal(t, "soft-gen go version: "+developerLanguageVersion+"\n", out)
 
 	Version, LanguageVersions = "v2.1.0", "go=v1.13.1"
 	defer func() { Version, LanguageVersions = developerBuild, "" }()
 	_, out, _ = soft(t, "--version")
 	assert.Equal(t, "soft-gen version: v2.1.0\n", out, "the root prints the version of the binary")
 	_, out, _ = soft(t, "go", "--version")
-	assert.Equal(t, "soft.generator.go version: v1.13.1\n", out, "a language prints its own version")
+	assert.Equal(t, "soft-gen go version: v1.13.1\n", out, "a language prints its own version")
 	_, out, _ = soft(t)
-	assert.Contains(t, out, "generates go code (soft.generator.go v1.13.1)")
+	assert.Contains(t, out, "generates go code (soft-gen go v1.13.1)")
 
 	code, out, _ = soft(t, "go", "-h")
 	assert.Equal(t, 0, code)
@@ -110,6 +110,31 @@ func TestLanguageVersions(t *testing.T) {
 	code, _, errOut := soft(t, "go", "-v")
 	assert.Equal(t, 1, code)
 	assert.Contains(t, errOut, `invalid LanguageVersions: unknown language "cobol"`)
+}
+
+// TestManifestOption checks --manifest: on by default, off from the command
+// line, the environment or the configuration file.
+func TestManifestOption(t *testing.T) {
+	manifest := func(dir string) string { return filepath.Join(dir, "shop", ".soft-gen.yaml") }
+	generate := func(t *testing.T, args ...string) string {
+		t.Helper()
+		dir := t.TempDir()
+		code, _, errOut := soft(t, append([]string{"go", "-s", "-m", shopModel, "-o", dir, "-t", "generateInterfaces"}, args...)...)
+		require.Equal(t, 0, code, errOut)
+		assert.FileExists(t, filepath.Join(dir, "shop", "shop.go"))
+		return dir
+	}
+
+	assert.FileExists(t, manifest(generate(t)), "on by default")
+	assert.NoFileExists(t, manifest(generate(t, "--manifest=false")), "off from the command line")
+
+	config := filepath.Join(t.TempDir(), "soft-gen.yaml")
+	require.NoError(t, os.WriteFile(config, []byte("manifest: false\n"), 0o644))
+	assert.NoFileExists(t, manifest(generate(t, "--config", config)), "off from the configuration file")
+	assert.FileExists(t, manifest(generate(t, "--config", config, "--manifest")), "the command line wins over the file")
+
+	t.Setenv("SOFT_GEN_MANIFEST", "false")
+	assert.NoFileExists(t, manifest(generate(t)), "off from the environment")
 }
 
 func TestDryRunAndDiff(t *testing.T) {

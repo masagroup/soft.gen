@@ -30,9 +30,6 @@ func init() { engine.Register(New()) }
 // Name is "go".
 func (*Language) Name() string { return "go" }
 
-// GeneratorName is "soft.generator.go".
-func (*Language) GeneratorName() string { return "soft.generator.go" }
-
 // AnnotationSource is the GenGo annotation source.
 func (*Language) AnnotationSource() string { return AnnotationSource }
 

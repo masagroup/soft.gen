@@ -13,7 +13,7 @@ const wordSeparator = '_'
 // [e All Structural Features], "XMLSchema" gives [XML Schema], and "a_b"
 // gives [a b]; the underscores are dropped and an empty s gives [""].
 func SplitWords(s string) []string {
-	// Verbatim port of GenerateUtils.splitWords(s, '_') of soft.generator.common,
+	// Verbatim port of GenerateUtils.splitWords(s, '_') of the v1 generators,
 	// on runes instead of Java chars.
 	result := make([]string, 0, 4)
 	currentWord := make([]rune, 0, len(s))
@@ -48,7 +48,7 @@ func SplitWords(s string) []string {
 // sep, except that a word of one character gets no separator after it:
 // "eAllStructuralFeatures" with "_" gives "eAll_Structural_Features".
 func SplitAndCombine(s, sep string) string {
-	// Verbatim port of GenerateUtils.splitAndCombineWords of soft.generator.common.
+	// Verbatim port of GenerateUtils.splitAndCombineWords of the v1 generators.
 	if s == "" {
 		return ""
 	}

@@ -1,6 +1,6 @@
 // Package golang generates Go code from an Ecore model: the interfaces and
 // the implementations of the classes, the enums, the package and the factory,
-// the mocks and the tests, as the v1 generator soft.generator.go did.
+// the mocks and the tests, as the v1 Go generator did.
 //
 // The package is organized in three layers:
 //
