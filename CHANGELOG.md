@@ -18,9 +18,10 @@ removed from the tree; they remain in the history, up to the `v1.x` tags.
 - One docker image, `masagroup/soft-gen`, holds every language; the
   language is the first argument: `masagroup/soft-gen go -m ...` replaces
   `masagroup/soft.generator.go -m ...`. The per-language images remain for v1.
-- The version is computed from Git by `version.sh` (the tag of the build, or a
-  Go pseudo-version between tags) and is the same for every language; v1
-  versioned each language apart in its Makefile.
+- The version of soft-gen (`soft-gen -v`) is computed from Git by `version.sh`
+  (the tag of the build, or a Go pseudo-version between tags). Each language
+  keeps its own version (`soft-gen go -v`), defined in the Makefile as in v1:
+  the version of the runtime its templates target (`go.version`, soft.go).
 - Property files (`-P`) may be Java `.properties`, YAML or JSON, by extension.
 - The command line is built with urfave/cli v3: the options keep their v1
   names and short forms, and may also come from `SOFT_GEN_*` environment

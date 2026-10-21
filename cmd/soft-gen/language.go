@@ -38,18 +38,19 @@ type options struct {
 }
 
 // languageCommand builds the command of a language: its options, its help
-// (templates and properties) and its action, which runs the generation.
-func languageCommand(lang engine.Language) *cli.Command {
+// (templates and properties) and its action, which runs the generation;
+// version is the version of the language, printed by -v.
+func languageCommand(lang engine.Language, version string) *cli.Command {
 	opts := &options{config: &configFile{}, properties: &keyValues{}}
 	return &cli.Command{
 		Name:        lang.Name(),
-		Usage:       "generates " + lang.Name() + " code (" + lang.GeneratorName() + ")",
+		Usage:       "generates " + lang.Name() + " code (" + lang.GeneratorName() + " " + version + ")",
 		UsageText:   "soft-gen " + lang.Name() + " -m <model> -o <folder> [-p key=value]... [-P file]... [-t template]... [-s] [--dry-run] [--diff] [--format] [--config file]",
 		Description: languageDescription(lang),
 		Flags:       languageFlags(opts),
 		Before:      opts.config.check,
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			return generate(ctx, cmd, lang, opts)
+			return generate(ctx, cmd, lang, version, opts)
 		},
 	}
 }
@@ -93,12 +94,12 @@ func languageDescription(lang engine.Language) string {
 	return strings.TrimRight(b.String(), "\n")
 }
 
-// generate is the action of a language command: it prints the version with
-// -v, builds the request from the options and runs the generation; with
-// --diff, any difference exits with code 1.
-func generate(ctx context.Context, cmd *cli.Command, lang engine.Language, opts *options) error {
+// generate is the action of a language command: it prints the version of the
+// language with -v, builds the request from the options and runs the
+// generation; with --diff, any difference exits with code 1.
+func generate(ctx context.Context, cmd *cli.Command, lang engine.Language, version string, opts *options) error {
 	if cmd.Bool("version") {
-		fmt.Fprintf(cmd.Writer, "%s version: %s\n", lang.GeneratorName(), version())
+		fmt.Fprintf(cmd.Writer, "%s version: %s\n", lang.GeneratorName(), version)
 		return nil
 	}
 	req, err := request(cmd, lang, opts)

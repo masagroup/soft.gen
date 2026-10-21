@@ -26,7 +26,7 @@ func TestHelpAndVersion(t *testing.T) {
 	code, out, _ := soft(t)
 	assert.Equal(t, 0, code)
 	assert.Contains(t, out, "soft-gen <language> [options]")
-	assert.Contains(t, out, "generates go code (soft.generator.go)")
+	assert.Contains(t, out, "generates go code (soft.generator.go "+developerLanguageVersion+")")
 
 	code, out, _ = soft(t, "-v")
 	assert.Equal(t, 0, code)
@@ -34,12 +34,16 @@ func TestHelpAndVersion(t *testing.T) {
 
 	code, out, _ = soft(t, "go", "-v")
 	assert.Equal(t, 0, code)
-	assert.Equal(t, "soft.generator.go version: "+developerBuild+"\n", out)
+	assert.Equal(t, "soft.generator.go version: "+developerLanguageVersion+"\n", out)
 
-	Version = "v2.1.0"
-	defer func() { Version = developerBuild }()
+	Version, LanguageVersions = "v2.1.0", "go=v1.13.1"
+	defer func() { Version, LanguageVersions = developerBuild, "" }()
 	_, out, _ = soft(t, "--version")
-	assert.Equal(t, "soft-gen version: v2.1.0\n", out)
+	assert.Equal(t, "soft-gen version: v2.1.0\n", out, "the root prints the version of the binary")
+	_, out, _ = soft(t, "go", "--version")
+	assert.Equal(t, "soft.generator.go version: v1.13.1\n", out, "a language prints its own version")
+	_, out, _ = soft(t)
+	assert.Contains(t, out, "generates go code (soft.generator.go v1.13.1)")
 
 	code, out, _ = soft(t, "go", "-h")
 	assert.Equal(t, 0, code)
@@ -73,6 +77,39 @@ func TestErrors(t *testing.T) {
 	code, _, errOut = soft(t, "go", "--config", config)
 	assert.Equal(t, 1, code)
 	assert.Contains(t, errOut, `unsupported extension ".ini"`)
+}
+
+// TestLanguageVersions checks the parsing of LanguageVersions, the versions
+// the Makefile sets for each language, and that an invalid value fails any run.
+func TestLanguageVersions(t *testing.T) {
+	for _, tc := range []struct {
+		value string
+		want  languageVersions
+		err   string
+	}{
+		{value: "", want: languageVersions{}},
+		{value: "go=v1.13.1", want: languageVersions{"go": "v1.13.1"}},
+		{value: " go = v1.13.1 ", want: languageVersions{"go": "v1.13.1"}},
+		{value: "go", err: `"go" is not language=version`},
+		{value: "=v1", err: `"=v1" is not language=version`},
+		{value: "go=", err: "language go: no version"},
+		{value: "go=v1,go=v2", err: "language go: version set twice"},
+		{value: "go=v1.13.1,cobol=v1", err: `unknown language "cobol"`},
+	} {
+		got, err := parseLanguageVersions(tc.value)
+		if tc.err != "" {
+			assert.ErrorContains(t, err, tc.err, tc.value)
+			continue
+		}
+		require.NoError(t, err, tc.value)
+		assert.Equal(t, tc.want, got, tc.value)
+	}
+
+	LanguageVersions = "cobol=v1"
+	defer func() { LanguageVersions = "" }()
+	code, _, errOut := soft(t, "go", "-v")
+	assert.Equal(t, 1, code)
+	assert.Contains(t, errOut, `invalid LanguageVersions: unknown language "cobol"`)
 }
 
 func TestDryRunAndDiff(t *testing.T) {
