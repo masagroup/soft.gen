@@ -10,10 +10,11 @@ import (
 	"github.com/masagroup/soft.gen/v2/engine"
 )
 
-// newApp builds the root command: one subcommand per registered language.
+// newApp builds the root command: one subcommand per registered language,
+// each with its version.
 // The root only prints the help (no argument), the version (-v) or rejects an
 // unknown language.
-func newApp(stdout, stderr io.Writer) *cli.Command {
+func newApp(stdout, stderr io.Writer, versions languageVersions) *cli.Command {
 	app := &cli.Command{
 		Name:        "soft-gen",
 		Usage:       "generates code from an Ecore model",
@@ -27,7 +28,7 @@ func newApp(stdout, stderr io.Writer) *cli.Command {
 		Action:         rootAction,
 	}
 	for _, lang := range engine.Languages() {
-		app.Commands = append(app.Commands, languageCommand(lang))
+		app.Commands = append(app.Commands, languageCommand(lang, versions.of(lang)))
 	}
 	return app
 }

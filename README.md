@@ -18,13 +18,19 @@ the properties and the annotation keys are the ones of v1.
 One docker image holds every language:
 
 ```shell
+docker run --rm masagroup/soft-gen -v
+soft-gen version: v2.0.0
 docker run --rm masagroup/soft-gen go -v
-soft.generator.go version: v2.0.0
+soft.generator.go version: v1.13.1
 ```
 
-The version is the Git tag of the build (`v2.0.0`), or between two tags a Go
-pseudo-version such as `v2.0.1-0.20261021125246-3166c30bb912`, computed by
-`version.sh`.
+The version of soft-gen is the Git tag of the build (`v2.0.0`), or between two
+tags a Go pseudo-version such as `v2.0.1-0.20261021125246-3166c30bb912`,
+computed by `version.sh`. The version of a language is the version of the
+runtime its templates target: the Go generator `v1.13.1` generates code for
+soft.go `v1.13`. The Makefile defines the version of each language
+(`go.version`); a build without the Makefile (`go install`) reports
+`v0.0.0-developer-build`.
 
 Or install the binary (Go 1.27):
 
@@ -219,7 +225,7 @@ and its `Create` panics.
 ```shell
 go test ./...          # unit tests, and the fixtures compared with their expected files
 make lint              # golangci-lint with .golangci.yaml, in docker
-make image image.test  # the docker image and its version check
+make image image.test  # the docker image, and the check of its versions
 ```
 
 The fixtures are small models in `testdata/models`, each about one topic,
