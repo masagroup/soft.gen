@@ -1,0 +1,36 @@
+{{/* The test of a mocked getter: Var is r for a single value, l for a list or a map. */}}
+{{ define "mocktest/feature.get" -}}
+// {{ .Test }} tests method {{ .Method }}
+func {{ .Test }}(t {{ .T }}) {
+	o := {{ .New }}(t)
+	{{ .Var }} := {{ .Value }}
+	m := {{ .Run }}
+	o.EXPECT().{{ .Method }}().Return({{ .Var }}).Run(func() { m.Run() }).Once()
+	o.EXPECT().{{ .Method }}().Call.Return(func() {{ .Type }} { return {{ .Var }} }).Once()
+	{{ .Equal }}(t, {{ .Var }}, o.{{ .Method }}())
+	{{ .Equal }}(t, {{ .Var }}, o.{{ .Method }}())
+}
+{{- end }}
+
+{{/* The test of a mocked setter. */}}
+{{ define "mocktest/feature.set" -}}
+// {{ .Test }} tests method {{ .Method }}
+func {{ .Test }}(t {{ .T }}) {
+	o := {{ .New }}(t)
+	v := {{ .Value }}
+	m := {{ .Run }}
+	o.EXPECT().{{ .Method }}(v).Return().Run(func(_p0 {{ .Type }}) { m.Run(_p0) }).Once()
+	o.{{ .Method }}(v)
+}
+{{- end }}
+
+{{/* The test of a mocked unsetter. */}}
+{{ define "mocktest/feature.unset" -}}
+// {{ .Test }} tests method {{ .Method }}
+func {{ .Test }}(t {{ .T }}) {
+	o := {{ .New }}(t)
+	m := {{ .Run }}
+	o.EXPECT().{{ .Method }}().Return().Run(func() { m.Run() }).Once()
+	o.{{ .Method }}()
+}
+{{- end }}

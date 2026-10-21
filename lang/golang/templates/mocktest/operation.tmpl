@@ -1,0 +1,32 @@
+{{/* The test of a mocked void operation. */}}
+{{ define "mocktest/operation.void" -}}
+// {{ .Test }} tests method {{ .Method }}
+func {{ .Test }}(t {{ .T }}) {
+	o := {{ .New }}(t)
+{{- range .Locals }}
+	{{ .Name }} := {{ .Value }}
+{{- end }}
+	m := {{ .Run }}
+	o.EXPECT().{{ .Method }}({{ .Args }}).Return().Run(func({{ .Params }}) { m.Run({{ .Args }}) }).Once()
+	o.{{ .Method }}({{ .Args }})
+}
+{{- end }}
+
+{{/* The test of a mocked operation returning a value. */}}
+{{ define "mocktest/operation.value" -}}
+// {{ .Test }} tests method {{ .Method }}
+func {{ .Test }}(t {{ .T }}) {
+	o := {{ .New }}(t)
+{{- range .Locals }}
+	{{ .Name }} := {{ .Value }}
+{{- end }}
+	m := {{ .Run }}
+	r := {{ .Value }}
+	o.EXPECT().{{ .Method }}({{ .Args }}).Return(r).Run(func({{ .Params }}) { m.Run({{ .Args }}) }).Once()
+	o.EXPECT().{{ .Method }}({{ .Args }}).Call.Return(func() {{ .Type }} {
+		return r
+	}).Once()
+	{{ .Equal }}(t, r, o.{{ .Method }}({{ .Args }}))
+	{{ .Equal }}(t, r, o.{{ .Method }}({{ .Args }}))
+}
+{{- end }}

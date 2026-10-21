@@ -1,0 +1,14 @@
+{{/* The tests of the mock of a class: the function keeping the imports used, then a test per mocked accessor and operation. */}}
+{{ define "mock_test.go" -}}
+func {{ .Discard }}() {
+	_ = {{ .Equal }}
+	_ = {{ .Coverage }}
+{{- if .ADD }}
+	_ = {{ .ADD }}
+{{- end }}
+}
+{{- range .Tests }}
+
+{{ include (printf "mocktest/%s" .Kind) . }}
+{{- end }}
+{{- end }}
