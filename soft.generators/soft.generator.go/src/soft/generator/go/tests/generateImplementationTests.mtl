@@ -423,6 +423,7 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]S
 	// another value - in a different resource
 	mockValue2 := [aStructuralFeature.eType.getTestValue(packagePath,imports)/]	
 	mockResource2 := [ecorePrefix/]NewMockEResource(t)
+	mockValue.EXPECT().EClass().Return([aStructuralFeature.eType.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].[aStructuralFeature.eType.getReflectiveGetterName()/]()).Once()
 	mockValue.EXPECT().EInverseRemove(o, [featureIDName/], nil).Return(nil).Once()
 	mockValue.EXPECT().EResource().Return(mockResource).Once()
 	mockValue2.EXPECT().EInverseAdd(o, [featureIDName/], nil).Return(nil).Once()
@@ -1005,6 +1006,7 @@ func Test[aClass.name.toUpperFirst()/]EBasicInverseAdd(t *testing.T) {
 	mockObject.EXPECT().EInverseRemove(o,[if not aClass.ePackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aStructuralFeature,packagePath,imports)/],nil).Return(nil).Once()
 [else]
 	[let reverseFeature : EStructuralFeature = aStructuralFeature.oclAsType(EReference).eOpposite]
+	mockObject.EXPECT().EClass().Return([aStructuralFeature.eType.ePackage.getPackageInstanceIdentifier(packagePath, imports)/].[aStructuralFeature.eType.getReflectiveGetterName()/]()).Once()
 	mockObject.EXPECT().EInverseRemove(o,[reverseFeature.eContainingClass.getImportedIDName(reverseFeature,packagePath,imports)/],nil).Return(nil).Once()
 	[/let]
 [/if]

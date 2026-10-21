@@ -112,6 +112,25 @@
 	getImportedIdentifier(aClass.ePackage.getQualifiedInterfaceIdentifier(aClass.ePackage.getConstantsName()+'.'+ aClass.getFeatureIDName(aFeature)),modules)
 /]
 
+[comment the id of the opposite feature aReverseFeature in the class of target : it differs from the id in the class declaring
+		 aReverseFeature when this class is not the first super type of the class of target (multiple inheritance) /]
+[query public getImportedOppositeIDName( aReverseFeature : EStructuralFeature, target : String, modules : OclAny) : String =
+	let aClass : EClass = aReverseFeature.eContainingClass in
+	if aClass.ePackage.isEcorePackage() then
+		aClass.getImportedIDName(aReverseFeature,modules)
+	else
+		target + '.eClass().getFeatureID(' + aClass.ePackage.getImportedPackageGetter(modules) + '.' + aReverseFeature.getReflectiveGetterName() + '())'
+	endif
+/]
+
+[query public getImportedPackageGetter( aPackage : EPackage, modules : OclAny) : String =
+	getImportedIdentifier(aPackage.getQualifiedInterfaceIdentifier('get' + aPackage.getPackageName()),modules) + '()'
+/]
+
+[query public getImportedClassifierGetter( aClassifier : EClassifier, modules : OclAny) : String =
+	aClassifier.ePackage.getImportedPackageGetter(modules) + '.' + aClassifier.getReflectiveGetterName() + '()'
+/]
+
 [query public getImportedIDName( aClass : EClass, aOperation : EOperation, modules : OclAny) : String =
 	getImportedIdentifier(aClass.ePackage.getQualifiedInterfaceIdentifier(aClass.ePackage.getConstantsName()+'.'+ aClass.getOperationIDName(aOperation)),modules)
 /]

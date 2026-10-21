@@ -339,7 +339,7 @@ eBasicInverseAdd(otherEnd: [if not aPackage.isEcorePackage()]ecore.[/if]EObject,
                 msgs = [aFeature.name/].eInverseRemove(this, [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aFeature,modules)/], msgs)
             [else]
                 [let reverseFeature : EStructuralFeature = aFeature.oclAsType(EReference).eOpposite]
-                msgs = [aFeature.name/].eInverseRemove(this, [reverseFeature.eContainingClass.getImportedIDName(reverseFeature,modules)/], msgs)
+                msgs = [aFeature.name/].eInverseRemove(this, [reverseFeature.getImportedOppositeIDName(aFeature.name,modules)/], msgs)
                 [/let]
             [/if]
             }
