@@ -16,6 +16,7 @@
 [import soft::generator::common::generateStructuralFeature /]
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType /]
+[import soft::generator::ts::generateModule /]
 [import soft::generator::ts::lib::generateCommon /]
 
 [query private isSimpleSet(aStructuralFeature : EStructuralFeature, aClass : EClass ) : Boolean =
@@ -424,6 +425,9 @@ set [aStructuralFeature.getPropertyName()/]([newVarName/]: [aStructuralFeature.g
 [if isReflectiveDelegation()]
     this.eSetFromID([aClass.getImportedIDName(aStructuralFeature,modules)/], [newVarName/])
 [elseif not isVolatile()]
+    [if aPackage.isCheckImplementation() and aStructuralFeature.oclIsKindOf(EReference) and not isContainer() and not isContains()]
+    ecore.checkSameImplementation(this, [newVarName/])
+    [/if]
     [if isContainer()]
     if ( [newVarName/] != this.eInternalContainer() || ([newVarName/] != null && this.eContainerFeatureID() !=  [aClass.getImportedIDName(aStructuralFeature,modules)/])) {
         let notifications : [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain = null

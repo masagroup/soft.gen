@@ -83,6 +83,46 @@
  	aPackage.getIndexModule(2)
 /]
 
+[**
+ * Returns true when the package is shared by several implementations: with the property
+ * packageInstance=interfaces and an implementation module distinct from the interface module
+ * (packages property: uri=interface#implementation), the package and a factory of its data types
+ * are generated with the interfaces (generateInterfaces), and each implementation (generateImplementations)
+ * holds its classes and its own factory, whose package is the shared one.
+ */]
+[query public isSharedPackage(aPackage : EPackage) : Boolean =
+	not aPackage.isEcorePackage() and
+	aPackage.hasPackageProperty('packageInstance') and aPackage.getPackageProperty('packageInstance') = 'interfaces' and
+	aPackage.getInterfaceModule() <> aPackage.getImplementationModule()
+/]
+
+[**
+ * Returns true when the generated setters check that objects of two implementations of the package
+ * are not mixed. property: checkImplementation, default : true for a shared package
+ */]
+[**
+ * Returns the name of the factory of the data types of a shared package: its factory extension with the
+ * annotation factory=extension, else the generated factory of the data types
+ */]
+[query public getDataTypeFactoryName(aPackage : EPackage) : String =
+	if aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension' then
+		aPackage.getFactoryExtensionName()
+	else
+		aPackage.getFactoryImplementationName()
+	endif
+/]
+
+[query public isCheckImplementation(aPackage : EPackage) : Boolean =
+	aPackage.isSharedPackage() and
+	not (aPackage.hasPackageProperty('checkImplementation') and aPackage.getPackageProperty('checkImplementation') = 'false')
+/]
+
+[**
+ * Returns module to path map: property paths, and the current module mapped to ./internal.
+ * For a shared package, the current module is the implementation module, and the interface module
+ * is mapped to ./internal unless the paths property gives its path: the run generating an
+ * implementation gives the path of the interfaces (e.g. paths=tournament=../internal.js).
+ */]
 [query private getModuleToPathMap(any : OclAny) : OclAny =
  	let currentPackage : EPackage = getCurrentPackage() in
 	let currentModule : String = currentPackage.getInterfaceModule() in
@@ -104,7 +144,16 @@
 		 moduleToPath
 	endif in
 		let extension : String = if currentPackage.isExplicitFileExtension() then '.js' else '' endif in
-		moduleToPath.mapPut(currentModule, './internal' + extension)
+		if currentPackage.isSharedPackage() then
+			let moduleToPath : OclAny = if moduleToPath.mapContainsKey(currentModule) then
+				moduleToPath
+			else
+				moduleToPath.mapPut(currentModule, './internal' + extension)
+			endif in
+			moduleToPath.mapPut(currentPackage.getImplementationModule(), './internal' + extension)
+		else
+			moduleToPath.mapPut(currentModule, './internal' + extension)
+		endif
 /]
 
 [query public getModulePath( p : String ) : String =
@@ -123,6 +172,11 @@
 	let moduleToNamespace : OclAny = mapNew('getModuleToNamespaceMap_' + currentPackage.name)
 									.mapPut('@masagroup/ecore','ecore' )
 								    .mapPut(currentModule,'') in
+	let moduleToNamespace : OclAny = if currentPackage.isSharedPackage() then
+										moduleToNamespace.mapPut(currentPackage.getImplementationModule(),'')
+									 else
+										moduleToNamespace
+									 endif in
     let namespacesProperty : OclAny = getProperty('namespaces') in 
 	let namespaces : String = (if namespacesProperty.oclIsUndefined() or namespacesProperty = '' then '' else namespacesProperty.oclAsType(String) endif) + 
 							  (if currentPackage.hasKey('namespaces') then ';' + currentPackage.valueKey('namespaces') else '' endif) in

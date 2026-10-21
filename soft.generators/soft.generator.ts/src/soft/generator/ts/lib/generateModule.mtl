@@ -82,3 +82,99 @@ export * from "./[removeFileExtension(anEPackage.getExtensionFileName(anEPackage
 [/if]
 [/file]
 [/template]
+
+[**
+ * The index of the interfaces of a package shared by several implementations
+ */]
+[template public generateInterfacesIndex(anEPackage : EPackage)]
+[file (anEPackage.getPackageDirectory() + '/'+  anEPackage.getIndexFileName(),false, 'UTF-8') ]
+[fileComment()/]
+export {
+[for (aClass: EClass | anEPackage.getOrderedClasses())]
+    [aClass.getInterfaceName()/],
+[/for] 
+[for (aEnum: EEnum | anEPackage.eAllContents(EEnum))]
+    [aEnum.name/],
+[/for]   
+    [anEPackage.getInterfaceName()/],
+    [anEPackage.getFactoryName()/],
+    [anEPackage.getConstantsName()/],
+    get[anEPackage.getInterfaceName()/],
+} from "./internal[if anEPackage.isExplicitFileExtension()].js[/if]"
+[/file]
+[/template]
+
+[**
+ * The internal module of the interfaces of a package shared by several implementations: the interfaces,
+ * the package and the factory of its data types
+ */]
+[template public generateInterfacesInternal(anEPackage : EPackage){
+    allClasses : Sequence(EClass) = anEPackage.getOrderedClasses();
+	extension : String = if anEPackage.isExplicitFileExtension() then '.js' else '' endif;
+}]
+[file (anEPackage.getPackageDirectory() + '/'+  anEPackage.getInternalFileName(),false, 'UTF-8') ]
+[fileComment()/]
+
+// interfaces
+[for (aClass: EClass | allClasses)]
+export * from "./[removeFileExtension(aClass.getInterfaceFileName(aClass.name))+extension/]"
+[/for]
+
+// enums
+[for (aEnum: EEnum | anEPackage.eAllContents(EEnum))]
+export * from "./[removeFileExtension(aEnum.getInterfaceFileName(aEnum.name))+extension/]"
+[/for]
+
+// package - factory- constants
+export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getPackageName()))+extension/]"
+export * from "./[removeFileExtension(anEPackage.getInterfaceFileName(anEPackage.getFactoryName()))+extension/]"
+export * from "./[removeFileExtension(anEPackage.getConstantsFileName(anEPackage.getConstantsName()))+extension/]"
+
+// package - factory of the data types
+export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getPackageName()))+extension/]"
+export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getFactoryName()))+extension/]"
+[if anEPackage.hasKey('factory') and anEPackage.valueKey('factory') = 'extension']
+export * from "./[removeFileExtension(anEPackage.getExtensionFileName(anEPackage.getFactoryName()))+extension/]"
+[/if]
+[/file]
+[/template]
+
+[**
+ * The index of an implementation of a package shared by several implementations
+ */]
+[template public generateImplementationsIndex(anEPackage : EPackage)]
+[file (anEPackage.getPackageDirectory() + '/'+  anEPackage.getIndexFileName(),false, 'UTF-8') ]
+[fileComment()/]
+export {
+    [anEPackage.getFactoryImplementationName()/],
+    getFactory,
+    install,
+} from "./internal[if anEPackage.isExplicitFileExtension()].js[/if]"
+[/file]
+[/template]
+
+[**
+ * The internal module of an implementation of a package shared by several implementations: the
+ * implementations of the classes and the factory
+ */]
+[template public generateImplementationsInternal(anEPackage : EPackage){
+    allClasses : Sequence(EClass) = anEPackage.getOrderedClasses();
+	extension : String = if anEPackage.isExplicitFileExtension() then '.js' else '' endif;
+}]
+[file (anEPackage.getPackageDirectory() + '/'+  anEPackage.getInternalFileName(),false, 'UTF-8') ]
+[fileComment()/]
+
+// implementations
+[for (aClass: EClass | allClasses)]
+[if not aClass.interface]
+export * from "./[removeFileExtension(aClass.getImplementationFileName(aClass.name))+extension/]"
+[if aClass.hasExtension()]
+export * from "./[removeFileExtension(aClass.getExtensionFileName(aClass.name))+extension/]"
+[/if]
+[/if]
+[/for]
+
+// factory
+export * from "./[removeFileExtension(anEPackage.getImplementationFileName(anEPackage.getFactoryName()))+extension/]"
+[/file]
+[/template]

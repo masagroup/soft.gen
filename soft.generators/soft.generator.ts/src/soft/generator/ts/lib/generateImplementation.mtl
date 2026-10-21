@@ -48,10 +48,15 @@
 											if features->exists(requiresNotification()) and not reflectiveDelegation then Set{'ENotification','ENotificationChain','EventType','Notification','EOPPOSITE_FEATURE_BASE'} else Set{} endif,
 											if reflectiveDelegation then Set{'EClass'} else Set{'EClass','isEObjectInternal'} endif
 									    }->flatten()->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t))->asSet()
-									, Set { 
-											aPackage.getConstantsName(), 
-											'get' + aPackage.getPackageName() 
+									, Set {
+											aPackage.getConstantsName(),
+											'get' + aPackage.getPackageName()
 										  }->collect(t | aPackage.getQualifiedInterfaceIdentifier(t))->asSet()
+									, if aPackage.isSharedPackage() then
+											Set{ aPackage.getQualifiedImplementationIdentifier('getFactory'), ecorePackage.getQualifiedInterfaceIdentifier('EFactory') }
+									  else
+											Set{}
+									  endif
 									, Set {
 											classImplement,
 											classExtend
@@ -105,6 +110,13 @@ export class [className/] extends [getImportedIdentifier(classExtend, modules)/]
 
     eStaticFeatureCount(): number {
         return 0
+    }
+[/if]
+[if aPackage.isSharedPackage()]
+
+    // the factory of the implementation of this object
+    eFactory(): ecore.EFactory {
+        return getFactory()
     }
 [/if]
 

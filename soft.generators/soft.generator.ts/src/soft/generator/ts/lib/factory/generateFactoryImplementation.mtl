@@ -16,6 +16,7 @@
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon/]
 [import soft::generator::ts::generateType/]
+[import soft::generator::ts::generateModule/]
 [import soft::generator::ts::lib::generateCommon/]
 [import soft::generator::ts::lib::generateStructuralFeature/]
 
@@ -31,7 +32,8 @@
 
 [template public generateFactoryImplementation(aPackage : EPackage) { 
 	ecorePackage : EPackage = getEcorePackage(); 
-	extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension';
+	shared : Boolean = aPackage.isSharedPackage();
+	extension : Boolean = not shared and aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension';
     className : String = aPackage.getFactoryImplementationName();
     classes : Sequence(EClass) = aPackage.eAllContents(EClass)->select( not interface and not abstract );
 	types : Set(String) = Set{ classes->collect(c | if c.hasExtension() then c.getQualifiedExtensionIdentifier() else c.getQualifiedImplementationIdentifier() endif)
@@ -39,7 +41,12 @@
 										, Set{'EObject' , 'EClass', 'EFactoryExt' , 'EDataType'}->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t))
 										, Set{aPackage.getConstantsName(), aPackage.getFactoryName()}->collect(t | aPackage.getQualifiedInterfaceIdentifier(t))->asSet()
 										, Set{ecorePackage.getQualifiedImplementationIdentifier('EFactoryExt')}
-										, aPackage.getPackageEnumTypes()
+										, if shared then
+											Set{ 'get' + aPackage.getInterfaceName() }->collect(t | aPackage.getQualifiedInterfaceIdentifier(t))
+												->including(ecorePackage.getQualifiedInterfaceIdentifier('EPackageRegistry'))
+										  else
+											aPackage.getPackageEnumTypes()
+										  endif
 										}->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
 	modules : OclAny = aPackage.getModules('factory-implemention',types);
 }]
@@ -50,7 +57,18 @@
 
 export class [className/] extends [getImportedIdentifier( ecorePackage.getQualifiedImplementationIdentifier('EFactoryExt') , modules)/] implements [aPackage.getFactoryName()/] {
     
-[if not extension]
+[if shared]
+    private static _instance: [className/] = null
+
+    // the factory of this implementation, whose package is the shared package
+    public static getInstance(): [className/] {
+        if (!this._instance) {
+            this._instance = new [className/]()
+            this._instance.setSharedEPackage(get[aPackage.getInterfaceName()/]())
+        }
+        return this._instance
+    }
+[elseif not extension]
     private static _instance: [className/] = null
 
     public static getInstance(): [className/] {
@@ -91,6 +109,69 @@ export class [className/] extends [getImportedIdentifier( ecorePackage.getQualif
     [/for]
     [/let]
 [/for]
+[if shared]
+
+    // the data types are built by the factory of the shared package
+    createFromString(eDataType: ecore.EDataType, literalValue: string): any {
+        return get[aPackage.getInterfaceName()/]().getEFactoryInstance().createFromString(eDataType, literalValue)
+    }
+
+    convertToString(eDataType: ecore.EDataType, instanceValue: any): string {
+        return get[aPackage.getInterfaceName()/]().getEFactoryInstance().convertToString(eDataType, instanceValue)
+    }
+}
+
+// getFactory returns the factory of this implementation of the package
+export function getFactory(): [aPackage.getFactoryName()/] {
+    return [className/].getInstance()
+}
+
+// install registers the package and the factory of this implementation in registry
+export function install(registry: ecore.EPackageRegistry): void {
+    registry.registerPackage(get[aPackage.getInterfaceName()/]())
+    registry.registerFactory(getFactory())
+}
+[else]
+[aPackage.generateDataTypeMethods(modules)/]
+}
+[/if]
+
+[/file]
+[/template]
+
+[**
+ * The factory of the data types of a package shared by several implementations: the factory instance of
+ * the shared package. It builds no object: each implementation has a factory of its own.
+ */]
+[template public generateDataTypeFactory(aPackage : EPackage) {
+	ecorePackage : EPackage = getEcorePackage();
+    className : String = aPackage.getFactoryImplementationName();
+	types : Set(String) = Set{ Set{'EObject' , 'EClass', 'EDataType'}->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t))
+							 , Set{aPackage.getConstantsName()}->collect(t | aPackage.getQualifiedInterfaceIdentifier(t))->asSet()
+							 , Set{ecorePackage.getQualifiedImplementationIdentifier('EFactoryExt')}
+							 , aPackage.getPackageEnumTypes()
+							 }->flatten()->select(s | s <> '')->asOrderedSet()->sortedBy(s | s);
+	modules : OclAny = aPackage.getModules('factory-data-types',types);
+}]
+[file (aPackage.getPackageDirectory() + '/' + aPackage.getImplementationFileName(aPackage.getFactoryName() ), false, 'UTF-8')]
+[fileComment()/]
+
+[aPackage.generateImports('factory-data-types', types, modules)/]
+
+export class [className/] extends [getImportedIdentifier( ecorePackage.getQualifiedImplementationIdentifier('EFactoryExt') , modules)/] {
+
+    create(eClass: ecore.EClass): ecore.EObject {
+        throw new Error(
+            `create: ${eClass.getName()} (${eClass.getClassifierID()}) of ${[aPackage.getConstantsName()/].eNS_URI}: no implementation chosen, register the factory of an implementation (registerFactory, install)`
+        )
+    }
+[aPackage.generateDataTypeMethods(modules)/]
+}
+
+[/file]
+[/template]
+
+[template private generateDataTypeMethods(aPackage : EPackage, modules : OclAny)]
 [let dataTypes : Sequence(EDataType) = aPackage.eAllContents(EDataType)->select( serializable )->sortedBy(name)]
 
     createFromString(eDataType: [if not aPackage.isEcorePackage()]ecore.[/if]EDataType,literalValue: string): any {
@@ -121,9 +202,6 @@ export class [className/] extends [getImportedIdentifier( ecorePackage.getQualif
     [aPackage.generateConvertToString(aDataType)/]
     [/for]
 [/let]
-}
-
-[/file]
 [/template]
 
 [template private generateCreateFromString( aPackage : EPackage , aDataType : EDataType ) ? (aDataType.oclIsTypeOf(EEnum))]

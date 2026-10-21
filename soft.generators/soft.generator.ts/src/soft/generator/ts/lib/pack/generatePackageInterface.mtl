@@ -16,6 +16,7 @@
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::generateType /]
+[import soft::generator::ts::generateModule /]
 [import soft::generator::ts::lib::pack::generateCommon/]
 
 [template private generateGetter(anENamedElement : ENamedElement, aPackage : EPackage, modules : OclAny )]
@@ -36,7 +37,11 @@
 									'EDataType',
 									'EPackage'
 									}->collect(t | ecorePackage.getQualifiedInterfaceIdentifier(t)),
-								Set{ aPackage.getQualifiedImplementationIdentifier(aPackage.getImplementationName()) }
+								Set{ if aPackage.isSharedPackage() then
+										aPackage.getQualifiedInterfaceIdentifier(aPackage.getImplementationName())
+									 else
+										aPackage.getQualifiedImplementationIdentifier(aPackage.getImplementationName())
+									 endif }
 							}->flatten();
 	modules : OclAny = aPackage.getModules('package-interface',types);
 }]

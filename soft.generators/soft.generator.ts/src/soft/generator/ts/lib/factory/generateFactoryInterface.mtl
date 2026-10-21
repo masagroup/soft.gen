@@ -16,6 +16,7 @@
 [import soft::generator::common::generateUtils/]
 [import soft::generator::ts::generateCommon /]
 [import soft::generator::ts::generateType /]
+[import soft::generator::ts::generateModule /]
 
 [template public generateFactoryInterface(aPackage : EPackage) { 
 	ecorePackage : EPackage = getEcorePackage(); 
@@ -23,9 +24,10 @@
     packageName : String = aPackage.name;
     extension : Boolean = aPackage.hasKey('factory') and aPackage.valueKey('factory') = 'extension';
     factoryName : String = if extension then aPackage.getFactoryExtensionName() else aPackage.getFactoryImplementationName() endif;
+	shared : Boolean = aPackage.isSharedPackage();
 	types : Set(String) = Set{  aPackage.eClassifiers->selectByKind(EClass)->collect(c | c.getQualifiedInterfaceIdentifier() )
 							 ,  Set{ ecorePackage.getQualifiedInterfaceIdentifier('EFactory') }
-							 ,  Set{ aPackage.getQualifiedInterfaceIdentifier(factoryName) }
+							 ,  if shared then Set{} else Set{ aPackage.getQualifiedInterfaceIdentifier(factoryName) } endif
 							 }->flatten();
 	modules : OclAny = aPackage.getModules('factory-interface',types);
 }]
@@ -51,9 +53,11 @@ export interface [className/] extends [getImportedIdentifier( ecorePackage.getQu
 [/for]
 }
 
+[if not shared]
 export function get[className/](): [className/] {
     return [factoryName/].getInstance()
 }
+[/if]
 
 [/file]
 [/template]
