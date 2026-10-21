@@ -24,6 +24,7 @@ import (
 type fakeLanguage struct{}
 
 func (fakeLanguage) Name() string             { return "fake" }
+func (fakeLanguage) Version() string          { return "v0.1.0" }
 func (fakeLanguage) AnnotationSource() string { return "http://net.masagroup/soft/2019/GenGo" }
 func (fakeLanguage) Properties() []props.Decl {
 	return []props.Decl{{Name: "greeting", Default: "hello", Doc: "the greeting", Scope: props.ScopePackage}}

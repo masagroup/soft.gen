@@ -11,22 +11,18 @@
 # state by version.sh (a Go pseudo-version such as
 # v2.0.0-20261021125246-3166c30bb912, or the v2 tag of the commit).
 #
-# <language>.version, the version of a language ("soft-gen <language> -v"), is
-# the version of the runtime its templates target: go.version follows soft.go,
-# ts.version soft.ts.
-# Change it here when the templates follow a new runtime version.
+# The version of a language ("soft-gen <language> -v"), the version of the
+# runtime its templates target, is a constant of its package:
+# internal/lang/golang.Version follows soft.go, internal/lang/typescript.Version
+# soft.ts. Every build has it, "go run .../cmd/soft-gen@v2.x" included.
 
 ifndef VERSION
 VERSION := $(shell ./version.sh)
 endif
-go.version := v1.13.1
-ts.version := v1.7.0
-# the versions of the languages, as "soft-gen" reads them: language=version
-# pairs separated by commas (no spaces: they pass unquoted to -ldflags)
-LANGUAGE_VERSIONS := go=$(go.version),ts=$(ts.version)
-LDFLAGS := -X main.Version=$(VERSION) -X main.LanguageVersions=$(LANGUAGE_VERSIONS)
-comma := ,
+LDFLAGS := -X main.Version=$(VERSION)
 IMAGE ?= masagroup/soft-gen
+# the languages whose version image.test checks
+LANGUAGES := go ts
 # the golangci-lint image of `make lint`: its Go must support the go directive
 # of go.mod
 GOLANGCI_LINT_IMAGE ?= golangci/golangci-lint:v2.14.0-alpine
@@ -53,21 +49,21 @@ lint:
 
 .PHONY: image
 image:
-	docker build --build-arg VERSION=$(VERSION) --build-arg LANGUAGE_VERSIONS=$(LANGUAGE_VERSIONS) --tag $(IMAGE) .
+	docker build --build-arg VERSION=$(VERSION) --tag $(IMAGE) .
 
 .PHONY: image.test
-# The version of soft-gen, then the version of each language of
-# LANGUAGE_VERSIONS ("soft-gen go version: v1.13.1").
+# The version of soft-gen, then the version of each language, which must be
+# the one of the sources ("soft-gen go version: v1.13.1").
 image.test:
 	@version=$$(docker run --rm $(IMAGE) -v); \
 	expected="soft-gen version: $(VERSION)"; \
 	if [ "$$version" != "$$expected" ]; then echo "image: got '$$version', expected '$$expected'"; exit 1; fi; \
 	echo "image: $$version"
-	@for pair in $(subst $(comma), ,$(LANGUAGE_VERSIONS)); do \
-		lang=$${pair%%=*}; expected=$${pair#*=}; \
+	@for lang in $(LANGUAGES); do \
+		expected=$$(go run ./cmd/soft-gen $$lang -v) || exit 1; \
 		version=$$(docker run --rm $(IMAGE) $$lang -v) || exit 1; \
-		case "$$version" in *" version: $$expected") echo "image: $$version";; \
-		*) echo "image: got '$$version', expected the $$lang version $$expected"; exit 1;; esac; \
+		if [ "$$version" != "$$expected" ]; then echo "image: got '$$version', expected '$$expected'"; exit 1; fi; \
+		echo "image: $$version"; \
 	done
 
 .PHONY: publish

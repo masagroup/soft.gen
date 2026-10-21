@@ -30,14 +30,15 @@ The version of soft-gen is the Git tag of the build (`v2.0.0`), or between two
 tags a Go pseudo-version such as `v2.0.1-0.20261021125246-3166c30bb912`,
 computed by `version.sh`. The version of a language is the version of the
 runtime its templates target: the Go generator `v1.13.1` generates code for
-soft.go `v1.13`. The Makefile defines the version of each language
-(`go.version`); a build without the Makefile (`go install`) reports
-`v0.0.0-developer-build`.
+soft.go `v1.13`. It is a constant of the language (`Version` in
+`internal/lang/<language>`), so every build reports it.
 
-Or install the binary (Go 1.27):
+Or install the binary (Go 1.27), or run it without installing, at a fixed
+version (the Makefile of soft.go and soft.ts do so):
 
 ```shell
 go install github.com/masagroup/soft.gen/v2/cmd/soft-gen@latest
+go run github.com/masagroup/soft.gen/v2/cmd/soft-gen@v2.0.0 go -m model.ecore -o .
 ```
 
 ## Usage

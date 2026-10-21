@@ -29,8 +29,15 @@ func New() *Language { return &Language{} }
 
 func init() { engine.Register(New()) }
 
+// Version is the version of soft.ts the templates target. Change it when the
+// templates follow a new soft.ts version.
+const Version = "v1.7.0"
+
 // Name is "ts".
 func (*Language) Name() string { return "ts" }
+
+// Version is the soft.ts version of the templates.
+func (*Language) Version() string { return Version }
 
 // AnnotationSource is the GenTS annotation source.
 func (*Language) AnnotationSource() string { return AnnotationSource }

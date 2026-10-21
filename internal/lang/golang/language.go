@@ -27,8 +27,15 @@ func New() *Language { return &Language{} }
 
 func init() { engine.Register(New()) }
 
+// Version is the version of soft.go the templates target. Change it when the
+// templates follow a new soft.go version.
+const Version = "v1.13.1"
+
 // Name is "go".
 func (*Language) Name() string { return "go" }
+
+// Version is the soft.go version of the templates.
+func (*Language) Version() string { return Version }
 
 // AnnotationSource is the GenGo annotation source.
 func (*Language) AnnotationSource() string { return AnnotationSource }
