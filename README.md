@@ -129,7 +129,7 @@ Annotation keys of the GenGo annotation on the elements of the model:
 | classifier | `exported`, `extension`, `instanceTypeName`, `defaultValue`, `testValue` | exported implementation names; a hand-written extension of the class; the Go type, default and test values of a data type |
 | feature | `lazy`, `initializationName`, `getterBody`, `setterBody`, `unsetterBody`, `aggregation` | lazy mode; name of the init method; bodies of the accessors of a volatile feature; `shared` for a back reference |
 | operation | `default` | `false`: no default implementation |
-| any | `interfaceName`, `implementationName`, `extensionName`, `mockName`, `factoryName`, `packageName`, `*FileName`, `getterName`, `setterName`, `unSetterName`, `isSetName`, `operationName` | naming rules `pattern:replacement` (or a replacement of the whole name, with `$1`), looked up on the element then its class and its package |
+| any | `interfaceName`, `implementationName`, `extensionName`, `mockName`, `factoryName`, `packageName`, `*FileName`, `getterName`, `setterName`, `unSetterName`, `operationName` | naming rules `pattern:replacement` (or a replacement of the whole name, with `$1`), looked up on the element then its class and its package |
 
 ### Several implementations of a model
 

@@ -238,13 +238,3 @@ func appendUnique[T comparable](dst []T, src ...T) []T {
 	}
 	return dst
 }
-
-// contains returns whether list contains e.
-func contains[T comparable](list []T, e T) bool {
-	for _, l := range list {
-		if l == e {
-			return true
-		}
-	}
-	return false
-}

@@ -103,7 +103,7 @@ func lintFile(path, content string) []Problem {
 		report(0, "parse: %v", err)
 		return problems
 	}
-	for _, node := range parsed.Tree.Root.Nodes {
+	for _, node := range parsed.Root.Nodes {
 		switch node := node.(type) {
 		case *parse.TextNode:
 			if strings.TrimSpace(string(node.Text)) != "" {

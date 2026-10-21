@@ -199,7 +199,7 @@ func (g *gen) mockOperation(c ecore.EClass, op ecore.EOperation, scope *fileScop
 		names = append(names, p.GetName())
 		anys = append(anys, p.GetName()+" any")
 		arg := "_args[" + strconv.Itoa(i) + "]"
-		if !(p.GetUpperBound() == 1 && g.m.IsAny(p.GetEType())) {
+		if g.needsCast(p) {
 			arg += ".(" + t + ")"
 		}
 		runArgs = append(runArgs, arg)

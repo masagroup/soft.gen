@@ -175,7 +175,7 @@ func javaReplacementToTemplate(replacement string, numGroups int) (string, error
 				if _, err := groupIndex(groupName, numGroups); err != nil {
 					return "", err
 				}
-				template.WriteString("${" + groupName + "}")
+				fmt.Fprintf(&template, "${%s}", groupName)
 				i += end
 			case isDigit(replacement[i]):
 				group := int(replacement[i] - '0')

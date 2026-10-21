@@ -2,6 +2,7 @@ package golang
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/masagroup/soft.gen/v2/engine"
 )
@@ -30,15 +31,15 @@ func (f goFile) Render(ctx *engine.Context) ([]byte, error) {
 	}
 	body, imports := f.scope.finish(body)
 	var out bytes.Buffer
-	out.WriteString("package " + packageNameFromPath(f.scope.packagePath) + "\n\n")
+	fmt.Fprintf(&out, "package %s\n\n", packageNameFromPath(f.scope.packagePath))
 	if len(imports) > 0 {
 		out.WriteString("import (\n")
 		for _, spec := range imports {
-			out.WriteString("\t")
 			if spec.Alias != "" {
-				out.WriteString(spec.Alias + " ")
+				fmt.Fprintf(&out, "\t%s %q\n", spec.Alias, spec.Dir)
+			} else {
+				fmt.Fprintf(&out, "\t%q\n", spec.Dir)
 			}
-			out.WriteString(`"` + spec.Dir + `"` + "\n")
 		}
 		out.WriteString(")\n\n")
 	}

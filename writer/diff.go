@@ -23,15 +23,23 @@ func UnifiedDiff(path string, old, new []byte) string {
 		for _, op := range hunk.ops {
 			switch op.kind {
 			case opEqual:
-				sb.WriteString(" " + a[op.aIndex] + "\n")
+				writeDiffLine(&sb, ' ', a[op.aIndex])
 			case opDelete:
-				sb.WriteString("-" + a[op.aIndex] + "\n")
+				writeDiffLine(&sb, '-', a[op.aIndex])
 			case opInsert:
-				sb.WriteString("+" + b[op.bIndex] + "\n")
+				writeDiffLine(&sb, '+', b[op.bIndex])
 			}
 		}
 	}
 	return sb.String()
+}
+
+// writeDiffLine writes one line of a hunk: its marker (' ', '-' or '+'), the
+// text and a newline.
+func writeDiffLine(sb *strings.Builder, marker byte, text string) {
+	sb.WriteByte(marker)
+	sb.WriteString(text)
+	sb.WriteByte('\n')
 }
 
 // splitLines splits text into lines without their newline.
