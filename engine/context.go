@@ -52,6 +52,9 @@ type Request struct {
 	// Format applies the formatter of the language (always on for in-process
 	// formatters; external ones need it).
 	Format bool
+	// OnRender, when set, is called with the name of every template rendered
+	// (the coverage tests record them).
+	OnRender func(template string)
 	// Output receives the logs and diffs (default: stdout).
 	Output io.Writer
 	// ErrOutput receives the warnings (default: stderr).

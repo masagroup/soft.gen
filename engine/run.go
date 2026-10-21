@@ -49,6 +49,7 @@ func Run(ctx context.Context, req Request) (*Report, error) {
 	if err != nil {
 		return nil, fmt.Errorf("templates of %s: %w", lang.Name(), err)
 	}
+	templates.OnRender(req.OnRender)
 
 	level := slog.LevelInfo
 	if properties.Bool("debug") {

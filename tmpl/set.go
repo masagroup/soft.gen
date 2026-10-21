@@ -16,8 +16,16 @@ const Extension = ".tmpl"
 // file system parsed into one text/template, with the base functions, the
 // functions of the language and the include function bound to the set.
 type Set struct {
-	root  *template.Template
-	names []string
+	root     *template.Template
+	names    []string
+	onRender func(name string)
+}
+
+// OnRender sets a function called with the name of every template the set
+// renders, file templates and include alike (nil: none). The coverage tests use
+// it to know which defines were rendered.
+func (s *Set) OnRender(fn func(name string)) {
+	s.onRender = fn
 }
 
 // Load parses every *.tmpl file found under fsys (recursively) into one set.
@@ -77,6 +85,9 @@ func (s *Set) Render(name string, data any) ([]byte, error) {
 	t := s.root.Lookup(name)
 	if t == nil {
 		return nil, fmt.Errorf("template %q not found", name)
+	}
+	if s.onRender != nil {
+		s.onRender(name)
 	}
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
