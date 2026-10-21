@@ -1,0 +1,74 @@
+{{/* The instance of the package, built on first use. */}}
+{{ define "package/impl.instance" -}}
+public static getInstance(): {{ .Name }} {
+    if (!this._instance) {
+        this._instance = new {{ .Name }}()
+        this._instance.initialize({{ .Instance }}, {{ .GetEcoreFactory }})
+    }
+    return this._instance
+}
+{{- end }}
+
+{{/* The initialization of the package: its names, its factory, its contents. */}}
+{{ define "package/impl.initialize" -}}
+protected initialize(packageFactory: {{ .Factory }}, ecoreFactory: {{ .EcoreFactory }}) {
+    this.setName({{ .Constants }}.eNAME)
+    this.setNsPrefix({{ .Constants }}.eNS_PREFIX)
+    this.setNsURI({{ .Constants }}.eNS_URI)
+    this.setEFactoryInstance(packageFactory)
+    this.createPackageContents(ecoreFactory)
+    this.initializePackageContents(ecoreFactory)
+    this.createResource()
+}
+{{- end }}
+
+{{/* The getter of a meta object. */}}
+{{ define "package/impl.getter" -}}
+{{ .Getter }}(): {{ .Type }} {
+    return {{ .Value }}
+}
+{{- end }}
+
+{{/* The creation of the meta objects, statements built in Go. */}}
+{{ define "package/impl.create" -}}
+private createPackageContents(ecoreFactory: {{ .EcoreFactory }}): void {
+{{- if .Lines }}
+{{ indent 1 (lines .Lines) }}
+}
+{{- else }}}
+{{- end }}
+{{- end }}
+
+{{/* The initialization of the meta objects, statements built in Go. */}}
+{{ define "package/impl.init" -}}
+private initializePackageContents(ecoreFactory: {{ .EcoreFactory }}): void {
+{{- if .Lines }}
+{{ indent 1 (lines .Lines) }}
+}
+{{- else }}}
+{{- end }}
+{{- end }}
+
+{{/* The annotations of a source. */}}
+{{ define "package/impl.annotations" -}}
+private initialize{{ .Identifier }}Annotations(ecoreFactory: {{ .EcoreFactory }}): void {
+    const source = {{ .Source }}
+{{- range .Annotations }}
+    {
+        const eAnnotation = ecoreFactory.createEAnnotationFromContainer({{ .Container }})
+        eAnnotation.setSource(source)
+{{- range .Details }}
+        eAnnotation.getDetails().put({{ index . 0 }}, {{ index . 1 }})
+{{- end }}
+    }
+{{- end }}
+}
+{{- end }}
+
+{{/* A group of getters, without blank lines. */}}
+{{ define "package/impl.getters" -}}
+{{ include "package/impl.getter" (index . 0) }}
+{{- range (slice . 1) }}
+{{ include "package/impl.getter" . }}
+{{- end }}
+{{- end }}

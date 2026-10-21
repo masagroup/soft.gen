@@ -1,0 +1,197 @@
+{{/* The instance of the factory, built on first use; the one of a shared package implementation uses the shared package. */}}
+{{ define "factory/impl.instance" -}}
+private static _instance: {{ .Name }} = null
+{{ blank }}
+{{- if .Shared }}
+// the factory of this implementation, whose package is the shared package
+{{- end }}
+public static getInstance(): {{ .Name }} {
+    if (!this._instance) {
+        this._instance = new {{ .Name }}()
+{{- if .Shared }}
+        this._instance.setSharedEPackage({{ .PackageGetter }})
+{{- end }}
+    }
+    return this._instance
+}
+{{- end }}
+
+{{/* The creation of an object by class id. */}}
+{{ define "factory/impl.create" -}}
+create(eClass: {{ .Ecore "EClass" }}): {{ .Ecore "EObject" }} {
+    switch (eClass.getClassifierID()) {
+{{- range .Classes }}
+        case {{ .ID }}:
+            return this.create{{ .Class }}()
+{{- end }}
+        default:
+            throw new Error(`create: ${eClass.getClassifierID()} not found`)
+    }
+}
+{{- end }}
+
+{{/* The creator of a class. */}}
+{{ define "factory/impl.creator" -}}
+create{{ .Creator.Class }}(): {{ .Creator.Interface }} {
+    return new {{ .Creator.Implementation }}()
+}
+{{- end }}
+
+{{/* The creator of a class from a container, and its class id. */}}
+{{ define "factory/impl.fromcontainer" -}}
+{{ .Creator.Signature }} {
+    const element = this.create{{ .Creator.Class }}()
+{{- if .Creator.WithClassID }}
+    {{ .Creator.IDSetter }}
+{{- end }}
+{{- if .Creator.AddToContainer }}
+    if (eContainer != null) {
+        {{ .Creator.AddToContainer }}
+    }
+{{- end }}
+    return element
+}
+{{- end }}
+
+{{/* The data types of an implementation of a shared package: converted by the factory of the shared package. */}}
+{{ define "factory/impl.shareddatatypes" -}}
+// the data types are built by the factory of the shared package
+createFromString(eDataType: {{ .Ecore "EDataType" }}, literalValue: string): any {
+    return {{ .PackageGetter }}.getEFactoryInstance().createFromString(eDataType, literalValue)
+}
+{{ blank }}
+convertToString(eDataType: {{ .Ecore "EDataType" }}, instanceValue: any): string {
+    return {{ .PackageGetter }}.getEFactoryInstance().convertToString(eDataType, instanceValue)
+}
+{{- end }}
+
+{{/* The factory of an implementation of a shared package, then its functions. */}}
+{{ define "factory/impl.shared" -}}
+{{ include "class.ts" .Class }}
+
+// getFactory returns the factory of this implementation of the package
+export function getFactory(): {{ .Data.Factory }} {
+    return {{ .Data.Name }}.getInstance()
+}
+
+// install registers the package and the factory of this implementation in registry
+export function install(registry: {{ .Registry }}): void {
+    registry.registerPackage({{ .Data.PackageGetter }})
+    registry.registerFactory(getFactory())
+}
+{{- end }}
+
+{{/* The factory of the data types of a shared package creates no object. */}}
+{{ define "factory/impl.nocreate" -}}
+create(eClass: {{ .Ecore "EClass" }}): {{ .Ecore "EObject" }} {
+    throw new Error(
+        `create: ${eClass.getName()} (${eClass.getClassifierID()}) of ${ {{- .Constants }}.eNS_URI}: no implementation chosen, register the factory of an implementation (registerFactory, install)`
+    )
+}
+{{- end }}
+
+{{/* The creation of a data type value from a string, by data type id. */}}
+{{ define "factory/impl.fromstring" -}}
+createFromString(eDataType: {{ .Ecore "EDataType" }}, literalValue: string): any {
+    switch (eDataType.getClassifierID()) {
+{{- range .DataTypes }}
+        case {{ .ID }}:
+            return this.create{{ .Name }}FromString(eDataType, literalValue)
+{{- end }}
+        default:
+            throw new Error(`The datatype '${eDataType.getName()}' is not a valid classifier`)
+    }
+}
+{{- end }}
+
+{{/* The conversion of a data type value to a string, by data type id. */}}
+{{ define "factory/impl.tostring" -}}
+convertToString(eDataType: {{ .Ecore "EDataType" }}, instanceValue: any): string {
+    switch (eDataType.getClassifierID()) {
+{{- range .DataTypes }}
+        case {{ .ID }}:
+            return this.convert{{ .Name }}ToString(eDataType, instanceValue)
+{{- end }}
+        default:
+            throw new Error(`The datatype '${eDataType.getName()}' is not a valid classifier`)
+    }
+}
+{{- end }}
+
+{{/* The creation of a value of a data type from a string; the variant is its type. */}}
+{{ define "factory/impl.createfromstring" -}}
+create{{ .DataType.Name }}FromString(eDataType: {{ .Ecore "EDataType" }}, literalValue: string): any {
+{{ indent 1 (include (printf "factory/impl.createfromstring.%s" .DataType.Create) .DataType) }}
+}
+{{- end }}
+
+{{ define "factory/impl.createfromstring.enum" -}}
+return {{ .Var }}FromString(literalValue)
+{{- end }}
+
+{{ define "factory/impl.createfromstring.string" -}}
+return literalValue
+{{- end }}
+
+{{ define "factory/impl.createfromstring.boolean" -}}
+return literalValue.toLowerCase() === "true"
+{{- end }}
+
+{{ define "factory/impl.createfromstring.number" -}}
+return Number(literalValue)
+{{- end }}
+
+{{ define "factory/impl.createfromstring.byte" -}}
+if (literalValue.length == 0) {
+    return 0
+} else {
+    return literalValue.charCodeAt(0)
+}
+{{- end }}
+
+{{ define "factory/impl.createfromstring.Uint8Array" -}}
+return new TextEncoder().encode(literalValue)
+{{- end }}
+
+{{ define "factory/impl.createfromstring.Date" -}}
+return new Date(literalValue)
+{{- end }}
+
+{{ define "factory/impl.createfromstring.unknown" -}}
+throw new Error("NotImplementedException")
+{{- end }}
+
+{{/* The conversion of a value of a data type to a string; the variant is its type. */}}
+{{ define "factory/impl.converttostring" -}}
+convert{{ .DataType.Name }}ToString(eDataType: {{ .Ecore "EDataType" }}, instanceValue: any): string {
+{{ indent 1 (include (printf "factory/impl.converttostring.%s" .DataType.Convert) .DataType) }}
+}
+{{- end }}
+
+{{ define "factory/impl.converttostring.enum" -}}
+return {{ .Var }}ToString(instanceValue as {{ .Enum }})
+{{- end }}
+
+{{ define "factory/impl.converttostring.string" -}}
+return instanceValue as string
+{{- end }}
+
+{{ define "factory/impl.converttostring.number" -}}
+return instanceValue.toString()
+{{- end }}
+
+{{ define "factory/impl.converttostring.byte" -}}
+return String.fromCharCode(instanceValue as number)
+{{- end }}
+
+{{ define "factory/impl.converttostring.Uint8Array" -}}
+return new TextDecoder().decode(instanceValue as Uint8Array)
+{{- end }}
+
+{{ define "factory/impl.converttostring.Date" -}}
+return (instanceValue as Date).toISOString()
+{{- end }}
+
+{{ define "factory/impl.converttostring.unknown" -}}
+throw new Error("NotImplementedException")
+{{- end }}

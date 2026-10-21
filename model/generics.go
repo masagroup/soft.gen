@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"sort"
+	"strconv"
 )
 
 // soft.go does not model the EMF generics (EGenericType, ETypeParameter): the
@@ -20,10 +21,33 @@ import (
 // eGenericType and eTypeParameters sub trees are removed. The rest of the
 // document is left byte for byte.
 func stripGenerics(data []byte) ([]byte, error) {
+	stripped, _, err := stripGenericsWithArguments(data)
+	return stripped, err
+}
+
+// typeArgumentRefs maps the position of an element in the document (see
+// elementPosition) to the eClassifier references of the type arguments of
+// its eGenericType, "" for an argument without classifier (a wildcard or a
+// type parameter).
+type typeArgumentRefs map[string][]string
+
+// elementPosition is the position of an element in an .ecore document: the
+// local names of its ancestors and of itself, each with its index among the
+// children of the same name of its parent ("/eClassifiers.3/eOperations.0").
+func elementPosition(parent, local string, index int) string {
+	return parent + "/" + local + "." + strconv.Itoa(index)
+}
+
+// stripGenericsWithArguments is stripGenerics, and returns the type arguments
+// of the generic types it removed, which the languages with generics write
+// (EList<EObject>).
+func stripGenericsWithArguments(data []byte) ([]byte, typeArgumentRefs, error) {
 	type frame struct {
 		name     xml.Name
 		insertAt int  // where an attribute is inserted in the start tag
 		hasEType bool // the element has an eType attribute
+		position string
+		children map[string]int
 	}
 	type edit struct {
 		start, end int // the bytes replaced
@@ -31,7 +55,11 @@ func stripGenerics(data []byte) ([]byte, error) {
 	}
 	var edits []edit
 	var stack []*frame
+	arguments := typeArgumentRefs{}
 	skipDepth, skipStart := 0, 0
+	// genericOwner is the position of the element whose eGenericType is
+	// skipped, "" when the skipped tree is not an eGenericType.
+	genericOwner, genericArguments := "", []string(nil)
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	for {
 		start := int(decoder.InputOffset())
@@ -40,56 +68,73 @@ func stripGenerics(data []byte) ([]byte, error) {
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		end := int(decoder.InputOffset())
 		switch token := token.(type) {
 		case xml.StartElement:
 			if skipDepth > 0 {
+				if skipDepth == 1 && genericOwner != "" && token.Name.Local == "eTypeArguments" {
+					genericArguments = append(genericArguments, attributeValue(token, "eClassifier"))
+				}
 				skipDepth++
 				continue
 			}
 			switch token.Name.Local {
 			case "eGenericType":
 				if len(stack) == 0 {
-					return nil, errors.New("malformed document: eGenericType at the root")
+					return nil, nil, errors.New("malformed document: eGenericType at the root")
 				}
-				if parent := stack[len(stack)-1]; !parent.hasEType {
+				parent := stack[len(stack)-1]
+				if !parent.hasEType {
 					if classifier := attributeValue(token, "eClassifier"); classifier != "" {
 						edits = append(edits, edit{start: parent.insertAt, end: parent.insertAt, text: ` eType="` + classifier + `"`})
 						parent.hasEType = true
 					}
 				}
 				skipDepth, skipStart = 1, start
+				genericOwner, genericArguments = parent.position, nil
 			case "eTypeParameters":
 				skipDepth, skipStart = 1, start
+				genericOwner = ""
 			default:
 				// the attribute goes before the '>' or the '/>' closing the start tag
 				insertAt := end - 1
 				if data[end-2] == '/' {
 					insertAt = end - 2
 				}
-				stack = append(stack, &frame{name: token.Name, insertAt: insertAt, hasEType: attributeValue(token, "eType") != ""})
+				position := ""
+				if len(stack) > 0 {
+					parent := stack[len(stack)-1]
+					position = elementPosition(parent.position, token.Name.Local, parent.children[token.Name.Local])
+					parent.children[token.Name.Local]++
+				}
+				stack = append(stack, &frame{name: token.Name, insertAt: insertAt, hasEType: attributeValue(token, "eType") != "",
+					position: position, children: map[string]int{}})
 			}
 		case xml.EndElement:
 			if skipDepth > 0 {
 				if skipDepth--; skipDepth == 0 {
 					edits = append(edits, edit{start: skipStart, end: end})
+					if genericOwner != "" && len(genericArguments) > 0 {
+						arguments[genericOwner] = genericArguments
+					}
+					genericOwner = ""
 				}
 				continue
 			}
 			// RawToken does not check the nesting
 			if len(stack) == 0 || stack[len(stack)-1].name != token.Name {
-				return nil, errors.New("malformed document: unexpected end of element " + token.Name.Local)
+				return nil, nil, errors.New("malformed document: unexpected end of element " + token.Name.Local)
 			}
 			stack = stack[:len(stack)-1]
 		}
 	}
 	if len(stack) != 0 {
-		return nil, errors.New("malformed document: unclosed element " + stack[len(stack)-1].name.Local)
+		return nil, nil, errors.New("malformed document: unclosed element " + stack[len(stack)-1].name.Local)
 	}
 	if len(edits) == 0 {
-		return data, nil
+		return data, arguments, nil
 	}
 	sort.SliceStable(edits, func(i, j int) bool { return edits[i].start < edits[j].start })
 	var result bytes.Buffer
@@ -101,7 +146,7 @@ func stripGenerics(data []byte) ([]byte, error) {
 		position = e.end
 	}
 	result.Write(data[position:])
-	return result.Bytes(), nil
+	return result.Bytes(), arguments, nil
 }
 
 // attributeValue returns the value of the attribute named name of element, ""

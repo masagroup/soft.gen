@@ -1,0 +1,31 @@
+{{/* eUnsetFromID: unsets a feature by id. */}}
+{{ define "reflectives/eunset" -}}
+eUnsetFromID(featureID: number) {
+    switch (featureID) {
+{{- range .Cases }}
+        case {{ .CaseID }}: {
+{{ indent 3 (include (printf "reflectives/eunset.%s" .Strategy) .) }}
+            break
+        }
+{{- end }}
+        default: {
+            super.eUnsetFromID(featureID)
+        }
+    }
+}
+{{- end }}
+
+{{/* A list: cleared. */}}
+{{ define "reflectives/eunset.clear" -}}
+this.{{ .Getter }}().clear()
+{{- end }}
+
+{{/* An unsettable feature: its unsetter. */}}
+{{ define "reflectives/eunset.unset" -}}
+this.{{ .Unsetter }}()
+{{- end }}
+
+{{/* Any other feature: set to its default value. */}}
+{{ define "reflectives/eunset.set" -}}
+this.{{ .Setter }}({{ .Value }})
+{{- end }}

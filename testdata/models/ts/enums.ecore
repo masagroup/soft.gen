@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="enums" nsURI="http://soft.gen/test/enums" nsPrefix="enums">
+  <eClassifiers xsi:type="ecore:EClass" name="Lamp">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="color" eType="#//Color"
+        defaultValueLiteral="Green"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="light" eType="#//Light"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="single" eType="#//Single"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="status" eType="#//Status"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="level" eType="#//Level"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Color">
+    <eLiterals name="Red"/>
+    <eLiterals name="Green" value="1"/>
+    <eLiterals name="DarkBlue" value="2" literal="dark-blue"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Light">
+    <eLiterals name="Off"/>
+    <eLiterals name="Red" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Empty"/>
+  <eClassifiers xsi:type="ecore:EEnum" name="Single">
+    <eLiterals name="Only" value="7"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Status">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="instanceTypeName" value="number"/>
+    </eAnnotations>
+    <eLiterals name="Active"/>
+    <eLiterals name="Inactive" value="1"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Level" instanceClassName="java.lang.Long">
+    <eLiterals name="Low"/>
+    <eLiterals name="High" value="1"/>
+  </eClassifiers>
+</ecore:EPackage>

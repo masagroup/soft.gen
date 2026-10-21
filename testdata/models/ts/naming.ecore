@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="naming" nsURI="http://soft.gen/test/naming" nsPrefix="naming">
+  <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+    <details key="factoryName" value="$1Builder"/>
+    <details key="packageName" value="(.*):$1Meta"/>
+    <details key="interfaceName" value="I$1"/>
+    <details key="implementationName" value="(.*):$1Struct"/>
+    <details key="extensionName" value="$1Custom"/>
+    <details key="constantsName" value="$1Values"/>
+    <details key="interfaceFileName" value="$1.api.ts"/>
+    <details key="implementationFileName" value="(.*):$1.struct.ts"/>
+    <details key="implementationTestsFileName" value="$1.struct.test.ts"/>
+    <details key="factoryTestFileName" value="(.*)Factory:$1Builder.test.ts"/>
+    <details key="constantsFileName" value="$1.const.ts"/>
+    <details key="extensionFileName" value="$1.custom.ts"/>
+    <details key="internalFileName" value="all.ts"/>
+    <details key="indexFileName" value="main.ts"/>
+    <details key="getterName" value="read$1"/>
+    <details key="setterName" value="(.*):write$1"/>
+    <details key="unSetterName" value="clear$1"/>
+    <details key="isSetName" value="(.*):has$1"/>
+    <details key="operationName" value="do$1"/>
+  </eAnnotations>
+  <eClassifiers xsi:type="ecore:EClass" name="Item">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="interfaceName" value="(.*):$1Itf"/>
+      <details key="setterName" value="put$1"/>
+      <details key="implementationFileName" value="ItemBody.ts"/>
+    </eAnnotations>
+    <eOperations name="compute" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eParameters name="x" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eOperations>
+    <eOperations name="reset">
+      <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+        <details key="operationName" value="run$1"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+        <details key="getterName" value="fetch$1"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="active" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="count" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        unsettable="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parts" upperBound="-1"
+        eType="#//Part" containment="true" eOpposite="#//Part/owner"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Part">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="implementationTestsFileName" value="(.*):$1.check.test.ts"/>
+      <details key="interfaceFileName" value="PartApiCustom.ts"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="weight" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"
+        unsettable="true">
+      <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+        <details key="unSetterName" value="(.*):drop$1"/>
+        <details key="isSetName" value="knows$1"/>
+        <details key="setterName" value="assign$1"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" eType="#//Item"
+        eOpposite="#//Item/parts"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Public">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="exported" value="true"/>
+      <details key="implementationName" value="$1Impl"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Custom">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="extension" value="true"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Special" eSuperTypes="#//Custom">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="extension" value="true"/>
+      <details key="extensionName" value="(.*):My$1"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="level" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+</ecore:EPackage>

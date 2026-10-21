@@ -1,0 +1,15 @@
+{{/* The default implementation of an operation. */}}
+{{ define "operation/impl" -}}
+// {{ .Name }} default implementation
+{{ .Name }}({{ .Parameters }}): {{ .Type }} {
+    throw new Error("{{ .Name }} not implemented")
+}
+{{- end }}
+
+{{/* The default implementation of the async variant of an operation. */}}
+{{ define "operation/impl.async" -}}
+// {{ .Name }} default implementation
+{{ .Name }}Async({{ .Parameters }}): Promise<{{ .Type }}> {
+    throw new Error("{{ .Name }}Async not implemented")
+}
+{{- end }}

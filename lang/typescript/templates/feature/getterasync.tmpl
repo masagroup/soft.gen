@@ -1,0 +1,32 @@
+{{/* The asynchronous getter of a single proxy. */}}
+{{ define "feature/getterasync" -}}
+// get the value of {{ .Name }} asynchronously
+async {{ .Getter }}Async(): Promise<{{ .Type }}> {
+{{ indent 1 (include (printf "feature/getterasync.%s" .GetterAsyncStrategy) .) }}
+}
+{{- end }}
+
+{{/* Reflective delegation. */}}
+{{ define "feature/getterasync.reflective" -}}
+return (await this.eGetFromIDAsync({{ .ID }}, true)) as {{ .Type }}
+{{- end }}
+
+{{/* The proxy resolved asynchronously, with a RESOLVE notification. */}}
+{{ define "feature/getterasync.proxy" -}}
+if (this.{{ .Var }} != null && this.{{ .Var }}.eIsProxy()) {
+    const {{ .OldVar }} = this.{{ .Var }}
+    const {{ .NewVar }} = (await this.eResolveProxyAsync({{ .OldVar }})) as {{ .Type }}
+    if ({{ .NewVar }} != {{ .OldVar }}) {
+        this.{{ .Var }} = {{ .NewVar }}
+        if (this.eNotificationRequired()) {
+            this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.RESOLVE, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }}))
+        }
+    }
+}
+return this.{{ .Var }}
+{{- end }}
+
+{{/* A volatile proxy. */}}
+{{ define "feature/getterasync.panic" -}}
+throw new Error("{{ .Getter }}Async not implemented")
+{{- end }}

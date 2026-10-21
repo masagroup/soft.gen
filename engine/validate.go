@@ -52,7 +52,7 @@ func Validate(lang Language) error {
 		if _, err := tmpl.Load(lang.Templates(), lang.Funcs()); err != nil {
 			fail("language %s: %v", lang.Name(), err)
 		}
-		for _, problem := range tmpl.Lint(lang.Templates()) {
+		for _, problem := range tmpl.Lint(lang.Templates(), lang.Funcs()) {
 			fail("language %s: template %s", lang.Name(), problem)
 		}
 	}

@@ -19,7 +19,7 @@ var goKeywords = map[string]bool{
 
 // factoryName is the name of the factory interface of a package: rule factoryName, default <Name>Factory.
 func (g *gen) factoryName(p ecore.EPackage) string {
-	return naming.UpperFirst(g.elementName(p, p.GetName(), "factoryName", "$1Factory"))
+	return naming.UpperFirst(g.ElementName(p, p.GetName(), "factoryName", "$1Factory"))
 }
 
 // factoryImplementationName is the name of the factory implementation of a package.
@@ -39,17 +39,17 @@ func (g *gen) factoryExtensionName(p ecore.EPackage) string {
 
 // packageName is the name of the package interface: rule packageName, default <Name>Package.
 func (g *gen) packageName(p ecore.EPackage) string {
-	return naming.UpperFirst(g.elementName(p, p.GetName(), "packageName", "$1Package"))
+	return naming.UpperFirst(g.ElementName(p, p.GetName(), "packageName", "$1Package"))
 }
 
 // interfaceName is the name of the interface of a class: rule interfaceName, default the class name.
 func (g *gen) interfaceName(c ecore.EClass) string {
-	return naming.UpperFirst(g.elementName(c, c.GetName(), "interfaceName", ""))
+	return naming.UpperFirst(g.ElementName(c, c.GetName(), "interfaceName", ""))
 }
 
 // packageInterfaceName is the name of the package interface after the interfaceName rule.
 func (g *gen) packageInterfaceName(p ecore.EPackage) string {
-	return naming.UpperFirst(g.elementName(p, g.packageName(p), "interfaceName", ""))
+	return naming.UpperFirst(g.ElementName(p, g.packageName(p), "interfaceName", ""))
 }
 
 // implementationName is the name of the implementation of a class: rule
@@ -65,7 +65,7 @@ func (g *gen) packageImplementationName(p ecore.EPackage) string {
 
 // implementationNameOf applies the implementationName rule and the export case to a name.
 func (g *gen) implementationNameOf(el ecore.ENamedElement, name string) string {
-	return g.exportCase(el, g.elementName(el, name, "implementationName", "$1Impl"))
+	return g.exportCase(el, g.ElementName(el, name, "implementationName", "$1Impl"))
 }
 
 // extensionName is the name of the hand-written extension of a class: rule extensionName, default <Name>Ext.
@@ -75,7 +75,7 @@ func (g *gen) extensionName(c ecore.EClass) string {
 
 // extensionNameOf applies the extensionName rule and the export case to a name.
 func (g *gen) extensionNameOf(el ecore.ENamedElement, name string) string {
-	return g.exportCase(el, g.elementName(el, name, "extensionName", "$1Ext"))
+	return g.exportCase(el, g.ElementName(el, name, "extensionName", "$1Ext"))
 }
 
 // exportCase upper-cases the first letter of an implementation name when the
@@ -89,84 +89,48 @@ func (g *gen) exportCase(el ecore.ENamedElement, name string) string {
 
 // mockName is the name of the mock of a class: rule mockName, default Mock<Name>.
 func (g *gen) mockName(c ecore.EClass) string {
-	return g.elementName(c, c.GetName(), "mockName", "Mock$1")
+	return g.ElementName(c, c.GetName(), "mockName", "Mock$1")
 }
 
 // interfaceFileName is the file of an interface: rule interfaceFileName, default <name>.go.
 func (g *gen) interfaceFileName(el ecore.ENamedElement, name string) string {
-	return strings.ToLower(g.elementName(el, name, "interfaceFileName", "$1.go"))
+	return strings.ToLower(g.ElementName(el, name, "interfaceFileName", "$1.go"))
 }
 
 // implementationFileName is the file of an implementation: rule implementationFileName, default <name>_impl.go.
 func (g *gen) implementationFileName(el ecore.ENamedElement, name string) string {
-	return strings.ToLower(g.elementName(el, name, "implementationFileName", "$1_impl.go"))
+	return strings.ToLower(g.ElementName(el, name, "implementationFileName", "$1_impl.go"))
 }
 
 // mockFileName is the file of a mock: rule mockFileName, default <name>_mock.go.
 func (g *gen) mockFileName(el ecore.ENamedElement, name string) string {
-	return strings.ToLower(g.elementName(el, name, "mockFileName", "$1_mock.go"))
+	return strings.ToLower(g.ElementName(el, name, "mockFileName", "$1_mock.go"))
 }
 
 // mockTestFileName is the file of the tests of a mock: rule mockTestFileName, default <name>_mock_test.go.
 func (g *gen) mockTestFileName(el ecore.ENamedElement, name string) string {
-	return strings.ToLower(g.elementName(el, name, "mockTestFileName", "$1_mock_test.go"))
+	return strings.ToLower(g.ElementName(el, name, "mockTestFileName", "$1_mock_test.go"))
 }
 
 // implementationTestFileName is the file of the tests of an implementation: rule implementationTestFileName, default <name>_impl_test.go.
 func (g *gen) implementationTestFileName(el ecore.ENamedElement, name string) string {
-	return strings.ToLower(g.elementName(el, name, "implementationTestFileName", "$1_impl_test.go"))
+	return strings.ToLower(g.ElementName(el, name, "implementationTestFileName", "$1_impl_test.go"))
 }
 
 // factoryTestFileName is the file of the tests of the factory: rule factoryTestFileName on "<package>factory".
 func (g *gen) factoryTestFileName(p ecore.EPackage) string {
-	return strings.ToLower(g.elementName(p, p.GetName()+"factory", "factoryTestFileName", "$1_impl_test.go"))
+	return strings.ToLower(g.ElementName(p, p.GetName()+"factory", "factoryTestFileName", "$1_impl_test.go"))
 }
 
 // packageTestFileName is the file of the tests of the package: rule packageTestFileName on "<package>package".
 func (g *gen) packageTestFileName(p ecore.EPackage) string {
-	return strings.ToLower(g.elementName(p, p.GetName()+"package", "packageTestFileName", "$1_impl_test.go"))
+	return strings.ToLower(g.ElementName(p, p.GetName()+"package", "packageTestFileName", "$1_impl_test.go"))
 }
 
 // reflectiveGetterName is the getter of a model element in the package
-// interface (v1 getReflectiveGetterName): Get<Accessor>, suffixed by the kind
-// of the element when EPackage already has an operation of that name
-// (GetEClassifier -> GetEClassifierClass).
+// interface: the shared one, upper-cased (GetEClassifierClass).
 func (g *gen) reflectiveGetterName(el ecore.ENamedElement) string {
-	getter := "get" + g.m.ElementAccessorName(el)
-	if g.ecorePackageHasOperation(getter) {
-		getter += elementTypeName(el)
-	}
-	return naming.UpperFirst(getter)
-}
-
-// ecorePackageHasOperation reports whether the EPackage class of the Ecore
-// metamodel has an operation of that name.
-func (g *gen) ecorePackageHasOperation(name string) bool {
-	class, _ := g.m.Ecore().GetEClassifier("EPackage").(ecore.EClass)
-	if class == nil {
-		return false
-	}
-	for it := class.GetEAllOperations().Iterator(); it.HasNext(); {
-		if it.Next().(ecore.EOperation).GetName() == name {
-			return true
-		}
-	}
-	return false
-}
-
-// elementTypeName is the suffix of a reflective getter by kind of element (v1 getElementTypeName).
-func elementTypeName(el ecore.ENamedElement) string {
-	switch el.(type) {
-	case ecore.EAttribute:
-		return "Attribute"
-	case ecore.EReference:
-		return "Reference"
-	case ecore.EOperation:
-		return "Operation"
-	case ecore.EClass:
-		return "Class"
-	}
-	return ""
+	return naming.UpperFirst(g.ReflectiveGetterName(el))
 }
 
 // accessorName is the base of the accessor names of a feature: its name,
@@ -185,22 +149,22 @@ func (g *gen) getterName(f ecore.EStructuralFeature) string {
 	if t := f.GetEType(); t != nil && t.GetName() == "EBoolean" {
 		prefix = "Is"
 	}
-	return g.elementName(f, g.accessorName(f), "getterName", prefix+"$1")
+	return g.ElementName(f, g.accessorName(f), "getterName", prefix+"$1")
 }
 
 // setterName is the setter of a feature: rule setterName, default Set<Name>.
 func (g *gen) setterName(f ecore.EStructuralFeature) string {
-	return g.elementName(f, g.accessorName(f), "setterName", "Set$1")
+	return g.ElementName(f, g.accessorName(f), "setterName", "Set$1")
 }
 
 // unsetterName is the unsetter of a feature: rule unSetterName, default Unset<Name>.
 func (g *gen) unsetterName(f ecore.EStructuralFeature) string {
-	return g.elementName(f, g.accessorName(f), "unSetterName", "Unset$1")
+	return g.ElementName(f, g.accessorName(f), "unSetterName", "Unset$1")
 }
 
 // operationName is the method of an operation: rule operationName, default the name, upper-cased first.
 func (g *gen) operationName(op ecore.EOperation) string {
-	return naming.UpperFirst(g.elementName(op, op.GetName(), "operationName", ""))
+	return naming.UpperFirst(g.ElementName(op, op.GetName(), "operationName", ""))
 }
 
 // isConstantsQualified reports whether the constants of an enum are prefixed
@@ -267,7 +231,7 @@ func (g *gen) interfaceExtends(c ecore.EClass) []string {
 		if c.GetName() == "EObject" {
 			return []string{g.qualifiedInterfaceIdentifier(e, "ENotifier")}
 		}
-		if root, ok := g.explicitPackageProperty("rootExtendsInterface"); ok {
+		if root, ok := g.ExplicitPackageProperty("rootExtendsInterface"); ok {
 			return []string{root}
 		}
 		return []string{g.qualifiedInterfaceIdentifier(e, "EObject")}
@@ -291,15 +255,15 @@ func (g *gen) classExtends(c ecore.EClass) string {
 		case c.GetName() == "EObject":
 			return g.qualifiedImplementationIdentifier(e, "BasicEObjectImpl")
 		}
-		if root, ok := g.explicitPackageProperty("rootExtendsClass"); ok {
+		if root, ok := g.ExplicitPackageProperty("rootExtendsClass"); ok {
 			return root
 		}
-		if g.isReflectiveDelegation() {
+		if g.IsReflectiveDelegation() {
 			return g.qualifiedImplementationIdentifier(e, "ReflectiveEObjectImpl")
 		}
 		return g.qualifiedImplementationIdentifier(e, "EObjectImpl")
 	}
-	if g.hasExtension(extends) {
+	if g.HasExtension(extends) {
 		return g.classExtension(extends)
 	}
 	return g.classImplementation(extends)

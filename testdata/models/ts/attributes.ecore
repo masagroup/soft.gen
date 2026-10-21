@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="attributes" nsURI="http://soft.gen/test/attributes" nsPrefix="attributes">
+  <eClassifiers xsi:type="ecore:EClass" name="Holder">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="label" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="hello world"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="enabled" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="func" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="range" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="count" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        unsettable="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="tags" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString" unsettable="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="values" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="anything" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EJavaObject"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="mixed" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EFeatureMapEntry"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="temperature" eType="#//Celsius"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="small" eType="#//Int8Type"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="medium" eType="#//Int32Type"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="when" eType="#//DateType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="data" eType="#//BytesType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kind" eType="#//ClassType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="ratio" eType="#//FloatType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="octet" eType="#//Octet"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="StringType" instanceClassName="java.lang.String"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="BoolType" instanceClassName="java.lang.Boolean"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="IntType" instanceClassName="java.lang.Integer"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="LongType" instanceClassName="java.lang.Long"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="Int32Type" instanceClassName="int">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="instanceTypeName" value="bigint"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Int8Type" instanceClassName="byte">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="instanceTypeName" value="number"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="ShortType" instanceClassName="java.lang.Short"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="ByteType" instanceClassName="java.lang.Byte"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="BytesType" instanceClassName="byte[]"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="DoubleType" instanceClassName="java.lang.Double"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="FloatType" instanceClassName="java.lang.Float"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="ClassType" instanceClassName="java.lang.Class"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="DateType" instanceClassName="java.util.Date"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="ObjectType" instanceClassName="java.lang.Object"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="UnknownType" instanceClassName="com.example.Unknown"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="Celsius" instanceClassName="double">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="defaultValue" value="-273.15"/>
+      <details key="testValue" value="37.5"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Point">
+    <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
+      <details key="instanceTypeName" value="geometry/Point"/>
+      <details key="testValue" value="new Point(1, 2)"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EChar" instanceClassName="byte"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="Octet" instanceClassName="byte"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="Opaque" instanceClassName="java.lang.Object"
+      serializable="false"/>
+</ecore:EPackage>

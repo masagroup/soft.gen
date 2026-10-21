@@ -1,0 +1,36 @@
+{{/* The lazy initialization methods of the features, one after the other. */}}
+{{ define "feature/init.all" -}}
+{{ include "feature/init" (index . 0) }}
+{{- range (slice . 1) }}
+{{ include "feature/init" . }}
+{{- end }}
+{{- end }}
+
+{{/* The lazy initialization method of a feature. */}}
+{{ define "feature/init" -}}
+{{ include (printf "feature/init.%s" .Mode) . }}
+{{- end }}
+
+{{/* A lazy function returns the initial value. */}}
+{{ define "feature/init.function" -}}
+protected {{ .Name }}(): {{ .Type }} {
+{{- if eq .Strategy "value" }}
+    return {{ .Value }}
+{{- else }}
+    throw new Error("{{ .Name }} not implemented")
+{{- end }}
+}
+{{- end }}
+
+{{/* A lazy action sets the field. */}}
+{{ define "feature/init.action" -}}
+protected {{ .Name }}(): void {
+{{- if eq .Strategy "value" }}
+    this.{{ .Var }} = {{ .Value }}
+}
+{{- else if eq .Strategy "panic" }}
+    throw new Error("{{ .Name }} not implemented")
+}
+{{- else }}}
+{{- end }}
+{{- end }}

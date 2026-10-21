@@ -142,7 +142,7 @@ func (g *gen) mockExtends(c ecore.EClass) []string {
 	case c.GetName() == "EObject":
 		return []string{g.qualifiedInterfaceIdentifier(e, "MockENotifier")}
 	}
-	if root, ok := g.explicitPackageProperty("rootExtendsMock"); ok {
+	if root, ok := g.ExplicitPackageProperty("rootExtendsMock"); ok {
 		return []string{root}
 	}
 	if info.IsMapEntry {

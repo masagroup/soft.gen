@@ -1,0 +1,31 @@
+{{/* The file of an enum: the enum, the conversions to and from the literals. */}}
+{{ define "enum.ts" -}}
+export enum {{ .Name }} {
+{{- if .Literals }}
+{{- range $i, $l := .Literals }}
+    {{ $l.Const }} = {{ $l.Value }}{{ if lt (add $i 1) (len $.Literals) }},{{ end }}
+{{- end }}
+}
+{{- else }}}
+{{- end }}
+
+export function {{ .Var }}ToString({{ .Var }}: {{ .Name }}): string {
+    switch ({{ .Var }}) {
+{{- range .Literals }}
+        case {{ $.Name }}.{{ .Const }}:
+            return {{ .Literal }}
+{{- end }}
+    }
+}
+
+export function {{ .Var }}FromString(literalValue: string): {{ .Name }} {
+    switch (literalValue) {
+{{- range .Literals }}
+        case {{ .Literal }}:
+            return {{ $.Name }}.{{ .Const }}
+{{- end }}
+        default:
+            throw new Error("Invalid value for enum {{ .Name }}: " + literalValue)
+    }
+}
+{{- end }}

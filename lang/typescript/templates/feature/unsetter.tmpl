@@ -1,0 +1,57 @@
+{{/* The unsetter of an unsettable feature. */}}
+{{ define "feature/unsetter" -}}
+// {{ .Unsetter }} unset the value of {{ .Var }}
+{{ .Unsetter }}(): void {
+{{ indent 1 (include (printf "feature/unsetter.%s" .UnsetterStrategy) .) }}
+}
+{{- end }}
+
+{{/* Reflective delegation. */}}
+{{ define "feature/unsetter.reflective" -}}
+this.eUnsetFromID({{ .ID }})
+{{- end }}
+
+{{/* A list initialized by a lazy function: cleared when built. */}}
+{{ define "feature/unsetter.lazylist" -}}
+if (this.{{ .Var }} != {{ .Guard }}) {
+    this.{{ .Var }}.clear()
+}
+{{- end }}
+
+{{/* A list: cleared. */}}
+{{ define "feature/unsetter.list" -}}
+this.{{ .Var }}.clear()
+{{- end }}
+
+{{/* A bidirectional or containment reference: the inverse of the value is updated. */}}
+{{ define "feature/unsetter.inverse" -}}
+if (this.{{ .Var }} != null) {
+    let notifications: {{ .Ecore "ENotificationChain" }} = null
+    if ({{ .Ecore "isEObjectInternal" }}(this.{{ .Var }})) {
+        notifications = this.{{ .Var }}.eInverseRemove(this, {{ .InverseThis }}, notifications)
+    }
+    notifications = this.{{ .BasicUnsetter }}(notifications)
+    if (notifications != null) {
+        notifications.dispatch()
+    }
+} else if (this.eNotificationRequired()) {
+    this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.UNSET, {{ .ID }}, null, null))
+}
+{{- end }}
+
+{{/* A plain field: an UNSET notification. */}}
+{{ define "feature/unsetter.field" -}}
+if (this.eNotificationRequired()) {
+    this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.UNSET, {{ .ID }}, null, null))
+}
+{{- end }}
+
+{{/* A volatile feature with the unsetterBody annotation key. */}}
+{{ define "feature/unsetter.body" -}}
+{{ .UnsetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body. */}}
+{{ define "feature/unsetter.panic" -}}
+throw new Error("{{ .Unsetter }} not implemented")
+{{- end }}

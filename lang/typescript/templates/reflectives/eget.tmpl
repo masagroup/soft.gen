@@ -1,0 +1,31 @@
+{{/* eGetFromID: the value of a feature by id. */}}
+{{ define "reflectives/eget" -}}
+eGetFromID(featureID: number, resolve: boolean): any {
+    switch (featureID) {
+{{- range .Cases }}
+        case {{ .CaseID }}: {
+{{ indent 3 (include (printf "reflectives/eget.%s" .Strategy) .) }}
+        }
+{{- end }}
+        default: {
+            return super.eGetFromID(featureID, resolve)
+        }
+    }
+}
+{{- end }}
+
+{{/* A list of proxies: the unresolved list without resolution. */}}
+{{ define "reflectives/eget.proxylist" -}}
+const list = this.{{ .Getter }}()
+return !resolve && {{ .Ecore "isEObjectList" }}(list) ? list.getUnResolvedList() : list
+{{- end }}
+
+{{/* A single proxy: the basic getter without resolution. */}}
+{{ define "reflectives/eget.proxy" -}}
+return resolve ? this.{{ .Getter }}() : this.{{ .BasicGetter }}()
+{{- end }}
+
+{{/* Any other feature: its getter. */}}
+{{ define "reflectives/eget.get" -}}
+return this.{{ .Getter }}()
+{{- end }}

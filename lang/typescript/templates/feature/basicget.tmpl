@@ -1,0 +1,44 @@
+{{/* The basic getter of a single proxy: the value without resolution. */}}
+{{ define "feature/basicget" -}}
+// get the basic value of {{ .Name }} with no proxy resolution
+{{ .BasicGetter }}(): {{ .Type }} {
+{{ indent 1 (include (printf "feature/basicget.%s" .BasicGetterStrategy) .) }}
+}
+{{- end }}
+
+{{/* A container reference. */}}
+{{ define "feature/basicget.container" -}}
+if (this.EContainerFeatureID() == {{ .ID }}) {
+    return this.eInternalContainer() as {{ .Type }}
+}
+return null
+{{- end }}
+
+{{/* A lazy function. */}}
+{{ define "feature/basicget.lazyfunction" -}}
+if (this.{{ .Var }} == {{ .Guard }}) {
+    this.{{ .Var }} = this.{{ .InitMethod }}()
+}
+return this.{{ .Var }}
+{{- end }}
+
+{{/* A lazy action. */}}
+{{ define "feature/basicget.lazyaction" -}}
+this.{{ .InitMethod }}()
+return this.{{ .Var }}
+{{- end }}
+
+{{/* A plain field. */}}
+{{ define "feature/basicget.field" -}}
+return this.{{ .Var }}
+{{- end }}
+
+{{/* A volatile feature with the getterBody annotation key. */}}
+{{ define "feature/basicget.body" -}}
+{{ .GetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body. */}}
+{{ define "feature/basicget.panic" -}}
+throw new Error("basicGet{{ upperFirst .Property }} not implemented")
+{{- end }}

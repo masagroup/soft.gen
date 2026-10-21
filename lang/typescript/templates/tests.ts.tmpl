@@ -1,0 +1,13 @@
+{{/* A test file: the mock interfaces it declares, then its tests separated by a blank line (but a tight one). */}}
+{{ define "tests.ts" -}}
+{{ .Preamble }}describe("{{ .Describe }}", () => {
+{{- range $i, $test := .Tests }}
+{{- if $i }}
+{{- if not $test.Tight }}
+{{ blank }}
+{{- end }}
+{{- end }}
+{{ indent 1 (include $test.Template $test.Data) }}
+{{- end }}
+})
+{{- end }}

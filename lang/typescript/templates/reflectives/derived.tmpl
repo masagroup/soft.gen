@@ -1,0 +1,43 @@
+{{/* eDerivedFeatureID: the ids of the features of the mixins in the class. */}}
+{{ define "reflectives/derived.feature" -}}
+eDerivedFeatureID(eContainer: {{ .Ecore "EObject" }}, featureID: number): number {
+    let eClass = eContainer as {{ .Ecore "EClass" }}
+{{- range .Mixins }}
+    if (eClass == {{ .Class }}) {
+        switch (featureID) {
+{{- range .IDs }}
+            case {{ index . 0 }}: {
+                return {{ index . 1 }}
+            }
+{{- end }}
+            default: {
+                return -1
+            }
+        }
+    }
+{{- end }}
+    return super.eDerivedFeatureID(eContainer, featureID)
+}
+{{- end }}
+
+{{/* eDerivedOperationID: the ids of the operations of the mixins in the class. */}}
+{{ define "reflectives/derived.operation" -}}
+eDerivedOperationID(eContainer: {{ .Ecore "EObject" }}, operationID: number): number {
+    let eClass = eContainer as {{ .Ecore "EClass" }}
+{{- range .Mixins }}
+    if (eClass == {{ .Class }}) {
+        switch (operationID) {
+{{- range .IDs }}
+            case {{ index . 0 }}: {
+                return {{ index . 1 }}
+            }
+{{- end }}
+            default: {
+                return -1
+            }
+        }
+    }
+{{- end }}
+    return super.eDerivedOperationID(eContainer, operationID)
+}
+{{- end }}

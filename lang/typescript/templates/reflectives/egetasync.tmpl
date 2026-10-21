@@ -1,0 +1,16 @@
+{{/* eGetFromIDAsync: the single proxies are resolved asynchronously. */}}
+{{ define "reflectives/egetasync" -}}
+async eGetFromIDAsync(featureID: number, resolve: boolean): Promise<any> {
+{{- if .Cases }}
+    if (resolve) {
+        switch (featureID) {
+{{- range .Cases }}
+            case {{ .CaseID }}:
+                return this.{{ .Getter }}Async()
+{{- end }}
+        }
+    }
+{{- end }}
+    return this.eGetFromID(featureID, resolve)
+}
+{{- end }}

@@ -1,0 +1,42 @@
+{{/* eBasicInverseRemove: the inverse side of a reference is removed. */}}
+{{ define "reflectives/einverseremove" -}}
+eBasicInverseRemove(otherEnd: {{ .Ecore "EObject" }}, featureID: number, notifications: {{ .Ecore "ENotificationChain" }}): {{ .Ecore "ENotificationChain" }} {
+    switch (featureID) {
+{{- range .Cases }}
+        case {{ .CaseID }}: {
+{{ indent 3 (include (printf "reflectives/einverseremove.%s" .Strategy) .) }}
+        }
+{{- end }}
+        default: {
+            return super.eBasicInverseRemove(otherEnd, featureID, notifications)
+        }
+    }
+}
+{{- end }}
+
+{{/* A map: nothing to do. */}}
+{{ define "reflectives/einverseremove.map" -}}
+return notifications
+{{- end }}
+
+{{/* A list: the object is removed with notification. */}}
+{{ define "reflectives/einverseremove.list" -}}
+const list = this.{{ .Getter }}() as {{ .Ecore "ENotifyingList" }}<{{ .ElementType }}>
+const end = otherEnd as {{ .ElementType }}
+return list.removeWithNotification(end, notifications)
+{{- end }}
+
+{{/* A container without basic setter. */}}
+{{ define "reflectives/einverseremove.container" -}}
+return this.eBasicSetContainer(null, {{ .ID }}, notifications)
+{{- end }}
+
+{{/* An unsettable reference: its basic unsetter. */}}
+{{ define "reflectives/einverseremove.unset" -}}
+return this.{{ .BasicUnsetProperty }}(notifications)
+{{- end }}
+
+{{/* Any other reference: its basic setter with null. */}}
+{{ define "reflectives/einverseremove.set" -}}
+return this.{{ .BasicSetter }}(null, notifications)
+{{- end }}

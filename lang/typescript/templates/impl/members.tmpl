@@ -1,0 +1,56 @@
+{{/* The fields of the features of a class: lines built in Go. */}}
+{{ define "impl/members.fields" -}}
+{{ lines . }}
+{{- end }}
+
+{{/* The constructor: the initialization of the fields, lines built in Go. */}}
+{{ define "impl/members.constructor" -}}
+constructor() {
+    super()
+{{- range . }}
+    {{ . }}
+{{- end }}
+}
+{{- end }}
+
+{{/* The meta object of the class. */}}
+{{ define "impl/members.staticclass" -}}
+eStaticClass(): {{ .Ecore "EClass" }} {
+    return {{ .Getter }}().{{ .ClassGetter }}()
+}
+{{- end }}
+
+{{/* With a reflective delegation the store holds every feature. */}}
+{{ define "impl/members.staticfeaturecount" -}}
+eStaticFeatureCount(): number {
+    return 0
+}
+{{- end }}
+
+{{/* The factory of the implementation of a shared package. */}}
+{{ define "impl/members.efactory" -}}
+// the factory of the implementation of this object
+eFactory(): {{ .Ecore "EFactory" }} {
+    return {{ .GetFactory }}()
+}
+{{- end }}
+
+{{/* The generic getter of a map entry key or value, when renamed. */}}
+{{ define "impl/members.mapentryget" -}}
+get{{ .Upper }}(): {{ .Type }} {
+    return this.{{ .Getter }}()
+}
+{{- end }}
+
+{{/* The generic setter of a map entry key or value, when renamed. */}}
+{{ define "impl/members.mapentryset" -}}
+set{{ .Upper }}({{ .Name }}: {{ .Type }}) {
+{{- if .IsList }}
+    const l = this.{{ .Getter }}()
+    l.clear()
+    l.addAll({{ .Name }})
+{{- else }}
+    this.{{ .Setter }}({{ .Name }})
+{{- end }}
+}
+{{- end }}

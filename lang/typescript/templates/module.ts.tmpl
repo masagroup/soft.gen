@@ -1,0 +1,8 @@
+{{/* A module file: sections of lines separated by a blank line. */}}
+{{ define "module.ts" -}}
+{{ lines (index .Sections 0) }}
+{{- range (slice .Sections 1) }}
+{{ blank }}
+{{ lines . }}
+{{- end }}
+{{- end }}

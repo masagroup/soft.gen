@@ -12,16 +12,18 @@
 # v2.0.0-20261021125246-3166c30bb912, or the v2 tag of the commit).
 #
 # <language>.version, the version of a language ("soft-gen <language> -v"), is
-# the version of the runtime its templates target: go.version follows soft.go.
+# the version of the runtime its templates target: go.version follows soft.go,
+# ts.version soft.ts.
 # Change it here when the templates follow a new runtime version.
 
 ifndef VERSION
 VERSION := $(shell ./version.sh)
 endif
 go.version := v1.13.1
+ts.version := v1.7.0
 # the versions of the languages, as "soft-gen" reads them: language=version
 # pairs separated by commas (no spaces: they pass unquoted to -ldflags)
-LANGUAGE_VERSIONS := go=$(go.version)
+LANGUAGE_VERSIONS := go=$(go.version),ts=$(ts.version)
 LDFLAGS := -X main.Version=$(VERSION) -X main.LanguageVersions=$(LANGUAGE_VERSIONS)
 comma := ,
 IMAGE ?= masagroup/soft-gen

@@ -1,0 +1,159 @@
+{{/* The creation of an object of each class by its class id, and of an unknown class. */}}
+{{ define "tests/factory.create" -}}
+test("createFromEClass", () => {
+    const factory = {{ .Factory }}.getInstance()
+    {
+        const mockEClass = mock<{{ .Ecore "EClass" }}>()
+        const eClass = instance(mockEClass)
+        when(mockEClass.getClassifierID()).thenReturn(-1)
+        expect(() => factory.create(eClass)).toThrow(Error)
+    }
+{{- range .Classes }}
+    {
+        const mockEClass = mock<{{ $.Ecore "EClass" }}>()
+        const eClass = instance(mockEClass)
+        when(mockEClass.getClassifierID()).thenReturn({{ . }})
+        expect(factory.create(eClass)).not.toBeNull()
+    }
+{{- end }}
+})
+{{- end }}
+
+{{/* The creator of a class. */}}
+{{ define "tests/factory.creator" -}}
+test("create{{ .Class }}", () => {
+    expect({{ .Factory }}.getInstance().create{{ .Class }}()).not.toBeNull()
+})
+{{- end }}
+
+{{/* The creator of a class from a container, and its class id. */}}
+{{ define "tests/factory.fromcontainer" -}}
+test("{{ .Test }}", () => {
+    const mockContainer = mock<{{ .Container }}>()
+    const container = instance(mockContainer)
+{{- if .ContainerList }}
+    const mockList = mock<{{ .Ecore "EList" }}<{{ .ContainerList }}>>()
+    const list = instance(mockList)
+    when(mockList.add(anything())).thenReturn(true)
+    when(mockContainer.{{ .ContainerGet }}).thenReturn(list)
+{{- end }}
+{{- if .WithClassID }}
+    expect({{ .Factory }}.getInstance().create{{ .Class }}FromContainerAndClassID(container, 0)).not.toBeNull()
+{{- else }}
+    expect({{ .Factory }}.getInstance().create{{ .Class }}FromContainer(container)).not.toBeNull()
+{{- end }}
+})
+{{- end }}
+
+{{/* The creation of a value of an unknown data type. */}}
+{{ define "tests/factory.invalidcreate" -}}
+test("createFromStringInvalid", () => {
+    const mockDataType = mock<{{ .Ecore "EDataType" }}>()
+    const eDataType = instance(mockDataType)
+    when(mockDataType.getClassifierID()).thenReturn(-1)
+    expect(() => {{ .Factory }}.getInstance().createFromString(eDataType, "")).toThrow(Error)
+})
+{{- end }}
+
+{{/* The conversion of a value of an unknown data type. */}}
+{{ define "tests/factory.invalidconvert" -}}
+test("convertToStringInvalid", () => {
+    const mockDataType = mock<{{ .Ecore "EDataType" }}>()
+    const eDataType = instance(mockDataType)
+    when(mockDataType.getClassifierID()).thenReturn(-1)
+    expect(() => {{ .Factory }}.getInstance().convertToString(eDataType, null)).toThrow(Error)
+})
+{{- end }}
+
+{{/* The creation of a value of a data type from a string; the variant is its type. */}}
+{{ define "tests/factory.createfrom" -}}
+test("create{{ .DataType }}FromString", () => {
+    const factory = {{ .Factory }}.getInstance()
+    const mockDataType = mock<{{ .Ecore "EDataType" }}>()
+    const eDataType = instance(mockDataType)
+    when(mockDataType.getClassifierID()).thenReturn({{ .ID }})
+{{- if ne .Strategy "none" }}
+{{ indent 1 (include (printf "tests/factory.createfrom.%s" .Strategy) .) }}
+{{- end }}
+})
+{{- end }}
+
+{{ define "tests/factory.createfrom.enum" -}}
+{{ lines .CreateLines }}
+{{- end }}
+
+{{ define "tests/factory.createfrom.string" -}}
+expect(factory.createFromString(eDataType, "test")).toStrictEqual("test")
+{{- end }}
+
+{{ define "tests/factory.createfrom.number" -}}
+expect(factory.createFromString(eDataType, "3")).toStrictEqual(3)
+{{- end }}
+
+{{ define "tests/factory.createfrom.byte" -}}
+expect(factory.createFromString(eDataType, "")).toStrictEqual(0)
+expect(factory.createFromString(eDataType, "a")).toStrictEqual(97)
+{{- end }}
+
+{{ define "tests/factory.createfrom.Uint8Array" -}}
+expect(factory.createFromString(eDataType, "ab")).toStrictEqual(Uint8Array.from([97, 98]))
+{{- end }}
+
+{{ define "tests/factory.createfrom.boolean" -}}
+expect(factory.createFromString(eDataType, "true")).toBeTruthy()
+expect(factory.createFromString(eDataType, "false")).toBeFalsy()
+{{- end }}
+
+{{ define "tests/factory.createfrom.Date" -}}
+expect(factory.createFromString(eDataType, "2020-05-12T17:33:10.770Z")).toEqual(new Date(Date.UTC(2020, 4, 12, 17, 33, 10, 770)))
+{{- end }}
+
+{{ define "tests/factory.createfrom.unknown" -}}
+expect(() => factory.createFromString(eDataType, "")).toThrow(Error)
+{{- end }}
+
+{{/* The conversion of a value of a data type to a string; the variant is its type. */}}
+{{ define "tests/factory.convertto" -}}
+test("convert{{ .DataType }}ToString", () => {
+    const factory = {{ .Factory }}.getInstance()
+    const mockDataType = mock<{{ .Ecore "EDataType" }}>()
+    const eDataType = instance(mockDataType)
+    when(mockDataType.getClassifierID()).thenReturn({{ .ID }})
+{{- if ne .Strategy "none" }}
+{{ indent 1 (include (printf "tests/factory.convertto.%s" .Strategy) .) }}
+{{- end }}
+})
+{{- end }}
+
+{{ define "tests/factory.convertto.enum" -}}
+{{ lines .ConvertLines }}
+{{- end }}
+
+{{ define "tests/factory.convertto.string" -}}
+expect(factory.convertToString(eDataType, "test")).toStrictEqual("test")
+{{- end }}
+
+{{ define "tests/factory.convertto.boolean" -}}
+expect(factory.convertToString(eDataType, true)).toStrictEqual("true")
+expect(factory.convertToString(eDataType, false)).toStrictEqual("false")
+{{- end }}
+
+{{ define "tests/factory.convertto.number" -}}
+expect(factory.convertToString(eDataType, 3)).toStrictEqual("3")
+{{- end }}
+
+{{ define "tests/factory.convertto.byte" -}}
+expect(factory.convertToString(eDataType, 97)).toStrictEqual("a")
+{{- end }}
+
+{{ define "tests/factory.convertto.Uint8Array" -}}
+expect(factory.convertToString(eDataType, Uint8Array.from([97, 98]))).toStrictEqual("ab")
+{{- end }}
+
+{{ define "tests/factory.convertto.Date" -}}
+expect(factory.convertToString(eDataType, new Date(Date.UTC(2020, 4, 12, 17, 33, 10, 770)))).toStrictEqual("2020-05-12T17:33:10.770Z")
+{{- end }}
+
+{{ define "tests/factory.convertto.unknown" -}}
+expect(() => factory.convertToString(eDataType, "")).toThrow(Error)
+{{- end }}
