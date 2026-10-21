@@ -1,0 +1,13 @@
+{{/* The factory interface: the creation methods of the concrete classes, the singleton. */}}
+{{ define "factory.go" -}}
+type {{ .Name }} interface {
+	{{ .EFactory }}
+{{- range .Creates }}
+	{{ .Name }}({{ .Params }}) {{ .Type }}
+{{- end }}
+}
+{{- if .Instance }}
+
+{{ include "factory/instance" .Instance }}
+{{- end }}
+{{- end }}

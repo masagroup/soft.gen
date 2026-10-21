@@ -1,0 +1,74 @@
+{{/* The tests of the factory: the casts, the creation of every concrete class (from its id, alone, from its containers), the conversions of the data types. */}}
+{{ define "factory_test.go" -}}
+func TestFactoryAs(t *{{ .T }}) {
+	factory := {{ .Constructor }}()
+{{- if .AsInternal }}
+	{{ .Assert }}Equal(t, factory, factory.AsInternal())
+{{- end }}
+	{{ .Assert }}Equal(t, factory, factory.AsEFactory())
+}
+
+func TestFactoryCreateFromEClass(t *{{ .T }}) {
+	_ = {{ .Mock }}Anything
+	factory := {{ .Constructor }}()
+	{
+		mockEClass := {{ .MockEClass }}(t)
+		mockEClass.EXPECT().GetClassifierID().Return(-1).Once()
+		{{ .Assert }}Panics(t, func() { factory.Create(mockEClass) })
+	}
+{{- range .Classes }}
+	{
+		mockEClass := {{ $.MockEClass }}(t)
+		mockEClass.EXPECT().GetClassifierID().Return({{ .ID }}).Once()
+		{{ $.Assert }}NotNil(t, factory.Create(mockEClass))
+	}
+{{- end }}
+}
+{{- range $class := .Classes }}
+
+func TestFactoryCreate{{ .Name }}(t *{{ $.T }}) {
+	factory := {{ $.Constructor }}()
+	{{ $.Assert }}NotNil(t, factory.Create{{ .Name }}())
+}
+{{- range .Containers }}
+
+func TestFactoryCreate{{ $class.Name }}From{{ .Reference }}Container(t *{{ $.T }}) {
+	factory := {{ $.Constructor }}()
+{{ include "test/factorycontainer" . }}
+	o := factory.Create{{ $class.Name }}FromContainer(mockContainer)
+	{{ $.Assert }}NotNil(t, o)
+}
+{{- if .WithClassID }}
+
+func TestFactoryCreate{{ $class.Name }}From{{ .Reference }}ContainerAndClassID(t *{{ $.T }}) {
+	factory := {{ $.Constructor }}()
+{{ include "test/factorycontainer" . }}
+	o := factory.Create{{ $class.Name }}FromContainerAndClassID(mockContainer, 0)
+	{{ $.Assert }}NotNil(t, o)
+}
+{{- end }}
+{{- end }}
+{{- end }}
+
+func TestFactoryConvert(t *{{ .T }}) {
+	factory := {{ .Constructor }}()
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return(-1).Once()
+		mockEDataType.EXPECT().GetName().Return("dataType").Once()
+		{{ .Assert }}Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
+		mockEDataType.AssertExpectations(t)
+	}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return(-1).Once()
+		mockEDataType.EXPECT().GetName().Return("dataType").Once()
+		{{ .Assert }}Panics(t, func() { factory.ConvertToString(mockEDataType, nil) })
+		mockEDataType.AssertExpectations(t)
+	}
+{{- range .Conversions }}
+{{ include (printf "test/createfromstring.%s" .CreateKind) . }}
+{{ include (printf "test/converttostring.%s" .ConvertKind) . }}
+{{- end }}
+}
+{{- end }}

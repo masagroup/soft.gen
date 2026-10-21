@@ -1,0 +1,57 @@
+{{/* The unsetter of a feature; the variant decides how the value is reset. */}}
+{{ define "feature/unsetter" -}}
+// {{ .Unsetter }} unset the value of {{ .Var }}
+func ({{ .Receiver }} *{{ .Impl }}) {{ .Unsetter }}() {
+{{ include (printf "feature/unsetter.%s" .UnsetterStrategy) . }}
+}
+{{- end }}
+
+{{/* Reflective delegation: the store holds the value. */}}
+{{ define "feature/unsetter.reflective" -}}
+	{{ .Receiver }}.EUnsetFromID({{ .ID }})
+{{- end }}
+
+{{/* A lazily built list: cleared when it exists. */}}
+{{ define "feature/unsetter.listlazy" -}}
+	if {{ .Receiver }}.{{ .Var }} != nil {
+		{{ .Receiver }}.{{ .Var }}.Clear()
+	}
+{{- end }}
+
+{{/* A list: cleared. */}}
+{{ define "feature/unsetter.list" -}}
+	{{ .Receiver }}.{{ .Var }}.Clear()
+{{- end }}
+
+{{/* A bidirectional or containment reference: the other end is told. */}}
+{{ define "feature/unsetter.inverse" -}}
+	if {{ .Receiver }}.{{ .Var }} != nil {
+		var notifications {{ .ENotificationChain }}
+		notifications = {{ .Receiver }}.{{ .Var }}.({{ .EObjectInternal }}).EInverseRemove({{ .Receiver }}.AsEObject(), {{ .InverseID }}, notifications)
+		notifications = {{ .Receiver }}.asBasics().{{ .BasicUnsetter }}(notifications)
+		if notifications != nil {
+			notifications.Dispatch()
+		}
+	} else if {{ .Receiver }}.ENotificationRequired() {
+		{{ .Receiver }}.ENotify({{ .NewNotificationByFeatureID }}({{ .Receiver }}.AsEObject(), {{ .UNSET }}, {{ .ID }}, nil, nil, {{ .NO_INDEX }}))
+	}
+{{- end }}
+
+{{/* A plain field: reset to its default, with an UNSET notification. */}}
+{{ define "feature/unsetter.field" -}}
+	{{ .OldVar }} := {{ .Receiver }}.{{ .Var }}
+	{{ .Receiver }}.{{ .Var }} = {{ .Default }}
+	if {{ .Receiver }}.ENotificationRequired() {
+		{{ .Receiver }}.ENotify({{ .NewNotificationByFeatureID }}({{ .Receiver }}.AsEObject(), {{ .UNSET }}, {{ .ID }}, {{ .OldVar }}, nil, {{ .NO_INDEX }}))
+	}
+{{- end }}
+
+{{/* The hand-written body of the unsetterBody key. */}}
+{{ define "feature/unsetter.body" -}}
+	{{ .UnsetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body. */}}
+{{ define "feature/unsetter.panic" -}}
+	panic("{{ .Unsetter }} not implemented")
+{{- end }}

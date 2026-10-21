@@ -1,0 +1,19 @@
+{{/* EDerivedFeatureID: maps the feature ids of the mixin classes to those of the class. */}}
+{{ define "reflectives/derivedfeatureid" -}}
+func ({{ .Receiver }} *{{ .Impl }}) EDerivedFeatureID(eContainer {{ .EObject }}, featureID int) int {
+	eClass, _ := eContainer.({{ .EClass }})
+{{- range .Mixins }}
+	if eClass == {{ .Class }} {
+		switch featureID {
+{{- range .IDs }}
+		case {{ .From }}:
+			return {{ .To }}
+{{- end }}
+		default:
+			return -1
+		}
+	}
+{{- end }}
+	return {{ .Receiver }}.{{ .ExtendsSimple }}.EDerivedFeatureID(eContainer, featureID)
+}
+{{- end }}

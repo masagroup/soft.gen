@@ -1,0 +1,96 @@
+{{/* The mock of a getter: the prototype method returning the expected value, the call and its expecter. */}}
+{{ define "mock/feature.get" -}}
+// {{ .Method }} get the value of {{ .Var }}
+func ({{ .Receiver }} *{{ .Mock }}_Prototype_Methods) {{ .Method }}() {{ .Type }} {
+	ret := {{ .Receiver }}.mock.Called()
+
+	var res {{ .Type }}
+	if rf, ok := ret.Get(0).(func() {{ .Type }}); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).({{ .Type }})
+		}
+	}
+
+	return res
+}
+
+type {{ .CallType }} struct {
+	*{{ .Call }}
+}
+
+func (e *{{ .Mock }}_Expecter_Methods) {{ .Method }}() *{{ .CallType }} {
+	return &{{ .CallType }}{Call: e.mock.On("{{ .Method }}")}
+}
+
+func (c *{{ .CallType }}) Run(run func()) *{{ .CallType }} {
+	c.Call.Run(func({{ .Arguments }}) {
+		run()
+	})
+	return c
+}
+
+func (c *{{ .CallType }}) Return({{ .Var }} {{ .Type }}) *{{ .CallType }} {
+	c.Call.Return({{ .Var }})
+	return c
+}
+{{- end }}
+
+{{/* The mock of a setter. */}}
+{{ define "mock/feature.set" -}}
+// {{ .Method }} provides mock implementation for setting the value of {{ .Var }}
+func ({{ .Receiver }} *{{ .Mock }}_Prototype_Methods) {{ .Method }}({{ .Var }} {{ .Type }}) {
+	{{ .Receiver }}.mock.Called({{ .Var }})
+}
+
+type {{ .CallType }} struct {
+	*{{ .Call }}
+}
+
+// {{ .Method }} is a helper method to define mock.On call
+// - {{ .Var }} {{ .Type }}
+func (e *{{ .Mock }}_Expecter_Methods) {{ .Method }}({{ .Var }} any) *{{ .CallType }} {
+	return &{{ .CallType }}{Call: e.mock.On("{{ .Method }}", {{ .Var }})}
+}
+
+func (c *{{ .CallType }}) Run(run func({{ .Var }} {{ .Type }})) *{{ .CallType }} {
+	c.Call.Run(func(args {{ .Arguments }}) {
+		run(args[0]{{ .Cast }})
+	})
+	return c
+}
+
+func (c *{{ .CallType }}) Return() *{{ .CallType }} {
+	c.Call.Return()
+	return c
+}
+{{- end }}
+
+{{/* The mock of an unsetter. */}}
+{{ define "mock/feature.unset" -}}
+// {{ .Method }} provides mock implementation for unset the value of {{ .Var }}
+func ({{ .Receiver }} *{{ .Mock }}_Prototype_Methods) {{ .Method }}() {
+	{{ .Receiver }}.mock.Called()
+}
+
+type {{ .CallType }} struct {
+	*{{ .Call }}
+}
+
+func (e *{{ .Mock }}_Expecter_Methods) {{ .Method }}() *{{ .CallType }} {
+	return &{{ .CallType }}{Call: e.mock.On("{{ .Method }}")}
+}
+
+func (c *{{ .CallType }}) Run(run func()) *{{ .CallType }} {
+	c.Call.Run(func({{ .Arguments }}) {
+		run()
+	})
+	return c
+}
+
+func (c *{{ .CallType }}) Return() *{{ .CallType }} {
+	c.Call.Return()
+	return c
+}
+{{- end }}

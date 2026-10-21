@@ -1,0 +1,10 @@
+{{/* The accessors of a feature, a blank line between them. */}}
+{{ define "feature/impl" -}}
+{{- range $i, $kind := .Accessors }}
+{{- if $i }}
+{{ blank }}
+{{ blank }}
+{{- end }}
+{{- include (printf "feature/%s" $kind) $ }}
+{{- end }}
+{{- end }}

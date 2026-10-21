@@ -1,0 +1,19 @@
+{{/* The test of EDerivedFeatureID or EDerivedOperationID (v1 generateElementIDTestImplementation): an unknown class keeps the id, a mixin maps its ids. */}}
+{{ define "test/derivedid" -}}
+func Test{{ .Class }}EDerived{{ .Element }}ID(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{
+		eClass := {{ .Ecore }}NewMockEClass(t)
+		{{ .Assert }}Equal(t, 1, o.EDerived{{ .Element }}ID(eClass, 1))
+	}
+{{- range .Mixins }}
+	{
+		eClass := {{ .Class }}
+		{{ $.Assert }}Equal(t, -1, o.EDerived{{ $.Element }}ID(eClass, -1))
+{{- range .IDs }}
+		{{ $.Assert }}Equal(t, {{ .To }}, o.EDerived{{ $.Element }}ID(eClass, {{ .From }}))
+{{- end }}
+	}
+{{- end }}
+}
+{{- end }}

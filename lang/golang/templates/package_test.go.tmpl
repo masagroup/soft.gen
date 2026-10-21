@@ -1,0 +1,29 @@
+{{/* The tests of the package: its instance, the getters of its classes, features, operations and data types. TestPackageInstance ends with a blank line, as v1 did. */}}
+{{ define "package_test.go" -}}
+func TestPackageInstance(t *{{ .T }}) {
+	p := GetPackage()
+	{{ .Assert }}NotNil(t, p)
+	{{ .Assert }}Equal(t, {{ .Name }}, p.GetName())
+	{{ .Assert }}Equal(t, {{ .NsURI }}, p.GetNsURI())
+	{{ .Assert }}Equal(t, {{ .NsPrefix }}, p.GetNsPrefix())
+
+}
+{{- if .Classes }}
+
+func TestPackageClasses(t *{{ .T }}) {
+	p := GetPackage()
+{{- range .Classes }}
+	{{ $.Assert }}NotNil(t, p.{{ . }}())
+{{- end }}
+}
+{{- end }}
+{{- if .DataTypes }}
+
+func TestPackageDataTypes(t *{{ .T }}) {
+	p := GetPackage()
+{{- range .DataTypes }}
+	{{ $.Assert }}NotNil(t, p.{{ . }}())
+{{- end }}
+}
+{{- end }}
+{{- end }}

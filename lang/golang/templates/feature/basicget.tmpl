@@ -1,0 +1,43 @@
+{{/* The basic getter of a proxy reference: the value without resolving it. */}}
+{{ define "feature/basicget" -}}
+func ({{ .Receiver }} *{{ .Impl }}) {{ .BasicGetter }}() {{ .Type }} {
+{{ include (printf "feature/basicget.%s" .BasicGetterStrategy) . }}
+}
+{{- end }}
+
+{{/* A container reference: the internal container when held by this feature. */}}
+{{ define "feature/basicget.container" -}}
+	if {{ .Receiver }}.EContainerFeatureID() == {{ .ID }} {
+		return {{ .Receiver }}.EInternalContainer().({{ .Type }})
+	}
+	return nil
+{{- end }}
+
+{{/* A lazy function: the initializer returns the value of an unset field. */}}
+{{ define "feature/basicget.lazyfunction" -}}
+	if {{ .Receiver }}.{{ .Var }} == {{ .Guard }} {
+		{{ .Receiver }}.{{ .Var }} = {{ .Receiver }}.asInitializers().{{ .InitMethod }}()
+	}
+	return {{ .Receiver }}.{{ .Var }}
+{{- end }}
+
+{{/* A lazy action: the initializer is called on every read. */}}
+{{ define "feature/basicget.lazyaction" -}}
+	{{ .Receiver }}.asInitializers().{{ .InitMethod }}()
+	return {{ .Receiver }}.{{ .Var }}
+{{- end }}
+
+{{/* A plain field. */}}
+{{ define "feature/basicget.field" -}}
+	return {{ .Receiver }}.{{ .Var }}
+{{- end }}
+
+{{/* The hand-written body of the getterBody key. */}}
+{{ define "feature/basicget.body" -}}
+	{{ .GetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body: the message names the getter, as v1 did. */}}
+{{ define "feature/basicget.panic" -}}
+	panic("{{ .Getter }} not implemented")
+{{- end }}

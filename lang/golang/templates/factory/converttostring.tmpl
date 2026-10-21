@@ -1,0 +1,106 @@
+{{/* The conversion of a data type value to a string, by kind of Go type (v1 generateConvertToString). */}}
+{{ define "factory/converttostring.enum" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	{{ .Var }}, ok := instanceValue.({{ .Type }})
+	if !ok {
+		return ""
+	}
+	return {{ .Var }}.ToString()
+}
+{{- end }}
+
+{{ define "factory/converttostring.string" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	v, _ := instanceValue.(string)
+	return v
+}
+{{- end }}
+
+{{ define "factory/converttostring.bool" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	v, _ := instanceValue.(bool)
+	return {{ .Format }}(v)
+}
+{{- end }}
+
+{{ define "factory/converttostring.int" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	v, _ := instanceValue.(int)
+	return {{ .Format }}(v)
+}
+{{- end }}
+
+{{ define "factory/converttostring.int64" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	v, _ := instanceValue.(int64)
+	return {{ .Format }}(v, 10)
+}
+{{- end }}
+
+{{ define "factory/converttostring.int32" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	v, _ := instanceValue.(int32)
+	return {{ .Format }}(int64(v), 10)
+}
+{{- end }}
+
+{{ define "factory/converttostring.int16" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	v, _ := instanceValue.(int16)
+	return {{ .Format }}(int64(v), 10)
+}
+{{- end }}
+
+{{ define "factory/converttostring.int8" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	v, _ := instanceValue.(int8)
+	return {{ .Format }}(int64(v), 10)
+}
+{{- end }}
+
+{{ define "factory/converttostring.byte" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	b := instanceValue.(byte)
+	return string([]byte{b})
+}
+{{- end }}
+
+{{ define "factory/converttostring.bytes" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	b := instanceValue.([]byte)
+	return string(b)
+}
+{{- end }}
+
+{{ define "factory/converttostring.float64" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	v, _ := instanceValue.(float64)
+	return {{ .Format }}(v, 'f', -1, 64)
+}
+{{- end }}
+
+{{ define "factory/converttostring.float32" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	v, _ := instanceValue.(float32)
+	return {{ .Format }}(float64(v), 'f', -1, 32)
+}
+{{- end }}
+
+{{ define "factory/converttostring.reflect" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	panic("NotImplementedException")
+}
+{{- end }}
+
+{{ define "factory/converttostring.time" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	t, _ := instanceValue.({{ .Type }})
+	return t.Format(dateFormat)
+}
+{{- end }}
+
+{{ define "factory/converttostring.unsupported" -}}
+func ({{ .Receiver }} *{{ .Impl }}) convert{{ .Name }}ToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	panic("NotImplementedException")
+}
+{{- end }}

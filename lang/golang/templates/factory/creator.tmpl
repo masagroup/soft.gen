@@ -1,0 +1,22 @@
+{{/* The body of a creation method, indented by the caller: the constructor (new), or the element
+     created, given its id and added to its container (container, v1 generateCreateFunctionContent). */}}
+{{ define "factory/creator.new" -}}
+return {{ .Constructor }}()
+{{- end }}
+
+{{ define "factory/creator.container" -}}
+element := {{ .Receiver }}.AsEFactory().{{ .Create }}()
+{{- if .SetID }}
+element.{{ .SetID }}(classID)
+{{- end }}
+{{- if .Opposite }}
+if eContainer != nil {
+{{- if .OppositeMany }}
+	eContainer.Get{{ .Opposite }}().Add(element)
+{{- else }}
+	eContainer.Set{{ .Opposite }}(element)
+{{- end }}
+}
+{{- end }}
+return element
+{{- end }}

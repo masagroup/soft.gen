@@ -1,0 +1,133 @@
+{{/* The test of the getter of a feature, by variant (v1 generateGetTestImplementation). */}}
+{{ define "test/get.volatile" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Panics(t, func() { o.{{ .Getter }}() })
+}
+{{- end }}
+
+{{ define "test/get.container" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	// default
+	o := {{ .Constructor }}()
+	{{ .Assert }}Nil(t, o.{{ .Getter }}())
+
+	// set a mock container
+	v := {{ .TestValue }}
+	o.ESetInternalContainer(v, {{ .ID }})
+
+	// no proxy
+	v.EXPECT().EIsProxy().Return(false).Once()
+	{{ .Assert }}Equal(t, v, o.{{ .Getter }}())
+}
+{{- end }}
+
+{{ define "test/get.map" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}NotNil(t, o.{{ .Getter }}())
+}
+{{- end }}
+
+{{ define "test/get.featuremap" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Nil(t, o.{{ .Getter }}())
+}
+{{- end }}
+
+{{ define "test/get.list" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}NotNil(t, o.{{ .Getter }}())
+	{{ .Assert }}Panics(t, func() { _ = o.{{ .Getter }}().Get(0).({{ .Type }}) })
+}
+{{- end }}
+
+{{ define "test/get.lazy" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Panics(t, func() { o.{{ .Getter }}() })
+}
+{{- end }}
+
+{{/* A proxy: the value is set in the field, or through the setter in reflective delegation (the opposite of a bidirectional reference is then notified). */}}
+{{ define "test/get.proxy" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+
+	// get default value
+	{{ .Assert }}Nil(t, o.{{ .Getter }}())
+
+	// initialize object with a mock value
+	mockValue := {{ .TestValue }}
+{{ include (printf "test/proxyinit.%s" .ProxyInit) . }}
+
+	// events
+	mockAdapter := {{ .Ecore }}NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	o.EAdapters().Add(mockAdapter)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter)
+
+	// set object resource
+	mockResourceSet := {{ .Ecore }}NewMockEResourceSet(t)
+	mockResource := {{ .Ecore }}NewMockEResource(t)
+	o.ESetInternalResource(mockResource)
+
+	// get non resolved value
+	mockValue.EXPECT().EIsProxy().Return(false).Once()
+	{{ .Assert }}Equal(t, mockValue, o.{{ .Getter }}())
+	{{ .Mock }}AssertExpectationsForObjects(t, mockValue, mockAdapter, mockResource, mockResourceSet)
+
+	// get a resolved value
+	mockURI := {{ .Ecore }}NewURI("test:///file.t")
+	mockResolved := {{ .TestValue }}
+	mockResolved.EXPECT().EProxyURI().Return(nil).Once()
+	mockResource.EXPECT().GetResourceSet().Return(mockResourceSet).Once()
+	mockResourceSet.EXPECT().GetEObject(mockURI, true).Return(mockResolved).Once()
+	mockValue.EXPECT().EIsProxy().Return(true).Once()
+	mockValue.EXPECT().EProxyURI().Return(mockURI).Twice()
+	mockAdapter.EXPECT().NotifyChanged({{ .Mock }}MatchedBy(func(notification {{ .Ecore }}ENotification) bool {
+		return notification.GetEventType() == {{ .Ecore }}RESOLVE && notification.GetFeatureID() == {{ .ID }} && notification.GetOldValue() == mockValue && notification.GetNewValue() == mockResolved
+	})).Once()
+	{{ .Assert }}Equal(t, mockResolved, o.{{ .Getter }}())
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResolved, mockAdapter, mockResource, mockResourceSet)
+}
+{{- end }}
+
+{{ define "test/get.reference" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	// get default value
+	{{ .Assert }}Nil(t, o.{{ .Getter }}())
+
+	// get initialized value
+	v := {{ .TestValue }}
+{{- if .Reflective }}
+	o.{{ .Setter }}(v)
+{{- else }}
+	o.{{ .Var }} = v
+{{- end }}
+	{{ .Assert }}Equal(t, v, o.{{ .Getter }}())
+}
+{{- end }}
+
+{{ define "test/get.attribute" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	// get default value
+{{- if .DefaultNil }}
+	{{ .Assert }}Nil(t, o.{{ .Getter }}())
+{{- else }}
+	{{ .Assert }}Equal(t, {{ .Default }}, o.{{ .Getter }}())
+{{- end }}
+	// get initialized value
+	v := {{ .TestValue }}
+{{- if .Reflective }}
+	o.{{ .Setter }}(v)
+{{- else }}
+	o.{{ .Var }} = v
+{{- end }}
+	{{ .Assert }}Equal(t, v, o.{{ .Getter }}())
+}
+{{- end }}

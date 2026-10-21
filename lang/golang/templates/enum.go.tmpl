@@ -1,0 +1,34 @@
+{{/* The file of an enum: the type, its constants, the string conversions. */}}
+{{ define "enum.go" -}}
+type {{ .Name }} int32
+
+const (
+{{- range .Literals }}
+	{{ .Const }} {{ $.Name }} = {{ .Value }}
+{{- end }}
+)
+
+var {{ .Var }}ToString = map[{{ .Name }}]string{
+{{- range .Literals }}
+	{{ .Const }}: "{{ .Literal }}",
+{{- end }}
+}
+
+var {{ .Var }}ToID = map[string]{{ .Name }}{
+{{- range .Literals }}
+	"{{ .Literal }}": {{ .Const }},
+{{- end }}
+}
+
+func ({{ .Var }} *{{ .Name }}) ToString() string {
+	return {{ .Var }}ToString[*{{ .Var }}]
+}
+
+func ({{ .Var }} *{{ .Name }}) FromString(value string) {
+	if literal, isLiteral := {{ .Var }}ToID[value]; isLiteral {
+		*{{ .Var }} = literal
+	} else {
+		panic("invalid value for enum {{ .Name }}: " + value)
+	}
+}
+{{- end }}

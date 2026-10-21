@@ -1,0 +1,94 @@
+{{/* The implementation of a class: the struct, its private interfaces, the constructor, the casts, the static class, the accessors, the initializers and the reflective methods. The initializers interface follows the struct without a blank line, and the map entry accessors follow EStaticFeatureCount without one, as v1 did. */}}
+{{ define "impl.go" -}}
+// {{ .Name }} is the implementation of the model object '{{ .ClassName }}'
+type {{ .Name }} struct {
+	{{ .Extends }}
+{{- range .Fields }}
+	{{ .Name }} {{ .Type }}
+{{- end }}
+}
+{{- if .Initializers }}
+type {{ .Initializers.Name }} interface {
+{{- range .Initializers.Methods }}
+	{{ . }}
+{{- end }}
+}
+{{- end }}
+{{- if .Basics }}
+
+type {{ .Basics.Name }} interface {
+{{- range .Basics.Methods }}
+	{{ . }}
+{{- end }}
+}
+{{- end }}
+
+// {{ .Constructor }} is the constructor of a {{ .Name }}
+func {{ .Constructor }}() *{{ .Name }} {
+	{{ .Receiver }} := new({{ .Name }})
+	{{ .Receiver }}.SetInterfaces({{ .Receiver }})
+	{{ .Receiver }}.Initialize()
+	return {{ .Receiver }}
+}
+{{- if .HasInitialize }}
+
+func ({{ .Receiver }} *{{ .Name }}) Initialize() {
+	{{ .Receiver }}.{{ .ExtendsSimple }}.Initialize()
+{{- range .Initializations }}
+	{{ . }}
+{{- end }}
+
+}
+{{- end }}
+
+func ({{ .Receiver }} *{{ .Name }}) {{ .AsInterface }}() {{ .Interface }} {
+	return {{ .Receiver }}.GetInterfaces().({{ .Interface }})
+}
+{{- if .Initializers }}
+
+func ({{ .Receiver }} *{{ .Name }}) asInitializers() {{ .Initializers.Name }} {
+	return {{ .Receiver }}.GetInterfaces().({{ .Initializers.Name }})
+}
+{{- end }}
+{{- if .Basics }}
+
+func ({{ .Receiver }} *{{ .Name }}) asBasics() {{ .Basics.Name }} {
+	return {{ .Receiver }}.GetInterfaces().({{ .Basics.Name }})
+}
+{{- end }}
+
+func ({{ .Receiver }} *{{ .Name }}) EStaticClass() {{ .EClass }} {
+	return {{ .StaticClass }}
+}
+
+func ({{ .Receiver }} *{{ .Name }}) EStaticFeatureCount() int {
+	return {{ .FeatureCount }}
+}
+{{- if .IsShared }}
+
+// EFactory returns the factory of the implementation of this object: its package is shared by
+// the implementations of the model, and objects of different implementations do not mix.
+func ({{ .Receiver }} *{{ .Name }}) EFactory() {{ .EFactory }} {
+	return GetFactory()
+}
+{{- end }}
+{{- if .MapEntry }}
+{{ include "impl/mapentry" .MapEntry }}
+{{- end }}
+{{- range .Operations }}
+
+{{ include "operation" . }}
+{{- end }}
+{{- range .Features }}
+
+{{ include "feature/impl" . }}
+{{- end }}
+{{- range .InitMethods }}
+
+{{ include "feature/init" . }}
+{{- end }}
+{{- range .Reflectives }}
+
+{{ include (printf "reflectives/%s" .Kind) . }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,88 @@
+{{/* The test of the conversion of a data type value to a string, by kind (v1 generateConvertTo). */}}
+{{ define "test/converttostring.enum" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }}).Times({{ .Times }})
+		{{ .Assert }}Equal(t, "", factory.ConvertToString(mockEDataType, nil))
+{{- range .Literals }}
+		{{ $.Assert }}Equal(t, "{{ .Name }}", factory.ConvertToString(mockEDataType, {{ .Const }}))
+{{- end }}
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/converttostring.string" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, "test", factory.ConvertToString(mockEDataType, "test"))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/converttostring.bool" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, "true", factory.ConvertToString(mockEDataType, true))
+		{{ .Assert }}Equal(t, "false", factory.ConvertToString(mockEDataType, false))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/converttostring.int" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, "1", factory.ConvertToString(mockEDataType, {{ .Type }}(1)))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/converttostring.float" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, "1.2", factory.ConvertToString(mockEDataType, {{ .Type }}(1.2)))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/converttostring.byte" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, "a", factory.ConvertToString(mockEDataType, byte('a')))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/converttostring.bytes" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Equal(t, "ab", factory.ConvertToString(mockEDataType, []byte("ab")))
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/converttostring.time" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		date := {{ .Time }}Date(2020, {{ .Time }}May, 12, 17, 33, 10, 770000000, {{ .Time }}UTC)
+		dateStr := factory.ConvertToString(mockEDataType, &date)
+		expected := "2020-05-12T17:33:10.77Z"
+		{{ .Assert }}Equal(t, expected, dateStr)
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}
+
+{{ define "test/converttostring.unsupported" -}}
+	{
+		mockEDataType := {{ .MockEDataType }}(t)
+		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }})
+		{{ .Assert }}Panics(t, func() { factory.ConvertToString(mockEDataType, "") })
+		mockEDataType.AssertExpectations(t)
+	}
+{{- end }}

@@ -1,0 +1,73 @@
+{{/* The getter of a feature; the variant decides where the value comes from. */}}
+{{ define "feature/getter" -}}
+// {{ .Getter }} get the value of {{ .Var }}
+func ({{ .Receiver }} *{{ .Impl }}) {{ .Getter }}() {{ .Type }} {
+{{ include (printf "feature/getter.%s" .GetterStrategy) . }}
+}
+{{- end }}
+
+{{/* Reflective delegation: the store holds the value. */}}
+{{ define "feature/getter.reflective" -}}
+	result, _ := {{ .Receiver }}.EGetFromID({{ .ID }}, true){{ .Cast }}
+	return result
+{{- end }}
+
+{{/* A container reference: the container of the object when held by this feature. */}}
+{{ define "feature/getter.container" -}}
+	if {{ .Receiver }}.EContainerFeatureID() == {{ .ID }} {
+		return {{ .Receiver }}.EContainer().({{ .Type }})
+	}
+	return nil
+{{- end }}
+
+{{/* A single proxy reference: resolved on read, with a RESOLVE notification. */}}
+{{ define "feature/getter.proxy" -}}
+	if {{ .Receiver }}.{{ .Var }} != nil && {{ .Receiver }}.{{ .Var }}.EIsProxy() {
+		{{ .OldVar }} := {{ .Receiver }}.{{ .Var }}
+		{{ .NewVar }} := {{ .Receiver }}.EResolveProxy({{ .OldVar }}).({{ .Type }})
+		if {{ .NewVar }} != {{ .OldVar }} {
+			{{ .Receiver }}.{{ .Var }} = {{ .NewVar }}
+			if {{ .Receiver }}.ENotificationRequired() {
+				{{ .Receiver }}.ENotify({{ .NewNotificationByFeatureID }}({{ .Receiver }}, {{ .RESOLVE }}, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }}, {{ .NO_INDEX }}))
+			}
+		}
+	}
+	return {{ .Receiver }}.{{ .Var }}
+{{- end }}
+
+{{/* A lazy function: the initializer returns the value of an unset field. */}}
+{{ define "feature/getter.lazyfunction" -}}
+	if {{ .Receiver }}.{{ .Var }} == {{ .Guard }} {
+		{{ .Receiver }}.{{ .Var }} = {{ .Receiver }}.asInitializers().{{ .InitMethod }}()
+	}
+	return {{ .Receiver }}.{{ .Var }}
+{{- end }}
+
+{{/* A lazy action: the initializer is called on every read. */}}
+{{ define "feature/getter.lazyaction" -}}
+	{{ .Receiver }}.asInitializers().{{ .InitMethod }}()
+	return {{ .Receiver }}.{{ .Var }}
+{{- end }}
+
+{{/* A list or a map, built on first read. */}}
+{{ define "feature/getter.list" -}}
+	if {{ .Receiver }}.{{ .Var }} == nil {
+		{{ .Receiver }}.{{ .Var }} = {{ .Constructor }}
+	}
+	return {{ .Receiver }}.{{ .Var }}
+{{- end }}
+
+{{/* A plain field. */}}
+{{ define "feature/getter.field" -}}
+	return {{ .Receiver }}.{{ .Var }}
+{{- end }}
+
+{{/* The hand-written body of the getterBody key. */}}
+{{ define "feature/getter.body" -}}
+	{{ .GetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body. */}}
+{{ define "feature/getter.panic" -}}
+	panic("{{ .Getter }} not implemented")
+{{- end }}

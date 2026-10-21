@@ -1,0 +1,27 @@
+{{/* The basic unsetter of a reference: resets the field and chains the notification. */}}
+{{ define "feature/basicunset" -}}
+func ({{ .Receiver }} *{{ .Impl }}) {{ .BasicUnsetter }}(msgs {{ .ENotificationChain }}) {{ .ENotificationChain }} {
+{{ include (printf "feature/basicunset.%s" .BasicUnsetterStrategy) . }}
+}
+{{- end }}
+
+{{/* A plain field: the UNSET notification joins the chain. */}}
+{{ define "feature/basicunset.field" -}}
+	{{ .OldVar }} := {{ .Receiver }}.{{ .Var }}
+	{{ .Receiver }}.{{ .Var }} = nil
+	notifications := msgs
+	if {{ .Receiver }}.ENotificationRequired() {
+		notification := {{ .NewNotificationByFeatureID }}({{ .Receiver }}.AsEObject(), {{ .UNSET }}, {{ .ID }}, {{ .OldVar }}, nil, {{ .NO_INDEX }})
+		if notifications != nil {
+			notifications.Add(notification)
+		} else {
+			notifications = notification
+		}
+	}
+	return notifications
+{{- end }}
+
+{{/* A volatile feature. */}}
+{{ define "feature/basicunset.panic" -}}
+	panic("{{ .BasicUnsetter }} not implemented")
+{{- end }}

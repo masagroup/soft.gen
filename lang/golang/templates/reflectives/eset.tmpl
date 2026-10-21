@@ -1,0 +1,38 @@
+{{/* ESetFromID: sets a feature by id. */}}
+{{ define "reflectives/eset" -}}
+func ({{ .Receiver }} *{{ .Impl }}) ESetFromID(featureID int, newValue {{ .Any }}) {
+	switch featureID {
+{{- range .Cases }}
+	case {{ .ID }}:
+{{ include (printf "reflectives/eset.%s" .Strategy) . }}
+{{- end }}
+	default:
+		{{ .Receiver }}.{{ .ExtendsSimple }}.ESetFromID(featureID, newValue)
+	}
+}
+{{- end }}
+
+{{/* A map: replaced by the entries of the list. */}}
+{{ define "reflectives/eset.map" -}}
+		m := {{ .Receiver }}.{{ .AsInterface }}().{{ .Getter }}()
+		m.Clear()
+		m.AddAll(newValue.({{ .EList }}))
+{{- end }}
+
+{{/* A list: replaced by the elements of the list. */}}
+{{ define "reflectives/eset.list" -}}
+		list := {{ .Receiver }}.{{ .AsInterface }}().{{ .Getter }}()
+		list.Clear()
+		list.AddAll(newValue.({{ .Type }}))
+{{- end }}
+
+{{/* A reference: a nil value is allowed. */}}
+{{ define "reflectives/eset.reference" -}}
+		newValueOrNil, _ := newValue.({{ .Type }})
+		{{ .Receiver }}.{{ .AsInterface }}().{{ .Setter }}(newValueOrNil)
+{{- end }}
+
+{{/* An attribute: the value asserted to its type. */}}
+{{ define "reflectives/eset.attribute" -}}
+		{{ .Receiver }}.{{ .AsInterface }}().{{ .Setter }}(newValue{{ .Cast }})
+{{- end }}

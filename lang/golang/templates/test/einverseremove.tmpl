@@ -1,0 +1,53 @@
+{{/* The test of EBasicInverseRemove (v1 generateEInverseRemoveTestImplementation): each feature case by variant, then a blank line, as v1 did. */}}
+{{ define "test/einverseremove" -}}
+func Test{{ .Class }}EBasicInverseRemove(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{
+		mockObject := {{ .Ecore }}NewMockEObject(t)
+		mockNotifications := {{ .Ecore }}NewMockENotificationChain(t)
+		{{ .Assert }}Equal(t, mockNotifications, o.EBasicInverseRemove(mockObject, -1, mockNotifications))
+	}
+{{- range .Features }}
+{{ include (printf "test/einverseremove.%s" .EInverseRemoveKind) . }}
+{{- end }}
+
+}
+{{- end }}
+
+{{ define "test/einverseremove.map" -}}
+	{
+		mockObject := {{ .TestValue }}
+		o.EBasicInverseRemove(mockObject, {{ .ID }}, nil)
+		{{ .Mock }}AssertExpectationsForObjects(t, mockObject)
+		{{ .Assert }}True(t, o.{{ .Getter }}().Empty())
+	}
+{{- end }}
+
+{{/* A list: the element is first added, inversely added (v1 generateFeatureMockAddedExpectations). */}}
+{{ define "test/einverseremove.list" -}}
+	{
+		// initialize list with a mock object
+		mockObject := {{ .TestValue }}
+{{- if .InverseAddID }}
+		mockObject.EXPECT().EInverseAdd(o, {{ .InverseAddID }}, {{ .Mock }}Anything).Return(nil).Once()
+{{- end }}
+
+		l := o.{{ .Getter }}()
+		l.Add(mockObject)
+
+		// basic inverse remove
+		o.EBasicInverseRemove(mockObject, {{ .ID }}, nil)
+
+		// check it was removed
+		{{ .Assert }}False(t, l.Contains(mockObject))
+		{{ .Mock }}AssertExpectationsForObjects(t, mockObject)
+	}
+{{- end }}
+
+{{ define "test/einverseremove.single" -}}
+	{
+		mockObject := {{ .TestValue }}
+		o.EBasicInverseRemove(mockObject, {{ .ID }}, nil)
+		{{ .Mock }}AssertExpectationsForObjects(t, mockObject)
+	}
+{{- end }}

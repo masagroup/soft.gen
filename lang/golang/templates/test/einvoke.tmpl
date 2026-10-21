@@ -1,0 +1,10 @@
+{{/* The test of EInvokeFromID (v1 generateEInvokeFromIDTestImplementation): every operation panics. */}}
+{{ define "test/einvoke" -}}
+func Test{{ .Class }}EInvokeFromID(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Panics(t, func() { o.EInvokeFromID(-1, nil) })
+{{- range .IDs }}
+	{{ $.Assert }}Panics(t, func() { o.EInvokeFromID({{ . }}, nil) })
+{{- end }}
+}
+{{- end }}

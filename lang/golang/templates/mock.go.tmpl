@@ -1,0 +1,88 @@
+{{/* The mock of a class: the mock struct, its prototype and expecter embedding the extended mocks, the mocked accessors and operations, the constructor. */}}
+{{ define "mock.go" -}}
+// {{ .Name }} is an mock type for the {{ .Interface }} type
+type {{ .Name }} struct {
+	{{ .Mock }}
+	{{ .Name }}_Prototype
+}
+
+// {{ .Name }}_Prototype is the mock implementation of all {{ .Interface }} methods ( inherited and declared )
+type {{ .Name }}_Prototype struct {
+	mock *{{ .Mock }}
+{{- range .Extends }}
+	{{ .Prototype }}
+{{- end }}
+	{{ .Name }}_Prototype_Methods
+}
+
+func (_mp *{{ .Name }}_Prototype) SetMock(mock *{{ .Mock }}) {
+	_mp.mock = mock
+{{- range .Extends }}
+	_mp.{{ .Simple }}_Prototype.SetMock(mock)
+{{- end }}
+	_mp.{{ .Name }}_Prototype_Methods.SetMock(mock)
+}
+
+// {{ .Name }}_Expecter is the expecter implementation for all {{ .Interface }} methods ( inherited and declared )
+type {{ .Name }}_Expecter struct {
+{{- range .Extends }}
+	{{ .Expecter }}
+{{- end }}
+	{{ .Name }}_Expecter_Methods
+}
+
+func (_me *{{ .Name }}_Expecter) SetMock(mock *{{ .Mock }}) {
+{{- range .Extends }}
+	_me.{{ .Simple }}_Expecter.SetMock(mock)
+{{- end }}
+	_me.{{ .Name }}_Expecter_Methods.SetMock(mock)
+}
+
+func ({{ .Receiver }} *{{ .Name }}_Prototype) EXPECT() *{{ .Name }}_Expecter {
+	expecter := &{{ .Name }}_Expecter{}
+	expecter.SetMock({{ .Receiver }}.mock)
+	return expecter
+}
+
+// {{ .Name }}_Prototype_Methods is the mock implementation of {{ .Interface }} declared methods
+type {{ .Name }}_Prototype_Methods struct {
+	mock *{{ .Mock }}
+}
+
+func (_mdp *{{ .Name }}_Prototype_Methods) SetMock(mock *{{ .Mock }}) {
+	_mdp.mock = mock
+}
+
+// {{ .Name }}_Expecter_Methods is the expecter implementation of {{ .Interface }} declared methods
+type {{ .Name }}_Expecter_Methods struct {
+	mock *{{ .Mock }}
+}
+
+func (_mde *{{ .Name }}_Expecter_Methods) SetMock(mock *{{ .Mock }}) {
+	_mde.mock = mock
+}
+{{- range .Accessors }}
+
+{{ include (printf "mock/feature.%s" .Kind) . }}
+{{- end }}
+{{- range .Operations }}
+{{- if not .Lead }}
+{{ blank }}
+{{- end }}
+{{ include (printf "mock/operation.%s" .Kind) . }}
+{{- end }}
+
+type mockConstructorTestingTNew{{ .Name }} interface {
+	{{ .TestingT }}
+	Cleanup(func())
+}
+
+// New{{ .Name }} creates a new instance of {{ .Name }}. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+func New{{ .Name }}(t mockConstructorTestingTNew{{ .Name }}) *{{ .Name }} {
+	mock := &{{ .Name }}{}
+	mock.SetMock(&mock.Mock)
+	mock.Mock.Test(t)
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+	return mock
+}
+{{- end }}

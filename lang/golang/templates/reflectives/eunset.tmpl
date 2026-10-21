@@ -1,0 +1,28 @@
+{{/* EUnsetFromID: unsets a feature by id. */}}
+{{ define "reflectives/eunset" -}}
+func ({{ .Receiver }} *{{ .Impl }}) EUnsetFromID(featureID int) {
+	switch featureID {
+{{- range .Cases }}
+	case {{ .ID }}:
+{{ include (printf "reflectives/eunset.%s" .Strategy) . }}
+{{- end }}
+	default:
+		{{ .Receiver }}.{{ .ExtendsSimple }}.EUnsetFromID(featureID)
+	}
+}
+{{- end }}
+
+{{/* A list that is not unsettable: cleared. */}}
+{{ define "reflectives/eunset.clear" -}}
+		{{ .Receiver }}.{{ .AsInterface }}().{{ .Getter }}().Clear()
+{{- end }}
+
+{{/* An unsettable feature: its unsetter. */}}
+{{ define "reflectives/eunset.unset" -}}
+		{{ .Receiver }}.{{ .AsInterface }}().{{ .Unsetter }}()
+{{- end }}
+
+{{/* Any other feature: set to nil or to its default. */}}
+{{ define "reflectives/eunset.set" -}}
+		{{ .Receiver }}.{{ .AsInterface }}().{{ .Setter }}({{ .Value }})
+{{- end }}

@@ -1,0 +1,13 @@
+{{/* The expression returned by the getter of a meta object (v1 generateGetter): the member of a
+     classifier, the feature or the operation of a class member found by index. */}}
+{{ define "package/getter.member" -}}
+p.{{ .Member }}
+{{- end }}
+
+{{ define "package/getter.feature" -}}
+p.{{ .Member }}.GetEStructuralFeatures().Get({{ .Index }}).({{ .Type }})
+{{- end }}
+
+{{ define "package/getter.operation" -}}
+p.{{ .Member }}.GetEOperations().Get({{ .Index }}).({{ .Type }})
+{{- end }}

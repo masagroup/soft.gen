@@ -1,0 +1,72 @@
+{{/* The mock of a void operation; its last function is left open when the next operation is glued to it (Lead/OpenEnd, as v1). */}}
+{{ define "mock/operation.void" -}}
+{{ .Lead }}// {{ .Method }} provides mock implementation
+func ({{ .Receiver }} *{{ .Mock }}_Prototype_Methods) {{ .Method }}({{ .Params }}) {
+	{{ .Receiver }}.mock.Called({{ .Args }})
+}
+
+type {{ .CallType }} struct {
+	*{{ .Call }}
+}
+
+func (e *{{ .Mock }}_Expecter_Methods) {{ .Method }}({{ .ExpecterParams }}) *{{ .CallType }} {
+	return &{{ .CallType }}{Call: e.mock.On({{ .On }})}
+}
+
+func (c *{{ .CallType }}) Run(run func({{ .Types }})) *{{ .CallType }} {
+	c.Call.Run(func(_args {{ .Arguments }}) {
+		run({{ .RunArgs }})
+	})
+	return c
+}
+
+func (c *{{ .CallType }}) Return() *{{ .CallType }} {
+	c.Call.Return()
+	return c
+{{- if not .OpenEnd }}
+}
+{{- end }}
+{{- end }}
+
+{{/* The mock of an operation returning a value. */}}
+{{ define "mock/operation.value" -}}
+{{ .Lead }}// {{ .Method }} provides mock implementation
+func ({{ .Receiver }} *{{ .Mock }}_Prototype_Methods) {{ .Method }}({{ .Params }}) {{ .Type }} {
+	ret := {{ .Receiver }}.mock.Called({{ .Args }})
+
+	var res {{ .Type }}
+	if rf, ok := ret.Get(0).(func() {{ .Type }}); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0){{ .Cast }}
+		}
+	}
+
+	return res
+}
+
+type {{ .CallType }} struct {
+	*{{ .Call }}
+}
+
+// {{ .Method }} is a helper method to define mock.On call
+{{- range .ParamDocs }}
+// - {{ . }}
+{{- end }}
+func (e *{{ .Mock }}_Expecter_Methods) {{ .Method }}({{ .ExpecterParams }}) *{{ .CallType }} {
+	return &{{ .CallType }}{Call: e.mock.On({{ .On }})}
+}
+
+func (c *{{ .CallType }}) Run(run func({{ .Types }})) *{{ .CallType }} {
+	c.Call.Run(func(_args {{ .Arguments }}) {
+		run({{ .RunArgs }})
+	})
+	return c
+}
+
+func (c *{{ .CallType }}) Return(_a0 {{ .Type }}) *{{ .CallType }} {
+	c.Call.Return(_a0)
+	return c
+}
+{{- end }}

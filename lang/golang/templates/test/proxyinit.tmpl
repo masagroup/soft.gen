@@ -1,0 +1,17 @@
+{{/* The initialization of a proxy reference before the getter test (v1 generateGetTestImplementation, isProxy): the field, or the setter in reflective delegation, with the expectations of the opposite of a bidirectional reference. */}}
+{{ define "test/proxyinit.field" -}}
+	o.{{ .Var }} = mockValue
+{{- end }}
+
+{{ define "test/proxyinit.set" -}}
+	o.{{ .Setter }}(mockValue)
+{{- end }}
+
+{{ define "test/proxyinit.bidirectional" -}}
+	mockClass := {{ .Ecore }}NewMockEClass(t)
+	mockClass.EXPECT().GetFeatureID({{ .ReverseGetter }}).Return({{ .ReverseID }}).Once()
+	mockValue.EXPECT().EClass().Return(mockClass).Once()
+	mockValue.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
+	o.{{ .Setter }}(mockValue)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockValue, mockClass)
+{{- end }}

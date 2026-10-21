@@ -1,0 +1,23 @@
+{{/* The test of the basic setter of a feature (v1 generateBasicSetTestImplementation): a container value is asked for its resource. */}}
+{{ define "test/basicset" -}}
+func Test{{ .Class }}{{ .Name }}BasicSet(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+
+	// add listener
+	mockAdapter := {{ .Ecore }}NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	o.EAdapters().Add(mockAdapter)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter)
+
+	mockValue := {{ .TestValue }}
+	mockNotifications := {{ .Ecore }}NewMockENotificationChain(t)
+{{- if .IsContainer }}
+	mockValue.EXPECT().EResource().Return(nil).Once()
+{{- end }}
+	mockNotifications.EXPECT().Add({{ .Mock }}MatchedBy(func(notification {{ .Ecore }}ENotification) bool {
+		return notification.GetEventType() == {{ .Ecore }}SET && notification.GetFeatureID() == {{ .ID }}
+	})).Return(true).Once()
+	o.{{ .BasicSetter }}(mockValue, mockNotifications)
+	{{ .Mock }}AssertExpectationsForObjects(t, mockAdapter, mockValue, mockNotifications)
+}
+{{- end }}

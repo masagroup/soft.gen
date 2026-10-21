@@ -1,0 +1,35 @@
+{{/* The creation section of a factory implementation: AsEFactory, the Create switch and the
+     creation methods of the concrete classes (classes), or the Create of the data type factory
+     of a shared package, which panics (panic). */}}
+{{ define "factory/create.classes" -}}
+func ({{ .Receiver }} *{{ .Name }}) AsEFactory() {{ .Interface }} {
+	return {{ .Receiver }}.GetInterfaces().({{ .Interface }})
+}
+
+func ({{ .Receiver }} *{{ .Name }}) Create(eClass {{ .EClass }}) {{ .EObject }} {
+	classID := eClass.GetClassifierID()
+	switch classID {
+{{- range .Cases }}
+	case {{ .ID }}:
+		return {{ $.Receiver }}.AsEFactory().{{ .Create }}()
+{{- end }}
+	default:
+		panic("Create: " + {{ .Itoa }}(classID) + " not found")
+	}
+}
+{{- range .Creates }}
+
+func ({{ $.Receiver }} *{{ $.Name }}) {{ .Name }}({{ .Params }}) {{ .Type }} {
+{{ indent 1 (include (printf "factory/creator.%s" .Kind) .) }}
+}
+{{- end }}
+{{- end }}
+
+{{ define "factory/create.panic" -}}
+// Create panics: the package is shared by the implementations of the model, and the objects are
+// created by the factory of the implementation registered for the package (PutFactory, the generated
+// Install of an implementation) or by the factory of an implementation
+func ({{ .Receiver }} *{{ .Name }}) Create(eClass {{ .EClass }}) {{ .EObject }} {
+	panic("Create: " + eClass.GetName() + " (" + {{ .Itoa }}(eClass.GetClassifierID()) + ") of " + {{ .NsURI }} + ": no implementation chosen, register the factory of an implementation (PutFactory, Install)")
+}
+{{- end }}

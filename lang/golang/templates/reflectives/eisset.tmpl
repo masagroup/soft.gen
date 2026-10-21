@@ -1,0 +1,13 @@
+{{/* EIsSetFromID: whether a feature differs from its default, by id. */}}
+{{ define "reflectives/eisset" -}}
+func ({{ .Receiver }} *{{ .Impl }}) EIsSetFromID(featureID int) bool {
+	switch featureID {
+{{- range .Cases }}
+	case {{ .ID }}:
+		return {{ .Value }}
+{{- end }}
+	default:
+		return {{ .Receiver }}.{{ .ExtendsSimple }}.EIsSetFromID(featureID)
+	}
+}
+{{- end }}

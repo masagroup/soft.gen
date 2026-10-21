@@ -1,0 +1,18 @@
+{{/* The test of EIsSetFromID (v1 generateEIsSetFromIDTestImplementation): a new object has no feature set. */}}
+{{ define "test/eisset" -}}
+func Test{{ .Class }}EIsSetFromID(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Panics(t, func() { o.EIsSetFromID(-1) })
+{{- range .Features }}
+{{ include (printf "test/eisset.%s" .EIsSetKind) . }}
+{{- end }}
+}
+{{- end }}
+
+{{ define "test/eisset.volatile" -}}
+	{{ .Assert }}Panics(t, func() { o.EIsSetFromID({{ .ID }}) })
+{{- end }}
+
+{{ define "test/eisset.false" -}}
+	{{ .Assert }}False(t, o.EIsSetFromID({{ .ID }}))
+{{- end }}

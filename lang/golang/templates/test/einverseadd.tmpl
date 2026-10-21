@@ -1,0 +1,68 @@
+{{/* The test of EBasicInverseAdd (v1 generateEInverseAddTestImplementation): each feature case by variant, then a blank line, as v1 did. */}}
+{{ define "test/einverseadd" -}}
+func Test{{ .Class }}EBasicInverseAdd(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{
+		mockObject := {{ .Ecore }}NewMockEObject(t)
+		mockNotifications := {{ .Ecore }}NewMockENotificationChain(t)
+		{{ .Assert }}Equal(t, mockNotifications, o.EBasicInverseAdd(mockObject, -1, mockNotifications))
+	}
+{{- range .Features }}
+{{ include (printf "test/einverseadd.%s" .EInverseAddKind) . }}
+{{- end }}
+
+}
+{{- end }}
+
+{{ define "test/einverseadd.list" -}}
+	{
+		mockObject := {{ .TestValue }}
+		o.EBasicInverseAdd(mockObject, {{ .ID }}, nil)
+		l := o.{{ .Getter }}()
+		{{ .Assert }}True(t, l.Contains(mockObject))
+		{{ .Mock }}AssertExpectationsForObjects(t, mockObject)
+	}
+{{- end }}
+
+{{/* A container: the previous container is left (v1 tested a containment too, impossible for a container). */}}
+{{ define "test/einverseadd.container" -}}
+	{
+		mockObject := {{ .TestValue }}
+		mockObject.EXPECT().EResource().Return(nil).Once()
+		mockObject.EXPECT().EIsProxy().Return(false).Once()
+		o.EBasicInverseAdd(mockObject, {{ .ID }}, nil)
+		{{ .Assert }}Equal(t, mockObject, o.{{ .Getter }}())
+		{{ .Mock }}AssertExpectationsForObjects(t, mockObject)
+
+		mockOther := {{ .TestValue }}
+		mockOther.EXPECT().EResource().Return(nil).Once()
+		mockOther.EXPECT().EIsProxy().Return(false).Once()
+		mockObject.EXPECT().EResource().Return(nil).Once()
+		mockObject.EXPECT().EClass().Return({{ .TypeClass }}).Once()
+		mockObject.EXPECT().EInverseRemove(o, {{ .RemoveID }}, nil).Return(nil).Once()
+		o.EBasicInverseAdd(mockOther, {{ .ID }}, nil)
+		{{ .Assert }}Equal(t, mockOther, o.{{ .Getter }}())
+		{{ .Mock }}AssertExpectationsForObjects(t, mockObject, mockOther)
+	}
+{{- end }}
+
+{{ define "test/einverseadd.single" -}}
+	{
+		mockObject := {{ .TestValue }}
+{{- if .IsProxy }}
+		mockObject.EXPECT().EIsProxy().Return(false)
+{{- end }}
+		o.EBasicInverseAdd(mockObject, {{ .ID }}, nil)
+		{{ .Assert }}Equal(t, mockObject, o.{{ .Getter }}())
+		{{ .Mock }}AssertExpectationsForObjects(t, mockObject)
+
+		mockObject2 := {{ .TestValue }}
+{{- if .IsProxy }}
+		mockObject2.EXPECT().EIsProxy().Return(false)
+{{- end }}
+		mockObject.EXPECT().EInverseRemove(o, {{ .RemoveID }}, nil).Return(nil).Once()
+		o.EBasicInverseAdd(mockObject2, {{ .ID }}, nil)
+		{{ .Assert }}Equal(t, mockObject2, o.{{ .Getter }}())
+		{{ .Mock }}AssertExpectationsForObjects(t, mockObject2)
+	}
+{{- end }}

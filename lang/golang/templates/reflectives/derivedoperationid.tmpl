@@ -1,0 +1,19 @@
+{{/* EDerivedOperationID: maps the operation ids of the mixin classes to those of the class. */}}
+{{ define "reflectives/derivedoperationid" -}}
+func ({{ .Receiver }} *{{ .Impl }}) EDerivedOperationID(eContainer {{ .EObject }}, operationID int) int {
+	eClass, _ := eContainer.({{ .EClass }})
+{{- range .Mixins }}
+	if eClass == {{ .Class }} {
+		switch operationID {
+{{- range .IDs }}
+		case {{ .From }}:
+			return {{ .To }}
+{{- end }}
+		default:
+			return -1
+		}
+	}
+{{- end }}
+	return {{ .Receiver }}.{{ .ExtendsSimple }}.EDerivedOperationID(eContainer, operationID)
+}
+{{- end }}
