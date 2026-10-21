@@ -22,6 +22,11 @@ removed from the tree; they remain in the history, up to the `v1.x` tags.
   Go pseudo-version between tags) and is the same for every language; v1
   versioned each language apart in its Makefile.
 - Property files (`-P`) may be Java `.properties`, YAML or JSON, by extension.
+- The command line is built with urfave/cli v3: the options keep their v1
+  names and short forms, and may also come from `SOFT_GEN_*` environment
+  variables and from a configuration file (`--config`, YAML, JSON or TOML, read
+  with cli-altsrc); the command line wins over the environment, which wins
+  over the file.
 - `--dry-run` lists the files without writing them; `--diff` prints the
   differences with the existing files, writes nothing and exits 1 on any
   difference; `--format` runs the external formatter of a language.
