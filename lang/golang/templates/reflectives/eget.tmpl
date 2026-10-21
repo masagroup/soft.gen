@@ -1,0 +1,37 @@
+{{/* EGetFromID: the value of a feature by id. */}}
+{{ define "reflectives/eget" -}}
+func ({{ .Receiver }} *{{ .Impl }}) EGetFromID(featureID int, resolve bool) {{ .Any }} {
+	switch featureID {
+{{- range .Cases }}
+	case {{ .ID }}:
+{{ include (printf "reflectives/eget.%s" .Strategy) . }}
+{{- end }}
+	default:
+		return {{ .Receiver }}.{{ .ExtendsSimple }}.EGetFromID(featureID, resolve)
+	}
+}
+{{- end }}
+
+{{/* A proxy list: the unresolved list unless resolving. */}}
+{{ define "reflectives/eget.proxylist" -}}
+		list := {{ .Receiver }}.{{ .AsInterface }}().{{ .Getter }}()
+		if !resolve {
+			if objects, _ := list.({{ .EObjectList }}); objects != nil {
+				return objects.GetUnResolvedList()
+			}
+		}
+		return list
+{{- end }}
+
+{{/* A single proxy: the basic getter unless resolving. */}}
+{{ define "reflectives/eget.proxy" -}}
+		if resolve {
+			return {{ .Receiver }}.{{ .AsInterface }}().{{ .Getter }}()
+		}
+		return {{ .Receiver }}.asBasics().{{ .BasicGetter }}()
+{{- end }}
+
+{{/* Any other feature: the getter. */}}
+{{ define "reflectives/eget.get" -}}
+		return {{ .Receiver }}.{{ .AsInterface }}().{{ .Getter }}()
+{{- end }}

@@ -1,0 +1,37 @@
+{{/* The basic setter of a reference: sets the field and chains the notification. */}}
+{{ define "feature/basicset" -}}
+func ({{ .Receiver }} *{{ .Impl }}) {{ .BasicSetter }}({{ .NewVar }} {{ .Type }}, msgs {{ .ENotificationChain }}) {{ .ENotificationChain }} {
+{{ include (printf "feature/basicset.%s" .BasicSetterStrategy) . }}
+}
+{{- end }}
+
+{{/* A container reference: the container is set. */}}
+{{ define "feature/basicset.container" -}}
+	return {{ .Receiver }}.EBasicSetContainer({{ .NewVar }}, {{ .ID }}, msgs)
+{{- end }}
+
+{{/* A plain field: the SET notification joins the chain. */}}
+{{ define "feature/basicset.field" -}}
+	{{ .OldVar }} := {{ .Receiver }}.{{ .Var }}
+	{{ .Receiver }}.{{ .Var }} = {{ .NewVar }}
+	notifications := msgs
+	if {{ .Receiver }}.ENotificationRequired() {
+		notification := {{ .NewNotificationByFeatureID }}({{ .Receiver }}.AsEObject(), {{ .SET }}, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }}, {{ .NO_INDEX }})
+		if notifications != nil {
+			notifications.Add(notification)
+		} else {
+			notifications = notification
+		}
+	}
+	return notifications
+{{- end }}
+
+{{/* The hand-written body of the setterBody key. */}}
+{{ define "feature/basicset.body" -}}
+	{{ .SetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body: the message names the setter, as v1 did. */}}
+{{ define "feature/basicset.panic" -}}
+	panic("{{ .Setter }} not implemented")
+{{- end }}

@@ -1,0 +1,52 @@
+{{/* EBasicInverseAdd: the other end of a bidirectional feature joins it. */}}
+{{ define "reflectives/einverseadd" -}}
+func ({{ .Receiver }} *{{ .Impl }}) EBasicInverseAdd(otherEnd {{ .EObject }}, featureID int, notifications {{ .ENotificationChain }}) {{ .ENotificationChain }} {
+	switch featureID {
+{{- range .Cases }}
+	case {{ .ID }}:
+{{ include (printf "reflectives/einverseadd.%s" .Strategy) . }}
+{{- end }}
+	default:
+		return {{ .Receiver }}.{{ .ExtendsSimple }}.EBasicInverseAdd(otherEnd, featureID, notifications)
+	}
+}
+{{- end }}
+
+{{/* A map: nothing to do. */}}
+{{ define "reflectives/einverseadd.map" -}}
+		return notifications
+{{- end }}
+
+{{/* A list: the other end is added with notification. */}}
+{{ define "reflectives/einverseadd.list" -}}
+		list := {{ .Receiver }}.{{ .Getter }}().({{ .ENotifyingList }})
+		return list.AddWithNotification(otherEnd, notifications)
+{{- end }}
+
+{{/* A container reference with a basic setter: the container changes through it. */}}
+{{ define "reflectives/einverseadd.containerbasic" -}}
+		msgs := notifications
+		if {{ .Receiver }}.EInternalContainer() != nil {
+			msgs = {{ .Receiver }}.EBasicRemoveFromContainer(msgs)
+		}
+		return {{ .Receiver }}.asBasics().{{ .BasicSetter }}(otherEnd.({{ .Type }}), msgs)
+{{- end }}
+
+{{/* A container reference without basic setter: the container is set directly. */}}
+{{ define "reflectives/einverseadd.containerset" -}}
+		msgs := notifications
+		if {{ .Receiver }}.EInternalContainer() != nil {
+			msgs = {{ .Receiver }}.EBasicRemoveFromContainer(msgs)
+		}
+		return {{ .Receiver }}.EBasicSetContainer(otherEnd, {{ .ID }}, msgs)
+{{- end }}
+
+{{/* A single reference: the current other end leaves, the new one is set through the basic setter. */}}
+{{ define "reflectives/einverseadd.single" -}}
+		msgs := notifications
+		{{ .Name }} := {{ .Value }}
+		if {{ .Name }} != nil {
+			msgs = {{ .Name }}.({{ .EObjectInternal }}).EInverseRemove({{ .Receiver }}.AsEObject(), {{ .RemoveID }}, msgs)
+		}
+		return {{ .Receiver }}.asBasics().{{ .BasicSetter }}(otherEnd.({{ .Type }}), msgs)
+{{- end }}

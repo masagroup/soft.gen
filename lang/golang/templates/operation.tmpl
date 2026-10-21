@@ -1,0 +1,7 @@
+{{/* The default implementation of an operation: not implemented. */}}
+{{ define "operation" -}}
+// {{ .Name }} default implementation
+func ({{ .Receiver }} *{{ .Impl }}) {{ .Name }}({{ .Params }}) {{ .Type }} {
+	panic("{{ .Name }} not implemented")
+}
+{{- end }}

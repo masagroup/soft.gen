@@ -1,0 +1,39 @@
+{{/* EBasicInverseRemove: the other end of a bidirectional or containment feature leaves it. */}}
+{{ define "reflectives/einverseremove" -}}
+func ({{ .Receiver }} *{{ .Impl }}) EBasicInverseRemove(otherEnd {{ .EObject }}, featureID int, notifications {{ .ENotificationChain }}) {{ .ENotificationChain }} {
+	switch featureID {
+{{- range .Cases }}
+	case {{ .ID }}:
+{{ include (printf "reflectives/einverseremove.%s" .Strategy) . }}
+{{- end }}
+	default:
+		return {{ .Receiver }}.{{ .ExtendsSimple }}.EBasicInverseRemove(otherEnd, featureID, notifications)
+	}
+}
+{{- end }}
+
+{{/* A map: nothing to do. */}}
+{{ define "reflectives/einverseremove.map" -}}
+		return notifications
+{{- end }}
+
+{{/* A list: the other end is removed with notification. */}}
+{{ define "reflectives/einverseremove.list" -}}
+		list := {{ .Receiver }}.{{ .Getter }}().({{ .ENotifyingList }})
+		return list.RemoveWithNotification(otherEnd, notifications)
+{{- end }}
+
+{{/* A container reference without basic setter: the container is reset directly. */}}
+{{ define "reflectives/einverseremove.container" -}}
+		return {{ .Receiver }}.EBasicSetContainer(nil, {{ .ID }}, notifications)
+{{- end }}
+
+{{/* An unsettable reference: the basic unsetter. */}}
+{{ define "reflectives/einverseremove.unset" -}}
+		return {{ .Receiver }}.asBasics().{{ .BasicUnsetter }}(notifications)
+{{- end }}
+
+{{/* Any other reference: the basic setter with nil. */}}
+{{ define "reflectives/einverseremove.set" -}}
+		return {{ .Receiver }}.asBasics().{{ .BasicSetter }}(nil, notifications)
+{{- end }}

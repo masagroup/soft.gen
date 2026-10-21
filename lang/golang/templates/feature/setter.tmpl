@@ -1,0 +1,70 @@
+{{/* The setter of a feature; the variant decides how the other end is notified. */}}
+{{ define "feature/setter" -}}
+// {{ .Setter }} set the value of {{ .Var }}
+func ({{ .Receiver }} *{{ .Impl }}) {{ .Setter }}({{ .NewVar }} {{ .Type }}) {
+{{- if .CheckImplementation }}
+	{{ .CheckImplementation }}
+{{- end }}
+{{ include (printf "feature/setter.%s" .SetterStrategy) . }}
+}
+{{- end }}
+
+{{/* Reflective delegation: the store holds the value. */}}
+{{ define "feature/setter.reflective" -}}
+	{{ .Receiver }}.ESetFromID({{ .ID }}, {{ .NewVar }})
+{{- end }}
+
+{{/* A container reference: leave the current container, join the new one. */}}
+{{ define "feature/setter.container" -}}
+	if {{ .NewVar }} != {{ .Receiver }}.EInternalContainer() || ({{ .NewVar }} != nil && {{ .Receiver }}.EContainerFeatureID() != {{ .ID }}) {
+		var notifications {{ .ENotificationChain }}
+		if {{ .Receiver }}.EInternalContainer() != nil {
+			notifications = {{ .Receiver }}.EBasicRemoveFromContainer(notifications)
+		}
+		if {{ .NewVar }}Internal, _ := {{ .NewVar }}.({{ .EObjectInternal }}); {{ .NewVar }}Internal != nil {
+			notifications = {{ .NewVar }}Internal.EInverseAdd({{ .Receiver }}.AsEObject(), {{ .ReverseID }}, notifications)
+		}
+		notifications = {{ .Receiver }}.asBasics().{{ .BasicSetter }}({{ .NewVar }}, notifications)
+		if notifications != nil {
+			notifications.Dispatch()
+		}
+	} else if {{ .Receiver }}.ENotificationRequired() {
+		{{ .Receiver }}.ENotify({{ .NewNotificationByFeatureID }}({{ .Receiver }}, {{ .SET }}, {{ .ID }}, {{ .NewVar }}, {{ .NewVar }}, {{ .NO_INDEX }}))
+	}
+{{- end }}
+
+{{/* A bidirectional or containment reference: the old and new other ends are told. */}}
+{{ define "feature/setter.inverse" -}}
+	if {{ .NewVar }} != {{ .Receiver }}.{{ .Var }} {
+		var notifications {{ .ENotificationChain }}
+		if {{ .OldVar }}Internal, _ := {{ .Receiver }}.{{ .Var }}.({{ .EObjectInternal }}); {{ .OldVar }}Internal != nil {
+			notifications = {{ .OldVar }}Internal.EInverseRemove({{ .Receiver }}, {{ .InverseID }}, notifications)
+		}
+		if {{ .NewVar }}Internal, _ := {{ .NewVar }}.({{ .EObjectInternal }}); {{ .NewVar }}Internal != nil {
+			notifications = {{ .NewVar }}Internal.EInverseAdd({{ .Receiver }}.AsEObject(), {{ .InverseID }}, notifications)
+		}
+		notifications = {{ .Receiver }}.asBasics().{{ .BasicSetter }}({{ .NewVar }}, notifications)
+		if notifications != nil {
+			notifications.Dispatch()
+		}
+	}
+{{- end }}
+
+{{/* A plain field, with a SET notification. */}}
+{{ define "feature/setter.field" -}}
+	{{ .OldVar }} := {{ .Receiver }}.{{ .Var }}
+	{{ .Receiver }}.{{ .Var }} = {{ .NewVar }}
+	if {{ .Receiver }}.ENotificationRequired() {
+		{{ .Receiver }}.ENotify({{ .NewNotificationByFeatureID }}({{ .Receiver }}.AsEObject(), {{ .SET }}, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }}, {{ .NO_INDEX }}))
+	}
+{{- end }}
+
+{{/* The hand-written body of the setterBody key. */}}
+{{ define "feature/setter.body" -}}
+	{{ .SetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body. */}}
+{{ define "feature/setter.panic" -}}
+	panic("{{ .Setter }} not implemented")
+{{- end }}

@@ -8,8 +8,6 @@ import (
 
 // The file builders below are not ported yet: they generate nothing.
 
-func (g *gen) interfaceFile(ecore.EClass) []engine.File          { return nil }
-func (g *gen) implementationFile(ecore.EClass) []engine.File     { return nil }
 func (g *gen) mockFile(ecore.EClass) []engine.File               { return nil }
 func (g *gen) mockTestFile(ecore.EClass) []engine.File           { return nil }
 func (g *gen) implementationTestFile(ecore.EClass) []engine.File { return nil }

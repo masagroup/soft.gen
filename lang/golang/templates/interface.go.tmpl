@@ -1,0 +1,24 @@
+{{/* The interface of a class: the embedded interfaces, the operations, the accessors, the user code region. */}}
+{{ define "interface.go" -}}
+// {{ .Name }} is the representation of the model object '{{ .ClassName }}'
+type {{ .Name }} interface {
+{{- range .Extends }}
+	{{ . }}
+{{- end }}
+{{- if .Operations }}
+{{ blank }}
+{{- range .Operations }}
+	{{ . }}
+{{- end }}
+{{- end }}
+{{- range .Features }}
+{{ blank }}
+{{- range . }}
+	{{ . }}
+{{- end }}
+{{- end }}
+
+	// Start of user code {{ .Name }}
+	// End of user code
+}
+{{- end }}

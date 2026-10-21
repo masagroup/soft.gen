@@ -1,0 +1,28 @@
+{{/* The EMapEntry accessors of a map entry class, delegating to the typed accessors of the key and the value. */}}
+{{ define "impl/mapentry" -}}
+func ({{ .Receiver }} *{{ .Impl }}) GetKey() {{ .Any }} {
+	return {{ .Receiver }}.{{ .KeyGetter }}()
+}
+
+func ({{ .Receiver }} *{{ .Impl }}) SetKey(key {{ .Any }}) {
+{{- if .KeyList }}
+	{{ .Receiver }}.{{ .KeyGetter }}().AddAll(key.({{ .EList }}))
+{{- else }}
+	{{ .Receiver }}.{{ .KeySetter }}(key{{ .KeyCast }})
+{{- end }}
+}
+
+func ({{ .Receiver }} *{{ .Impl }}) GetValue() {{ .Any }} {
+	return {{ .Receiver }}.{{ .ValueGetter }}()
+}
+
+func ({{ .Receiver }} *{{ .Impl }}) SetValue(value {{ .Any }}) {
+{{- if .ValueList }}
+	l := {{ .Receiver }}.{{ .ValueGetter }}()
+	l.Clear()
+	l.AddAll(value.({{ .EList }}))
+{{- else }}
+	{{ .Receiver }}.{{ .ValueSetter }}(value{{ .ValueCast }})
+{{- end }}
+}
+{{- end }}

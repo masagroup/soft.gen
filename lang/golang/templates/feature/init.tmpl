@@ -1,0 +1,24 @@
+{{/* The lazy initialization method of a feature: a function returns the value, an action sets the field. */}}
+{{ define "feature/init" -}}
+{{ include (printf "feature/init.%s" .Mode) . }}
+{{- end }}
+
+{{ define "feature/init.function" -}}
+func ({{ .Receiver }} *{{ .Impl }}) {{ .Name }}() {{ .Type }} {
+{{- if eq .Strategy "value" }}
+	return {{ .Value }}
+{{- else }}
+	panic("{{ .Name }} not implemented")
+{{- end }}
+}
+{{- end }}
+
+{{ define "feature/init.action" -}}
+func ({{ .Receiver }} *{{ .Impl }}) {{ .Name }}() {
+{{- if eq .Strategy "value" }}
+	{{ .Receiver }}.{{ .Var }} = {{ .Value }}
+{{- else if eq .Strategy "panic" }}
+	panic("{{ .Name }} not implemented")
+{{- end }}
+}
+{{- end }}

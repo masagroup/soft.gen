@@ -1,0 +1,18 @@
+{{/* EInvokeFromID: calls an operation by id with the arguments of the list. */}}
+{{ define "reflectives/einvoke" -}}
+func ({{ .Receiver }} *{{ .Impl }}) EInvokeFromID(operationID int, arguments {{ .EList }}) {{ .Any }} {
+	switch operationID {
+{{- range .Operations }}
+	case {{ .ID }}:
+{{- if .Void }}
+		{{ .Receiver }}.{{ .AsInterface }}().{{ .Call }}
+		return nil
+{{- else }}
+		return {{ .Receiver }}.{{ .AsInterface }}().{{ .Call }}
+{{- end }}
+{{- end }}
+	default:
+		return {{ .Receiver }}.{{ .ExtendsSimple }}.EInvokeFromID(operationID, arguments)
+	}
+}
+{{- end }}
