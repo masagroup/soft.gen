@@ -1,0 +1,37 @@
+{{/* The basic setter of a bidirectional or containment reference: stores the value, chains the notification. */}}
+{{ define "feature/basicset" -}}
+{{ .BasicSetter }}({{ .NewVar }}: {{ .Type }}, msgs: {{ .Ecore "ENotificationChain" }}): {{ .Ecore "ENotificationChain" }} {
+{{ indent 1 (include (printf "feature/basicset.%s" .BasicSetterStrategy) .) }}
+}
+{{- end }}
+
+{{/* A container reference. */}}
+{{ define "feature/basicset.container" -}}
+return this.eBasicSetContainer({{ .NewVar }}, {{ .ID }}, msgs)
+{{- end }}
+
+{{/* A plain field. */}}
+{{ define "feature/basicset.field" -}}
+const {{ .OldVar }} = this.{{ .Var }}
+this.{{ .Var }} = {{ .NewVar }}
+let notifications = msgs
+if (this.eNotificationRequired()) {
+    const notification = new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.SET, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }})
+    if (notifications != null) {
+        notifications.add(notification)
+    } else {
+        notifications = notification
+    }
+}
+return notifications
+{{- end }}
+
+{{/* A volatile feature with the setterBody annotation key. */}}
+{{ define "feature/basicset.body" -}}
+{{ .SetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body. */}}
+{{ define "feature/basicset.panic" -}}
+throw new Error("{{ .BasicSetter }} not implemented")
+{{- end }}

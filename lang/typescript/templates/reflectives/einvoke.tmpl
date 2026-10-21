@@ -1,0 +1,20 @@
+{{/* eInvokeFromID: calls an operation by id with the arguments of the list. */}}
+{{ define "reflectives/einvoke" -}}
+eInvokeFromID(operationID: number, args: {{ .Ecore "EList" }}<any>): any {
+    switch (operationID) {
+{{- range .Cases }}
+        case {{ .CaseID }}: {
+{{- if eq .Strategy "void" }}
+            this.{{ .Value }}
+            return null
+{{- else }}
+            return this.{{ .Value }}
+{{- end }}
+        }
+{{- end }}
+        default: {
+            return super.eInvokeFromID(operationID, args)
+        }
+    }
+}
+{{- end }}

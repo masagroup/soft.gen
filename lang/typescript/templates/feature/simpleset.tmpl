@@ -1,0 +1,24 @@
+{{/* The setter of a feature the interface does not declare. */}}
+{{ define "feature/simpleset" -}}
+// set the value of {{ .Name }}
+{{ .Setter }}({{ .NewVar }}: {{ .Type }}) {
+{{ indent 1 (include (printf "feature/simpleset.%s" .SimpleSetStrategy) .) }}
+}
+{{- end }}
+
+{{/* A list: its content is replaced. */}}
+{{ define "feature/simpleset.list" -}}
+const l = this.{{ .Getter }}()
+l.clear()
+l.addAll({{ .NewVar }})
+{{- end }}
+
+{{/* Reflective delegation. */}}
+{{ define "feature/simpleset.reflective" -}}
+this.eSetFromID({{ .ID }}, {{ .NewVar }})
+{{- end }}
+
+{{/* A plain field, without notification. */}}
+{{ define "feature/simpleset.field" -}}
+this.{{ .Var }} = {{ .NewVar }}
+{{- end }}

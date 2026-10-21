@@ -1,0 +1,72 @@
+{{/* The getter of a feature; the variant decides where the value comes from. */}}
+{{ define "feature/getter" -}}
+// get the value of {{ .Name }}
+{{ .Getter }}(): {{ .Type }} {
+{{ indent 1 (include (printf "feature/getter.%s" .GetterStrategy) .) }}
+}
+{{- end }}
+
+{{/* Reflective delegation: the store holds the value. */}}
+{{ define "feature/getter.reflective" -}}
+return this.eGetFromID({{ .ID }}, true) as {{ .Type }}
+{{- end }}
+
+{{/* A container reference: the container of the object when held by this feature. */}}
+{{ define "feature/getter.container" -}}
+if (this.eContainerFeatureID() == {{ .ID }}) {
+    return this.eContainer() as {{ .Type }}
+}
+return null
+{{- end }}
+
+{{/* A single proxy reference: resolved on read, with a RESOLVE notification. */}}
+{{ define "feature/getter.proxy" -}}
+if (this.{{ .Var }} != null && this.{{ .Var }}.eIsProxy()) {
+    const {{ .OldVar }} = this.{{ .Var }}
+    const {{ .NewVar }} = this.eResolveProxy({{ .OldVar }}) as {{ .Type }}
+    if ({{ .NewVar }} != {{ .OldVar }}) {
+        this.{{ .Var }} = {{ .NewVar }}
+        if (this.eNotificationRequired()) {
+            this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.RESOLVE, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }}))
+        }
+    }
+}
+return this.{{ .Var }}
+{{- end }}
+
+{{/* A lazy function: the initializer returns the value of an unset field. */}}
+{{ define "feature/getter.lazyfunction" -}}
+if (this.{{ .Var }} == {{ .Guard }}) {
+    this.{{ .Var }} = this.{{ .InitMethod }}()
+}
+return this.{{ .Var }}
+{{- end }}
+
+{{/* A lazy action: the initializer is called on every read. */}}
+{{ define "feature/getter.lazyaction" -}}
+this.{{ .InitMethod }}()
+return this.{{ .Var }}
+{{- end }}
+
+{{/* A list or a map, built on first read. */}}
+{{ define "feature/getter.list" -}}
+if (this.{{ .Var }} == null) {
+    this.{{ .Var }} = {{ .Constructor }}
+}
+return this.{{ .Var }}
+{{- end }}
+
+{{/* A plain field. */}}
+{{ define "feature/getter.field" -}}
+return this.{{ .Var }}
+{{- end }}
+
+{{/* A volatile feature with the getterBody annotation key. */}}
+{{ define "feature/getter.body" -}}
+{{ .GetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body. */}}
+{{ define "feature/getter.panic" -}}
+throw new Error("{{ .Getter }} not implemented")
+{{- end }}

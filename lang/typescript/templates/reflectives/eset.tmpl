@@ -1,0 +1,35 @@
+{{/* eSetFromID: sets a feature by id. */}}
+{{ define "reflectives/eset" -}}
+eSetFromID(featureID: number, newValue: any) {
+    switch (featureID) {
+{{- range .Cases }}
+        case {{ .CaseID }}: {
+{{ indent 3 (include (printf "reflectives/eset.%s" .Strategy) .) }}
+            break
+        }
+{{- end }}
+        default: {
+            super.eSetFromID(featureID, newValue)
+        }
+    }
+}
+{{- end }}
+
+{{/* A map: its entries are replaced. */}}
+{{ define "reflectives/eset.map" -}}
+const list = this.{{ .Getter }}()
+list.clear()
+list.addAll(newValue as {{ .Ecore "EList" }}<{{ .Ecore "EMapEntry" }}<{{ .MapTypes }}>>)
+{{- end }}
+
+{{/* A list: its elements are replaced. */}}
+{{ define "reflectives/eset.list" -}}
+const list = this.{{ .Getter }}()
+list.clear()
+list.addAll(newValue as {{ .Type }})
+{{- end }}
+
+{{/* Any other feature: its setter. */}}
+{{ define "reflectives/eset.set" -}}
+this.{{ .Setter }}(newValue as {{ .Type }})
+{{- end }}

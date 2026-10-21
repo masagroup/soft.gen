@@ -83,6 +83,7 @@ func (*Language) Funcs() template.FuncMap {
 	return template.FuncMap{
 		"indent": indent,
 		"quote":  quote,
+		"lines":  lines,
 	}
 }
 

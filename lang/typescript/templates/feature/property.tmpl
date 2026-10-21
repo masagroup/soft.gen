@@ -1,0 +1,23 @@
+{{/* The get accessor property of a feature. */}}
+{{ define "feature/property.get" -}}
+// get the value of {{ .Name }}
+get {{ .Property }}(): {{ .Type }} {
+    return this.{{ .Getter }}()
+}
+{{- end }}
+
+{{/* The set accessor property of a feature. */}}
+{{ define "feature/property.set" -}}
+// set the value of {{ .Name }}
+set {{ .Property }}({{ .NewVar }}: {{ .Type }}) {
+    this.{{ .Setter }}({{ .NewVar }})
+}
+{{- end }}
+
+{{/* The set accessor property of a feature without setter. */}}
+{{ define "feature/property.simpleset" -}}
+// set the value of {{ .Name }}
+set {{ .Property }}({{ .NewVar }}: {{ .Type }}) {
+{{ indent 1 (include (printf "feature/simpleset.%s" .SimpleSetStrategy) .) }}
+}
+{{- end }}

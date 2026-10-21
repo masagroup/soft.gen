@@ -39,8 +39,9 @@ var (
 //  6. no two consecutive blank lines.
 //
 // A template that passes Lint renders complete lines, owns no trailing
-// newline, and leaves no trace of its control lines in the output.
-func Lint(fsys fs.FS) []Problem {
+// newline, and leaves no trace of its control lines in the output. funcs are
+// the functions a language adds to the base ones (Language.Funcs).
+func Lint(fsys fs.FS, funcs ...template.FuncMap) []Problem {
 	var problems []Problem
 	paths, err := templatePaths(fsys)
 	if err != nil {
@@ -52,13 +53,13 @@ func Lint(fsys fs.FS) []Problem {
 			problems = append(problems, Problem{File: path, Message: err.Error()})
 			continue
 		}
-		problems = append(problems, lintFile(path, string(content))...)
+		problems = append(problems, lintFile(path, string(content), funcs)...)
 	}
 	return problems
 }
 
 // lintFile checks one template file.
-func lintFile(path, content string) []Problem {
+func lintFile(path, content string, funcs []template.FuncMap) []Problem {
 	var problems []Problem
 	report := func(line int, format string, args ...any) {
 		problems = append(problems, Problem{File: path, Line: line, Message: fmt.Sprintf(format, args...)})
@@ -98,7 +99,7 @@ func lintFile(path, content string) []Problem {
 			report(n, `newline literal {{ "\n" }}: use a blank line in the template`)
 		}
 	}
-	parsed, err := template.New(path).Funcs(lintFuncs()).Parse(content)
+	parsed, err := template.New(path).Funcs(lintFuncs(funcs)).Parse(content)
 	if err != nil {
 		report(0, "parse: %v", err)
 		return problems
@@ -117,10 +118,16 @@ func lintFile(path, content string) []Problem {
 	return problems
 }
 
-// lintFuncs declares every base function name so that parsing succeeds.
-func lintFuncs() template.FuncMap {
+// lintFuncs declares every function name, the base ones and the ones of
+// the language, so that parsing succeeds.
+func lintFuncs(extra []template.FuncMap) template.FuncMap {
 	funcs := BaseFuncs()
 	funcs["include"] = func(string, any) string { return "" }
+	for _, more := range extra {
+		for name, fn := range more {
+			funcs[name] = fn
+		}
+	}
 	return funcs
 }
 

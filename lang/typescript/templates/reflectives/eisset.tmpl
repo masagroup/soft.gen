@@ -1,0 +1,15 @@
+{{/* eIsSetFromID: whether a feature by id differs from its default. */}}
+{{ define "reflectives/eisset" -}}
+eIsSetFromID(featureID: number): boolean {
+    switch (featureID) {
+{{- range .Cases }}
+        case {{ .CaseID }}: {
+            return {{ .Value }}
+        }
+{{- end }}
+        default: {
+            return super.eIsSetFromID(featureID)
+        }
+    }
+}
+{{- end }}

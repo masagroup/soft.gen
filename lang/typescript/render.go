@@ -25,6 +25,7 @@ func (f tsFile) Render(ctx *engine.Context) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	body = []byte(breakLongLines(string(body), f.scope.g.printWidth()))
 	var out []byte
 	if imports := f.scope.imports(); imports != "" {
 		out = append(out, imports...)

@@ -1,0 +1,68 @@
+{{/* The setter of a feature; the variant decides how the value is stored. */}}
+{{ define "feature/setter" -}}
+// set the value of {{ .Name }}
+{{ .Setter }}({{ .NewVar }}: {{ .Type }}): void {
+{{ indent 1 (include (printf "feature/setter.%s" .SetterStrategy) .) }}
+}
+{{- end }}
+
+{{/* Reflective delegation. */}}
+{{ define "feature/setter.reflective" -}}
+this.eSetFromID({{ .ID }}, {{ .NewVar }})
+{{- end }}
+
+{{/* A container reference: the object moves to the new container. */}}
+{{ define "feature/setter.container" -}}
+if ({{ .NewVar }} != this.eInternalContainer() || ({{ .NewVar }} != null && this.eContainerFeatureID() != {{ .ID }})) {
+    let notifications: {{ .Ecore "ENotificationChain" }} = null
+    if (this.eInternalContainer() != null) {
+        notifications = this.eBasicRemoveFromContainer(notifications)
+    }
+    if ({{ .Ecore "isEObjectInternal" }}({{ .NewVar }})) {
+        notifications = {{ .NewVar }}.eInverseAdd(this, {{ .InverseNew }}, notifications)
+    }
+    notifications = this.{{ .BasicSetter }}({{ .NewVar }}, notifications)
+    if (notifications != null) {
+        notifications.dispatch()
+    }
+} else if (this.eNotificationRequired()) {
+    this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.SET, {{ .ID }}, {{ .NewVar }}, {{ .NewVar }}))
+}
+{{- end }}
+
+{{/* A bidirectional or containment reference: the inverse of the old and new values is updated. */}}
+{{ define "feature/setter.inverse" -}}
+{{ .CheckImplementation }}const {{ .OldVar }} = this.{{ .Var }}
+if ({{ .NewVar }} != {{ .OldVar }}) {
+    let notifications: {{ .Ecore "ENotificationChain" }} = null
+    if ({{ .Ecore "isEObjectInternal" }}({{ .OldVar }})) {
+        notifications = {{ .OldVar }}.eInverseRemove(this, {{ .InverseOld }}, notifications)
+    }
+    if ({{ .Ecore "isEObjectInternal" }}({{ .NewVar }})) {
+        notifications = {{ .NewVar }}.eInverseAdd(this, {{ .InverseNew }}, notifications)
+    }
+    notifications = this.{{ .BasicSetter }}({{ .NewVar }}, notifications)
+    if (notifications != null) {
+        notifications.dispatch()
+    }
+}
+{{- end }}
+
+{{/* A plain field, with a SET notification. */}}
+{{ define "feature/setter.field" -}}
+{{ .CheckImplementation }}const {{ .OldVar }} = this.{{ .Var }}
+this.{{ .Var }} = {{ .NewVar }}
+if (this.eNotificationRequired()) {
+    this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.SET, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }}))
+}
+{{- end }}
+
+{{/* A volatile feature with the setterBody annotation key. */}}
+{{ define "feature/setter.body" -}}
+{{ .SetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body. */}}
+{{ define "feature/setter.panic" -}}
+throw new Error("{{ .Setter }} not implemented")
+{{- end }}

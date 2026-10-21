@@ -1,0 +1,27 @@
+{{/* The basic unsetter of an unsettable bidirectional or containment reference. */}}
+{{ define "feature/basicunset" -}}
+{{ .BasicUnsetter }}(msgs: {{ .Ecore "ENotificationChain" }}): {{ .Ecore "ENotificationChain" }} {
+{{ indent 1 (include (printf "feature/basicunset.%s" .BasicUnsetterStrategy) .) }}
+}
+{{- end }}
+
+{{/* A plain field. */}}
+{{ define "feature/basicunset.field" -}}
+const {{ .OldVar }} = this.{{ .Var }}
+let notifications = msgs
+this.{{ .Var }} = null
+if (this.eNotificationRequired()) {
+    const notification = new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.UNSET, {{ .ID }}, {{ .OldVar }}, null)
+    if (notifications != null) {
+        notifications.add(notification)
+    } else {
+        notifications = notification
+    }
+}
+return notifications
+{{- end }}
+
+{{/* A volatile feature. */}}
+{{ define "feature/basicunset.panic" -}}
+throw new Error("{{ .BasicUnsetter }} not implemented")
+{{- end }}

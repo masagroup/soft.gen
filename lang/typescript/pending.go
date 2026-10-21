@@ -11,9 +11,6 @@ func (g *gen) pending(name string) engine.File {
 	return engine.File{Path: g.filePath(g.pkg, name), Body: engine.Bytes([]byte("// pending\n")), Header: true}
 }
 
-func (g *gen) implementationFile(c ecore.EClass) engine.File {
-	return g.pending(g.implementationFileName(c, c.GetName()))
-}
 func (g *gen) implementationTestFile(c ecore.EClass) engine.File {
 	return g.pending(g.implementationTestFileName(c, c.GetName()))
 }

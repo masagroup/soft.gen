@@ -188,8 +188,10 @@ func (s *scope) classifierDefaultValue(t ecore.EClassifier) string {
 		if value, ok := g.KeyValue(t, "defaultValue"); ok {
 			return value
 		}
+		// soft.go gives EString the default "" where EMF has none: an empty
+		// default is the default of the row
 		if t.GetName() != "EChar" {
-			if value := t.GetDefaultValue(); value != nil {
+			if value := t.GetDefaultValue(); value != nil && fmt.Sprint(value) != "" {
 				return fmt.Sprint(value)
 			}
 		}

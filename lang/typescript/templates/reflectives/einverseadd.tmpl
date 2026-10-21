@@ -1,0 +1,55 @@
+{{/* eBasicInverseAdd: the inverse side of a bidirectional reference is added. */}}
+{{ define "reflectives/einverseadd" -}}
+eBasicInverseAdd(otherEnd: {{ .Ecore "EObject" }}, featureID: number, notifications: {{ .Ecore "ENotificationChain" }}): {{ .Ecore "ENotificationChain" }} {
+    switch (featureID) {
+{{- range .Cases }}
+        case {{ .CaseID }}: {
+{{ indent 3 (include (printf "reflectives/einverseadd.%s" .Strategy) .) }}
+        }
+{{- end }}
+        default: {
+            return super.eBasicInverseAdd(otherEnd, featureID, notifications)
+        }
+    }
+}
+{{- end }}
+
+{{/* A map: nothing to do. */}}
+{{ define "reflectives/einverseadd.map" -}}
+return notifications
+{{- end }}
+
+{{/* A list: the object is added with notification. */}}
+{{ define "reflectives/einverseadd.list" -}}
+const list = this.{{ .Getter }}() as {{ .Ecore "ENotifyingList" }}<{{ .ElementType }}>
+const end = otherEnd as {{ .ElementType }}
+return list.addWithNotification(end, notifications)
+{{- end }}
+
+{{/* A container with a basic setter: the object leaves its container for the other end. */}}
+{{ define "reflectives/einverseadd.container" -}}
+let msgs = notifications
+if (this.eContainer() != null) {
+    msgs = this.eBasicRemoveFromContainer(msgs)
+}
+return this.{{ .BasicSetter }}(otherEnd as {{ .Type }}, msgs)
+{{- end }}
+
+{{/* A container without basic setter. */}}
+{{ define "reflectives/einverseadd.containerset" -}}
+let msgs = notifications
+if (this.eContainer() != null) {
+    msgs = this.eBasicRemoveFromContainer(msgs)
+}
+return this.eBasicSetContainer(otherEnd, {{ .ID }}, msgs)
+{{- end }}
+
+{{/* A single reference: the current value is removed from its inverse. */}}
+{{ define "reflectives/einverseadd.inverse" -}}
+let msgs = notifications
+const {{ .Local }} = this.{{ .Value }}
+if ({{ .Ecore "isEObjectInternal" }}({{ .Local }})) {
+    msgs = {{ .Local }}.eInverseRemove(this, {{ .InverseRemoveOf .Local }}, msgs)
+}
+return this.{{ .SetterBasic }}(otherEnd as {{ .Type }}, msgs)
+{{- end }}

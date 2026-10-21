@@ -1,0 +1,11 @@
+{{/* A class made of members separated by a blank line. */}}
+{{ define "class.ts" -}}
+{{ .Declaration }} {
+{{- range $i, $m := .Members }}
+{{- if $i }}
+{{ blank }}
+{{- end }}
+{{ indent 1 (include $m.Template $m.Data) }}
+{{- end }}
+}
+{{- end }}
