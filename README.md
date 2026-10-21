@@ -35,19 +35,23 @@ go install github.com/masagroup/soft.gen/v2/cmd/soft-gen@latest
 ## Usage
 
 ```
-soft-gen <language> [-hsv] -m=<model> -o=<folder> [-p=<property=value>]... [-P=<propertyfile>]... [-t=<template>]... [--dry-run] [--diff] [--format]
-  -h, --help                        print this help and exit
-  -m, --model=<model>               the input model
-  -o, --output=<folder>             the output folder
-  -p, --property=<property=value>   set value for given property
-  -P, --properties=<propertyfile>   load properties from a property file (.json, .properties, .yaml, .yml)
-  -s, --silent                      print nothing but failures
-  -t, --template=<template>         the template to be executed (default: the ones marked *)
-  -v, --version                     print version information and exit
-      --dry-run                     list the files without writing them
-      --diff                        print the differences with the existing files, write nothing, exit 1 on any difference
-      --format                      run the external formatter of the language on the generated files
+soft-gen <language> -m <model> -o <folder> [-p key=value]... [-P file]... [-t template]... [-s] [--dry-run] [--diff] [--format] [--config file]
+  --config, -c file       read the options from a configuration file (.yaml, .yml, .json, .toml)   $SOFT_GEN_CONFIG
+  --model, -m string      the input model                                                          $SOFT_GEN_MODEL
+  --output, -o string     the output folder                                                        $SOFT_GEN_OUTPUT
+  --property, -p k=v      set value for given property, repeatable
+  --properties, -P file   load properties from a property file (.json, .properties, .yaml, .yml)  $SOFT_GEN_PROPERTIES
+  --template, -t name     the template to be executed, repeatable (default: the ones marked *)     $SOFT_GEN_TEMPLATE
+  --silent, -s            print nothing but failures                                               $SOFT_GEN_SILENT
+  --dry-run               list the files without writing them                                      $SOFT_GEN_DRY_RUN
+  --diff                  print the differences with the existing files, write nothing, exit 1 on any difference   $SOFT_GEN_DIFF
+  --format                run the external formatter of the language on the generated files        $SOFT_GEN_FORMAT
+  --version, -v           print version information and exit
+  --help, -h              show help
 ```
+
+The options and their v1 short forms are the ones of v1; `-p`, `-P` and `-t`
+may be repeated, and a `-p` value keeps its commas (`-p packages=a,b`).
 
 The docker image runs `soft-gen`; the language is its first argument:
 
@@ -56,6 +60,26 @@ docker run --rm -v "$PWD":/gen -w /gen masagroup/soft-gen go -m /gen/model.ecore
 ```
 
 `soft-gen <language> -h` prints the templates and the properties of the language.
+
+### Configuration file and environment
+
+Every option but `-p` can also come from its environment variable, then from a
+configuration file named by `--config` (or `SOFT_GEN_CONFIG`). The command line
+wins over the environment, which wins over the file. The file is YAML, JSON or
+TOML, chosen by extension; its keys are the long option names, lists for
+`template` and `properties`:
+
+```yaml
+model: models/shop.ecore
+output: gen
+template: [generateModel, generateMocks]
+properties: [generator.yaml]
+silent: true
+```
+
+The properties of the generator (`-p`) go in the property files the
+configuration lists (`properties`), which are themselves `.properties`, YAML or
+JSON files.
 
 ### Properties
 
@@ -194,6 +218,7 @@ and its `Create` panics.
 
 ```shell
 go test ./...          # unit tests, and the fixtures compared with their expected files
+make lint              # golangci-lint with .golangci.yaml, in docker
 make image image.test  # the docker image and its version check
 ```
 
