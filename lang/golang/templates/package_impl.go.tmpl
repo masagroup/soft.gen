@@ -1,0 +1,103 @@
+{{/* The package implementation: the singleton when the file holds it, the struct of the meta
+     objects, the constructor and Initialize, the getters, the creation and the initialization of
+     the package contents, the annotation initializers. The blank lines inside
+     createPackageContents and initializePackageContents are those of v1. */}}
+{{ define "package_impl.go" -}}
+{{- if .Instance }}
+{{- include "package/instance" .Instance }}
+
+{{ blank }}
+{{- end }}
+{{- blank }}// {{ .Name }} is the {{ .InterfaceName }} implementation
+type {{ .Name }} struct {
+	{{ .EPackageExt }}
+{{- range $i, $group := .MemberGroups }}
+{{- if $i }}
+{{ blank }}
+{{- end }}
+{{- range $group }}
+	{{ .Name }} {{ .Type }}
+{{- end }}
+{{- end }}
+}
+
+func {{ .Constructor }}() *{{ .Name }} {
+	p := new({{ .Name }})
+	p.SetInterfaces(p)
+	p.Initialize({{ .PackageFactory }}, {{ .EcoreFactory }})
+	return p
+}
+
+func (p *{{ .Name }}) Initialize(packageFactory {{ .PackageFactoryType }}, ecoreFactory {{ .EcoreFactoryType }}) {
+	p.EPackageExt.Initialize()
+	p.SetName({{ .NameConstant }})
+	p.SetNsPrefix({{ .NsPrefixConstant }})
+	p.SetNsURI({{ .NsURIConstant }})
+	p.SetEFactoryInstance(packageFactory)
+	p.createPackageContents(ecoreFactory)
+	p.initializePackageContents(ecoreFactory)
+	p.CreateResource()
+}
+{{- range .Getters }}
+
+// {{ .Name }} returns the meta object corresponding to
+func (p *{{ $.Name }}) {{ .Name }}() {{ .Type }} {
+	return {{ include (printf "package/getter.%s" .Kind) . }}
+}
+{{- end }}
+
+func (p *{{ .Name }}) createPackageContents(ecoreFactory {{ .EcoreFactoryType }}) {
+{{- range .Creations }}
+
+	p.{{ .Member }} = ecoreFactory.{{ .Create }}(p, {{ .ID }})
+{{- range .Contents }}
+	ecoreFactory.{{ .Create }}(p.{{ .Member }}, {{ .ID }})
+{{- end }}
+{{- end }}
+{{ blank }}
+{{- range .DataTypeCreations }}
+	p.{{ .Member }} = ecoreFactory.{{ .Create }}(p, {{ .ID }})
+{{- end }}
+{{ blank }}
+}
+
+func (p *{{ .Name }}) initializePackageContents({{ .EcoreFactoryParam }} {{ .EcoreFactoryType }}) {
+{{ blank }}
+{{- range .SuperTypes }}
+	p.{{ .Member }}.GetESuperTypes().Add({{ .Super }})
+{{- end }}
+{{- range .Initializations }}
+
+	p.InitEClass(p.{{ .Member }}, "{{ .Name }}", "{{ .InstanceTypeName }}", {{ .Abstract }}, {{ .Interface }})
+{{- range .Features }}
+{{ indent 1 (include (printf "package/init.%s" .Kind) .) }}
+{{- end }}
+{{- range .Operations }}
+{{ indent 1 (include (printf "package/init.%s" .Kind) .) }}
+{{- end }}
+{{- end }}
+{{ blank }}
+{{- range .DataTypeInitializations }}
+{{ indent 1 (include (printf "package/init.%s" .Kind) .) }}
+{{- end }}
+{{ blank }}
+{{- range .AnnotationSources }}
+	p.initialize{{ .Identifier }}Annotations(ecoreFactory)
+{{- end }}
+}
+{{- range .AnnotationSources }}
+
+func (p *{{ $.Name }}) initialize{{ .Identifier }}Annotations(ecoreFactory {{ $.EcoreFactoryType }}) {
+	source := "{{ .URI }}"
+{{- range .Annotations }}
+	{
+		eAnnotation := ecoreFactory.CreateEAnnotationFromContainer({{ .Container }})
+		eAnnotation.SetSource(source)
+{{- range .Details }}
+		eAnnotation.GetDetails().Put("{{ .Key }}", "{{ .Value }}")
+{{- end }}
+	}
+{{- end }}
+}
+{{- end }}
+{{- end }}

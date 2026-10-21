@@ -1,0 +1,50 @@
+{{/* The conversion section of a factory implementation: the CreateFromString and ConvertToString
+     switches followed, without a blank line as v1 did, by the conversions of every serializable
+     data type (switch), or the delegation to the factory of the shared package (delegated). */}}
+{{ define "factory/conversions.switch" -}}
+func ({{ .Receiver }} *{{ .Name }}) CreateFromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	classID := eDataType.GetClassifierID()
+	switch classID {
+{{- range .Conversions }}
+	case {{ .ID }}:
+		return {{ $.Receiver }}.AsInternal().create{{ .Name }}FromString(eDataType, literalValue)
+{{- end }}
+	default:
+		panic("The datatype '" + eDataType.GetName() + "' is not a valid classifier")
+	}
+}
+
+func ({{ .Receiver }} *{{ .Name }}) ConvertToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	classID := eDataType.GetClassifierID()
+	switch classID {
+{{- range .Conversions }}
+	case {{ .ID }}:
+		return {{ $.Receiver }}.AsInternal().convert{{ .Name }}ToString(eDataType, instanceValue)
+{{- end }}
+	default:
+		panic("The datatype '" + eDataType.GetName() + "' is not a valid classifier")
+	}
+}
+{{- range $i, $c := .Conversions }}
+{{- if $i }}
+{{ blank }}
+{{- end }}
+{{ include (printf "factory/createfromstring.%s" $c.Kind) $c }}
+
+{{ include (printf "factory/converttostring.%s" $c.Kind) $c }}
+{{- end }}
+{{- end }}
+
+{{ define "factory/conversions.delegated" -}}
+// CreateFromString converts literalValue with the factory of the data types of the package shared by
+// the implementations of the model
+func ({{ .Receiver }} *{{ .Name }}) CreateFromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	return {{ .PackageInstance }}.GetEFactoryInstance().CreateFromString(eDataType, literalValue)
+}
+
+// ConvertToString converts instanceValue with the factory of the data types of the package shared by
+// the implementations of the model
+func ({{ .Receiver }} *{{ .Name }}) ConvertToString(eDataType {{ .EDataType }}, instanceValue {{ .Any }}) string {
+	return {{ .PackageInstance }}.GetEFactoryInstance().ConvertToString(eDataType, instanceValue)
+}
+{{- end }}

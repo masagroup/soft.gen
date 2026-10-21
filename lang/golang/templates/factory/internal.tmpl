@@ -1,0 +1,12 @@
+{{/* The internal interface of the conversions of the data types; v1 named the value of the
+     conversion to string literalValue here (instanceValue in the implementation). */}}
+{{ define "factory/internal" -}}
+type {{ .Name }} interface {
+{{- range .DataTypes }}
+	create{{ . }}FromString(eDataType {{ $.EDataType }}, literalValue string) {{ $.Any }}
+{{- end }}
+{{- range .DataTypes }}
+	convert{{ . }}ToString(eDataType {{ $.EDataType }}, literalValue {{ $.Any }}) string
+{{- end }}
+}
+{{- end }}

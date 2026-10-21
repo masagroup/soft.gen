@@ -1,0 +1,20 @@
+{{/* The GetFactory singleton of a package; the factory of a shared package is given the package. */}}
+{{ define "factory/instance" -}}
+var factoryOnce {{ .Once }}
+var factoryInstance {{ .Type }}
+
+// GetFactory returns the factory for the model {{ .Name }}
+func GetFactory() {{ .Type }} {
+	factoryOnce.Do(func() {
+{{- if .SharedPackage }}
+		factory := {{ .Constructor }}()
+		// the package of the factory is the package shared by the implementations of the model
+		factory.SetSharedEPackage({{ .SharedPackage }})
+		factoryInstance = factory
+{{- else }}
+		factoryInstance = {{ .Constructor }}()
+{{- end }}
+	})
+	return factoryInstance
+}
+{{- end }}

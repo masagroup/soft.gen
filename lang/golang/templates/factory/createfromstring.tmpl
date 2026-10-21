@@ -1,0 +1,110 @@
+{{/* The creation of a data type value from a string, by kind of Go type (v1 generateCreateFromString). */}}
+{{ define "factory/createfromstring.enum" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	var {{ .Var }} {{ .Type }}
+	{{ .Var }}.FromString(literalValue)
+	return {{ .Var }}
+}
+{{- end }}
+
+{{ define "factory/createfromstring.string" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	return literalValue
+}
+{{- end }}
+
+{{ define "factory/createfromstring.bool" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	value, _ := {{ .Parse }}(literalValue)
+	return value
+}
+{{- end }}
+
+{{ define "factory/createfromstring.int" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	value, _ := {{ .Parse }}(literalValue)
+	return value
+}
+{{- end }}
+
+{{ define "factory/createfromstring.int64" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	value, _ := {{ .Parse }}(literalValue, 10, 64)
+	return value
+}
+{{- end }}
+
+{{ define "factory/createfromstring.int32" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	value, _ := {{ .Parse }}(literalValue, 10, 32)
+	return int32(value)
+}
+{{- end }}
+
+{{ define "factory/createfromstring.int16" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	value, _ := {{ .Parse }}(literalValue, 10, 16)
+	return int16(value)
+}
+{{- end }}
+
+{{ define "factory/createfromstring.int8" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	value, _ := {{ .Parse }}(literalValue, 10, 8)
+	return int8(value)
+}
+{{- end }}
+
+{{ define "factory/createfromstring.byte" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	if len(literalValue) == 0 {
+		return "golang\u0000"
+	} else {
+		return []byte(literalValue)[0]
+	}
+}
+{{- end }}
+
+{{ define "factory/createfromstring.bytes" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	return []byte(literalValue)
+}
+{{- end }}
+
+{{ define "factory/createfromstring.float64" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	value, _ := {{ .Parse }}(literalValue, 64)
+	return value
+}
+{{- end }}
+
+{{ define "factory/createfromstring.float32" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	value, _ := {{ .Parse }}(literalValue, 32)
+	return float32(value)
+}
+{{- end }}
+
+{{ define "factory/createfromstring.reflect" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	_ = {{ .Parse }}
+	panic("NotImplementedException")
+}
+{{- end }}
+
+{{ define "factory/createfromstring.time" -}}
+const (
+	dateFormat string = "2006-01-02T15:04:05.999Z"
+)
+
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	t, _ := {{ .Parse }}(dateFormat, literalValue)
+	return &t
+}
+{{- end }}
+
+{{ define "factory/createfromstring.unsupported" -}}
+func ({{ .Receiver }} *{{ .Impl }}) create{{ .Name }}FromString(eDataType {{ .EDataType }}, literalValue string) {{ .Any }} {
+	panic("NotImplementedException")
+}
+{{- end }}

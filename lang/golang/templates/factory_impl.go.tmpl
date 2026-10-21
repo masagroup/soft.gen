@@ -1,0 +1,47 @@
+{{/* A factory implementation: the singleton, the internal conversion interface, the struct,
+     Install for a shared package, the creation section and the conversion section.
+     The leading optional sections own the blank line that follows them, so the file starts
+     with its first section whichever it is. */}}
+{{ define "factory_impl.go" -}}
+{{- if .Instance }}
+{{- include "factory/instance" .Instance }}
+
+{{ blank }}
+{{- end }}
+{{- if .Internal }}
+{{- include "factory/internal" .Internal }}
+
+{{ blank }}
+{{- end }}
+{{- blank }}type {{ .Name }} struct {
+	{{ .EFactoryExt }}
+}
+
+func {{ .Constructor }}() *{{ .Name }} {
+	factory := new({{ .Name }})
+	factory.SetInterfaces(factory)
+	factory.Initialize()
+	return factory
+}
+{{- if .Install }}
+
+// Install makes this implementation the implementation of the package shared by the implementations
+// of the model in registry: it registers the package and the factory the objects of the package are
+// created with (the resource set, or the session, of registry chooses this implementation).
+func Install(registry {{ .Install.Registry }}) {
+	pack := {{ .Install.Package }}
+	registry.RegisterPackage(pack)
+	registry.RegisterFactory(GetFactory())
+}
+{{- end }}
+{{- if .Internal }}
+
+func ({{ .Receiver }} *{{ .Name }}) AsInternal() {{ .Internal.Name }} {
+	return {{ .Receiver }}.GetInterfaces().({{ .Internal.Name }})
+}
+{{- end }}
+
+{{ include (printf "factory/create.%s" .CreateKind) . }}
+
+{{ include (printf "factory/conversions.%s" .ConversionKind) . }}
+{{- end }}

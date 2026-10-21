@@ -1,0 +1,35 @@
+{{/* The initialization statements of the package contents (v1 generateInitialization), indented
+     by the caller: an attribute, a reference, an operation (in a block with its parameters when it
+     has some), an enum with its literals, a data type. */}}
+{{ define "package/init.attribute" -}}
+p.InitEAttribute({{ .Getter }}, {{ .Type }}, "{{ .Name }}", "{{ .DefaultValueLiteral }}", {{ .Lower }}, {{ .Upper }}, {{ join ", " .Flags }})
+{{- end }}
+
+{{ define "package/init.reference" -}}
+p.InitEReference({{ .Getter }}, {{ .Type }}, {{ .Opposite }}, "{{ .Name }}", "{{ .DefaultValueLiteral }}", {{ .Lower }}, {{ .Upper }}, {{ join ", " .Flags }})
+{{- end }}
+
+{{ define "package/init.operation" -}}
+p.InitEOperation({{ .Getter }}, {{ .Type }}, "{{ .Name }}", {{ .Lower }}, {{ .Upper }}, {{ .Unique }}, {{ .Ordered }})
+{{- end }}
+
+{{ define "package/init.operation.parameters" -}}
+{
+	operation := {{ .Getter }}
+	p.InitEOperation(operation, {{ .Type }}, "{{ .Name }}", {{ .Lower }}, {{ .Upper }}, {{ .Unique }}, {{ .Ordered }})
+{{- range .Parameters }}
+	p.AddEParameter(operation, {{ .Type }}, "{{ .Name }}", 0, 1, {{ .Unique }}, {{ .Ordered }})
+{{- end }}
+}
+{{- end }}
+
+{{ define "package/init.enum" -}}
+p.InitEEnum({{ .Getter }}, "{{ .Name }}", "{{ .InstanceTypeName }}")
+{{- range .Literals }}
+p.AddEEnumLiteral({{ $.Getter }}, "{{ .Name }}", "{{ .Literal }}", {{ .Value }}, {{ .Constant }})
+{{- end }}
+{{- end }}
+
+{{ define "package/init.datatype" -}}
+p.InitEDataType({{ .Getter }}, "{{ .Name }}", "{{ .InstanceTypeName }}", "{{ .Default }}", {{ .Serializable }})
+{{- end }}
