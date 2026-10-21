@@ -1,0 +1,10 @@
+version: "2"
+# the configuration of soft.go: the default linters, with the standard exclusions
+# (unchecked errors of fmt.Fprint*, Close... among them)
+linters:
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling

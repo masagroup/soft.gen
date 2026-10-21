@@ -56,6 +56,12 @@ func (g *gen) parameterTypes(op ecore.EOperation, scope *fileScope) string {
 	return strings.Join(types, ", ")
 }
 
+// needsCast reports whether a parameter passed as any must be asserted to its
+// type: always, unless it is single and of an any classifier (v1 needCast).
+func (g *gen) needsCast(p ecore.ETypedElement) bool {
+	return p.GetUpperBound() != 1 || !g.m.IsAny(p.GetEType())
+}
+
 // operationCall is the call of the operation from the EInvokeFromID
 // arguments: Name(arguments.Get(0).(T), ...), an argument being asserted to
 // its type unless the parameter is single and of the any type (v1
@@ -64,7 +70,7 @@ func (g *gen) operationCall(op ecore.EOperation, scope *fileScope) string {
 	var args []string
 	for i, p := range elementsOf[ecore.EParameter](op.GetEParameters()) {
 		arg := "arguments.Get(" + strconv.Itoa(i) + ")"
-		if !(p.GetUpperBound() == 1 && g.m.IsAny(p.GetEType())) {
+		if g.needsCast(p) {
 			arg += ".(" + scope.qualify(g.typeOf(p)) + ")"
 		}
 		args = append(args, arg)

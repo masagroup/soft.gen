@@ -198,11 +198,6 @@ func (g *gen) unsetterName(f ecore.EStructuralFeature) string {
 	return g.elementName(f, g.accessorName(f), "unSetterName", "Unset$1")
 }
 
-// isSetName is the isSet accessor of a feature: rule isSetName, default IsSet<Name>.
-func (g *gen) isSetName(f ecore.EStructuralFeature) string {
-	return g.elementName(f, g.accessorName(f), "isSetName", "IsSet$1")
-}
-
 // operationName is the method of an operation: rule operationName, default the name, upper-cased first.
 func (g *gen) operationName(op ecore.EOperation) string {
 	return naming.UpperFirst(g.elementName(op, op.GetName(), "operationName", ""))

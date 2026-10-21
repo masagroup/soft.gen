@@ -350,45 +350,6 @@ func (g *gen) comparisonFunction(dt ecore.EDataType) string {
 	return ""
 }
 
-// interfacePackagePathOfClassifier is the package path of the type of a
-// classifier (v1 getInterfacePackagePath(EClassifier)): the interface package
-// of a class or an enum, the package of the Go type of a data type.
-func (g *gen) interfacePackagePathOfClassifier(c ecore.EClassifier) string {
-	switch c := c.(type) {
-	case nil:
-		return ""
-	case ecore.EEnum:
-		return g.interfacePackagePath(c.GetEPackage())
-	case ecore.EDataType:
-		return identifierPackagePath(g.instanceTypeName(c))
-	}
-	return g.interfacePackagePath(c.GetEPackage())
-}
-
-// testPackagePathOfClassifier is the package path of the test value of a
-// classifier (v1 getTestPackagePath).
-func (g *gen) testPackagePathOfClassifier(c ecore.EClassifier) string {
-	switch c := c.(type) {
-	case ecore.EEnum:
-		return g.interfacePackagePath(c.GetEPackage())
-	case ecore.EDataType:
-		if _, ok := g.keyValue(c, "testValue"); ok {
-			return ""
-		}
-		typeName := g.instanceTypeName(c)
-		if strings.HasPrefix(typeName, "*") {
-			return ""
-		}
-		if row, ok := g.findDataType(typeName); ok {
-			return identifierPackagePath(row.testValue)
-		}
-		return ""
-	case ecore.EClass:
-		return g.mockPackagePath(c.GetEPackage())
-	}
-	return ""
-}
-
 // zeroValueOf is the zero value of any type t, *new(t): the value of a data
 // type the type table does not know (T{} would only suit a struct type).
 func zeroValueOf(t string) string {
