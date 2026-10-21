@@ -1,0 +1,38 @@
+{{/* The package interface: the constants, the interface of the meta objects, the singleton. */}}
+{{ define "package.go" -}}
+const (
+	// NAME is the package name.
+	NAME = "{{ .Name }}"
+
+	// NS_URI is the package URI.
+	NS_URI = "{{ .NsURI }}"
+
+	// NS_PREFIX is the package prefix.
+	NS_PREFIX = "{{ .NsPrefix }}"
+{{- range .ConstantGroups }}
+{{ blank }}
+{{- range . }}
+	// {{ .Comment }}
+	{{ .Name }} = {{ .Value }}
+{{- end }}
+{{- end }}
+)
+
+// {{ .InterfaceName }} is The Metamodel Package for the {{ .Name }} metamodel.
+// This package is used to enable the reflection of model elements.
+// It contains all model elements which were described in an ecore file.
+type {{ .InterfaceName }} interface {
+	{{ .EPackage }}
+{{- range .GetterGroups }}
+{{ blank }}
+{{- range . }}
+	// Returns the meta object for the {{ .Comment }}
+	{{ .Name }}() {{ .Type }}
+{{- end }}
+{{- end }}
+}
+{{- if .Instance }}
+
+{{ include "package/instance" .Instance }}
+{{- end }}
+{{- end }}

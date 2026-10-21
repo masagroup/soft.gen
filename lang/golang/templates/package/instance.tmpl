@@ -1,0 +1,13 @@
+{{/* The GetPackage singleton of a package. */}}
+{{ define "package/instance" -}}
+var packageOnce {{ .Once }}
+var packageInstance {{ .Type }}
+
+// GetFactory returns the factory for the model {{ .Name }}
+func GetPackage() {{ .Type }} {
+	packageOnce.Do(func() {
+		packageInstance = {{ .Constructor }}()
+	})
+	return packageInstance
+}
+{{- end }}
