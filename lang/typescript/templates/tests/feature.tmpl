@@ -1,0 +1,328 @@
+{{/* The meta object of the class. */}}
+{{ define "tests/feature.static" -}}
+test("eStaticClass", () => {
+    const o = new {{ .Class }}()
+    expect(o.eStaticClass()).toBe({{ .Expected }})
+})
+{{- end }}
+
+{{/* The test of a getter; the variant depends on the feature. */}}
+{{ define "tests/feature.get" -}}
+test("{{ .Test }}", () => {
+{{- if eq .Strategy "container" }}
+    // default
+{{- end }}
+    const o = new {{ .Class }}()
+{{ indent 1 (include (printf "tests/feature.get.%s" .Strategy) .) }}
+})
+{{- end }}
+
+{{ define "tests/feature.get.volatile" -}}
+expect(() => o.{{ .GetCall }}).toThrow(Error)
+{{- end }}
+
+{{ define "tests/feature.get.container" -}}
+expect(o.{{ .GetCall }}).toBeNull()
+
+// set a mock container
+const mockContainer = mock<{{ .Ecore "EObject" }}>()
+const container = instance(mockContainer)
+o.eSetInternalContainer(container, {{ .ID }})
+
+// no proxy
+when(mockContainer.eIsProxy()).thenReturn(false)
+expect(o.{{ .GetCall }}).toBe(container)
+verify(mockContainer.eIsProxy()).once()
+{{- end }}
+
+{{ define "tests/feature.get.map" -}}
+expect(o.{{ .GetCall }}).not.toBeNull()
+{{- end }}
+
+{{ define "tests/feature.get.list" -}}
+expect(o.{{ .GetCall }}).not.toBeNull()
+{{- end }}
+
+{{ define "tests/feature.get.featuremap" -}}
+expect(o.{{ .GetCall }}).toBeNull()
+{{- end }}
+
+{{ define "tests/feature.get.lazy" -}}
+expect(() => o.{{ .GetCall }}).toThrow(Error)
+{{- end }}
+
+{{ define "tests/feature.get.proxy" -}}
+{{ blank }}
+// get default value
+expect(o.{{ .GetCall }}).toBeNull()
+
+// initialize object with a mock value
+const mockValue = mock<{{ .MockType }}>()
+const value = instance(mockValue)
+o.{{ .SetCall "value" }}
+
+// events
+const mockAdapter = mock<{{ .Ecore "EAdapter" }}>()
+const adapter = instance(mockAdapter)
+o.eAdapters().add(adapter)
+
+// set object resource
+const mockResourceSet = mock<{{ .Ecore "EResourceSet" }}>()
+const resourceSet = instance(mockResourceSet)
+const mockResource = mock<{{ .Ecore "EResource" }}>()
+const resource = instance(mockResource)
+o.eSetInternalResource(resource)
+
+// get non resolved value
+when(mockValue.eIsProxy()).thenReturn(false)
+expect(o.{{ .GetCall }}).toBe(value)
+verify(mockValue.eIsProxy()).once()
+
+// get a resolved value
+const mockURI = new {{ .Ecore "URI" }}("test:///uri")
+const mockResolved = mock<{{ .MockType }}>()
+const resolved = instance(mockResolved)
+when(mockResolved.eProxyURI()).thenReturn(null)
+when(mockResource.eResourceSet()).thenReturn(resourceSet)
+when(mockResourceSet.getEObject(mockURI, true)).thenReturn(resolved)
+when(mockValue.eIsProxy()).thenReturn(true)
+when(mockValue.eProxyURI()).thenReturn(mockURI)
+expect(o.{{ .GetCall }}).toBe(resolved)
+{{- end }}
+
+{{ define "tests/feature.get.reference" -}}
+{{ blank }}
+// get default value
+expect(o.{{ .GetCall }}).toBeNull()
+{{- end }}
+
+{{ define "tests/feature.get.attribute" -}}
+// get default value
+{{- if .Expected }}
+expect(o.{{ .GetCall }}).toBe({{ .Expected }})
+{{- else }}
+expect(o.{{ .GetCall }}).toBeNull()
+{{- end }}
+{{- end }}
+
+{{/* The test of a setter; the variant depends on the feature. */}}
+{{ define "tests/feature.set" -}}
+test("{{ .Test }}", () => {
+    const o = new {{ .Class }}()
+{{ indent 1 (include (printf "tests/feature.set.%s" .Strategy) .) }}
+})
+{{- end }}
+
+{{ define "tests/feature.set.volatile" -}}
+{{ .TestValue "value" }}
+expect(() => {{ .SetExpression "value" }}).toThrow(Error)
+{{- end }}
+
+{{ define "tests/feature.set.container" -}}
+const mockResource = mock<{{ .Ecore "EResource" }}>()
+const resource = instance(mockResource)
+{{ .TestValue "value" }}
+
+// add listener
+const mockAdapter = mock<{{ .Ecore "EAdapter" }}>()
+const adapter = instance(mockAdapter)
+o.eAdapters().add(adapter)
+
+// set value
+when(mockValue.eClass()).thenReturn({{ .ReverseClass }})
+when(mockValue.eStaticClass()).thenReturn(null)
+when(mockValue.eInverseAdd(o, {{ .ReverseID }}, null)).thenReturn(null)
+when(mockValue.eResource()).thenReturn(resource)
+o.{{ .SetCall "value" }}
+verify(mockResource.attached(o)).once()
+verify(mockAdapter.notifyChanged(anything())).once()
+{
+    const [notification] = capture(mockAdapter.notifyChanged).last()
+    expect(notification.getNotifier()).toBe(o)
+    expect(notification.getOldValue()).toBeNull()
+    expect(notification.getNewValue()).toBe(value)
+}
+// set with the same value
+reset(mockAdapter)
+o.{{ .SetCall "value" }}
+verify(mockAdapter.notifyChanged(anything())).once()
+
+// set with another value in a different resource
+{{ .TestValue "other" }}
+const mockOtherResource = mock<{{ .Ecore "EResource" }}>()
+const otherResource = instance(mockOtherResource)
+reset(mockAdapter)
+reset(mockValue)
+reset(mockResource)
+when(mockValue.eClass()).thenReturn({{ .ReverseClass }})
+when(mockValue.eStaticClass()).thenReturn(null)
+when(mockOther.eClass()).thenReturn({{ .ReverseClass }})
+when(mockOther.eStaticClass()).thenReturn(null)
+when(mockValue.eInverseRemove(o, {{ .ReverseID }}, null)).thenReturn(null)
+when(mockValue.eResource()).thenReturn(resource)
+when(mockOther.eInverseAdd(o, {{ .ReverseID }}, null)).thenReturn(null)
+when(mockOther.eResource()).thenReturn(otherResource)
+o.{{ .SetCall "other" }}
+verify(mockResource.detached(o)).once()
+verify(mockOtherResource.attached(o)).once()
+verify(mockAdapter.notifyChanged(anything())).once()
+{
+    const [notification] = capture(mockAdapter.notifyChanged).last()
+    expect(notification.getNotifier()).toBe(o)
+    expect(notification.getOldValue()).toBe(value)
+    expect(notification.getNewValue()).toBe(other)
+    expect(notification.getPosition()).toBe(-1)
+}
+{{- end }}
+
+{{ define "tests/feature.set.bidirectional" -}}
+{{ blank }}
+// add listener
+const mockAdapter = mock<{{ .Ecore "EAdapter" }}>()
+const adapter = instance(mockAdapter)
+o.eAdapters().add(adapter)
+
+// first value
+{{ .TestValue "value" }}
+when(mockValue.eClass()).thenReturn({{ .ReverseClass }})
+when(mockValue.eStaticClass()).thenReturn(null)
+when(mockValue.eInverseAdd(o, {{ .ReverseID }}, null)).thenReturn(null)
+o.{{ .SetCall "value" }}
+verify(mockAdapter.notifyChanged(anything())).once()
+{
+    const [notification] = capture(mockAdapter.notifyChanged).last()
+    expect(notification.getNotifier()).toBe(o)
+    expect(notification.getOldValue()).toBeNull()
+    expect(notification.getNewValue()).toBe(value)
+}
+
+// set with other value
+{{ .TestValue "other" }}
+reset(mockAdapter)
+reset(mockValue)
+when(mockOther.eClass()).thenReturn({{ .ReverseClass }})
+when(mockOther.eStaticClass()).thenReturn(null)
+when(mockValue.eClass()).thenReturn({{ .ReverseClass }})
+when(mockValue.eStaticClass()).thenReturn(null)
+when(mockValue.eInverseRemove(o, {{ .ReverseID }}, null)).thenReturn(null)
+when(mockOther.eInverseAdd(o, {{ .ReverseID }}, null)).thenReturn(null)
+o.{{ .SetCall "other" }}
+verify(mockAdapter.notifyChanged(anything())).once()
+{
+    const [notification] = capture(mockAdapter.notifyChanged).last()
+    expect(notification.getNotifier()).toBe(o)
+    expect(notification.getOldValue()).toBe(value)
+    expect(notification.getNewValue()).toBe(other)
+    expect(notification.getPosition()).toBe(-1)
+}
+{{- end }}
+
+{{ define "tests/feature.set.field" -}}
+{{ .TestValue "value" }}
+
+// add listener
+const mockAdapter = mock<{{ .Ecore "EAdapter" }}>()
+const adapter = instance(mockAdapter)
+o.eAdapters().add(adapter)
+
+// set value
+o.{{ .SetCall "value" }}
+
+// checks
+verify(mockAdapter.notifyChanged(anything())).once()
+const [notification] = capture(mockAdapter.notifyChanged).last()
+expect(notification.getNotifier()).toBe(o)
+{{- if eq .Expected "null" }}
+expect(notification.getOldValue()).toBeNull()
+{{- else }}
+expect(notification.getOldValue()).toBe({{ .Expected }})
+{{- end }}
+expect(notification.getNewValue()).toBe(value)
+expect(notification.getPosition()).toBe(-1)
+{{- end }}
+
+{{/* The test of the basic setter of a bidirectional or containment reference. */}}
+{{ define "tests/feature.basicset" -}}
+test("{{ .Test }}", () => {
+    const o = new {{ .Class }}()
+{{ indent 1 (.TestValue "value") }}
+
+    // add listener
+    const mockAdapter = mock<{{ .Ecore "EAdapter" }}>()
+    const adapter = instance(mockAdapter)
+    o.eAdapters().add(adapter)
+
+    // notification chain
+    const mockNotifications = mock<{{ .Ecore "ENotificationChain" }}>()
+    const notifications = instance(mockNotifications)
+
+    // set value
+{{- if .IsContainer }}
+    when(mockValue.eResource()).thenReturn(null)
+{{- end }}
+    when(mockNotifications.add(anything())).thenReturn(true)
+    o.{{ .BasicSetter }}(value, notifications)
+
+    // checks
+    verify(mockNotifications.add(anything())).once()
+    const [notification] = capture(mockNotifications.add).last()
+    expect(notification.getNotifier()).toBe(o)
+    expect(notification.getEventType()).toBe({{ .Ecore "EventType" }}.SET)
+    expect(notification.getFeatureID()).toBe({{ .ID }})
+{{- if eq .Expected "null" }}
+    expect(notification.getOldValue()).toBeNull()
+{{- else }}
+    expect(notification.getOldValue()).toBe({{ .Expected }})
+{{- end }}
+    expect(notification.getNewValue()).toBe(value)
+    expect(notification.getPosition()).toBe(-1)
+})
+{{- end }}
+
+{{/* The test of an unsetter; the variant depends on the feature. */}}
+{{ define "tests/feature.unset" -}}
+test("{{ .Test }}", () => {
+    const o = new {{ .Class }}()
+{{ indent 1 (include (printf "tests/feature.unset.%s" .Strategy) .) }}
+})
+{{- end }}
+
+{{ define "tests/feature.unset.volatile" -}}
+expect(() => o.{{ .Unsetter }}()).toThrow(Error)
+{{- end }}
+
+{{ define "tests/feature.unset.list" -}}
+o.{{ .Unsetter }}()
+expect(o.{{ .GetCall }}.isEmpty()).toBeTruthy()
+{{- end }}
+
+{{ define "tests/feature.unset.field" -}}
+{{ blank }}
+// add listener
+const mockAdapter = mock<{{ .Ecore "EAdapter" }}>()
+const adapter = instance(mockAdapter)
+o.eAdapters().add(adapter)
+
+// unset
+o.{{ .Unsetter }}()
+
+// checks
+verify(mockAdapter.notifyChanged(anything())).once()
+const [notification] = capture(mockAdapter.notifyChanged).last()
+expect(notification.getNotifier()).toBe(o)
+expect(notification.getEventType()).toBe({{ .Ecore "EventType" }}.UNSET)
+expect(notification.getFeatureID()).toBe({{ .ID }})
+{{- if eq .Expected "null" }}
+expect(o.{{ .GetCall }}).toBeNull()
+{{- else }}
+expect(o.{{ .GetCall }}).toBe({{ .Expected }})
+{{- end }}
+{{- end }}
+
+{{/* The test of the default implementation of an operation: it throws. */}}
+{{ define "tests/feature.operation" -}}
+test("{{ .Test }}", () => {
+    const o = new {{ .Class }}()
+    expect(() => o.{{ .Expected }}).toThrow(Error)
+})
+{{- end }}

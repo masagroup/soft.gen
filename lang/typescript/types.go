@@ -194,8 +194,8 @@ func (s *scope) classifierDefaultValue(t ecore.EClassifier) string {
 		}
 		// as v1, the row is found by the TypeScript type: number finds the
 		// row of java.lang.Integer
-		if row, ok := g.findDataType(g.instanceTypeName(t)); ok {
-			return s.qualify(row.defaultValue)
+		if value := g.dataTypeValue(g.instanceTypeName(t), func(r dataTypeRow) string { return r.defaultValue }); value != "" {
+			return s.qualify(value)
 		}
 		return ""
 	}
@@ -233,8 +233,8 @@ func (s *scope) testValue(t ecore.EClassifier) string {
 		if value, ok := g.KeyValue(t, "testValue"); ok {
 			return value
 		}
-		if row, ok := g.findDataType(g.instanceTypeName(t)); ok {
-			return s.qualify(row.testValue)
+		if value := g.dataTypeValue(g.instanceTypeName(t), func(r dataTypeRow) string { return r.testValue }); value != "" {
+			return s.qualify(value)
 		}
 		return ""
 	}
@@ -281,4 +281,19 @@ func (g *gen) mapEntryFeatureQID(class ecore.EClass, name string) string {
 		return "any"
 	}
 	return g.typedElementQID(f)
+}
+
+// dataTypeValue is a value of the first row matching an instance type name
+// whose value is not empty: v1 iterated the rows with an empty result as
+// "not found" (the test value of any is null, from java.lang.Object, the row
+// of java.lang.Class having none).
+func (g *gen) dataTypeValue(name string, value func(dataTypeRow) string) string {
+	for _, row := range g.dataTypes() {
+		if row.matches(name) {
+			if v := value(row); v != "" {
+				return v
+			}
+		}
+	}
+	return ""
 }

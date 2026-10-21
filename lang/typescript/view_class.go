@@ -15,10 +15,12 @@ type classView struct {
 	Members     []member
 }
 
-// member is a member of a class: a template and its data.
+// member is a member of a class or a test of a test file: a template and its
+// data; a tight member is not separated from the previous one by a blank line.
 type member struct {
 	Template string
 	Data     any
+	Tight    bool
 }
 
 // add appends a member.

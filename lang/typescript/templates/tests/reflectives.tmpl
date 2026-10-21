@@ -1,0 +1,325 @@
+{{/* The test of the mapping of the ids of the mixins: lines built in Go. */}}
+{{ define "tests/reflectives.derived" -}}
+test("{{ .Test }}", () => {
+    const o = new {{ .Class }}()
+    {
+        const mockClass = mock<{{ .Ecore "EClass" }}>()
+        const cls = instance(mockClass)
+        expect(o.{{ .Test }}(cls, 1)).toBe(1)
+    }
+{{ indent 1 (lines .Lines) }}
+})
+{{- end }}
+
+{{/* The test of eGetFromID. */}}
+{{ define "tests/reflectives.eget" -}}
+test("eGetFromID", () => {
+    const o = new {{ .Class }}()
+    expect(() => o.eGetFromID(-1, true)).toThrow(Error)
+{{- range .Cases }}
+{{- if eq .Strategy "throw" }}
+    expect(() => o.eGetFromID({{ .ID }}, true)).toThrow(Error)
+    expect(() => o.eGetFromID({{ .ID }}, false)).toThrow(Error)
+{{- else }}
+    expect(o.eGetFromID({{ .ID }}, true)).toStrictEqual(o.{{ .GetCall }})
+{{- if eq .Strategy "unresolved" }}
+    expect(deepEqual(o.eGetFromID({{ .ID }}, false), (o.{{ .GetCall }} as {{ .Ecore "EObjectList" }}<{{ .ElementType }}>).getUnResolvedList())).toBeTruthy()
+{{- end }}
+{{- end }}
+{{- end }}
+})
+{{- end }}
+
+{{/* The test of eSetFromID; the variant of a case depends on the feature. */}}
+{{ define "tests/reflectives.eset" -}}
+test("eSetFromID", () => {
+    const o = new {{ .Class }}()
+    expect(() => o.eSetFromID(-1, null)).toThrow(Error)
+{{- range .Cases }}
+{{- if ne .Strategy "none" }}
+{{ indent 1 (include (printf "tests/reflectives.eset.%s" .Strategy) .) }}
+{{- if .BlankAfter }}
+{{ blank }}
+{{- end }}
+{{- end }}
+{{- end }}
+})
+{{- end }}
+
+{{ define "tests/reflectives.eset.volatile" -}}
+expect(() => o.eSetFromID({{ .ID }}, null)).toThrow(Error)
+{{- end }}
+
+{{ define "tests/reflectives.eset.container" -}}
+{
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    when(mockValue.eClass()).thenReturn({{ .ReverseClass }})
+    when(mockValue.eStaticClass()).thenReturn(null)
+    when(mockValue.eIsProxy()).thenReturn(false)
+    when(mockValue.eResource()).thenReturn(null)
+    when(mockValue.eInverseAdd(o, {{ .ReverseID }}, null)).thenReturn(null)
+    o.eSetFromID({{ .ID }}, value)
+    expect(o.eGetFromID({{ .ID }}, false)).toBe(value)
+    verify(mockValue.eIsProxy()).once()
+    verify(mockValue.eResource()).once()
+    verify(mockValue.eInverseAdd(o, {{ .ReverseID }}, null)).once()
+}
+{{- end }}
+
+{{ define "tests/reflectives.eset.map" -}}
+{
+    const mockMap = mock<{{ .Ecore "EMap" }}<{{ .MapTypes }}>>()
+    const map = instance(mockMap)
+    const mockIterator = mock<Iterator<{{ .Ecore "EMapEntry" }}<{{ .MapTypes }}>>>()
+    const iterator = instance(mockIterator)
+    const mockEntry = mock<{{ .Ecore "EMapEntry" }}<{{ .MapTypes }}>>()
+    const entry = instance(mockEntry)
+    {{ indent 1 (.MapEntryTestValue "key") | trimLeft }}
+    {{ indent 1 (.MapEntryTestValue "value") | trimLeft }}
+    when(mockMap[Symbol.iterator]()).thenReturn(iterator)
+    when(mockIterator.next()).thenReturn({ value: entry, done: false }).thenReturn({ value: undefined, done: true })
+    when(mockEntry.getKey()).thenReturn(key)
+    when(mockEntry.getValue()).thenReturn(value)
+    o.eSetFromID({{ .ID }}, map)
+    expect(o.{{ .GetCall }}.toMap()).toEqual(new Map<{{ .MapTypes }}>([[key, value]]))
+}
+{{- end }}
+
+{{ define "tests/reflectives.eset.referencelist" -}}
+{
+    // list with a value
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    const l = new {{ .Ecore "ImmutableEList" }}<{{ .ElementType }}>([value])
+{{- if .IsProxy }}
+    when(mockValue.eIsProxy()).thenReturn(false)
+{{- end }}
+    {{ indent 1 .AddedExpectations | trimLeft }}
+    // set list with new contents
+    o.eSetFromID({{ .ID }}, l)
+    // checks
+    expect(o.{{ .GetCall }}.size()).toBe(1)
+    expect(o.{{ .GetCall }}.get(0)).toBe(value)
+    {{ indent 1 .AddedVerifications | trimLeft }}
+}
+{{- end }}
+
+{{ define "tests/reflectives.eset.list" -}}
+{
+    const l = new {{ .Ecore "ImmutableEList" }}<{{ .ElementType }}>()
+    o.eSetFromID({{ .ID }}, l)
+    expect(o.{{ .GetCall }}.isEmpty()).toBeTruthy()
+}
+{{- end }}
+
+{{ define "tests/reflectives.eset.bidirectional" -}}
+{
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    when(mockValue.eClass()).thenReturn({{ .ReverseClass }})
+    when(mockValue.eStaticClass()).thenReturn(null)
+    when(mockValue.eInverseAdd(o, {{ .ReverseID }}, null)).thenReturn(null)
+    o.eSetFromID({{ .ID }}, value)
+    expect(o.eGetFromID({{ .ID }}, false)).toBe(value)
+    verify(mockValue.eInverseAdd(o, {{ .ReverseID }}, null)).once()
+}
+{{- end }}
+
+{{ define "tests/reflectives.eset.containment" -}}
+{
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    when(mockValue.eClass()).thenReturn(null)
+    when(mockValue.eStaticClass()).thenReturn(null)
+    when(mockValue.eInverseAdd(o, {{ .Ecore "EOPPOSITE_FEATURE_BASE" }} - {{ .ID }}, anything())).thenReturn(null)
+    o.eSetFromID({{ .ID }}, value)
+    expect(o.eGetFromID({{ .ID }}, false)).toBe(value)
+    verify(mockValue.eInverseAdd(o, {{ .Ecore "EOPPOSITE_FEATURE_BASE" }} - {{ .ID }}, anything())).once()
+}
+{{- end }}
+
+{{ define "tests/reflectives.eset.field" -}}
+{
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    o.eSetFromID({{ .ID }}, value)
+    expect(o.eGetFromID({{ .ID }}, false)).toBe(value)
+}
+{{- end }}
+
+{{/* The test of eIsSetFromID. */}}
+{{ define "tests/reflectives.eisset" -}}
+test("eIsSetFromID", () => {
+    const o = new {{ .Class }}()
+    expect(() => o.eIsSetFromID(-1)).toThrow(Error)
+{{- range .Cases }}
+{{- if eq .Strategy "throw" }}
+    expect(() => o.eIsSetFromID({{ .ID }})).toThrow(Error)
+{{- else }}
+    expect(o.eIsSetFromID({{ .ID }})).toBeFalsy()
+{{- end }}
+{{- end }}
+})
+{{- end }}
+
+{{/* The test of eUnsetFromID. */}}
+{{ define "tests/reflectives.eunset" -}}
+test("eUnsetFromID", () => {
+    const o = new {{ .Class }}()
+    expect(() => o.eUnsetFromID(-1)).toThrow(Error)
+{{- range .Cases }}
+    {
+{{- if eq .Strategy "throw" }}
+        expect(() => o.eUnsetFromID({{ .ID }})).toThrow(Error)
+{{- else }}
+        o.eUnsetFromID({{ .ID }})
+{{- if eq .Strategy "list" }}
+        const v = o.eGetFromID({{ .ID }}, false)
+        expect(v).not.toBeNull()
+        const l = v as {{ .Ecore "EList" }}<{{ .ElementType }}>
+        expect(l.isEmpty()).toBeTruthy()
+{{- else if eq .Strategy "reference" }}
+        expect(o.eGetFromID({{ .ID }}, false)).toBeNull()
+{{- else if eq .Strategy "null" }}
+        const v = o.eGetFromID({{ .ID }}, false)
+        expect(v).toBeNull()
+{{- else if eq .Strategy "default" }}
+        const v = o.eGetFromID({{ .ID }}, false)
+        expect(v).toBe({{ .Expected }})
+{{- end }}
+{{- end }}
+    }
+{{- end }}
+})
+{{- end }}
+
+{{/* The test of eInvokeFromID: lines built in Go. */}}
+{{ define "tests/reflectives.einvoke" -}}
+test("eInvokeFromID", () => {
+    const o = new {{ .Class }}()
+    expect(() => o.eInvokeFromID(-1, null)).toThrow(Error)
+{{ indent 1 (lines .Lines) }}
+})
+{{- end }}
+
+{{/* The test of eBasicInverseAdd; the variant of a case depends on the feature. */}}
+{{ define "tests/reflectives.einverseadd" -}}
+test("eBasicInverseAdd", () => {
+    const o = new {{ .Class }}()
+    {
+        const mockObject = mock<{{ .Ecore "EObject" }}>()
+        const object = instance(mockObject)
+        const mockNotifications = mock<{{ .Ecore "ENotificationChain" }}>()
+        const notifications = instance(mockNotifications)
+        expect(o.eBasicInverseAdd(object, -1, notifications)).toBe(notifications)
+    }
+{{- range .Cases }}
+{{- if ne .Strategy "none" }}
+{{ indent 1 (include (printf "tests/reflectives.einverseadd.%s" .Strategy) .) }}
+{{- end }}
+{{- end }}
+})
+{{- end }}
+
+{{ define "tests/reflectives.einverseadd.list" -}}
+{
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    o.eBasicInverseAdd(value, {{ .ID }}, null)
+    expect(o.{{ .GetCall }}.contains(value)).toBeTruthy()
+}
+{{- end }}
+
+{{ define "tests/reflectives.einverseadd.container" -}}
+{
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    when(mockValue.eClass()).thenReturn(null)
+    when(mockValue.eStaticClass()).thenReturn(null)
+    when(mockValue.eResource()).thenReturn(null)
+    when(mockValue.eIsProxy()).thenReturn(false)
+    o.eBasicInverseAdd(value, {{ .ID }}, null)
+    expect(o.{{ .GetCall }}).toBe(value)
+
+    reset(mockValue)
+    {{ indent 1 (.TestValue "other") | trimLeft }}
+    when(mockOther.eResource()).thenReturn(null)
+    when(mockOther.eIsProxy()).thenReturn(false)
+    when(mockValue.eResource()).thenReturn(null)
+{{- if .IsContainment }}
+    when(mockValue.eInverseRemove(o, {{ .Ecore "EOPPOSITE_FEATURE_BASE" }} - {{ .ID }}, null)).thenReturn(null)
+{{- else }}
+    when(mockValue.eInverseRemove(o, {{ .ReverseID }}, null)).thenReturn(null)
+{{- end }}
+    o.eBasicInverseAdd(other, {{ .ID }}, null)
+    expect(o.{{ .GetCall }}).toBe(other)
+}
+{{- end }}
+
+{{ define "tests/reflectives.einverseadd.reference" -}}
+{
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    when(mockValue.eClass()).thenReturn(null)
+    when(mockValue.eStaticClass()).thenReturn(null)
+{{- if .IsProxy }}
+    when(mockValue.eIsProxy()).thenReturn(false)
+{{- end }}
+    o.eBasicInverseAdd(value, {{ .ID }}, null)
+    expect(o.{{ .GetCall }}).toBe(value)
+
+    reset(mockValue)
+    {{ indent 1 (.TestValue "other") | trimLeft }}
+{{- if .IsProxy }}
+    when(mockOther.eIsProxy()).thenReturn(false)
+{{- end }}
+{{- if .IsContainment }}
+    when(mockValue.eInverseRemove(o, {{ .Ecore "EOPPOSITE_FEATURE_BASE" }} - {{ .ID }}, null)).thenReturn(null)
+{{- else }}
+    when(mockValue.eClass()).thenReturn({{ .ReverseClass }})
+    when(mockValue.eInverseRemove(o, {{ .ReverseID }}, null)).thenReturn(null)
+{{- end }}
+    o.eBasicInverseAdd(other, {{ .ID }}, null)
+    expect(o.{{ .GetCall }}).toBe(other)
+}
+{{- end }}
+
+{{/* The test of eBasicInverseRemove; the variant of a case depends on the feature. */}}
+{{ define "tests/reflectives.einverseremove" -}}
+test("eBasicInverseRemove", () => {
+    const o = new {{ .Class }}()
+    {
+        const mockObject = mock<{{ .Ecore "EObject" }}>()
+        const object = instance(mockObject)
+        const mockNotifications = mock<{{ .Ecore "ENotificationChain" }}>()
+        const notifications = instance(mockNotifications)
+        expect(o.eBasicInverseRemove(object, -1, notifications)).toBe(notifications)
+    }
+{{- range .Cases }}
+{{ indent 1 (include (printf "tests/reflectives.einverseremove.%s" .Strategy) .) }}
+{{- end }}
+})
+{{- end }}
+
+{{ define "tests/reflectives.einverseremove.map" -}}
+{
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    o.eBasicInverseRemove(mockValue, {{ .ID }}, null)
+    expect(o.{{ .GetCall }}.isEmpty())
+}
+{{- end }}
+
+{{ define "tests/reflectives.einverseremove.list" -}}
+{
+    // initialize list with a mock object
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    {{ indent 1 .AddedExpectations | trimLeft }}
+    o.{{ .GetCall }}.add(value)
+
+    // basic inverse remove
+    o.eBasicInverseRemove(value, {{ .ID }}, null)
+
+    // check it was removed
+    expect(o.{{ .GetCall }}.contains(value)).toBeFalsy()
+}
+{{- end }}
+
+{{ define "tests/reflectives.einverseremove.reference" -}}
+{
+    {{ indent 1 (.TestValue "value") | trimLeft }}
+    o.eBasicInverseRemove(value, {{ .ID }}, null)
+}
+{{- end }}

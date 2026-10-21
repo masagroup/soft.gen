@@ -101,7 +101,7 @@ func breakLine(line string, width int) string {
 		}
 		return b.String()
 	}
-	open, closing, items := firstList(content)
+	open, closing, items := chooseList(content, len(indentation), width)
 	if items == nil {
 		return line
 	}
@@ -115,7 +115,7 @@ func breakLine(line string, width int) string {
 			for _, operand := range operands {
 				b.WriteString(breakLine(inner+operand, width) + "\n")
 			}
-			b.WriteString(indentation + content[closing:])
+			b.WriteString(breakLine(indentation+content[closing:], width))
 			return b.String()
 		}
 	}
@@ -125,8 +125,64 @@ func breakLine(line string, width int) string {
 		}
 		b.WriteString(breakLine(inner+item, width) + "\n")
 	}
-	b.WriteString(indentation + content[closing:])
+	b.WriteString(breakLine(indentation+content[closing:], width))
 	return b.String()
+}
+
+// chooseList returns the parenthesized list of content that prettier breaks
+// when the line does not fit: the first top-level list with items that does
+// not fit, a list fitting when the line fits up to the opening parenthesis of
+// the next top-level list (expect(a).toBe(b) breaks the arguments of toBe
+// when the line fits up to "toBe("). The column is the indentation.
+func chooseList(content string, column, width int) (open, closing int, items []string) {
+	lists := topLevelLists(content)
+	for i, l := range lists {
+		inside := strings.TrimSpace(content[l[0]+1 : l[1]])
+		if inside == "" {
+			continue
+		}
+		end := len(content)
+		if i+1 < len(lists) {
+			end = lists[i+1][0] + 1
+		}
+		if column+end > width {
+			return l[0], l[1], splitTopLevel(inside)
+		}
+	}
+	return firstList(content)
+}
+
+// topLevelLists returns the offsets of the parentheses of the top-level
+// parenthesized lists of content, in order.
+func topLevelLists(content string) [][2]int {
+	var lists [][2]int
+	depth, start := 0, -1
+	var quote byte
+	for i := 0; i < len(content); i++ {
+		c := content[i]
+		switch {
+		case quote != 0:
+			if c == '\\' {
+				i++
+			} else if c == quote {
+				quote = 0
+			}
+		case c == '"' || c == '\'' || c == '`':
+			quote = c
+		case c == '(' || c == '[' || c == '{' || c == '<':
+			if c == '(' && depth == 0 {
+				start = i
+			}
+			depth++
+		case c == ')' || c == ']' || c == '}' || (c == '>' && (i == 0 || content[i-1] != '=')):
+			depth--
+			if c == ')' && depth == 0 && start >= 0 {
+				lists = append(lists, [2]int{start, i})
+				start = -1
+			}
+		}
+	}
+	return lists
 }
 
 // memberChain returns the groups of a statement that prettier prints as an
@@ -144,6 +200,15 @@ func memberChain(content string) []string {
 		return nil
 	}
 	name := content[:head]
+	// a call may end the head: when(x).thenReturn(a).thenReturn(b)
+	headCalled := false
+	if head < len(content) && content[head] == '(' {
+		end := matchingParenthesis(content, head)
+		if end < 0 {
+			return nil
+		}
+		head, headCalled = end+1, true
+	}
 	// the head absorbs the property accesses not followed by a call
 	type segment struct {
 		text   string
@@ -172,9 +237,12 @@ func memberChain(content string) []string {
 		segments = append(segments, segment{text: content[i:j], called: called})
 		i = j
 	}
-	groups := []string{name}
+	groups := []string{content[:head]}
 	headLength := 1
-	for len(segments) > 0 && !segments[0].called && len(segments) > 1 && !segments[1].called {
+	if headCalled {
+		headLength = 2
+	}
+	for !headCalled && len(segments) > 0 && !segments[0].called && len(segments) > 1 && !segments[1].called {
 		groups[0] += segments[0].text
 		segments = segments[1:]
 		headLength++

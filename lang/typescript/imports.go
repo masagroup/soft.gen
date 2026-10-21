@@ -26,6 +26,8 @@ type scope struct {
 	named map[string]map[string]bool
 	// declared holds the qualified identifiers the file declares: never imported.
 	declared map[string]bool
+	// scanned are the modules whose names are found in the rendered body.
+	scanned []scannedModule
 	// namespaces holds the modules imported as a namespace.
 	namespaces map[string]bool
 }
@@ -178,4 +180,66 @@ func (g *gen) constantsIdentifier(p ecore.EPackage, member string) string {
 // (getLibraryPackage).
 func (g *gen) packageGetterIdentifier(p ecore.EPackage) string {
 	return g.interfaceIdentifier(p, "get"+g.packageName(p))
+}
+
+// scannedModule is a module of functions the templates write by their name
+// (vitest, ts-mockito): its names are imported when the body calls them.
+type scannedModule struct {
+	module string
+	// defaultName is the name of a default import ("deepEqual"), else the
+	// names are imported by name.
+	defaultName string
+	names       []string
+}
+
+// scan adds a module whose names are found in the rendered body; the
+// scanned modules come first, in the order they are added (v1 wrote them
+// before the imports of the model).
+func (s *scope) scan(module, defaultName string, names ...string) {
+	s.scanned = append(s.scanned, scannedModule{module: module, defaultName: defaultName, names: names})
+}
+
+// scannedImports are the imports of the scanned modules whose names the body
+// calls (name( or name<).
+func (s *scope) scannedImports(body string) string {
+	var b strings.Builder
+	for _, m := range s.scanned {
+		if m.defaultName != "" {
+			if calls(body, m.defaultName) {
+				b.WriteString("import " + m.defaultName + " from " + quote(m.module) + "\n")
+			}
+			continue
+		}
+		var used []string
+		for _, name := range m.names {
+			if calls(body, name) {
+				used = append(used, name)
+			}
+		}
+		if len(used) > 0 {
+			sort.Strings(used)
+			b.WriteString(wrapList("import {", used, "} from "+quote(m.module), 0, s.g.printWidth()) + "\n")
+		}
+	}
+	return b.String()
+}
+
+// calls reports whether body calls a function: name followed by ( or <, not
+// preceded by a letter, a digit, _, $ or a dot.
+func calls(body, name string) bool {
+	for i := 0; ; {
+		j := strings.Index(body[i:], name)
+		if j < 0 {
+			return false
+		}
+		start, end := i+j, i+j+len(name)
+		before := byte(' ')
+		if start > 0 {
+			before = body[start-1]
+		}
+		if end < len(body) && (body[end] == '(' || body[end] == '<') && !(before == '.' || before == '_' || before == '$' || isAlphanumeric(before)) {
+			return true
+		}
+		i = end
+	}
 }

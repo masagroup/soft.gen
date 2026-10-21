@@ -3,6 +3,7 @@ package typescript
 import (
 	"embed"
 	"io/fs"
+	"strings"
 	"text/template"
 
 	"github.com/masagroup/soft.go/ecore"
@@ -81,9 +82,10 @@ func (*Language) Templates() fs.FS {
 // double-quoted string literals.
 func (*Language) Funcs() template.FuncMap {
 	return template.FuncMap{
-		"indent": indent,
-		"quote":  quote,
-		"lines":  lines,
+		"indent":   indent,
+		"quote":    quote,
+		"lines":    lines,
+		"trimLeft": func(s string) string { return strings.TrimLeft(s, " ") },
 	}
 }
 
