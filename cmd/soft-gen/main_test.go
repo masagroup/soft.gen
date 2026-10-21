@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/masagroup/soft.gen/v2/internal/engine"
 	"github.com/masagroup/soft.gen/v2/internal/lang/golang"
 	"github.com/masagroup/soft.gen/v2/internal/lang/typescript"
 )
@@ -197,4 +199,13 @@ func TestPrecedence(t *testing.T) {
 	code, _, errOut = soft(t, "go", "-o", filepath.Join(dir, "from-cli"), "-t", "generateModel")
 	require.Equal(t, 0, code, errOut)
 	assert.FileExists(t, filepath.Join(dir, "from-cli", "shop", "shop_impl.go"), "the command line wins over the environment")
+}
+
+// TestLanguageVersionFormat checks the VERSION file of every language: a
+// semantic version vX.Y.Z, as make version.<language> writes it.
+func TestLanguageVersionFormat(t *testing.T) {
+	semver := regexp.MustCompile(`^v[0-9]+\.[0-9]+\.[0-9]+$`)
+	for _, lang := range engine.Languages() {
+		assert.Regexp(t, semver, lang.Version(), "the version of %s", lang.Name())
+	}
 }

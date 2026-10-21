@@ -168,6 +168,9 @@ Debugging a difference:
    naming rules and list properties (`packages`...) are the same for every
    language.
 2. Add `_ "github.com/masagroup/soft.gen/v2/internal/lang/<name>"` to `cmd/soft-gen/main.go`.
+   Give it a `VERSION` file (the version of the runtime its templates
+   target, embedded and returned by `Version()`), and add it to `LANGUAGES`
+   and `lang.package.<name>` in the Makefile.
 3. Write the facts of the language (paths, names, types) as small documented
    functions, then one `view_*.go` per kind of file with its template.
 4. Add a `TestValidate` and a `goldentest.Suite` with fixtures and their

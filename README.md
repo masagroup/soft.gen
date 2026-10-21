@@ -30,8 +30,9 @@ The version of soft-gen is the Git tag of the build (`v2.0.0`), or between two
 tags a Go pseudo-version such as `v2.0.1-0.20261021125246-3166c30bb912`,
 computed by `version.sh`. The version of a language is the version of the
 runtime its templates target: the Go generator `v1.13.1` generates code for
-soft.go `v1.13`. It is a constant of the language (`Version` in
-`internal/lang/<language>`), so every build reports it.
+soft.go `v1.13`. It is the `VERSION` file of the language
+(`internal/lang/golang/VERSION`), embedded in the binary, so every build
+reports it; `make versions` prints them, `make version.go TO=v1.14.0` sets one.
 
 Or install the binary (Go 1.27), or run it without installing, at a fixed
 version (the Makefile of soft.go and soft.ts do so):
@@ -328,6 +329,7 @@ implementation modules import the interfaces through `paths`
 go test ./...          # unit tests, and the fixtures compared with their expected files
 make lint              # golangci-lint with .golangci.yaml, in docker
 make image image.test  # the docker image, and the check of its versions
+make versions          # the version of each language (make version.<lang> TO=vX.Y.Z sets one)
 ```
 
 The fixtures are small models in `testdata/models`, each about one topic,

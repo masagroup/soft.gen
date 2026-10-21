@@ -3,6 +3,7 @@ package golang
 import (
 	"embed"
 	"io/fs"
+	"strings"
 	"text/template"
 
 	"github.com/masagroup/soft.go/ecore"
@@ -27,9 +28,15 @@ func New() *Language { return &Language{} }
 
 func init() { engine.Register(New()) }
 
-// Version is the version of soft.go the templates target. Change it when the
-// templates follow a new soft.go version.
-const Version = "v1.13.1"
+// versionFile is the VERSION file of the language: the version of soft.go the
+// templates target. Change it when the templates follow a new soft.go version
+// (make version.go TO=vX.Y.Z).
+//
+//go:embed VERSION
+var versionFile string
+
+// Version is the soft.go version of the templates, read from VERSION.
+var Version = strings.TrimSpace(versionFile)
 
 // Name is "go".
 func (*Language) Name() string { return "go" }

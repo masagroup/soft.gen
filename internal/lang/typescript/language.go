@@ -29,9 +29,15 @@ func New() *Language { return &Language{} }
 
 func init() { engine.Register(New()) }
 
-// Version is the version of soft.ts the templates target. Change it when the
-// templates follow a new soft.ts version.
-const Version = "v1.7.0"
+// versionFile is the VERSION file of the language: the version of soft.ts the
+// templates target. Change it when the templates follow a new soft.ts version
+// (make version.ts TO=vX.Y.Z).
+//
+//go:embed VERSION
+var versionFile string
+
+// Version is the soft.ts version of the templates, read from VERSION.
+var Version = strings.TrimSpace(versionFile)
 
 // Name is "ts".
 func (*Language) Name() string { return "ts" }
