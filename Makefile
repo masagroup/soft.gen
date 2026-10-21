@@ -2,6 +2,7 @@
 #
 #   make build       build ./bin/soft-gen
 #   make test        go vet + go test
+#   make lint        golangci-lint (.golangci.yaml), in docker
 #   make image       build the docker image (every language included)
 #   make image.test  check the version of the image
 #   make publish     push the image (tags <VERSION> and latest)
@@ -13,6 +14,9 @@ ifndef VERSION
 VERSION := $(shell ./version.sh)
 endif
 IMAGE ?= masagroup/soft-gen
+# the golangci-lint image of `make lint`: its Go must support the go directive
+# of go.mod
+GOLANGCI_LINT_IMAGE ?= golangci/golangci-lint:v2.14.0-alpine
 
 .PHONY: build
 build:
@@ -22,6 +26,17 @@ build:
 test:
 	go vet ./...
 	go test ./...
+
+.PHONY: lint
+# The sources are mounted read-only; the Go modules and the golangci-lint cache
+# are docker volumes, kept between runs. MSYS_NO_PATHCONV keeps Git Bash on
+# Windows from rewriting the container paths.
+lint:
+	MSYS_NO_PATHCONV=1 docker run --rm \
+		-v "$(CURDIR)":/src:ro -w /src \
+		-v soft-gen-gomod:/go/pkg/mod \
+		-v soft-gen-golangci:/root/.cache \
+		$(GOLANGCI_LINT_IMAGE) golangci-lint run ./...
 
 .PHONY: image
 image:

@@ -218,6 +218,7 @@ and its `Create` panics.
 
 ```shell
 go test ./...          # unit tests, and the fixtures compared with their expected files
+make lint              # golangci-lint with .golangci.yaml, in docker
 make image image.test  # the docker image and its version check
 ```
 
