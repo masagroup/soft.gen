@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="naming" nsURI="http://soft.gen/test/naming" nsPrefix="naming">
+  <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+    <details key="factoryName" value="$1Builder"/>
+    <details key="packageName" value="(.*):$1Meta"/>
+    <details key="interfaceName" value="I$1"/>
+    <details key="implementationName" value="(.*):$1Struct"/>
+    <details key="extensionName" value="$1Custom"/>
+    <details key="mockName" value="Fake$1"/>
+    <details key="interfaceFileName" value="$1_api.go"/>
+    <details key="implementationFileName" value="(.*):$1_struct.go"/>
+    <details key="mockFileName" value="$1_fake.go"/>
+    <details key="mockTestFileName" value="(.*):$1_fake_test.go"/>
+    <details key="implementationTestFileName" value="$1_struct_test.go"/>
+    <details key="factoryTestFileName" value="(.*)factory:$1_builder_test.go"/>
+    <details key="packageTestFileName" value="$1_meta_test.go"/>
+    <details key="getterName" value="Read$1"/>
+    <details key="setterName" value="(.*):Write$1"/>
+    <details key="unSetterName" value="Clear$1"/>
+    <details key="isSetName" value="(.*):Has$1"/>
+    <details key="operationName" value="Do$1"/>
+  </eAnnotations>
+  <eClassifiers xsi:type="ecore:EClass" name="Item">
+    <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+      <details key="interfaceName" value="(.*):$1Itf"/>
+      <details key="setterName" value="Put$1"/>
+      <details key="implementationFileName" value="item_body.go"/>
+    </eAnnotations>
+    <eOperations name="compute" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+      <eParameters name="x" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eOperations>
+    <eOperations name="reset">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="operationName" value="Run$1"/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="getterName" value="Fetch$1"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="active" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="count" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        unsettable="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parts" upperBound="-1"
+        eType="#//Part" containment="true" eOpposite="#//Part/owner"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Part">
+    <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+      <details key="mockName" value="(.*):Stub$1"/>
+      <details key="mockFileName" value="(.*):$1_double.go"/>
+      <details key="mockTestFileName" value="$1_double_test.go"/>
+      <details key="implementationTestFileName" value="(.*):$1_check_test.go"/>
+      <details key="interfaceFileName" value="part_api_custom.go"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="weight" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"
+        unsettable="true">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="unSetterName" value="(.*):Drop$1"/>
+        <details key="isSetName" value="Knows$1"/>
+        <details key="setterName" value="Assign$1"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" eType="#//Item"
+        eOpposite="#//Item/parts"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Public">
+    <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+      <details key="exported" value="true"/>
+      <details key="implementationName" value="$1Impl"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Custom">
+    <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+      <details key="extension" value="true"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Special" eSuperTypes="#//Custom">
+    <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+      <details key="extension" value="true"/>
+      <details key="extensionName" value="(.*):My$1"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="level" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+</ecore:EPackage>

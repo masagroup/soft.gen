@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="v1bugs" nsURI="http://soft.gen/test/v1bugs" nsPrefix="v1bugs">
+  <eClassifiers xsi:type="ecore:EClass" name="Owner">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="optional" eType="#//Part"
+        unsettable="true" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="partner" eType="#//Partner"
+        unsettable="true" eOpposite="#//Partner/owner"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="point" eType="#//Unknown"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="label" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
+        defaultValueLiteral="say &quot;hi&quot; \ there"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Part"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Partner">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" eType="#//Owner"
+        eOpposite="#//Owner/partner"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Unknown" instanceClassName="com.example.Unknown">
+    <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+      <details key="instanceTypeName" value="image/image.Point"/>
+    </eAnnotations>
+  </eClassifiers>
+</ecore:EPackage>

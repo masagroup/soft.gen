@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="lazy" nsURI="http://soft.gen/test/lazy" nsPrefix="lazy">
+  <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+    <details key="lazy" value="proxy:function list:action"/>
+  </eAnnotations>
+  <eClassifiers xsi:type="ecore:EClass" name="Holder">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="tags" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="items" upperBound="-1"
+        eType="#//Item" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="links" upperBound="-1"
+        eType="#//Item">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="lazy" value="lambda"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="cache" upperBound="-1"
+        eType="#//Item" unsettable="true">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="lazy" value="function"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="favorite" eType="#//Item"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="preferred" eType="#//Item">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="lazy" value="action"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="computed" eType="#//Item"
+        resolveProxies="false">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="lazy" value="function"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assigned" eType="#//Item"
+        resolveProxies="false">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="lazy" value="action"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="title" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="lazy" value="action"/>
+        <details key="initializationName" value="computeTitle"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="note" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="lazy" value="lambda"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Item">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+</ecore:EPackage>

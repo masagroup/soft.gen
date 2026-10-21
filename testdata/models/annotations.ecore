@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="annotations" nsURI="http://soft.gen/test/annotations" nsPrefix="annotations">
+  <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+    <details key="supressAnnotations" value="http://soft.gen/test/hidden"/>
+  </eAnnotations>
+  <eAnnotations source="http://soft.gen/test/doc">
+    <details key="documentation" value="The &quot;annotations&quot; package."/>
+    <details key="version" value="1.0"/>
+  </eAnnotations>
+  <eClassifiers xsi:type="ecore:EClass" name="Document">
+    <eAnnotations source="http://soft.gen/test/doc">
+      <details key="documentation" value="A document."/>
+      <eAnnotations source="http://soft.gen/test/nested">
+        <details key="inner" value="nested in the doc annotation"/>
+      </eAnnotations>
+    </eAnnotations>
+    <eAnnotations source="http://soft.gen/test/hidden">
+      <details key="secret" value="suppressed"/>
+    </eAnnotations>
+    <eOperations name="render" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://soft.gen/test/doc">
+        <details key="documentation" value="Renders the document."/>
+      </eAnnotations>
+      <eParameters name="format" eType="#//Format">
+        <eAnnotations source="http://soft.gen/test/doc">
+          <details key="documentation" value="The output format."/>
+        </eAnnotations>
+      </eParameters>
+      <eParameters name="indent" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt">
+        <eAnnotations source="http://soft.gen/test/doc">
+          <details key="documentation" value="The indentation."/>
+        </eAnnotations>
+      </eParameters>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="title" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://soft.gen/test/doc">
+        <details key="documentation" value="The title."/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="format" eType="#//Format"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Format">
+    <eLiterals name="Text">
+      <eAnnotations source="http://soft.gen/test/doc">
+        <details key="documentation" value="Plain text."/>
+      </eAnnotations>
+    </eLiterals>
+    <eLiterals name="Html" value="1"/>
+  </eClassifiers>
+</ecore:EPackage>

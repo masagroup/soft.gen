@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="references" nsURI="http://soft.gen/test/references" nsPrefix="references">
+  <eClassifiers xsi:type="ecore:EClass" name="Root">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="children" upperBound="-1"
+        eType="#//Child" containment="true" eOpposite="#//Child/parent"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="items" upperBound="-1"
+        eType="#//Item" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fixed" eType="#//Fixed"
+        containment="true" eOpposite="#//Fixed/owner"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="optional" eType="#//Item"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="favorite" eType="#//Item"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="direct" eType="#//Item"
+        resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="shared" eType="#//Item">
+      <eAnnotations source="http://net.masagroup/soft/2019/GenGo">
+        <details key="aggregation" value="shared"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="links" upperBound="-1"
+        eType="#//Item"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="locals" upperBound="-1"
+        eType="#//Item" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="marks" upperBound="-1"
+        eType="#//Item" unsettable="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Child">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parent" eType="#//Root"
+        eOpposite="#//Root/children"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Fixed">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" eType="#//Root"
+        changeable="false" eOpposite="#//Root/fixed"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Item">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Husband">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="wife" eType="#//Wife"
+        eOpposite="#//Wife/husband"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="friends" upperBound="-1"
+        eType="#//Wife" eOpposite="#//Wife/friend"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Wife">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="husband" eType="#//Husband"
+        eOpposite="#//Husband/wife"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="friend" eType="#//Husband"
+        eOpposite="#//Husband/friends"/>
+  </eClassifiers>
+</ecore:EPackage>
