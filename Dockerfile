@@ -1,7 +1,7 @@
 # The image of the generators: soft-gen, every language included, so that
 #   docker run --rm -v "$PWD":/gen -w /gen masagroup/soft-gen go -m /gen/model.ecore -o /gen
 # runs "soft-gen go -m /gen/model.ecore -o /gen".
-ARG GO_VERSION=1.27
+ARG GO_VERSION=1.27.3
 
 # The build stage is discarded: only the binary reaches the image.
 FROM golang:${GO_VERSION}-alpine AS build
