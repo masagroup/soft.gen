@@ -54,6 +54,7 @@ describe("EnumsFactoryImpl", () => {
         when(mockDataType.getClassifierID()).thenReturn(EnumsConstants.COLOR)
         expect(factory.createFromString(eDataType, "DarkBlue")).toStrictEqual(Color.DARK_BLUE)
         expect(factory.createFromString(eDataType, "Green")).toStrictEqual(Color.GREEN)
+        expect(factory.createFromString(eDataType, "None")).toStrictEqual(Color.NONE)
         expect(factory.createFromString(eDataType, "Red")).toStrictEqual(Color.RED)
     })
 
@@ -64,6 +65,7 @@ describe("EnumsFactoryImpl", () => {
         when(mockDataType.getClassifierID()).thenReturn(EnumsConstants.COLOR)
         expect(factory.convertToString(eDataType, Color.DARK_BLUE)).toStrictEqual("DarkBlue")
         expect(factory.convertToString(eDataType, Color.GREEN)).toStrictEqual("Green")
+        expect(factory.convertToString(eDataType, Color.NONE)).toStrictEqual("None")
         expect(factory.convertToString(eDataType, Color.RED)).toStrictEqual("Red")
     })
     test("createEmptyFromString", () => {

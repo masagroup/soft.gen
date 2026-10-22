@@ -183,6 +183,7 @@ export class EnumsPackageImpl extends ecore.EPackageExt implements EnumsPackage 
         this.addEEnumLiteral(this.getColor(), "Red", "Red", 0)
         this.addEEnumLiteral(this.getColor(), "Green", "Green", 1)
         this.addEEnumLiteral(this.getColor(), "DarkBlue", "dark-blue", 2)
+        this.addEEnumLiteral(this.getColor(), "None", "", 3)
 
         this.initEEnum(this.getEmpty(), "Empty", "number")
 

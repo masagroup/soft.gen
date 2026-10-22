@@ -16,18 +16,21 @@ type Color int32
 const (
 	COLOR__DARK_BLUE Color = 2
 	COLOR__GREEN     Color = 1
+	COLOR__NONE      Color = 3
 	COLOR__RED       Color = 0
 )
 
 var colorToString = map[Color]string{
 	COLOR__DARK_BLUE: "dark-blue",
 	COLOR__GREEN:     "Green",
+	COLOR__NONE:      "",
 	COLOR__RED:       "Red",
 }
 
 var colorToID = map[string]Color{
 	"dark-blue": COLOR__DARK_BLUE,
 	"Green":     COLOR__GREEN,
+	"":          COLOR__NONE,
 	"Red":       COLOR__RED,
 }
 

@@ -13,6 +13,7 @@
     <eLiterals name="Red"/>
     <eLiterals name="Green" value="1"/>
     <eLiterals name="DarkBlue" value="2" literal="dark-blue"/>
+    <eLiterals name="None" value="3" literal=""/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="Light">
     <eLiterals name="Off"/>

@@ -12,6 +12,7 @@
 export enum Color {
     DARK_BLUE = 2,
     GREEN = 1,
+    NONE = 3,
     RED = 0
 }
 
@@ -21,6 +22,8 @@ export function colorToString(color: Color): string {
             return "dark-blue"
         case Color.GREEN:
             return "Green"
+        case Color.NONE:
+            return ""
         case Color.RED:
             return "Red"
     }
@@ -32,6 +35,8 @@ export function colorFromString(literalValue: string): Color {
             return Color.DARK_BLUE
         case "Green":
             return Color.GREEN
+        case "":
+            return Color.NONE
         case "Red":
             return Color.RED
         default:
