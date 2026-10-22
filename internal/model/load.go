@@ -39,7 +39,6 @@ type Model struct {
 	features         map[ecore.EStructuralFeature]*FeatureInfo
 	operations       map[ecore.EOperation]*OperationInfo
 	typeArguments    map[ecore.ETypedElement][]ecore.EClassifier
-	emptyLiterals    map[ecore.EEnumLiteral]bool
 }
 
 // Load loads the .ecore file at path and returns its root package as a Model
@@ -68,14 +67,13 @@ func Load(path, annotationSource string) (*Model, error) {
 	registry.PutPackage(EcoreNsURI, ecorePackage)
 	registry.PutFactory(EcoreNsURI, ecore.GetFactory())
 
-	root, refs, err := loadPackage(resourceSet, processor, ecore.CreateFileURI(path), data)
+	root, arguments, err := loadPackage(resourceSet, processor, ecore.CreateFileURI(path), data)
 	if err != nil {
 		return nil, fmt.Errorf("model: loading %s: %w", path, err)
 	}
 	m := FromPackage(root, annotationSource)
 	m.ecore = ecorePackage
-	m.typeArguments = m.resolveTypeArguments(refs.typeArguments)
-	m.emptyLiterals = m.resolveEmptyLiterals(refs.emptyLiterals)
+	m.typeArguments = m.resolveTypeArguments(arguments)
 	return m, nil
 }
 
@@ -103,17 +101,17 @@ func loadEcoreModel(resourceSet ecore.EResourceSet, processor *xmi.Processor) (e
 
 // loadPackage decodes the .ecore document data as the resource uri of
 // resourceSet, its generics stripped, and returns its root package and the
-// facts of the document its decoding loses (documentRefs).
-func loadPackage(resourceSet ecore.EResourceSet, processor *xmi.Processor, uri *ecore.URI, data []byte) (ecore.EPackage, documentRefs, error) {
-	data, refs, err := stripGenericsWithArguments(data)
+// type arguments of its generic types.
+func loadPackage(resourceSet ecore.EResourceSet, processor *xmi.Processor, uri *ecore.URI, data []byte) (ecore.EPackage, typeArgumentRefs, error) {
+	data, arguments, err := stripGenericsWithArguments(data)
 	if err != nil {
-		return nil, refs, err
+		return nil, nil, err
 	}
 	resource := resourceSet.CreateResource(uri)
 	options := map[string]any{xml.OPTION_EXTENDED_META_DATA: processor.GetExtendedMetaData()}
 	resource.LoadWithReader(bytes.NewReader(data), options)
 	root, err := rootPackage(resource)
-	return root, refs, err
+	return root, arguments, err
 }
 
 // rootPackage returns the root package of a loaded resource, or the error

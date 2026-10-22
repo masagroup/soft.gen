@@ -246,7 +246,7 @@ func (g *gen) packageInitialization(p ecore.EPackage, classes []ecore.EClass, da
 			lines = append(lines, "this.initEEnum("+g.elementGetter(e)+", "+quote(e.GetName())+", "+quote(instance)+")")
 			for it := e.GetELiterals().Iterator(); it.HasNext(); {
 				l := it.Next().(ecore.EEnumLiteral)
-				lines = append(lines, "this.addEEnumLiteral("+g.elementGetter(e)+", "+quote(l.GetName())+", "+quote(g.m.EnumLiteral(l))+", "+strconv.Itoa(l.GetValue())+")")
+				lines = append(lines, "this.addEEnumLiteral("+g.elementGetter(e)+", "+quote(l.GetName())+", "+quote(l.GetLiteral())+", "+strconv.Itoa(l.GetValue())+")")
 			}
 			lines = append(lines, "")
 			continue

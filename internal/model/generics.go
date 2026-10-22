@@ -38,21 +38,10 @@ func elementPosition(parent, local string, index int) string {
 	return parent + "/" + local + "." + strconv.Itoa(index)
 }
 
-// documentRefs are the facts of an .ecore document that the decoded model
-// loses, by element position.
-type documentRefs struct {
-	// typeArguments are the type arguments of the removed generic types.
-	typeArguments typeArgumentRefs
-	// emptyLiterals are the enum literals with an explicit literal="": soft.go
-	// stores "" for an unset literal and its GetLiteral falls back to the
-	// name, where EMF only falls back for a null literal.
-	emptyLiterals map[string]bool
-}
-
 // stripGenericsWithArguments is stripGenerics, and returns the type arguments
 // of the generic types it removed, which the languages with generics write
-// (EList<EObject>), and the enum literals with an explicit empty literal.
-func stripGenericsWithArguments(data []byte) ([]byte, documentRefs, error) {
+// (EList<EObject>).
+func stripGenericsWithArguments(data []byte) ([]byte, typeArgumentRefs, error) {
 	type frame struct {
 		name     xml.Name
 		insertAt int  // where an attribute is inserted in the start tag
@@ -66,7 +55,7 @@ func stripGenericsWithArguments(data []byte) ([]byte, documentRefs, error) {
 	}
 	var edits []edit
 	var stack []*frame
-	refs := documentRefs{typeArguments: typeArgumentRefs{}, emptyLiterals: map[string]bool{}}
+	arguments := typeArgumentRefs{}
 	skipDepth, skipStart := 0, 0
 	// genericOwner is the position of the element whose eGenericType is
 	// skipped, "" when the skipped tree is not an eGenericType.
@@ -79,7 +68,7 @@ func stripGenericsWithArguments(data []byte) ([]byte, documentRefs, error) {
 			break
 		}
 		if err != nil {
-			return nil, documentRefs{}, err
+			return nil, nil, err
 		}
 		end := int(decoder.InputOffset())
 		switch token := token.(type) {
@@ -94,7 +83,7 @@ func stripGenericsWithArguments(data []byte) ([]byte, documentRefs, error) {
 			switch token.Name.Local {
 			case "eGenericType":
 				if len(stack) == 0 {
-					return nil, documentRefs{}, errors.New("malformed document: eGenericType at the root")
+					return nil, nil, errors.New("malformed document: eGenericType at the root")
 				}
 				parent := stack[len(stack)-1]
 				if !parent.hasEType {
@@ -120,9 +109,6 @@ func stripGenericsWithArguments(data []byte) ([]byte, documentRefs, error) {
 					position = elementPosition(parent.position, token.Name.Local, parent.children[token.Name.Local])
 					parent.children[token.Name.Local]++
 				}
-				if literal, found := attribute(token, "literal"); found && literal == "" && token.Name.Local == "eLiterals" {
-					refs.emptyLiterals[position] = true
-				}
 				stack = append(stack, &frame{name: token.Name, insertAt: insertAt, hasEType: attributeValue(token, "eType") != "",
 					position: position, children: map[string]int{}})
 			}
@@ -131,7 +117,7 @@ func stripGenericsWithArguments(data []byte) ([]byte, documentRefs, error) {
 				if skipDepth--; skipDepth == 0 {
 					edits = append(edits, edit{start: skipStart, end: end})
 					if genericOwner != "" && len(genericArguments) > 0 {
-						refs.typeArguments[genericOwner] = genericArguments
+						arguments[genericOwner] = genericArguments
 					}
 					genericOwner = ""
 				}
@@ -139,16 +125,16 @@ func stripGenericsWithArguments(data []byte) ([]byte, documentRefs, error) {
 			}
 			// RawToken does not check the nesting
 			if len(stack) == 0 || stack[len(stack)-1].name != token.Name {
-				return nil, documentRefs{}, errors.New("malformed document: unexpected end of element " + token.Name.Local)
+				return nil, nil, errors.New("malformed document: unexpected end of element " + token.Name.Local)
 			}
 			stack = stack[:len(stack)-1]
 		}
 	}
 	if len(stack) != 0 {
-		return nil, documentRefs{}, errors.New("malformed document: unclosed element " + stack[len(stack)-1].name.Local)
+		return nil, nil, errors.New("malformed document: unclosed element " + stack[len(stack)-1].name.Local)
 	}
 	if len(edits) == 0 {
-		return data, refs, nil
+		return data, arguments, nil
 	}
 	sort.SliceStable(edits, func(i, j int) bool { return edits[i].start < edits[j].start })
 	var result bytes.Buffer
@@ -160,23 +146,16 @@ func stripGenericsWithArguments(data []byte) ([]byte, documentRefs, error) {
 		position = e.end
 	}
 	result.Write(data[position:])
-	return result.Bytes(), refs, nil
+	return result.Bytes(), arguments, nil
 }
 
 // attributeValue returns the value of the attribute named name of element, ""
 // when absent.
 func attributeValue(element xml.StartElement, name string) string {
-	value, _ := attribute(element, name)
-	return value
-}
-
-// attribute returns the value of the attribute named name of element and
-// whether element has it.
-func attribute(element xml.StartElement, name string) (string, bool) {
 	for _, attr := range element.Attr {
 		if attr.Name.Local == name && attr.Name.Space == "" {
-			return attr.Value, true
+			return attr.Value
 		}
 	}
-	return "", false
+	return ""
 }
