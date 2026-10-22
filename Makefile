@@ -36,9 +36,31 @@ version.file = internal/lang/$(lang.package.$(1))/VERSION
 # of go.mod
 GOLANGCI_LINT_IMAGE ?= golangci/golangci-lint:v2.14.0-alpine
 
+# os detection
+ifeq (${OS},Windows_NT)
+WHICH := where
+DEVNULL := NUL
+else
+WHICH := which
+DEVNULL := /dev/null
+endif
+
+# detect go: go, else go.exe (the Windows Go, from wsl)
+ifneq ($(shell $(WHICH) go 2>$(DEVNULL)),)
+	GO := go
+else ifneq ($(shell $(WHICH) go.exe 2>$(DEVNULL)),)
+	GO := go.exe
+endif
+
+# without go, only the targets in docker (lint, image, publish) and the
+# versions work
+ifndef GO
+	GO = $(error "go is not in your system PATH")
+endif
+
 .PHONY: build
 build:
-	go build -ldflags "$(LDFLAGS)" -o bin/soft.gen ./cmd/soft.gen
+	$(GO) build -ldflags "$(LDFLAGS)" -o bin/soft.gen ./cmd/soft.gen
 
 .PHONY: versions
 versions:
@@ -55,8 +77,8 @@ $(addprefix version.,$(LANGUAGES)): version.%:
 
 .PHONY: test
 test:
-	go vet ./...
-	go test ./...
+	$(GO) vet ./...
+	$(GO) test ./...
 
 .PHONY: lint
 # The sources are mounted read-only; the Go modules and the golangci-lint cache
@@ -82,7 +104,7 @@ image.test:
 	if [ "$$version" != "$$expected" ]; then echo "image: got '$$version', expected '$$expected'"; exit 1; fi; \
 	echo "image: $$version"
 	@for lang in $(LANGUAGES); do \
-		expected=$$(go run ./cmd/soft.gen $$lang -v) || exit 1; \
+		expected=$$($(GO) run ./cmd/soft.gen $$lang -v) || exit 1; \
 		version=$$(docker run --rm $(IMAGE) $$lang -v) || exit 1; \
 		if [ "$$version" != "$$expected" ]; then echo "image: got '$$version', expected '$$expected'"; exit 1; fi; \
 		echo "image: $$version"; \
