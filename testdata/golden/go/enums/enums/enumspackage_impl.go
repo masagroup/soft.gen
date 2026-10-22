@@ -137,6 +137,7 @@ func (p *enumsPackageImpl) initializePackageContents(ecoreFactory ecore.EcoreFac
 	p.AddEEnumLiteral(p.GetColor(), "Red", "Red", 0, COLOR__RED)
 	p.AddEEnumLiteral(p.GetColor(), "Green", "Green", 1, COLOR__GREEN)
 	p.AddEEnumLiteral(p.GetColor(), "DarkBlue", "dark-blue", 2, COLOR__DARK_BLUE)
+	p.AddEEnumLiteral(p.GetColor(), "None", "", 3, COLOR__NONE)
 
 	p.InitEEnum(p.GetEmpty(), "Empty", "int32")
 

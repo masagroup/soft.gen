@@ -511,7 +511,7 @@ func (g *gen) dataTypeInitialization(dt ecore.EDataType, scope *fileScope) dataT
 			literal := el.(ecore.EEnumLiteral)
 			init.Literals = append(init.Literals, enumLiteralInitView{
 				Name:     literal.GetName(),
-				Literal:  literal.GetLiteral(),
+				Literal:  g.m.EnumLiteral(literal),
 				Value:    strconv.Itoa(literal.GetValue()),
 				Constant: scope.qualify(g.qualifiedInterfaceIdentifier(enum.GetEPackage(), g.constantsName(literal))),
 			})

@@ -41,7 +41,7 @@ func (g *gen) enumFile(e ecore.EEnum) engine.File {
 	for _, l := range sortedByName(literals) {
 		view.Literals = append(view.Literals, enumLiteralView{
 			Const:   g.constantsName(l),
-			Literal: l.GetLiteral(),
+			Literal: g.m.EnumLiteral(l),
 			Value:   strconv.Itoa(l.GetValue()),
 		})
 	}

@@ -33,7 +33,7 @@ func (g *gen) enumFile(e ecore.EEnum) engine.File {
 	view := enumView{Name: e.GetName(), Var: naming.LowerFirst(e.GetName())}
 	for _, l := range literals {
 		view.Literals = append(view.Literals, literalView{
-			Const: literalConstantName(l), Value: strconv.Itoa(l.GetValue()), Literal: quote(l.GetLiteral()),
+			Const: literalConstantName(l), Value: strconv.Itoa(l.GetValue()), Literal: quote(g.m.EnumLiteral(l)),
 		})
 	}
 	return g.file(g.interfaceFileName(e, e.GetName()), g.newScope(), "enum.ts", view)

@@ -22,13 +22,7 @@ func (m *Model) resolveTypeArguments(refs typeArgumentRefs) map[ecore.ETypedElem
 	if len(refs) == 0 {
 		return resolved
 	}
-	var visit func(position string, el ecore.EObject)
-	children := func(position, local string, list ecore.EList) {
-		for i := 0; i < list.Size(); i++ {
-			visit(elementPosition(position, local, i), list.Get(i).(ecore.EObject))
-		}
-	}
-	visit = func(position string, el ecore.EObject) {
+	m.visitPositions(func(position string, el ecore.EObject) {
 		if typed, ok := el.(ecore.ETypedElement); ok {
 			if args, found := refs[position]; found {
 				classifiers := make([]ecore.EClassifier, len(args))
@@ -38,6 +32,22 @@ func (m *Model) resolveTypeArguments(refs typeArgumentRefs) map[ecore.ETypedElem
 				resolved[typed] = classifiers
 			}
 		}
+	})
+	return resolved
+}
+
+// visitPositions calls visit with the elements of the model that can be
+// recorded while loading and their position in the document (see
+// elementPosition).
+func (m *Model) visitPositions(visit func(position string, el ecore.EObject)) {
+	var walk func(position string, el ecore.EObject)
+	children := func(position, local string, list ecore.EList) {
+		for i := 0; i < list.Size(); i++ {
+			walk(elementPosition(position, local, i), list.Get(i).(ecore.EObject))
+		}
+	}
+	walk = func(position string, el ecore.EObject) {
+		visit(position, el)
 		switch el := el.(type) {
 		case ecore.EPackage:
 			children(position, "eClassifiers", el.GetEClassifiers())
@@ -45,12 +55,13 @@ func (m *Model) resolveTypeArguments(refs typeArgumentRefs) map[ecore.ETypedElem
 		case ecore.EClass:
 			children(position, "eStructuralFeatures", el.GetEStructuralFeatures())
 			children(position, "eOperations", el.GetEOperations())
+		case ecore.EEnum:
+			children(position, "eLiterals", el.GetELiterals())
 		case ecore.EOperation:
 			children(position, "eParameters", el.GetEParameters())
 		}
 	}
-	visit("", m.root)
-	return resolved
+	walk("", m.root)
 }
 
 // classifierOfRef returns the classifier of a reference of an .ecore document
