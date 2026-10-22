@@ -7,6 +7,9 @@
 #   make image.test  check the versions of the image
 #   make publish     push the image (tags <VERSION> and latest)
 #
+# build, test and image.test use the go installed (go, else go.exe), else go
+# in a golang container (GOLANG_IMAGE).
+#
 # VERSION, the version of soft.gen ("soft.gen -v"), is computed from the Git
 # state by version.sh (a Go pseudo-version such as
 # v2.0.0-20261021125246-3166c30bb912, or the v2 tag of the commit).
@@ -35,10 +38,42 @@ version.file = internal/lang/$(lang.package.$(1))/VERSION
 # the golangci-lint image of `make lint`: its Go must support the go directive
 # of go.mod
 GOLANGCI_LINT_IMAGE ?= golangci/golangci-lint:v2.14.0-alpine
+# the golang image go runs in when it is not installed: its Go must support
+# the go directive of go.mod
+GOLANG_IMAGE ?= golang:1.27.3-alpine
+
+# os detection
+ifeq (${OS},Windows_NT)
+WHICH := where
+DEVNULL := NUL
+else
+WHICH := which
+DEVNULL := /dev/null
+endif
+
+# detect go: go, else go.exe (the Windows Go, from wsl)
+ifneq ($(shell $(WHICH) go 2>$(DEVNULL)),)
+	GO := go
+else ifneq ($(shell $(WHICH) go.exe 2>$(DEVNULL)),)
+	GO := go.exe
+endif
+
+# without go, go runs in a golang container: this folder mounted read-write
+# (bin/), the Go modules and the build cache in docker volumes kept between
+# runs. It has no go.work (GOWORK=off) and no git (no VCS stamping, the
+# version is in LDFLAGS).
+ifndef GO
+	GO := MSYS_NO_PATHCONV=1 docker run --rm \
+		-v "$(CURDIR)":/src -w /src \
+		-v soft.gen-gomod:/go/pkg/mod \
+		-v soft.gen-gocache:/root/.cache/go-build \
+		-e GOWORK=off -e GOFLAGS=-buildvcs=false \
+		$(GOLANG_IMAGE) go
+endif
 
 .PHONY: build
 build:
-	go build -ldflags "$(LDFLAGS)" -o bin/soft.gen ./cmd/soft.gen
+	$(GO) build -ldflags "$(LDFLAGS)" -o bin/soft.gen ./cmd/soft.gen
 
 .PHONY: versions
 versions:
@@ -55,8 +90,8 @@ $(addprefix version.,$(LANGUAGES)): version.%:
 
 .PHONY: test
 test:
-	go vet ./...
-	go test ./...
+	$(GO) vet ./...
+	$(GO) test ./...
 
 .PHONY: lint
 # The sources are mounted read-only; the Go modules and the golangci-lint cache
@@ -82,7 +117,7 @@ image.test:
 	if [ "$$version" != "$$expected" ]; then echo "image: got '$$version', expected '$$expected'"; exit 1; fi; \
 	echo "image: $$version"
 	@for lang in $(LANGUAGES); do \
-		expected=$$(go run ./cmd/soft.gen $$lang -v) || exit 1; \
+		expected=$$($(GO) run ./cmd/soft.gen $$lang -v) || exit 1; \
 		version=$$(docker run --rm $(IMAGE) $$lang -v) || exit 1; \
 		if [ "$$version" != "$$expected" ]; then echo "image: got '$$version', expected '$$expected'"; exit 1; fi; \
 		echo "image: $$version"; \
