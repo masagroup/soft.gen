@@ -7,6 +7,9 @@
 #   make image.test  check the versions of the image
 #   make publish     push the image (tags <VERSION> and latest)
 #
+# build, test and image.test use the go installed (go, else go.exe), else go
+# in a golang container (GOLANG_IMAGE).
+#
 # VERSION, the version of soft.gen ("soft.gen -v"), is computed from the Git
 # state by version.sh (a Go pseudo-version such as
 # v2.0.0-20261021125246-3166c30bb912, or the v2 tag of the commit).
@@ -35,6 +38,9 @@ version.file = internal/lang/$(lang.package.$(1))/VERSION
 # the golangci-lint image of `make lint`: its Go must support the go directive
 # of go.mod
 GOLANGCI_LINT_IMAGE ?= golangci/golangci-lint:v2.14.0-alpine
+# the golang image go runs in when it is not installed: its Go must support
+# the go directive of go.mod
+GOLANG_IMAGE ?= golang:1.27.3-alpine
 
 # os detection
 ifeq (${OS},Windows_NT)
@@ -52,10 +58,17 @@ else ifneq ($(shell $(WHICH) go.exe 2>$(DEVNULL)),)
 	GO := go.exe
 endif
 
-# without go, only the targets in docker (lint, image, publish) and the
-# versions work
+# without go, go runs in a golang container: this folder mounted read-write
+# (bin/), the Go modules and the build cache in docker volumes kept between
+# runs. It has no go.work (GOWORK=off) and no git (no VCS stamping, the
+# version is in LDFLAGS).
 ifndef GO
-	GO = $(error "go is not in your system PATH")
+	GO := MSYS_NO_PATHCONV=1 docker run --rm \
+		-v "$(CURDIR)":/src -w /src \
+		-v soft.gen-gomod:/go/pkg/mod \
+		-v soft.gen-gocache:/root/.cache/go-build \
+		-e GOWORK=off -e GOFLAGS=-buildvcs=false \
+		$(GOLANG_IMAGE) go
 endif
 
 .PHONY: build
