@@ -56,7 +56,7 @@ type Request struct {
 	// formatters; external ones need it).
 	Format bool
 	// NoManifest leaves the manifests out: the folders the run generates files
-	// in get no .soft-gen.yaml (an existing one is left as it is).
+	// in get no .soft.gen.yaml (an existing one is left as it is).
 	NoManifest bool
 	// OnRender, when set, is called with the name of every template rendered
 	// (the coverage tests record them).

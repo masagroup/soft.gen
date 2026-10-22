@@ -32,7 +32,7 @@ functions with explicit names, where they can be read and unit-tested.
 
 ## Where things are
 
-The command is `cmd/soft-gen`; every other package is under `internal/`: the
+The command is `cmd/soft.gen`; every other package is under `internal/`: the
 module has no public Go API, and a language is added in this repository.
 
 | Package | Holds |
@@ -143,7 +143,7 @@ the three tests below for any language.
   ```
 
   The first line of every file, which names the generator, is the v2 one in
-  the comparison, and the manifests (`.soft-gen.yaml`) are v2 only: they are
+  the comparison, and the manifests (`.soft.gen.yaml`) are v2 only: they are
   compared by `TestFixtures`, whose cases write them with the version
   `v0.0.0-test`.
   The files where v2 differs from v1 on purpose (v1 being wrong) are listed in
@@ -154,9 +154,9 @@ the three tests below for any language.
 
 Debugging a difference:
 
-- `soft-gen go --diff -m model.ecore -o <dir>` prints the differences with the
+- `soft.gen go --diff -m model.ecore -o <dir>` prints the differences with the
   files in `<dir>` and writes nothing;
-- `soft-gen go --dry-run ...` lists the files that would be written;
+- `soft.gen go --dry-run ...` lists the files that would be written;
 - `-p debug=true` raises the log level.
 
 ## Adding a language
@@ -167,7 +167,7 @@ Debugging a difference:
    embeds `internal/lang/common.Gen`: package properties, annotation keys,
    naming rules and list properties (`packages`...) are the same for every
    language.
-2. Add `_ "github.com/masagroup/soft.gen/v2/internal/lang/<name>"` to `cmd/soft-gen/main.go`.
+2. Add `_ "github.com/masagroup/soft.gen/v2/internal/lang/<name>"` to `cmd/soft.gen/main.go`.
    Give it a `VERSION` file (the version of the runtime its templates
    target, embedded and returned by `Version()`), and add it to `LANGUAGES`
    and `lang.package.<name>` in the Makefile.

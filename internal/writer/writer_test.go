@@ -108,7 +108,7 @@ func TestUnifiedDiff(t *testing.T) {
 }
 
 func TestExecFormatterUnavailable(t *testing.T) {
-	f := ExecFormatter{Command: "soft-gen-no-such-formatter-xyz"}
+	f := ExecFormatter{Command: "soft.gen-no-such-formatter-xyz"}
 	assert.False(t, f.Available())
 	_, err := f.Format("a.ts", []byte("x"))
 	assert.Error(t, err)
