@@ -3,7 +3,7 @@ module github.com/masagroup/soft.gen/v2
 go 1.27.0
 
 require (
-	github.com/masagroup/soft.go v1.13.1-0.20261021081550-59e81977a22c
+	github.com/masagroup/soft.go v1.13.3-0.20261022175029-abd1d4df298b
 	github.com/masagroup/soft.go/codec/xmi v1.0.1-0.20261021081550-59e81977a22c
 	github.com/masagroup/soft.go/codec/xml v1.0.1-0.20261021081550-59e81977a22c
 	github.com/stretchr/testify v1.12.1

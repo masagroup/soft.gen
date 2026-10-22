@@ -2,8 +2,8 @@ github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/masagroup/soft.go v1.13.1-0.20261021081550-59e81977a22c h1:f0SYm0zcHKsGYmF8eInAIXS4QewriXe5b/BkRpyFDaw=
-github.com/masagroup/soft.go v1.13.1-0.20261021081550-59e81977a22c/go.mod h1:YSErwrAz53lVk+sMwJVavbvTO5rF07EguaUroifS57g=
+github.com/masagroup/soft.go v1.13.3-0.20261022175029-abd1d4df298b h1:AKxP8brw/6tjt2AkR773eO50h5lorWB5w9aBweBsMyU=
+github.com/masagroup/soft.go v1.13.3-0.20261022175029-abd1d4df298b/go.mod h1:YSErwrAz53lVk+sMwJVavbvTO5rF07EguaUroifS57g=
 github.com/masagroup/soft.go/codec/xmi v1.0.1-0.20261021081550-59e81977a22c h1:nTDm9+Til/7N5j5T7FyxgvHdUsOoFIta+xl2pQaYIYE=
 github.com/masagroup/soft.go/codec/xmi v1.0.1-0.20261021081550-59e81977a22c/go.mod h1:OeqSSYWpTmp/h+ZYQSGkspPLEf2bjhH+6FmPho3KKj0=
 github.com/masagroup/soft.go/codec/xml v1.0.1-0.20261021081550-59e81977a22c h1:zsZsa1K5wM2zwfe0pTgH38EAZkVGqnS0IH2Ey/4treE=
