@@ -11,19 +11,19 @@ import (
 
 // Generator is the name of the command that generates the files: the header
 // of a generated file and its manifest name it, with the language
-// ("soft-gen go").
-const Generator = "soft-gen"
+// ("soft.gen go").
+const Generator = "soft.gen"
 
 // ManifestName is the name of the manifest that a generation writes in every
 // folder it generates files in.
-const ManifestName = ".soft-gen.yaml"
+const ManifestName = ".soft.gen.yaml"
 
 // Manifest tells which generator generated the files of a folder: the
 // generator and its language, the version of the language (the version of the
 // runtime its templates target) and the nsURI of the generated package. Every
 // run that generates files in a folder writes the same manifest there.
 type Manifest struct {
-	// Generator is the command and its language: "soft-gen go".
+	// Generator is the command and its language: "soft.gen go".
 	Generator string `yaml:"generator"`
 	// Version is the version of the language: "v1.13.1".
 	Version string `yaml:"version,omitempty"`
@@ -32,7 +32,7 @@ type Manifest struct {
 }
 
 // GeneratorOf is the generator of a language, as the headers and the manifests
-// name it: "soft-gen go".
+// name it: "soft.gen go".
 func GeneratorOf(lang Language) string {
 	return Generator + " " + lang.Name()
 }

@@ -20,11 +20,11 @@ import (
 type Language interface {
 	// Name is the command-line subcommand: "go", "ts", "cpp". The generator of
 	// the language is named after it in the header of the generated files and
-	// in the manifests: "soft-gen go".
+	// in the manifests: "soft.gen go".
 	Name() string
 	// Version is the version of the language: the version of the runtime its
 	// templates target (soft.go, soft.ts...), "v1.13.1". It is written in the
-	// manifests and printed by "soft-gen <language> -v". It is a constant of
+	// manifests and printed by "soft.gen <language> -v". It is a constant of
 	// the language, so that every build has it (go install, go run ...@v2.x).
 	Version() string
 	// AnnotationSource is the source of the EAnnotations the language reads:
