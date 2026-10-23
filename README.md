@@ -14,10 +14,10 @@ sword:
       kind: build-tool
       run: "docker run --rm -v \"$PWD\":/gen -w /gen masagroup/soft.gen go -m /gen/model.ecore -o /gen"
       ports: []
-      launched_by: ["user (docker run, go install, go run)", "the Makefiles of soft.go and soft.ts (go run github.com/masagroup/soft.gen/v2/cmd/soft.gen@<version>)"]
+      launched_by: ["user (docker run, go install, go run)", "the Makefiles of soft.go and soft.ts (image masagroup/soft.gen:<SOFT_GEN_VERSION> since 2026-10-22; go run github.com/masagroup/soft.gen/v2/cmd/soft-gen@v2.0.0-alpha.2 before)", "the release/v2 branches of soft.sync.go (Makefile) and sw.api.ng.go (generate.sh)"]
       artifacts: "Docker image masagroup/soft.gen[:<version>] via make image / make publish; binary bin/soft.gen via make build; go install github.com/masagroup/soft.gen/v2/cmd/soft.gen@<version>"
       status: internal-tool
-      # UNVERIFIED: release process (no CI publish job), other consumer repositories and the versions they pin, internal-tool status inferred
+      # UNVERIFIED: release process (no CI publish job), internal-tool status inferred
 -->
 
 # soft.gen
@@ -59,7 +59,7 @@ keys are the ones of v1. The v1 per-language images (`masagroup/soft.generator.{
 
 There is no service, no port and no network protocol: data flow is `.ecore` -> `soft.gen <language>` -> source tree (plus one `.soft.gen.yaml` manifest per generated folder). The generated code is meant to compile only against the Soft runtime of its language.
 
-The Makefiles of soft.go and soft.ts run the generator at a fixed version (`go run .../cmd/soft.gen@<version>`). Other repositories that hold `.ecore` models (the v1 scan found `soft.cpp` Ant target `ecore.generate`, `soft.sync.go` Makefile `generate`, `sw.api.ng.go` `generate.sh`) may still run the v1 images; which version each pins is UNVERIFIED. See the ecosystem wiki page "esync and ecore" for the whole chain.
+The Makefiles of soft.go and soft.ts run the generator at a fixed version, `SOFT_GEN_VERSION`. The command was `cmd/soft-gen` up to `v2.0.0-alpha.2` and is `cmd/soft.gen` from `v2.0.0-alpha.3` (commit `ac25c42`, "Rename soft-gen into soft.gen"): a `go run` must use the path of the tag it names, such as `go run .../cmd/soft-gen@v2.0.0-alpha.2` (what soft.go and soft.ts ran until 2026-10-22) or `go run .../cmd/soft.gen@v2.0.0-alpha.4`. Since 2026-10-22 their `master` runs the image `masagroup/soft.gen:$(SOFT_GEN_VERSION)` instead (soft.go `v2.0.0-alpha.4`, soft.ts `v2.0.0-alpha.3`), as do the `release/v2` branches of soft.sync.go (`Makefile`) and sw.api.ng.go (`generate.sh`), both at `v2.0.0-alpha.4`. On their `master`, `soft.cpp` (Ant target `ecore.generate`, `masagroup/soft.generator.cpp`), `soft.sync.go` (Makefile `generate`) and `sw.api.ng.go` (`generate.sh`, both `masagroup/soft.generator.go`) still run the v1 images, without a tag. See the ecosystem wiki page "esync and ecore" for the whole chain.
 
 ```mermaid
 flowchart LR
@@ -142,7 +142,7 @@ Makefile targets (`make` alone runs `build`):
 | go | `internal/lang/golang/VERSION` | v1.13.1 | soft.go |
 | ts | `internal/lang/typescript/VERSION` | v1.7.0 | soft.ts |
 
-Tags in this clone: `v1.10.0` (v1), `v2.0.0-alpha.1`, `v2.0.0-alpha.2`.
+Tags: `v1.10.0` (last v1 tag), then `v2.0.0-alpha.1` (2026-10-21) to `v2.0.0-alpha.4` (2026-10-23). The command is `cmd/soft-gen` in `v2.0.0-alpha.1` and `v2.0.0-alpha.2`, and `cmd/soft.gen` from `v2.0.0-alpha.3`.
 
 ### Development
 
@@ -190,12 +190,14 @@ soft.go `v1.13`. It is the `VERSION` file of the language
 reports it; `make versions` prints them, `make version.go TO=v1.14.0` sets one.
 
 Or install the binary (Go 1.27), or run it without installing, at a fixed
-version (the Makefile of soft.go and soft.ts do so):
+version (the Makefiles of soft.go and soft.ts did so up to `v2.0.0-alpha.2`):
 
 ```shell
 go install github.com/masagroup/soft.gen/v2/cmd/soft.gen@latest
-go run github.com/masagroup/soft.gen/v2/cmd/soft.gen@v2.0.0 go -m model.ecore -o .
+go run github.com/masagroup/soft.gen/v2/cmd/soft.gen@v2.0.0-alpha.4 go -m model.ecore -o .
 ```
+
+The path `cmd/soft.gen` exists from `v2.0.0-alpha.3`; `v2.0.0-alpha.1` and `v2.0.0-alpha.2` name it `cmd/soft-gen`.
 
 ### Usage
 
@@ -556,7 +558,7 @@ Notable patterns:
 | webclient | Indirect: the TS generator produces the model code (soft.ts, `@masagroup/ecore` runtime) a web client would use; no direct reference |
 | gateway, history, dos, storage, authentication, node/pod, orchestrator, commander, hub, recorder, timeline, mapserver, datacore, dispatcher, HLA | Unrelated (no reference found) |
 
-Known consumers: the Makefiles of soft.go and soft.ts. Which other repositories consume the generator (v2 `soft.gen` or the v1 `soft.generator.*` images) is UNVERIFIED; grep the other repositories for `soft.gen` and `soft.generator`. See also the ecosystem wiki page "Next-gen ecosystem".
+Known consumers of v2: the Makefiles of soft.go and soft.ts, and the `release/v2` branches of soft.sync.go and sw.api.ng.go (see Overview). The v1 `soft.generator.*` images are still run by soft.cpp, and by soft.sync.go and sw.api.ng.go on their `master`. See also the ecosystem wiki page "Next-gen ecosystem".
 
 ## Known issues
 
@@ -569,8 +571,7 @@ No audit document exists in the repository. Defects found by the scan:
 
 ## Open questions
 
-- UNVERIFIED: release process. No workflow performs releases or Docker Hub pushes. Who runs `make publish`? This clone has only the tags `v2.0.0-alpha.1` and `v2.0.0-alpha.2` for v2, while the examples print `v2.0.0`.
-- UNVERIFIED: which repositories consume the generator beyond soft.go and soft.ts, whether they moved from the v1 images to `soft.gen`, and which versions they pin.
+- UNVERIFIED: release process. No workflow performs releases or Docker Hub pushes. Who runs `make publish`, and are the `masagroup/soft.gen:v2.0.0-alpha.*` images that soft.go, soft.ts and the `release/v2` branches pull published by hand? v2 has alpha tags only (up to `v2.0.0-alpha.4`), while the examples print `v2.0.0`.
 - UNVERIFIED: whether the committed `softgenbot` credential is still valid (not tested); rotate regardless.
 - UNVERIFIED: schedule and target of the C++ port.
 - UNVERIFIED: repository name of the Ecore C++ runtime.
