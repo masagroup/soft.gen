@@ -225,14 +225,16 @@ func (g *gen) eissetCase(v reflectiveCaseView, info *model.FeatureInfo) reflecti
 // different from its default: the attribute default, the default of the type
 // of a reference or of the any type.
 func (g *gen) comparison(v *featureView, info *model.FeatureInfo) string {
+	// a synchronized list is read through its getter, which takes the mutex
+	isField := info.IsField && v.Mutex == ""
 	value := v.Receiver + "." + v.Var
-	if !info.IsField {
+	if !isField {
 		value = v.Receiver + "." + v.AsInterface + "()." + v.Getter + "()"
 	}
 	any := g.m.IsAny(info.Feature.GetEType())
 	switch {
 	case !any && info.IsList:
-		if info.IsField {
+		if isField {
 			return value + " != nil && " + value + ".Size() != 0"
 		}
 		return value + ".Size() != 0"

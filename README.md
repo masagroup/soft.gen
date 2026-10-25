@@ -181,6 +181,7 @@ annotation of the root package):
 | `packageInstance` | | `interfaces`: the package instance (`GetPackage`) is generated with the interfaces and shared by the implementations |
 | `checkImplementation` | `true` | `false`: the setters of a shared package do not check that the objects share the implementation |
 | `exported` | `false` | `true`: the implementation names are exported |
+| `synchronizedLists` | `false` | `true`: the lists and maps a getter builds on first read are built under a mutex of the object, so that concurrent readers share one list and a read never races another |
 | `goVersion` | `1.19` | the Go version of the generated code: `any` from 1.18, else `interface{}` |
 | `rootExtendsInterface` | `ecore.EObject` | the interface the root interfaces embed |
 | `rootExtendsClass` | `ecore.EObjectImpl` | the struct the root implementations embed |

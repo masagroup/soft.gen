@@ -41,6 +41,9 @@ type featureView struct {
 	// CheckImplementation is the ecore.CheckSameImplementation statement of the
 	// setter of a shared package, "" when none.
 	CheckImplementation string
+	// Mutex and MutexType are the field and the type of the mutex a
+	// listsynchronized getter takes, "" otherwise.
+	Mutex, MutexType string
 	// GetterBody, SetterBody and UnsetterBody are the hand-written bodies of
 	// the annotation keys getterBody, setterBody and unsetterBody.
 	GetterBody, SetterBody, UnsetterBody string
@@ -113,6 +116,9 @@ func (g *gen) featureView(c ecore.EClass, f ecore.EStructuralFeature, scope *fil
 		v.Constructor = g.listConstructor(c, f, scope)
 	}
 	g.featureStrategies(v, c, info)
+	if v.GetterStrategy == "listsynchronized" {
+		v.Mutex, v.MutexType = "listsMutex", scope.qualify("sync/sync.Mutex")
+	}
 	return v
 }
 
@@ -167,7 +173,8 @@ func (g *gen) featureStrategies(v *featureView, c ecore.EClass, info *model.Feat
 // containment, dead code since a proxy is never a containment), lazyfunction
 // and lazyaction (call the initializer; the lambda mode is lazy without
 // initializer and reads the field), list (build the list or map on first
-// read), field, body (the getterBody key) or panic.
+// read), listsynchronized (the same under the mutex of the object, property
+// synchronizedLists), field, body (the getterBody key) or panic.
 func (g *gen) getterStrategy(v *featureView, info *model.FeatureInfo, reflective bool) string {
 	switch {
 	case reflective:
@@ -181,6 +188,9 @@ func (g *gen) getterStrategy(v *featureView, info *model.FeatureInfo, reflective
 		case info.Lazy.IsLazy():
 			return lazyStrategy(info.Lazy.Mode)
 		case info.IsList:
+			if g.PackagePropertyIs("synchronizedLists", "true") {
+				return "listsynchronized"
+			}
 			return "list"
 		}
 		return "field"

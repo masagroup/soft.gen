@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"slices"
 	"sort"
 
 	"github.com/masagroup/soft.go/ecore"
@@ -209,6 +210,9 @@ func (g *gen) addFeature(view *implementationView, fv *featureView, info *model.
 		if info.Attribute != nil && fv.Default != "" {
 			view.Initializations = append(view.Initializations, fv.Receiver+"."+fv.Var+" = "+fv.Default)
 		}
+	}
+	if fv.Mutex != "" && !slices.ContainsFunc(view.Fields, func(f fieldView) bool { return f.Name == fv.Mutex }) {
+		view.Fields = append(view.Fields, fieldView{Name: fv.Mutex, Type: fv.MutexType})
 	}
 	if info.Lazy.HasInitMethod {
 		if view.Initializers == nil {

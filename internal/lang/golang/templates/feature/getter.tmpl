@@ -57,6 +57,17 @@ func ({{ .Receiver }} *{{ .Impl }}) {{ .Getter }}() {{ .Type }} {
 	return {{ .Receiver }}.{{ .Var }}
 {{- end }}
 
+{{/* A list or a map, built on first read under the mutex of the object: concurrent first reads
+     share one list. The return reads the field after the lock, which no generated code resets. */}}
+{{ define "feature/getter.listsynchronized" -}}
+	{{ .Receiver }}.{{ .Mutex }}.Lock()
+	if {{ .Receiver }}.{{ .Var }} == nil {
+		{{ .Receiver }}.{{ .Var }} = {{ .Constructor }}
+	}
+	{{ .Receiver }}.{{ .Mutex }}.Unlock()
+	return {{ .Receiver }}.{{ .Var }}
+{{- end }}
+
 {{/* A plain field. */}}
 {{ define "feature/getter.field" -}}
 	return {{ .Receiver }}.{{ .Var }}
