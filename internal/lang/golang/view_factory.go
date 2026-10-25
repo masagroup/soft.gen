@@ -169,7 +169,7 @@ type conversionView struct {
 	// Parse is the standard function the creation uses (strconv.ParseBool,
 	// time.Parse...) or the value it references (reflect.Ptr).
 	Parse string
-	// Format is the standard function the conversion uses (strconv.FormatBool...).
+	// Format is the function the conversion uses (strconv.FormatBool, ecore.FormatFloatXSD...).
 	Format string
 }
 
@@ -419,7 +419,7 @@ func (g *gen) conversionView(dt ecore.EDataType, scope *fileScope, view factoryI
 	case "int64", "int32", "int16", "int8":
 		c.Parse, c.Format = strconvFunc("ParseInt"), strconvFunc("FormatInt")
 	case "float64", "float32":
-		c.Parse, c.Format = strconvFunc("ParseFloat"), strconvFunc("FormatFloat")
+		c.Parse, c.Format = strconvFunc("ParseFloat"), scope.qualify(g.qualifiedInterfaceIdentifier(g.m.Ecore(), "FormatFloatXSD"))
 	case "reflect":
 		c.Parse = scope.qualify("reflect/reflect.Ptr")
 	case "time":

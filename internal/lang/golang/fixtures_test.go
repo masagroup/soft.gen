@@ -57,6 +57,7 @@ const (
 	v1EnumLiteralTests    = "v1 tests the conversions of an enum with the literal names, not the literal strings, and an empty string as the invalid literal even when it is one"
 	v1BasicUnsetDecl      = "v1 declares the basic unsetter with the value parameter its implementation does not have: it does not compile"
 	v1VolatileTests       = "v1 expects the basic setter of a volatile feature to notify, the getterBody of a volatile feature to panic, and EBasicInverseRemove of a volatile feature to return"
+	v1FloatXSD            = "v1 converts floats with strconv.FormatFloat: +Inf, -Inf and NaN are not in the XSD lexical space, and a large value is written with all its digits"
 )
 
 // TestFixtures compares the generation of every case with its expected files.

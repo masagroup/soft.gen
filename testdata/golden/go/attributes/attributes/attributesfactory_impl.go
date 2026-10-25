@@ -222,7 +222,7 @@ func (attributesFactoryImpl *attributesFactoryImpl) createCelsiusFromString(eDat
 
 func (attributesFactoryImpl *attributesFactoryImpl) convertCelsiusToString(eDataType ecore.EDataType, instanceValue any) string {
 	v, _ := instanceValue.(float64)
-	return strconv.FormatFloat(v, 'f', -1, 64)
+	return ecore.FormatFloatXSD(v, 64)
 }
 
 func (attributesFactoryImpl *attributesFactoryImpl) createClassTypeFromString(eDataType ecore.EDataType, literalValue string) any {
@@ -255,7 +255,7 @@ func (attributesFactoryImpl *attributesFactoryImpl) createDoubleTypeFromString(e
 
 func (attributesFactoryImpl *attributesFactoryImpl) convertDoubleTypeToString(eDataType ecore.EDataType, instanceValue any) string {
 	v, _ := instanceValue.(float64)
-	return strconv.FormatFloat(v, 'f', -1, 64)
+	return ecore.FormatFloatXSD(v, 64)
 }
 
 func (attributesFactoryImpl *attributesFactoryImpl) createECharFromString(eDataType ecore.EDataType, literalValue string) any {
@@ -278,7 +278,7 @@ func (attributesFactoryImpl *attributesFactoryImpl) createFloatTypeFromString(eD
 
 func (attributesFactoryImpl *attributesFactoryImpl) convertFloatTypeToString(eDataType ecore.EDataType, instanceValue any) string {
 	v, _ := instanceValue.(float32)
-	return strconv.FormatFloat(float64(v), 'f', -1, 32)
+	return ecore.FormatFloatXSD(float64(v), 32)
 }
 
 func (attributesFactoryImpl *attributesFactoryImpl) createInt32TypeFromString(eDataType ecore.EDataType, literalValue string) any {

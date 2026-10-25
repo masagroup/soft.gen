@@ -15,7 +15,8 @@ package golang
 func init() {
 	register(fixture{Name: "attributes", Model: "attributes.ecore",
 		V1Differences: map[string]string{
-			"attributes/holder_impl_test.go": v1GoIntTestValue,
-			"attributes/holder_mock_test.go": v1GoIntTestValue,
+			"attributes/holder_impl_test.go":       v1GoIntTestValue,
+			"attributes/holder_mock_test.go":       v1GoIntTestValue,
+			"attributes/attributesfactory_impl.go": v1FloatXSD,
 		}})
 }
