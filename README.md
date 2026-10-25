@@ -181,6 +181,7 @@ annotation of the root package):
 | `packageInstance` | | `interfaces`: the package instance (`GetPackage`) is generated with the interfaces and shared by the implementations |
 | `checkImplementation` | `true` | `false`: the setters of a shared package do not check that the objects share the implementation |
 | `exported` | `false` | `true`: the implementation names are exported |
+| `isSetFlags` | `false` | `true`: a changeable single attribute held in a field records that it was set, so that `EIsSet` is true for an attribute set to its default and a save writes it |
 | `goVersion` | `1.19` | the Go version of the generated code: `any` from 1.18, else `interface{}` |
 | `rootExtendsInterface` | `ecore.EObject` | the interface the root interfaces embed |
 | `rootExtendsClass` | `ecore.EObjectImpl` | the struct the root implementations embed |

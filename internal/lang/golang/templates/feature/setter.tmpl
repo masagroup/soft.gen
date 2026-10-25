@@ -50,10 +50,13 @@ func ({{ .Receiver }} *{{ .Impl }}) {{ .Setter }}({{ .NewVar }} {{ .Type }}) {
 	}
 {{- end }}
 
-{{/* A plain field, with a SET notification. */}}
+{{/* A plain field, with a SET notification; its set flag raised when it has one. */}}
 {{ define "feature/setter.field" -}}
 	{{ .OldVar }} := {{ .Receiver }}.{{ .Var }}
 	{{ .Receiver }}.{{ .Var }} = {{ .NewVar }}
+{{- if .IsSetFlag }}
+	{{ .Receiver }}.{{ .IsSetFlag }} = true
+{{- end }}
 	if {{ .Receiver }}.ENotificationRequired() {
 		{{ .Receiver }}.ENotify({{ .NewNotificationByFeatureID }}({{ .Receiver }}.AsEObject(), {{ .SET }}, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }}, {{ .NO_INDEX }}))
 	}

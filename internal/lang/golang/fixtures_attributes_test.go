@@ -19,3 +19,12 @@ func init() {
 			"attributes/holder_mock_test.go": v1GoIntTestValue,
 		}})
 }
+
+// The attributes model with isSetFlags=true: every changeable single attribute
+// held in a field records that it was set; EIsSet reads the flag, the setter
+// raises it, the unsetter and EUnset lower it.
+func init() {
+	register(fixture{Name: "attributes-isset", Model: "attributes.ecore",
+		Props:  map[string]string{"isSetFlags": "true"},
+		V1Skip: "v1 has no isSetFlags property"})
+}

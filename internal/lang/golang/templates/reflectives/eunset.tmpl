@@ -22,7 +22,10 @@ func ({{ .Receiver }} *{{ .Impl }}) EUnsetFromID(featureID int) {
 		{{ .Receiver }}.{{ .AsInterface }}().{{ .Unsetter }}()
 {{- end }}
 
-{{/* Any other feature: set to nil or to its default. */}}
+{{/* Any other feature: set to nil or to its default, its set flag lowered after when it has one. */}}
 {{ define "reflectives/eunset.set" -}}
 		{{ .Receiver }}.{{ .AsInterface }}().{{ .Setter }}({{ .Value }})
+{{- if .IsSetFlag }}
+		{{ .Receiver }}.{{ .IsSetFlag }} = false
+{{- end }}
 {{- end }}

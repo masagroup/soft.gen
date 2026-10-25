@@ -41,6 +41,9 @@ type featureView struct {
 	// CheckImplementation is the ecore.CheckSameImplementation statement of the
 	// setter of a shared package, "" when none.
 	CheckImplementation string
+	// IsSetFlag is the field recording that an attribute was set (property
+	// isSetFlags), "" when none.
+	IsSetFlag string
 	// GetterBody, SetterBody and UnsetterBody are the hand-written bodies of
 	// the annotation keys getterBody, setterBody and unsetterBody.
 	GetterBody, SetterBody, UnsetterBody string
@@ -111,6 +114,9 @@ func (g *gen) featureView(c ecore.EClass, f ecore.EStructuralFeature, scope *fil
 	}
 	if info.IsList {
 		v.Constructor = g.listConstructor(c, f, scope)
+	}
+	if g.hasIsSetFlag(info) {
+		v.IsSetFlag = v.Var + "IsSet"
 	}
 	g.featureStrategies(v, c, info)
 	return v
@@ -418,4 +424,13 @@ func (g *gen) featureDeclarations(f ecore.EStructuralFeature, scope *fileScope) 
 		decls = append(decls, g.unsetterName(f)+"()")
 	}
 	return decls
+}
+
+// hasIsSetFlag reports whether a feature records that it was set in a field of
+// its own (property isSetFlags=true): a changeable single attribute held in a
+// field, whose EIsSet cannot tell a value set to its default from an untouched
+// one by comparing them.
+func (g *gen) hasIsSetFlag(info *model.FeatureInfo) bool {
+	return g.PackagePropertyIs("isSetFlags", "true") && !g.IsReflectiveDelegation() &&
+		info.Attribute != nil && info.IsField && info.Set && !info.IsList && !g.m.IsAny(info.Feature.GetEType())
 }

@@ -37,10 +37,14 @@ func ({{ .Receiver }} *{{ .Impl }}) {{ .Unsetter }}() {
 	}
 {{- end }}
 
-{{/* A plain field: reset to its default, with an UNSET notification. */}}
+{{/* A plain field: reset to its default, with an UNSET notification; its set flag lowered when it
+     has one. */}}
 {{ define "feature/unsetter.field" -}}
 	{{ .OldVar }} := {{ .Receiver }}.{{ .Var }}
 	{{ .Receiver }}.{{ .Var }} = {{ .Default }}
+{{- if .IsSetFlag }}
+	{{ .Receiver }}.{{ .IsSetFlag }} = false
+{{- end }}
 	if {{ .Receiver }}.ENotificationRequired() {
 		{{ .Receiver }}.ENotify({{ .NewNotificationByFeatureID }}({{ .Receiver }}.AsEObject(), {{ .UNSET }}, {{ .ID }}, {{ .OldVar }}, nil, {{ .NO_INDEX }}))
 	}

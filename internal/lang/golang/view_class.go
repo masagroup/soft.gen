@@ -206,6 +206,9 @@ func (g *gen) addFeature(view *implementationView, fv *featureView, info *model.
 	if info.IsField && !reflective {
 		view.HasInitialize = true
 		view.Fields = append(view.Fields, fieldView{Name: fv.Var, Type: fv.Type})
+		if fv.IsSetFlag != "" {
+			view.Fields = append(view.Fields, fieldView{Name: fv.IsSetFlag, Type: "bool"})
+		}
 		if info.Attribute != nil && fv.Default != "" {
 			view.Initializations = append(view.Initializations, fv.Receiver+"."+fv.Var+" = "+fv.Default)
 		}

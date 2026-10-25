@@ -217,7 +217,8 @@ func (g *gen) eissetCase(v reflectiveCaseView, info *model.FeatureInfo) reflecti
 }
 
 // comparison is the expression telling whether a feature is set (v1
-// generateComparison): the value is read from the field when the feature has
+// generateComparison): the set flag of a feature that has one (property
+// isSetFlags); else the value is read from the field when the feature has
 // one, else from the getter. A list is set when non-empty (and non-nil when
 // a field); a back reference (container or shared) when non-nil (v1 also
 // tested an EBoolean back reference, impossible); a data type with a
@@ -225,6 +226,9 @@ func (g *gen) eissetCase(v reflectiveCaseView, info *model.FeatureInfo) reflecti
 // different from its default: the attribute default, the default of the type
 // of a reference or of the any type.
 func (g *gen) comparison(v *featureView, info *model.FeatureInfo) string {
+	if v.IsSetFlag != "" {
+		return v.Receiver + "." + v.IsSetFlag
+	}
 	value := v.Receiver + "." + v.Var
 	if !info.IsField {
 		value = v.Receiver + "." + v.AsInterface + "()." + v.Getter + "()"
