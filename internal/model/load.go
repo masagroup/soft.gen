@@ -3,6 +3,7 @@ package model
 import (
 	"bytes"
 	_ "embed"
+	stdxml "encoding/xml"
 	"errors"
 	"fmt"
 	"os"
@@ -67,7 +68,11 @@ func Load(path, annotationSource string) (*Model, error) {
 	registry.PutPackage(EcoreNsURI, ecorePackage)
 	registry.PutFactory(EcoreNsURI, ecore.GetFactory())
 
-	root, arguments, err := loadPackage(resourceSet, processor, ecore.CreateFileURI(path), data)
+	uri := ecore.CreateFileURI(path)
+	if err := loadSchemaLocations(resourceSet, processor, uri, data); err != nil {
+		return nil, fmt.Errorf("model: loading %s: %w", path, err)
+	}
+	root, arguments, err := loadPackage(resourceSet, processor, uri, data)
 	if err != nil {
 		return nil, fmt.Errorf("model: loading %s: %w", path, err)
 	}
@@ -98,6 +103,58 @@ func loadEcoreModel(resourceSet ecore.EResourceSet, processor *xmi.Processor) (e
 	}
 	return root, nil
 }
+
+// loadSchemaLocations loads the .ecore packages the xsi:schemaLocation of the
+// document data at uri names, and registers them by namespace, as EMF does: the
+// objects of their classes in the document, such as annotation contents, are
+// created from them. A package loads once, its own schema locations first.
+func loadSchemaLocations(resourceSet ecore.EResourceSet, processor *xmi.Processor, uri *ecore.URI, data []byte) error {
+	registry := resourceSet.GetPackageRegistry()
+	locations := schemaLocations(data)
+	for i := 0; i+1 < len(locations); i += 2 {
+		nsURI, location := locations[i], locations[i+1]
+		if registry.GetPackage(nsURI) != nil || !strings.HasSuffix(location, ".ecore") {
+			continue
+		}
+		packageURI := uri.Resolve(ecore.NewURI(location))
+		referenced, err := os.ReadFile(packageURI.Path())
+		if err != nil {
+			return fmt.Errorf("schema location of %s: %w", nsURI, err)
+		}
+		if err := loadSchemaLocations(resourceSet, processor, packageURI, referenced); err != nil {
+			return err
+		}
+		p, _, err := loadPackage(resourceSet, processor, packageURI, referenced)
+		if err != nil {
+			return fmt.Errorf("schema location of %s: %w", nsURI, err)
+		}
+		registry.PutPackage(nsURI, p)
+	}
+	return nil
+}
+
+// schemaLocations returns the namespace and location pairs of the
+// xsi:schemaLocation of the root element of the document data, nil without.
+func schemaLocations(data []byte) []string {
+	decoder := stdxml.NewDecoder(bytes.NewReader(data))
+	for {
+		token, err := decoder.Token()
+		if err != nil {
+			return nil
+		}
+		if start, ok := token.(stdxml.StartElement); ok {
+			for _, attr := range start.Attr {
+				if attr.Name.Space == xsiNamespace && attr.Name.Local == "schemaLocation" {
+					return strings.Fields(attr.Value)
+				}
+			}
+			return nil
+		}
+	}
+}
+
+// xsiNamespace is the namespace of the XML schema instance attributes.
+const xsiNamespace = "http://www.w3.org/2001/XMLSchema-instance"
 
 // loadPackage decodes the .ecore document data as the resource uri of
 // resourceSet, its generics stripped, and returns its root package and the

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:notes="http://soft.gen/test/notes"
+    xsi:schemaLocation="http://soft.gen/test/notes notes.ecore"
+    name="contents" nsURI="http://soft.gen/test/contents" nsPrefix="contents">
+  <eClassifiers xsi:type="ecore:EClass" name="Document">
+    <eAnnotations source="http://soft.gen/test/meta">
+      <details key="kind" value="document"/>
+      <contents xsi:type="notes:Note" text="A &quot;quoted&quot; note" pinned="true" rank="3" format="Html">
+        <tags>first</tags>
+        <tags>second</tags>
+        <child text="the child"/>
+        <items rank="1"/>
+        <items rank="2"/>
+      </contents>
+      <contents xsi:type="notes:Note" text="another note"/>
+    </eAnnotations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="title" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+</ecore:EPackage>

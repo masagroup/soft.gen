@@ -145,6 +145,35 @@ func TestLoadEmpty(t *testing.T) {
 	assert.Empty(t, info.AnnotationSources)
 }
 
+// TestLoadSchemaLocationPackages checks that the packages of the
+// xsi:schemaLocation of a model are loaded, so that annotation contents of
+// their classes load with their values and contained objects.
+func TestLoadSchemaLocationPackages(t *testing.T) {
+	m := loadModel(t, "contents")
+	annotation := classNamed(t, m, "Document").GetEAnnotation("http://soft.gen/test/meta")
+	require.NotNil(t, annotation)
+	require.Equal(t, 2, annotation.GetContents().Size())
+	note := annotation.GetContents().Get(0).(ecore.EObject)
+	assert.Equal(t, "Note", note.EClass().GetName())
+	assert.Equal(t, "http://soft.gen/test/notes", note.EClass().GetEPackage().GetNsURI())
+	assert.Equal(t, `A "quoted" note`, note.EGet(note.EClass().GetEStructuralFeatureFromName("text")))
+	assert.Equal(t, 2, note.EGet(note.EClass().GetEStructuralFeatureFromName("items")).(ecore.EList).Size())
+}
+
+// TestLoadSchemaLocationMissing checks that a schema location naming a
+// missing .ecore file fails with its namespace.
+func TestLoadSchemaLocationMissing(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "document.ecore")
+	require.NoError(t, os.WriteFile(path, []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xsi:schemaLocation="http://soft.gen/test/gone gone.ecore"
+    name="document" nsURI="http://soft.gen/test/document" nsPrefix="document"/>
+`), 0o600))
+	_, err := Load(path, genGoSource)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "http://soft.gen/test/gone")
+}
+
 // TestLoadErrors checks that a missing file fails with its path.
 func TestLoadErrors(t *testing.T) {
 	_, err := Load("../../testdata/models/missing.ecore", genGoSource)
