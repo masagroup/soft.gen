@@ -49,6 +49,7 @@ const (
 	v1MockAlias           = "v1 imports testify's mock and a model package named mock under the same name"
 	v1MixinOrder          = "v1 lists the features of a mixin extending a class in the order of an OCL set difference, which is not the declaration order; v2 keeps the declaration order"
 	v1GoIntTestValue      = "v1 has no type table row for int32 and int8: its test values int32() and int8() do not compile"
+	v1AnnotationContents  = "v1 drops the contents of an annotation: the package built by GetPackage has none"
 	v1AnnotationContainer = "v1 creates the annotation of a parameter in p.Get<Parameter>() (no such getter, or another element) and a nested annotation in nil (lost)"
 )
 

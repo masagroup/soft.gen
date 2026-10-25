@@ -211,6 +211,29 @@ type annotationView struct {
 	Container string
 	// Details lists the details, in model order.
 	Details []detailView
+	// Contents lists the objects of the contents, in model order.
+	Contents []contentView
+}
+
+// contentView rebuilds an object of the contents of an annotation as a
+// dynamic object of its class, with its containment tree (template
+// package/content; v1 dropped the contents).
+type contentView struct {
+	// Var is the variable of the object, o<depth>.
+	Var string
+	// New is the dynamic object constructor; EClass the getter of its class.
+	New, EClass string
+	// Values lists the statements setting its attributes, in feature order.
+	Values []string
+	// Children lists its contained objects, in feature order.
+	Children []contentChildView
+}
+
+// contentChildView is a contained object and the statement adding it to its
+// container.
+type contentChildView struct {
+	Content contentView
+	Add     string
 }
 
 // detailView is one detail of an annotation.
@@ -546,11 +569,96 @@ func (g *gen) annotationInitializers(p ecore.EPackage, scope *fileScope) []annot
 				value, _ := entry.GetValue().(string)
 				annotation.Details = append(annotation.Details, detailView{Key: key, Value: escapeLiteral(value)})
 			}
+			for _, content := range a.GetContents().ToArray() {
+				annotation.Contents = append(annotation.Contents, g.contentView(p, content.(ecore.EObject), 0, scope))
+			}
 			view.Annotations = append(view.Annotations, annotation)
 		}
 		sources = append(sources, view)
 	}
 	return sources
+}
+
+// contentView builds the rebuild of an object of annotation contents: the set
+// attributes, then the contained objects, in feature order. A string, a boolean
+// or an int is a literal; any other value is converted from its string form by
+// the factory of its data type, which gives it the type the factory creates.
+func (g *gen) contentView(p ecore.EPackage, o ecore.EObject, depth int, scope *fileScope) contentView {
+	ecoreIdentifier := func(name string) string { return scope.qualify(g.qualifiedInterfaceIdentifier(g.m.Ecore(), name)) }
+	v := contentView{
+		Var:    "o" + strconv.Itoa(depth),
+		New:    ecoreIdentifier("NewDynamicEObjectImpl"),
+		EClass: g.metaElementGetter(p, o.EClass().GetEPackage(), o.EClass(), scope),
+	}
+	list := ecoreIdentifier("EList")
+	for _, f := range o.EClass().GetEAllStructuralFeatures().ToArray() {
+		f := f.(ecore.EStructuralFeature)
+		if !o.EIsSet(f) || f.IsTransient() || f.IsDerived() {
+			continue
+		}
+		feature := g.metaElementGetter(p, f.GetEContainingClass().GetEPackage(), f, scope)
+		if a, ok := f.(ecore.EAttribute); ok {
+			values := []any{o.EGet(f)}
+			if a.IsMany() {
+				values = o.EGet(f).(ecore.EList).ToArray()
+			}
+			for _, value := range values {
+				literal := g.contentLiteral(p, a.GetEAttributeType(), value, scope)
+				if a.IsMany() {
+					v.Values = append(v.Values, v.Var+".EGet("+feature+").("+list+").Add("+literal+")")
+				} else {
+					v.Values = append(v.Values, v.Var+".ESet("+feature+", "+literal+")")
+				}
+			}
+			continue
+		}
+		if r, ok := f.(ecore.EReference); !ok || !r.IsContainment() {
+			continue
+		}
+		children := []any{o.EGet(f)}
+		if f.IsMany() {
+			children = o.EGet(f).(ecore.EList).ToArray()
+		}
+		for _, child := range children {
+			content := g.contentView(p, child.(ecore.EObject), depth+1, scope)
+			add := v.Var + ".ESet(" + feature + ", " + content.Var + ")"
+			if f.IsMany() {
+				add = v.Var + ".EGet(" + feature + ").(" + list + ").Add(" + content.Var + ")"
+			}
+			v.Children = append(v.Children, contentChildView{Content: content, Add: add})
+		}
+	}
+	return v
+}
+
+// contentLiteral is the expression of an attribute value of annotation
+// contents.
+func (g *gen) contentLiteral(p ecore.EPackage, dt ecore.EDataType, value any, scope *fileScope) string {
+	switch value := value.(type) {
+	case string:
+		return `"` + escapeLiteral(value) + `"`
+	case bool:
+		return strconv.FormatBool(value)
+	case int:
+		return strconv.Itoa(value)
+	}
+	factory := dt.GetEPackage().GetEFactoryInstance()
+	instance := "p"
+	if dt.GetEPackage() != p {
+		instance = scope.qualify(g.packageInstance(dt.GetEPackage()))
+	}
+	lexical := factory.ConvertToString(dt, value)
+	return instance + ".GetEFactoryInstance().CreateFromString(" + g.metaElementGetter(p, dt.GetEPackage(), dt, scope) + `, "` + escapeLiteral(lexical) + `")`
+}
+
+// metaElementGetter is the getter of a classifier or a feature of the package
+// pkg, seen from the package p: p.Get<X>() in p, else <pkg>.GetPackage().Get<X>().
+func (g *gen) metaElementGetter(p, pkg ecore.EPackage, el ecore.ENamedElement, scope *fileScope) string {
+	instance := "p"
+	if pkg != p {
+		instance = scope.qualify(g.packageInstance(pkg))
+	}
+	return instance + "." + g.reflectiveGetterName(el) + "()"
 }
 
 // annotatedElementGetter is the expression of the element an annotation is

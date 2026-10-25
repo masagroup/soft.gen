@@ -1,0 +1,15 @@
+{{/* An object of the contents of an annotation, rebuilt as a dynamic object of its class, then
+     its attributes and its contained objects, each in a block of its own. */}}
+{{ define "package/content" -}}
+{{ .Var }} := {{ .New }}()
+{{ .Var }}.SetEClass({{ .EClass }})
+{{- range .Values }}
+{{ . }}
+{{- end }}
+{{- range .Children }}
+{
+{{ indent 1 (include "package/content" .Content) }}
+	{{ .Add }}
+}
+{{- end }}
+{{- end }}
