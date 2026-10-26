@@ -114,7 +114,6 @@ export class AnnotationsPackageImpl extends ecore.EPackageExt implements Annotat
 
         this.initializeGenTSAnnotations(ecoreFactory)
         this.initializedocAnnotations(ecoreFactory)
-        this.initializenestedAnnotations(ecoreFactory)
     }
 
     private initializeGenTSAnnotations(ecoreFactory: ecore.EcoreFactory): void {
@@ -138,6 +137,24 @@ export class AnnotationsPackageImpl extends ecore.EPackageExt implements Annotat
             const eAnnotation = ecoreFactory.createEAnnotationFromContainer(this.getDocument())
             eAnnotation.setSource(source)
             eAnnotation.getDetails().put("documentation", "A document.")
+            {
+                const eAnnotation1 = ecoreFactory.createEAnnotation()
+                eAnnotation1.setSource("http://soft.gen/test/nested")
+                eAnnotation1.getDetails().put("inner", "nested in the doc annotation")
+                eAnnotation.getEAnnotations().add(eAnnotation1)
+            }
+            {
+                const eAnnotation1 = ecoreFactory.createEAnnotation()
+                eAnnotation1.setSource("http://soft.gen/test/content")
+                eAnnotation1.getDetails().put("kind", 'a "content" annotation')
+                eAnnotation.getContents().add(eAnnotation1)
+                {
+                    const eAnnotation2 = ecoreFactory.createEAnnotation()
+                    eAnnotation2.setSource("http://soft.gen/test/deep")
+                    eAnnotation2.getDetails().put("depth", "2")
+                    eAnnotation1.getContents().add(eAnnotation2)
+                }
+            }
         }
         {
             const eAnnotation = ecoreFactory.createEAnnotationFromContainer(this.getDocument_Render_Format_EInt())
@@ -169,17 +186,6 @@ export class AnnotationsPackageImpl extends ecore.EPackageExt implements Annotat
             )
             eAnnotation.setSource(source)
             eAnnotation.getDetails().put("documentation", "Plain text.")
-        }
-    }
-
-    private initializenestedAnnotations(ecoreFactory: ecore.EcoreFactory): void {
-        const source = "http://soft.gen/test/nested"
-        {
-            const eAnnotation = ecoreFactory.createEAnnotationFromContainer(
-                this.getDocument().getEAnnotation("http://soft.gen/test/doc")
-            )
-            eAnnotation.setSource(source)
-            eAnnotation.getDetails().put("inner", "nested in the doc annotation")
         }
     }
 }

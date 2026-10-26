@@ -1,0 +1,16 @@
+{{/* An annotation nested in the annotation .Parent, in a block of its own indented by the caller:
+     created with its source and details, added to the eAnnotations or the contents of its parent,
+     then its own nested annotations (EMF addAnnotation with a depth or a path). */}}
+{{ define "package/annotation" -}}
+{
+	{{ .Var }} := ecoreFactory.CreateEAnnotation()
+	{{ .Var }}.SetSource("{{ .Source }}")
+{{- range .Details }}
+	{{ $.Var }}.GetDetails().Put("{{ .Key }}", "{{ .Value }}")
+{{- end }}
+	{{ .Parent }}.{{ .List }}().Add({{ .Var }})
+{{- range .Nested }}
+{{ indent 1 (include "package/annotation" .) }}
+{{- end }}
+}
+{{- end }}

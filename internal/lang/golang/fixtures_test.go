@@ -49,7 +49,7 @@ const (
 	v1MockAlias           = "v1 imports testify's mock and a model package named mock under the same name"
 	v1MixinOrder          = "v1 lists the features of a mixin extending a class in the order of an OCL set difference, which is not the declaration order; v2 keeps the declaration order"
 	v1GoIntTestValue      = "v1 has no type table row for int32 and int8: its test values int32() and int8() do not compile"
-	v1AnnotationContainer = "v1 creates the annotation of a parameter in p.Get<Parameter>() (no such getter, or another element) and a nested annotation in nil (lost)"
+	v1AnnotationContainer = "v1 creates the annotation of a parameter in p.Get<Parameter>() (no such getter, or another element) and an annotation nested in an annotation in nil, and drops the annotations of the contents of an annotation"
 	v1MapContainerMock    = "v1 mocks the map opposite of a Create<X>FromContainer test with NewMockEList, which is no EMap: it does not compile"
 	v1OppositeAccessor    = "v1 adds the element created by Create<X>FromContainer through Get/Set<Opposite>, without the getterName and setterName rules, and tests the factory through new<Package>FactoryImpl, without the factoryName and implementationName rules: neither compiles with those rules"
 	v1LazyGetter          = "v1 leaves a lambda list (a C++ mode) nil and rebuilds an action list on every read, losing its elements; v2 builds a lambda list on first read and an action list once"

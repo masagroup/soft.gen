@@ -149,17 +149,42 @@ func TestOrderedClassesForeignSuperType(t *testing.T) {
 	assert.Equal(t, []ecore.EClass{mid, leaf}, orderedClasses(p))
 }
 
+// TestNestedAnnotations checks the annotations nested in an annotation, in
+// EMF order: its eAnnotations, then the annotations of its contents, each with
+// its own; the contents that are not annotations are left out.
+func TestNestedAnnotations(t *testing.T) {
+	m := loadModel(t, "annotations")
+	doc := classNamed(t, m, "Document").GetEAnnotation("http://soft.gen/test/doc")
+	require.NotNil(t, doc)
+	require.Equal(t, 3, doc.GetContents().Size()+doc.GetEAnnotations().Size())
+
+	nested := NestedAnnotations(doc)
+	require.Len(t, nested, 2)
+	assert.Equal(t, "http://soft.gen/test/nested", nested[0].Annotation.GetSource())
+	assert.False(t, nested[0].Content)
+	assert.Empty(t, nested[0].Nested)
+	assert.Equal(t, "http://soft.gen/test/content", nested[1].Annotation.GetSource())
+	assert.True(t, nested[1].Content)
+	require.Len(t, nested[1].Nested, 1)
+	assert.Equal(t, "http://soft.gen/test/deep", nested[1].Nested[0].Annotation.GetSource())
+	assert.True(t, nested[1].Nested[0].Content)
+
+	for _, a := range m.Package(m.Root()).Annotations {
+		assert.NotNil(t, a.GetEModelElement(), "the nested annotation %s is listed", a.GetSource())
+	}
+}
+
 // TestAnnotationSources checks the annotation sources of a package: the
-// distinct sources of the annotations of its contents (nested annotations
-// included), sorted, minus those the supressAnnotations key of the generator
-// annotation of the model source lists.
+// distinct sources of the annotations of its contents, sorted, minus those the
+// supressAnnotations key of the generator annotation of the model source
+// lists. As in EMF, the sources of the annotations nested in an annotation
+// (nested, content, deep) are not listed: they are created with their parent.
 func TestAnnotationSources(t *testing.T) {
 	m := loadModel(t, "annotations")
 	// GenGo suppresses http://soft.gen/test/hidden
 	assert.Equal(t, []AnnotationSource{
 		{URI: genGoSource, Identifier: "GenGo"},
 		{URI: "http://soft.gen/test/doc", Identifier: "doc"},
-		{URI: "http://soft.gen/test/nested", Identifier: "nested"},
 	}, m.Package(m.Root()).AnnotationSources)
 
 	// the suppression is read from the annotation of the model source: the
@@ -169,7 +194,6 @@ func TestAnnotationSources(t *testing.T) {
 		{URI: genGoSource, Identifier: "GenGo"},
 		{URI: "http://soft.gen/test/doc", Identifier: "doc"},
 		{URI: "http://soft.gen/test/hidden", Identifier: "hidden"},
-		{URI: "http://soft.gen/test/nested", Identifier: "nested"},
 	}, ts.Package(m.Root()).AnnotationSources)
 
 	// the real ecore package: sorted by uri, http:///org... < http://net... < http://www...

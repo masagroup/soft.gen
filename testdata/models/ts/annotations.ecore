@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="annotations" nsURI="http://soft.gen/test/annotations" nsPrefix="annotations">
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:notes="http://soft.gen/test/notes" xsi:schemaLocation="http://soft.gen/test/notes ../notes.ecore"
+    name="annotations" nsURI="http://soft.gen/test/annotations" nsPrefix="annotations">
   <eAnnotations source="http://net.masagroup/soft/2020/GenTS">
     <details key="supressAnnotations" value="http://soft.gen/test/hidden"/>
   </eAnnotations>
@@ -14,6 +15,13 @@
       <eAnnotations source="http://soft.gen/test/nested">
         <details key="inner" value="nested in the doc annotation"/>
       </eAnnotations>
+      <contents xsi:type="ecore:EAnnotation" source="http://soft.gen/test/content">
+        <details key="kind" value="a &quot;content&quot; annotation"/>
+        <contents xsi:type="ecore:EAnnotation" source="http://soft.gen/test/deep">
+          <details key="depth" value="2"/>
+        </contents>
+      </contents>
+      <contents xsi:type="notes:Note" text="dropped by the generators, as in EMF"/>
     </eAnnotations>
     <eAnnotations source="http://soft.gen/test/hidden">
       <details key="secret" value="suppressed"/>

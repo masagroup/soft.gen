@@ -145,6 +145,41 @@ func TestLoadEmpty(t *testing.T) {
 	assert.Empty(t, info.AnnotationSources)
 }
 
+// TestLoadSchemaLocation checks that the package of the xsi:schemaLocation of
+// a model loads, its generics stripped, when the contents of an annotation
+// need it.
+func TestLoadSchemaLocation(t *testing.T) {
+	m := loadModel(t, "annotations")
+	doc := classNamed(t, m, "Document").GetEAnnotation("http://soft.gen/test/doc")
+	require.NotNil(t, doc)
+	note := doc.GetContents().Get(1).(ecore.EObject)
+	assert.Equal(t, "Note", note.EClass().GetName())
+	assert.Equal(t, "http://soft.gen/test/notes", note.EClass().GetEPackage().GetNsURI())
+	// the eType of text comes from its stripped eGenericType
+	text := note.EClass().GetEStructuralFeatureFromName("text")
+	require.NotNil(t, text)
+	assert.Equal(t, "EString", text.GetEType().GetName())
+	assert.Equal(t, "dropped by the generators, as in EMF", note.EGet(text))
+}
+
+// TestLoadSchemaLocationMissing checks that a schema location naming a
+// missing file fails with the namespace and the location.
+func TestLoadSchemaLocationMissing(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "document.ecore")
+	require.NoError(t, os.WriteFile(path, []byte(`<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:gone="http://soft.gen/test/gone"
+    xsi:schemaLocation="http://soft.gen/test/gone gone.ecore"
+    name="document" nsURI="http://soft.gen/test/document" nsPrefix="document">
+  <eAnnotations source="meta"><contents xsi:type="gone:Note"/></eAnnotations>
+</ecore:EPackage>
+`), 0o600))
+	_, err := Load(path, genGoSource)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "http://soft.gen/test/gone")
+	assert.Contains(t, err.Error(), "gone.ecore")
+}
+
 // TestLoadErrors checks that a missing file fails with its path.
 func TestLoadErrors(t *testing.T) {
 	_, err := Load("../../testdata/models/missing.ecore", genGoSource)

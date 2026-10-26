@@ -23,11 +23,12 @@ type PackageInfo struct {
 	// super type chain of a class precedes it (v1 getOrderedClasses).
 	OrderedClasses []ecore.EClass
 	// Annotations is every annotation of the package and of its contents, in
-	// the containment order of EMF (see emfAnnotations).
+	// the containment order of EMF (see emfAnnotations); the annotations
+	// nested in an annotation are not listed (see NestedAnnotations).
 	Annotations []ecore.EAnnotation
-	// AnnotationSources is the distinct sources of the annotations of the
-	// eAllContents of the package minus the suppressed ones, sorted (v1
-	// getAnnotationSources).
+	// AnnotationSources is the distinct sources of Annotations minus the
+	// suppressed ones, sorted (v1 and EMF getAnnotationSources): a source of
+	// nested annotations only has no initializer of its own.
 	AnnotationSources []AnnotationSource
 }
 
@@ -55,7 +56,6 @@ func (m *Model) Package(p ecore.EPackage) *PackageInfo {
 		}
 	}
 	info.SubPackages = elements[ecore.EPackage](p.GetESubPackages())
-	sources := map[string]struct{}{}
 	for it := p.EAllContents(); it.HasNext(); {
 		switch content := it.Next().(type) {
 		case ecore.EClass:
@@ -64,32 +64,27 @@ func (m *Model) Package(p ecore.EPackage) *PackageInfo {
 			info.AllEnums = append(info.AllEnums, content)
 		case ecore.EDataType:
 			info.AllDataTypes = append(info.AllDataTypes, content)
-		case ecore.EAnnotation:
-			sources[content.GetSource()] = struct{}{}
 		}
 	}
 	info.OrderedClasses = orderedClasses(p)
 	info.Annotations = emfAnnotations(p, nil)
+	sources := map[string]struct{}{}
+	for _, a := range info.Annotations {
+		sources[a.GetSource()] = struct{}{}
+	}
 	info.AnnotationSources = m.annotationSources(p, sources)
 	return info
 }
 
 // emfAnnotations appends the annotations of el and of its contents to list, in
-// the order of EMF's eAllContents, which v1 walked: an element's annotations
-// (each followed by its own nested annotations and contents), then its
-// classifiers and sub-packages, its operations before its structural features,
-// the parameters of an operation, the literals of an enum. soft.go's
-// eAllContents orders the features of a class before its operations.
+// the order of EMF's eAllContents, which v1 walked: an element's annotations,
+// then its classifiers and sub-packages, its operations before its structural
+// features, the parameters of an operation, the literals of an enum. soft.go's
+// eAllContents orders the features of a class before its operations. The walk
+// stops at an annotation, as EMF getAllAnnotations does: the annotations nested
+// in it are created with it (see NestedAnnotations).
 func emfAnnotations(el ecore.EModelElement, list []ecore.EAnnotation) []ecore.EAnnotation {
-	for _, a := range elements[ecore.EAnnotation](el.GetEAnnotations()) {
-		list = append(list, a)
-		list = emfAnnotations(a, list)
-		for _, content := range a.GetContents().ToArray() {
-			if content, ok := content.(ecore.EModelElement); ok {
-				list = emfAnnotations(content, list)
-			}
-		}
-	}
+	list = append(list, elements[ecore.EAnnotation](el.GetEAnnotations())...)
 	var children []ecore.EModelElement
 	switch el := el.(type) {
 	case ecore.EPackage:
@@ -105,6 +100,33 @@ func emfAnnotations(el ecore.EModelElement, list []ecore.EAnnotation) []ecore.EA
 		list = emfAnnotations(child, list)
 	}
 	return list
+}
+
+// NestedAnnotation is an annotation nested in another one, in its
+// eAnnotations or in its contents, with its own nested annotations.
+type NestedAnnotation struct {
+	Annotation ecore.EAnnotation
+	// Content is true for an annotation of the contents of its parent, false
+	// for one of its eAnnotations.
+	Content bool
+	Nested  []NestedAnnotation
+}
+
+// NestedAnnotations returns the annotations nested in a, in the order of EMF's
+// eAllContents: its eAnnotations, then the annotations of its contents. As in
+// EMF GenPackage.getAllNestedAnnotations, the contents that are not annotations
+// are left out, with what they hold: the generated packages do not have them.
+func NestedAnnotations(a ecore.EAnnotation) []NestedAnnotation {
+	var nested []NestedAnnotation
+	for _, child := range elements[ecore.EAnnotation](a.GetEAnnotations()) {
+		nested = append(nested, NestedAnnotation{Annotation: child, Nested: NestedAnnotations(child)})
+	}
+	for _, content := range a.GetContents().ToArray() {
+		if child, ok := content.(ecore.EAnnotation); ok {
+			nested = append(nested, NestedAnnotation{Annotation: child, Content: true, Nested: NestedAnnotations(child)})
+		}
+	}
+	return nested
 }
 
 // annotationSources returns the sorted annotation sources of p minus the

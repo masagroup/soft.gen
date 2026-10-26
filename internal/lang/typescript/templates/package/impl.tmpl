@@ -60,7 +60,25 @@ private initialize{{ .Identifier }}Annotations(ecoreFactory: {{ .EcoreFactory }}
 {{- range .Details }}
         eAnnotation.getDetails().put({{ index . 0 }}, {{ index . 1 }})
 {{- end }}
+{{- range .Nested }}
+{{ indent 2 (include "package/impl.annotation" .) }}
+{{- end }}
     }
+{{- end }}
+}
+{{- end }}
+
+{{/* An annotation nested in another one, in a block of its own indented by the caller. */}}
+{{ define "package/impl.annotation" -}}
+{
+    const {{ .Var }} = ecoreFactory.createEAnnotation()
+    {{ .Var }}.setSource({{ .Source }})
+{{- range .Details }}
+    {{ $.Var }}.getDetails().put({{ index . 0 }}, {{ index . 1 }})
+{{- end }}
+    {{ .Parent }}.{{ .List }}().add({{ .Var }})
+{{- range .Nested }}
+{{ indent 1 (include "package/impl.annotation" .) }}
 {{- end }}
 }
 {{- end }}

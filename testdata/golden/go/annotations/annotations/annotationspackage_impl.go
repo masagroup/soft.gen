@@ -95,7 +95,6 @@ func (p *annotationsPackageImpl) initializePackageContents(ecoreFactory ecore.Ec
 
 	p.initializeGenGoAnnotations(ecoreFactory)
 	p.initializedocAnnotations(ecoreFactory)
-	p.initializenestedAnnotations(ecoreFactory)
 }
 
 func (p *annotationsPackageImpl) initializeGenGoAnnotations(ecoreFactory ecore.EcoreFactory) {
@@ -119,6 +118,24 @@ func (p *annotationsPackageImpl) initializedocAnnotations(ecoreFactory ecore.Eco
 		eAnnotation := ecoreFactory.CreateEAnnotationFromContainer(p.GetDocument())
 		eAnnotation.SetSource(source)
 		eAnnotation.GetDetails().Put("documentation", "A document.")
+		{
+			eAnnotation1 := ecoreFactory.CreateEAnnotation()
+			eAnnotation1.SetSource("http://soft.gen/test/nested")
+			eAnnotation1.GetDetails().Put("inner", "nested in the doc annotation")
+			eAnnotation.GetEAnnotations().Add(eAnnotation1)
+		}
+		{
+			eAnnotation1 := ecoreFactory.CreateEAnnotation()
+			eAnnotation1.SetSource("http://soft.gen/test/content")
+			eAnnotation1.GetDetails().Put("kind", "a \"content\" annotation")
+			eAnnotation.GetContents().Add(eAnnotation1)
+			{
+				eAnnotation2 := ecoreFactory.CreateEAnnotation()
+				eAnnotation2.SetSource("http://soft.gen/test/deep")
+				eAnnotation2.GetDetails().Put("depth", "2")
+				eAnnotation1.GetContents().Add(eAnnotation2)
+			}
+		}
 	}
 	{
 		eAnnotation := ecoreFactory.CreateEAnnotationFromContainer(p.GetDocument_Render_Format_EInt())
@@ -144,14 +161,5 @@ func (p *annotationsPackageImpl) initializedocAnnotations(ecoreFactory ecore.Eco
 		eAnnotation := ecoreFactory.CreateEAnnotationFromContainer(p.GetFormat().GetEEnumLiteralByName("Text"))
 		eAnnotation.SetSource(source)
 		eAnnotation.GetDetails().Put("documentation", "Plain text.")
-	}
-}
-
-func (p *annotationsPackageImpl) initializenestedAnnotations(ecoreFactory ecore.EcoreFactory) {
-	source := "http://soft.gen/test/nested"
-	{
-		eAnnotation := ecoreFactory.CreateEAnnotationFromContainer(p.GetDocument().GetEAnnotation("http://soft.gen/test/doc"))
-		eAnnotation.SetSource(source)
-		eAnnotation.GetDetails().Put("inner", "nested in the doc annotation")
 	}
 }
