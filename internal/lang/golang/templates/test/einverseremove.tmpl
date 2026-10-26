@@ -44,6 +44,13 @@ func Test{{ .Class }}EBasicInverseRemove(t *{{ .T }}) {
 	}
 {{- end }}
 
+{{ define "test/einverseremove.volatile" -}}
+	{
+		mockObject := {{ .TestValue }}
+		{{ .Assert }}Panics(t, func() { o.EBasicInverseRemove(mockObject, {{ .ID }}, nil) })
+	}
+{{- end }}
+
 {{ define "test/einverseremove.single" -}}
 	{
 		mockObject := {{ .TestValue }}

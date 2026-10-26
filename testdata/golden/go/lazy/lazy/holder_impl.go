@@ -166,6 +166,9 @@ func (h *holderImpl) GetItems() ecore.EList {
 
 // GetLinks get the value of links
 func (h *holderImpl) GetLinks() ecore.EList {
+	if h.links == nil {
+		h.links = ecore.NewBasicEObjectList(h.AsEObjectInternal(), HOLDER__LINKS, -1, false, false, false, true, false)
+	}
 	return h.links
 }
 
@@ -250,14 +253,18 @@ func (h *holderImpl) initFavorite() Item {
 }
 
 func (h *holderImpl) initItems() {
-	h.items = ecore.NewBasicEObjectList(h.AsEObjectInternal(), HOLDER__ITEMS, -1, true, true, false, false, false)
+	if h.items == nil {
+		h.items = ecore.NewBasicEObjectList(h.AsEObjectInternal(), HOLDER__ITEMS, -1, true, true, false, false, false)
+	}
 }
 
 func (h *holderImpl) initPreferred() {
 }
 
 func (h *holderImpl) initTags() {
-	h.tags = ecore.NewBasicEDataTypeList(h.AsEObjectInternal(), HOLDER__TAGS, true)
+	if h.tags == nil {
+		h.tags = ecore.NewBasicEDataTypeList(h.AsEObjectInternal(), HOLDER__TAGS, true)
+	}
 }
 
 func (h *holderImpl) computeTitle() {

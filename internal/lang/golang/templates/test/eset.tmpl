@@ -83,13 +83,13 @@ func Test{{ .Class }}ESetFromID(t *{{ .T }}) {
 		mockValue := {{ .TestValue }}
 		mockValue.EXPECT().EInverseAdd(o, {{ .ReverseID }}, nil).Return(nil).Once()
 		o.ESetFromID({{ .ID }}, mockValue)
-		{{ .Assert }}Equal(t, mockValue, o.EGetFromID({{ .ID }}, false))
+		{{ .Assert }}Equal(t, mockValue, {{ .ReadBack }})
 		{{ .Mock }}AssertExpectationsForObjects(t, mockValue)
 
 		mockValue.EXPECT().EInverseRemove(o, {{ .ReverseID }}, nil).Return(nil).Once()
 		o.ESetFromID({{ .ID }}, nil)
 		{{ .Mock }}AssertExpectationsForObjects(t, mockValue)
-		{{ .Assert }}Nil(t, o.EGetFromID({{ .ID }}, false))
+		{{ .Assert }}Nil(t, {{ .ReadBack }})
 
 	}
 {{- end }}
@@ -99,13 +99,13 @@ func Test{{ .Class }}ESetFromID(t *{{ .T }}) {
 		mockValue := {{ .TestValue }}
 		mockValue.EXPECT().EInverseAdd(o, {{ .Ecore }}EOPPOSITE_FEATURE_BASE-{{ .ID }}, {{ .Mock }}Anything).Return(nil).Once()
 		o.ESetFromID({{ .ID }}, mockValue)
-		{{ .Assert }}Equal(t, mockValue, o.EGetFromID({{ .ID }}, false))
+		{{ .Assert }}Equal(t, mockValue, {{ .ReadBack }})
 		{{ .Mock }}AssertExpectationsForObjects(t, mockValue)
 
 		mockValue.EXPECT().EInverseRemove(o, {{ .Ecore }}EOPPOSITE_FEATURE_BASE-{{ .ID }}, {{ .Mock }}Anything).Return(nil).Once()
 		o.ESetFromID({{ .ID }}, nil)
 		{{ .Mock }}AssertExpectationsForObjects(t, mockValue)
-		{{ .Assert }}Nil(t, o.EGetFromID({{ .ID }}, false))
+		{{ .Assert }}Nil(t, {{ .ReadBack }})
 	}
 {{- end }}
 
@@ -113,7 +113,7 @@ func Test{{ .Class }}ESetFromID(t *{{ .T }}) {
 	{
 		v := {{ .TestValue }}
 		o.ESetFromID({{ .ID }}, v)
-		{{ .Assert }}Equal(t, v, o.EGetFromID({{ .ID }}, false))
+		{{ .Assert }}Equal(t, v, {{ .ReadBack }})
 
 		o.ESetFromID({{ .ID }}, nil)
 	}
@@ -123,6 +123,6 @@ func Test{{ .Class }}ESetFromID(t *{{ .T }}) {
 	{
 		v := {{ .TestValue }}
 		o.ESetFromID({{ .ID }}, v)
-		{{ .Assert }}Equal(t, v, o.EGetFromID({{ .ID }}, false))
+		{{ .Assert }}Equal(t, v, {{ .ReadBack }})
 	}
 {{- end }}

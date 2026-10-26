@@ -5,7 +5,7 @@
 		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }}).Times({{ .Times }})
 		{{ .Assert }}Equal(t, "", factory.ConvertToString(mockEDataType, nil))
 {{- range .Literals }}
-		{{ $.Assert }}Equal(t, "{{ .Name }}", factory.ConvertToString(mockEDataType, {{ .Const }}))
+		{{ $.Assert }}Equal(t, {{ .Literal }}, factory.ConvertToString(mockEDataType, {{ .Const }}))
 {{- end }}
 		mockEDataType.AssertExpectations(t)
 	}

@@ -19,14 +19,14 @@ import (
 )
 
 func TestFactoryAs(t *testing.T) {
-	factory := newNamingFactoryImpl()
+	factory := newNamingBuilderStruct()
 	assert.Equal(t, factory, factory.AsInternal())
 	assert.Equal(t, factory, factory.AsEFactory())
 }
 
 func TestFactoryCreateFromEClass(t *testing.T) {
 	_ = mock.Anything
-	factory := newNamingFactoryImpl()
+	factory := newNamingBuilderStruct()
 	{
 		mockEClass := ecore.NewMockEClass(t)
 		mockEClass.EXPECT().GetClassifierID().Return(-1).Once()
@@ -60,42 +60,42 @@ func TestFactoryCreateFromEClass(t *testing.T) {
 }
 
 func TestFactoryCreateCustom(t *testing.T) {
-	factory := newNamingFactoryImpl()
+	factory := newNamingBuilderStruct()
 	assert.NotNil(t, factory.CreateCustom())
 }
 
 func TestFactoryCreateItem(t *testing.T) {
-	factory := newNamingFactoryImpl()
+	factory := newNamingBuilderStruct()
 	assert.NotNil(t, factory.CreateItem())
 }
 
 func TestFactoryCreatePart(t *testing.T) {
-	factory := newNamingFactoryImpl()
+	factory := newNamingBuilderStruct()
 	assert.NotNil(t, factory.CreatePart())
 }
 
 func TestFactoryCreatePartFromOwnerContainer(t *testing.T) {
-	factory := newNamingFactoryImpl()
+	factory := newNamingBuilderStruct()
 	mockContainer := NewFakeItem(t)
 	mockList := ecore.NewMockEList(t)
 	mockList.EXPECT().Add(mock.Anything).Return(true).Once()
-	mockContainer.EXPECT().GetParts().Return(mockList).Once()
+	mockContainer.EXPECT().ReadParts().Return(mockList).Once()
 	o := factory.CreatePartFromContainer(mockContainer)
 	assert.NotNil(t, o)
 }
 
 func TestFactoryCreatePublic(t *testing.T) {
-	factory := newNamingFactoryImpl()
+	factory := newNamingBuilderStruct()
 	assert.NotNil(t, factory.CreatePublic())
 }
 
 func TestFactoryCreateSpecial(t *testing.T) {
-	factory := newNamingFactoryImpl()
+	factory := newNamingBuilderStruct()
 	assert.NotNil(t, factory.CreateSpecial())
 }
 
 func TestFactoryConvert(t *testing.T) {
-	factory := newNamingFactoryImpl()
+	factory := newNamingBuilderStruct()
 	{
 		mockEDataType := ecore.NewMockEDataType(t)
 		mockEDataType.EXPECT().GetClassifierID().Return(-1).Once()

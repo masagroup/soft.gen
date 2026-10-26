@@ -3,9 +3,9 @@
 	{
 		mockEDataType := {{ .MockEDataType }}(t)
 		mockEDataType.EXPECT().GetClassifierID().Return({{ .ID }}).Times({{ .Times }})
-		{{ .Assert }}Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
+		{{ .Assert }}Panics(t, func() { factory.CreateFromString(mockEDataType, {{ .Invalid }}) })
 {{- range .Literals }}
-		{{ $.Assert }}Equal(t, {{ .Const }}, factory.CreateFromString(mockEDataType, "{{ .Name }}"))
+		{{ $.Assert }}Equal(t, {{ .Const }}, factory.CreateFromString(mockEDataType, {{ .Literal }}))
 {{- end }}
 		mockEDataType.AssertExpectations(t)
 	}

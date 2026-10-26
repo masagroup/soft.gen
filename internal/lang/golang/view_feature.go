@@ -59,7 +59,8 @@ type initMethodView struct {
 	Name, Var, Type string
 	// Mode is the lazy mode: function (returns the value) or action (sets the field).
 	Mode string
-	// Strategy is value (Value is returned or assigned), none (an action
+	// Strategy is value (Value is returned or assigned), list (an action
+	// assigns the list or map Value when the field is nil), none (an action
 	// initializing a proxy does nothing) or panic (not implemented).
 	Strategy string
 	// Value is the constructor or default value.
@@ -165,9 +166,10 @@ func (g *gen) featureStrategies(v *featureView, c ecore.EClass, info *model.Feat
 // reflective (EGetFromID), container (the container of the object), proxy
 // (resolve a single proxy; v1 also had an inverse add/remove block for a
 // containment, dead code since a proxy is never a containment), lazyfunction
-// and lazyaction (call the initializer; the lambda mode is lazy without
-// initializer and reads the field), list (build the list or map on first
-// read), field, body (the getterBody key) or panic.
+// and lazyaction (call the initializer), list (build the list or map on first
+// read), field, body (the getterBody key) or panic. The lambda mode, a C++
+// mode without initializer in Go, reads the field like no lazy mode, so a
+// lambda list is built on first read (v1 left it nil).
 func (g *gen) getterStrategy(v *featureView, info *model.FeatureInfo, reflective bool) string {
 	switch {
 	case reflective:
@@ -178,7 +180,7 @@ func (g *gen) getterStrategy(v *featureView, info *model.FeatureInfo, reflective
 		switch {
 		case !info.IsList && info.IsProxy:
 			return "proxy"
-		case info.Lazy.IsLazy():
+		case info.Lazy.HasInitMethod:
 			return lazyStrategy(info.Lazy.Mode)
 		case info.IsList:
 			return "list"
@@ -379,18 +381,22 @@ func (v *featureView) basicsDeclarations(info *model.FeatureInfo) []string {
 		decls = append(decls, v.BasicSetter+"("+v.Type+", "+v.ENotificationChain+") "+v.ENotificationChain)
 	}
 	if info.BasicUnset {
-		decls = append(decls, v.BasicUnsetter+"("+v.Type+", "+v.ENotificationChain+") "+v.ENotificationChain)
+		decls = append(decls, v.BasicUnsetter+"("+v.ENotificationChain+") "+v.ENotificationChain)
 	}
 	return decls
 }
 
 // initMethodView builds the lazy initialization method of a feature (v1
 // generateVariableInitializationMethodDefinition): a function returns the
-// list, map or attribute default, an action assigns it, does nothing for a
-// proxy; a reference without constructor is not implemented.
+// list, map or attribute default, an action assigns it (a list or map once),
+// does nothing for a proxy; a reference without constructor is not implemented.
 func (g *gen) initMethodView(v *featureView, info *model.FeatureInfo) initMethodView {
 	m := initMethodView{Receiver: v.Receiver, Impl: v.Impl, Name: v.InitMethod, Var: v.Var, Mode: info.Lazy.Mode, Strategy: "panic"}
 	switch {
+	case info.IsList && info.Lazy.Mode == "action":
+		// the getter calls the action on every read: v1 built a new list
+		// each time, losing its elements
+		m.Strategy, m.Value = "list", v.Constructor
 	case info.IsList:
 		m.Strategy, m.Value = "value", v.Constructor
 	case info.Lazy.Mode == "action" && info.IsProxy:

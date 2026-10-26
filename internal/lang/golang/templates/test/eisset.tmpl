@@ -13,6 +13,11 @@ func Test{{ .Class }}EIsSetFromID(t *{{ .T }}) {
 	{{ .Assert }}Panics(t, func() { o.EIsSetFromID({{ .ID }}) })
 {{- end }}
 
+{{/* A volatile feature with a getterBody: the body is called. */}}
+{{ define "test/eisset.body" -}}
+	{{ .Assert }}NotPanics(t, func() { o.EIsSetFromID({{ .ID }}) })
+{{- end }}
+
 {{ define "test/eisset.false" -}}
 	{{ .Assert }}False(t, o.EIsSetFromID({{ .ID }}))
 {{- end }}

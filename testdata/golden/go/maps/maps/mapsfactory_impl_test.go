@@ -72,7 +72,7 @@ func TestFactoryCreateOwnedEntry(t *testing.T) {
 func TestFactoryCreateOwnedEntryFromHolderContainer(t *testing.T) {
 	factory := newMapsFactoryImpl()
 	mockContainer := NewMockHolder(t)
-	mockList := ecore.NewMockEList(t)
+	mockList := ecore.NewMockEMap(t)
 	mockList.EXPECT().Add(mock.Anything).Return(true).Once()
 	mockContainer.EXPECT().GetOwned().Return(mockList).Once()
 	o := factory.CreateOwnedEntryFromContainer(mockContainer)

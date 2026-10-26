@@ -22,10 +22,10 @@ type holderImpl struct {
 
 type holderBasics interface {
 	basicSetKept(Item, ecore.ENotificationChain) ecore.ENotificationChain
-	basicUnsetKept(Item, ecore.ENotificationChain) ecore.ENotificationChain
+	basicUnsetKept(ecore.ENotificationChain) ecore.ENotificationChain
 	basicGetLinked() Item
 	basicSetOwned(Item, ecore.ENotificationChain) ecore.ENotificationChain
-	basicUnsetOwned(Item, ecore.ENotificationChain) ecore.ENotificationChain
+	basicUnsetOwned(ecore.ENotificationChain) ecore.ENotificationChain
 	basicGetTarget() Item
 }
 

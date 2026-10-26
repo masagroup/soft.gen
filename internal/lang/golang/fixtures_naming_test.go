@@ -9,11 +9,17 @@ func init() {
 	register(
 		// the default entry points: the rules in every file name and identifier
 		fixture{Name: "naming", Model: "naming.ecore",
-			V1Differences: map[string]string{"naming/namingbuilder_struct.go": v1FromContainer}},
+			V1Differences: map[string]string{
+				"naming/namingbuilder_struct.go": v1FromContainer + "; " + v1OppositeAccessor,
+				"naming/naming_builder_test.go":  v1OppositeAccessor,
+			}},
 		// the package exported (-p exported=true): every implementation name
 		// upper-cased first
 		fixture{Name: "naming-exported", Model: "naming.ecore",
-			Props:         map[string]string{"exported": "true"},
-			V1Differences: map[string]string{"naming/namingbuilder_struct.go": v1FromContainer}},
+			Props: map[string]string{"exported": "true"},
+			V1Differences: map[string]string{
+				"naming/namingbuilder_struct.go": v1FromContainer + "; " + v1OppositeAccessor,
+				"naming/naming_builder_test.go":  v1OppositeAccessor,
+			}},
 	)
 }

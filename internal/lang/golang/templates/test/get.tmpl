@@ -6,6 +6,14 @@ func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
 }
 {{- end }}
 
+{{/* A volatile feature with a getterBody: the body is called. */}}
+{{ define "test/get.volatilebody" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}NotPanics(t, func() { o.{{ .Getter }}() })
+}
+{{- end }}
+
 {{ define "test/get.container" -}}
 func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
 	// default
@@ -109,6 +117,19 @@ func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
 	o.{{ .Var }} = v
 {{- end }}
 	{{ .Assert }}Equal(t, v, o.{{ .Getter }}())
+}
+{{- end }}
+
+{{/* An attribute of the action mode: the getter calls the initializer, which sets the default value. */}}
+{{ define "test/get.lazyattribute" -}}
+func Test{{ .Class }}{{ .Name }}Get(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	// get default value
+{{- if .DefaultNil }}
+	{{ .Assert }}Nil(t, o.{{ .Getter }}())
+{{- else }}
+	{{ .Assert }}Equal(t, {{ .Default }}, o.{{ .Getter }}())
+{{- end }}
 }
 {{- end }}
 

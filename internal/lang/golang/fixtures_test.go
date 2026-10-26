@@ -50,6 +50,13 @@ const (
 	v1MixinOrder          = "v1 lists the features of a mixin extending a class in the order of an OCL set difference, which is not the declaration order; v2 keeps the declaration order"
 	v1GoIntTestValue      = "v1 has no type table row for int32 and int8: its test values int32() and int8() do not compile"
 	v1AnnotationContainer = "v1 creates the annotation of a parameter in p.Get<Parameter>() (no such getter, or another element) and a nested annotation in nil (lost)"
+	v1MapContainerMock    = "v1 mocks the map opposite of a Create<X>FromContainer test with NewMockEList, which is no EMap: it does not compile"
+	v1OppositeAccessor    = "v1 adds the element created by Create<X>FromContainer through Get/Set<Opposite>, without the getterName and setterName rules, and tests the factory through new<Package>FactoryImpl, without the factoryName and implementationName rules: neither compiles with those rules"
+	v1LazyGetter          = "v1 leaves a lambda list (a C++ mode) nil and rebuilds an action list on every read, losing its elements; v2 builds a lambda list on first read and an action list once"
+	v1LazyTests           = "v1 expects the getter of a lazy proxy to panic, expects the getter of an action attribute to return the value of its field, and reads back lazy features through accessors that rerun their initializer (a panic, or the default value)"
+	v1EnumLiteralTests    = "v1 tests the conversions of an enum with the literal names, not the literal strings, and an empty string as the invalid literal even when it is one"
+	v1BasicUnsetDecl      = "v1 declares the basic unsetter with the value parameter its implementation does not have: it does not compile"
+	v1VolatileTests       = "v1 expects the basic setter of a volatile feature to notify, the getterBody of a volatile feature to panic, and EBasicInverseRemove of a volatile feature to return"
 )
 
 // TestFixtures compares the generation of every case with its expected files.

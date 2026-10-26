@@ -17,6 +17,10 @@ func ({{ .Receiver }} *{{ .Impl }}) {{ .Name }}() {{ .Type }} {
 func ({{ .Receiver }} *{{ .Impl }}) {{ .Name }}() {
 {{- if eq .Strategy "value" }}
 	{{ .Receiver }}.{{ .Var }} = {{ .Value }}
+{{- else if eq .Strategy "list" }}
+	if {{ .Receiver }}.{{ .Var }} == nil {
+		{{ .Receiver }}.{{ .Var }} = {{ .Value }}
+	}
 {{- else if eq .Strategy "panic" }}
 	panic("{{ .Name }} not implemented")
 {{- end }}

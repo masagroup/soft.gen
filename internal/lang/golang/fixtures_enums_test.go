@@ -8,5 +8,6 @@ package golang
 // an instance type: by the instanceTypeName annotation (Status) and by the
 // instance class name of the model (Level).
 func init() {
-	register(fixture{Name: "enums", Model: "enums.ecore"})
+	register(fixture{Name: "enums", Model: "enums.ecore",
+		V1Differences: map[string]string{"enums/enumsfactory_impl_test.go": v1EnumLiteralTests}})
 }
