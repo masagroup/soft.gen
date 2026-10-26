@@ -90,6 +90,7 @@ and (not aClass.getEStructuralFeature('value').oclIsUndefined())/]
 [query public isSet(aStructuralFeature : EStructuralFeature) : Boolean = isChangeable() and aStructuralFeature.upperBound = 1/]
 [query public isUnSet(aStructuralFeature : EStructuralFeature) : Boolean = isChangeable() and isUnSettable()/]
 [query public isIsSet(aStructuralFeature : EStructuralFeature) : Boolean = isUnSettable()/]
+[query public hasESet(aStructuralFeature : EStructuralFeature) : Boolean = isUnSettable() and isField() and not isListType()/]
 
 [query public isBasicSet(aStructuralFeature : EStructuralFeature) : Boolean = not isListType() and ( isChangeable() or not isContainer() ) and ( isBidirectional() and not isVolatile() or isContains() ) /]
 [query public isBasicGet(aStructuralFeature : EStructuralFeature) : Boolean = isProxy() and not isListType()/]

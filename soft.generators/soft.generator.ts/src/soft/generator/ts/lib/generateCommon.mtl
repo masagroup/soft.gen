@@ -23,6 +23,12 @@
 
 [query public isReflectiveDelegation(anFeature : EStructuralFeature ) : Boolean = anFeature.eContainingClass.isReflectiveDelegation()/]
 
+[query public hasESetFlag(aStructuralFeature : EStructuralFeature) : Boolean = aStructuralFeature.hasESet() and not aStructuralFeature.isReflectiveDelegation()/]
+
+[query public getESetVariableName(aStructuralFeature : EStructuralFeature) : String = aStructuralFeature.getVariableName() + 'ESet'/]
+
+[query public getUnSetValue(aStructuralFeature : EStructuralFeature, modules : OclAny) : String = let defaultValue : String = aStructuralFeature.getDefaultValue(modules) in if defaultValue <> '' then defaultValue else 'null' endif/]
+
 [query private getMapTypeParameter(aClass : EClass , featureName : String) : String =
 	let aFeature : EStructuralFeature = aClass.getEStructuralFeature(featureName) in
 	aFeature.generateType(null)

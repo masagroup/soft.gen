@@ -117,6 +117,10 @@ describe("[className/]", () => {
 
 [aStructuralFeature.generateUnSetTestImplementation(aClass,modules)/]
 [/if]
+[if isIsSet()]
+
+[aStructuralFeature.generateIsSetTestImplementation(aClass,modules)/]
+[/if]
 [/template]
 
 [template private generateGetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass, modules : OclAny) ? (isVolatile())]
@@ -478,7 +482,7 @@ test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
 	expect(notification.getNotifier()).toBe(o)
 	expect(notification.getEventType()).toBe([ecorePrefix/]EventType.UNSET)
 	expect(notification.getFeatureID()).toBe([aClass.getImportedIDName(aStructuralFeature,modules)/])	
-[let defaultValue : String = aStructuralFeature.getDefaultValue(modules)]
+[let defaultValue : String = aStructuralFeature.getUnSetValue(modules)]
 [if defaultValue = 'null']
 	expect(o.[aStructuralFeature.generateGetCall()/]).toBeNull()
 [else]
@@ -487,6 +491,34 @@ test("unset[aStructuralFeature.name.toUpperFirst()/]", () => {
 [/let]
 })
 [/let]
+[/template]
+
+[template private generateIsSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass, modules : OclAny) ?(isVolatile())]
+test("isSet[aStructuralFeature.name.toUpperFirst()/]", () => {
+	const o = new [aClass.getImplementationName()/]()
+	expect(() => o.[aStructuralFeature.getIsSetName()/]()).toThrow(Error)
+})
+[/template]
+
+[template private generateIsSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass, modules : OclAny) ?(not isVolatile() and hasESetFlag() and isUnSet())]
+test("isSet[aStructuralFeature.name.toUpperFirst()/]", () => {
+	const o = new [aClass.getImplementationName()/]()
+	expect(o.[aStructuralFeature.getIsSetName()/]()).toBeFalsy()
+	expect(o.eIsSetFromID([aClass.getImportedIDName(aStructuralFeature,modules)/])).toBeFalsy()
+	o['['/]"[aStructuralFeature.getESetVariableName()/]"[']'/] = true
+	expect(o.[aStructuralFeature.getIsSetName()/]()).toBeTruthy()
+	expect(o.eIsSetFromID([aClass.getImportedIDName(aStructuralFeature,modules)/])).toBeTruthy()
+	o.[aStructuralFeature.getUnSetterName()/]()
+	expect(o.[aStructuralFeature.getIsSetName()/]()).toBeFalsy()
+	expect(o.eIsSetFromID([aClass.getImportedIDName(aStructuralFeature,modules)/])).toBeFalsy()
+})
+[/template]
+
+[template private generateIsSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass, modules : OclAny) ?(not isVolatile() and not (hasESetFlag() and isUnSet()))]
+test("isSet[aStructuralFeature.name.toUpperFirst()/]", () => {
+	const o = new [aClass.getImplementationName()/]()
+	expect(o.[aStructuralFeature.getIsSetName()/]()).toBeFalsy()
+})
 [/template]
 
 

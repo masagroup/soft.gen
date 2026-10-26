@@ -151,7 +151,11 @@
     switch featureID {
 [for (aFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
     case [aClass.getImportedIDName(aFeature, packagePath,imports)/]:
+    [if aFeature.hasESetFlag()]
+        return [aClass.getReceiverName()/].[aFeature.getESetVariableName()/]
+    [else]
         return [aFeature.generateComparison(aClass,packagePath,imports)/]
+    [/if]
 [/for]
     default:
         return [aClass.getReceiverName()/].[getSimpleIdentifier(aClass.getClassExtends())/].EIsSetFromID(featureID)
