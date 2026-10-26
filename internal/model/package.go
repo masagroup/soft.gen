@@ -132,7 +132,7 @@ func NestedAnnotations(a ecore.EAnnotation) []NestedAnnotation {
 // annotationSources returns the sorted annotation sources of p minus the
 // suppressed ones (v1 getAnnotationSources).
 func (m *Model) annotationSources(p ecore.EPackage, sources map[string]struct{}) []AnnotationSource {
-	for _, suppressed := range m.suppressedAnnotations(p) {
+	for _, suppressed := range m.SuppressedAnnotations(p) {
 		delete(sources, suppressed)
 	}
 	uris := make([]string, 0, len(sources))
@@ -147,10 +147,10 @@ func (m *Model) annotationSources(p ecore.EPackage, sources map[string]struct{})
 	return result
 }
 
-// suppressedAnnotations returns the annotation sources the generator
+// SuppressedAnnotations returns the annotation sources the generator
 // annotation of p suppresses: the space separated tokens of its
 // supressAnnotations (sic) key (v1 getSuppressedAnnotations).
-func (m *Model) suppressedAnnotations(p ecore.EPackage) []string {
+func (m *Model) SuppressedAnnotations(p ecore.EPackage) []string {
 	annotation := m.Annotation(p)
 	if !annotation.HasKey("supressAnnotations") {
 		return nil

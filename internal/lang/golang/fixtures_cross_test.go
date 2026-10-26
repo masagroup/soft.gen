@@ -26,4 +26,16 @@ func init() {
 		},
 		V1Differences: map[string]string{"cross/crosspackage.go": v1CrossConstants},
 	})
+	// with loadInitialization, the serialized package refers to the class of
+	// the base package by its namespace URI, and the loading registers the
+	// base package to resolve it
+	register(fixture{Name: "cross-loading", Model: "crossmodel.ecore",
+		Props: map[string]string{
+			"module":             "github.com/x",
+			"packages":           crossURI + "=github.com/x/cross/cross " + crossBaseURI + "=github.com/x/base/base",
+			"exported":           "true",
+			"loadInitialization": "true",
+		},
+		V1Skip: v1NoLoadInitialization,
+	})
 }

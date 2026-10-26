@@ -181,6 +181,7 @@ annotation of the root package):
 | `packageInstance` | | `interfaces`: the package instance (`GetPackage`) is generated with the interfaces and shared by the implementations |
 | `checkImplementation` | `true` | `false`: the setters of a shared package do not check that the objects share the implementation |
 | `exported` | `false` | `true`: the implementation names are exported |
+| `loadInitialization` | `false` | `true`: the package loads its serialized `.ecore`, embedded beside it, instead of creating its contents in code (EMF Initialize by Loading, see below) |
 | `goVersion` | `1.19` | the Go version of the generated code: `any` from 1.18, else `interface{}` |
 | `rootExtendsInterface` | `ecore.EObject` | the interface the root interfaces embed |
 | `rootExtendsClass` | `ecore.EObjectImpl` | the struct the root implementations embed |
@@ -256,6 +257,28 @@ the factory of the implementation (`memory.Install(resourceSet.GetPackageRegistr
 or `registry.RegisterFactory(memory.GetFactory())`). There is no global default
 implementation: the factory instance of the package only converts data types,
 and its `Create` panics.
+
+### Initialize by Loading
+
+With the property `loadInitialization=true`, a package is initialized as EMF's
+`GenPackage.loadInitialization` does: instead of creating its contents in code
+(`createPackageContents`, `initializePackageContents` and the annotation
+initializers), the package implementation embeds its serialized package,
+`<package name>.ecore`, generated beside it, and its `Initialize` loads it:
+
+- `loadPackage` loads the document with the XMI codec of soft.go (`codec/xmi`,
+  which the generated package then requires), the packages it refers to being
+  registered in the package registry of the loading, and takes its classifiers
+  and its annotations (EMF `initializeFromLoadedEPackage`);
+- `fixPackageContents` gives the loaded classifiers the members, ids and Go
+  types their creation in code gives them (EMF `fixEClassifiers`).
+
+The API of the package does not change. Its annotations keep all their
+contents, the objects of other packages included, which the creation in code
+leaves out as EMF's does: a program that reads them at runtime uses this mode.
+The serialized package is the model without the annotations of the suppressed
+sources, its references to other packages written with their namespace URI.
+Not supported yet: the sub-packages of a package, and TypeScript.
 
 ## TypeScript
 

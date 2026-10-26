@@ -86,6 +86,22 @@ Fixed with it:
 - The unsetter of a single attribute or reference resets the field to its
   default and notifies the old value (TypeScript; it only notified).
 
+### Initialize by Loading (Go)
+
+- The property `loadInitialization=true` initializes a package as EMF's
+  `GenPackage.loadInitialization`: the package embeds its serialized package,
+  `<package name>.ecore`, generated beside its implementation, loads it with
+  the XMI codec of soft.go and takes its classifiers and annotations
+  (`loadPackage`, EMF `initializeFromLoadedEPackage`), then gives the
+  classifiers their members, ids and Go types (`fixPackageContents`, EMF
+  `fixEClassifiers`), instead of creating its contents in code. Its API does
+  not change. The annotations keep all their contents, the objects of other
+  packages included, which the creation in code leaves out as EMF's does.
+- The serialized package leaves out the annotations of the suppressed
+  sources and writes its references to other packages with their namespace
+  URI; the loading registers those packages. Sub-packages are not supported
+  yet.
+
 ### Fixed (Go)
 
 - `Create<Class>FromContainer` qualifies the type of the container parameter;

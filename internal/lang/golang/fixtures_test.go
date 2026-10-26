@@ -59,6 +59,9 @@ const (
 	v1VolatileTests       = "v1 expects the basic setter of a volatile feature to notify, the getterBody of a volatile feature to panic, and EBasicInverseRemove of a volatile feature to return"
 )
 
+// v1NoLoadInitialization is why the v1 cross-check leaves the loadInitialization cases out.
+const v1NoLoadInitialization = "v1 has no loadInitialization: it creates the contents of every package in code"
+
 // TestFixtures compares the generation of every case with its expected files.
 func TestFixtures(t *testing.T) { suite.TestFixtures(t) }
 

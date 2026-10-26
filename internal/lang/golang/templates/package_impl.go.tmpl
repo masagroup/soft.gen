@@ -1,7 +1,8 @@
 {{/* The package implementation: the singleton when the file holds it, the struct of the meta
      objects, the constructor and Initialize, the getters, the creation and the initialization of
-     the package contents, the annotation initializers. The blank lines inside
-     createPackageContents and initializePackageContents are those of v1. */}}
+     the package contents, the annotation initializers, or the loading of the serialized package
+     with loadInitialization (package/load). The blank lines inside createPackageContents and
+     initializePackageContents are those of v1. */}}
 {{ define "package_impl.go" -}}
 {{- if .Instance }}
 {{- include "package/instance" .Instance }}
@@ -28,14 +29,19 @@ func {{ .Constructor }}() *{{ .Name }} {
 	return p
 }
 
-func (p *{{ .Name }}) Initialize(packageFactory {{ .PackageFactoryType }}, ecoreFactory {{ .EcoreFactoryType }}) {
+func (p *{{ .Name }}) Initialize(packageFactory {{ .PackageFactoryType }}, {{ .InitializeEcoreParam }} {{ .EcoreFactoryType }}) {
 	p.EPackageExt.Initialize()
 	p.SetName({{ .NameConstant }})
 	p.SetNsPrefix({{ .NsPrefixConstant }})
 	p.SetNsURI({{ .NsURIConstant }})
 	p.SetEFactoryInstance(packageFactory)
+{{- if .Load }}
+	p.loadPackage()
+	p.fixPackageContents()
+{{- else }}
 	p.createPackageContents(ecoreFactory)
 	p.initializePackageContents(ecoreFactory)
+{{- end }}
 	p.CreateResource()
 }
 {{- range .Getters }}
@@ -45,6 +51,10 @@ func (p *{{ $.Name }}) {{ .Name }}() {{ .Type }} {
 	return {{ include (printf "package/getter.%s" .Kind) . }}
 }
 {{- end }}
+{{- if .Load }}
+
+{{ include "package/load" . }}
+{{- else }}
 
 func (p *{{ .Name }}) createPackageContents(ecoreFactory {{ .EcoreFactoryType }}) {
 {{- range .Creations }}
@@ -105,5 +115,6 @@ func (p *{{ $.Name }}) initialize{{ .Identifier }}Annotations(ecoreFactory {{ $.
 	}
 {{- end }}
 }
+{{- end }}
 {{- end }}
 {{- end }}

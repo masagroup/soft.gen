@@ -1,0 +1,56 @@
+{{/* The loading of the serialized package with loadInitialization (EMF Initialize by Loading): the
+     embedded .ecore; loadPackage, which loads it and takes its classifiers and its annotations,
+     contents included (EMF initializeFromLoadedEPackage); fixPackageContents, which gives the
+     loaded classifiers the members, ids and Go types of their creation in code (EMF
+     fixEClassifiers). */}}
+{{ define "package/load" -}}
+// {{ .Load.Var }} is the serialized package, loaded by loadPackage.
+//
+//go:embed {{ .Load.FileName }}
+var {{ .Load.Var }} {{ .Load.EmbedFS }}
+
+// loadPackage loads the serialized package and takes its classifiers and its annotations, with
+// the contents of the annotations.
+func (p *{{ .Name }}) loadPackage() {
+	resourceSet := {{ .Load.NewResourceSet }}()
+	resourceSet.GetCodecRegistry().GetExtensionToCodecMap()["ecore"] = &{{ .Load.EcoreCodec }}{}
+{{- range .Load.Packages }}
+	resourceSet.GetPackageRegistry().RegisterPackage({{ . }})
+{{- end }}
+	file, err := {{ .Load.Var }}.Open("{{ .Load.FileName }}")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	resource := resourceSet.CreateResource({{ .Load.NewURI }}("{{ .Load.FileName }}"))
+	resource.LoadWithReader(file, nil)
+	if errors := resource.GetErrors(); !errors.Empty() {
+		panic(errors.Get(0).({{ .Load.EDiagnostic }}).GetMessage())
+	}
+	{{ .Load.ResolveAll }}(resource)
+	loaded := resource.GetContents().Get(0).({{ .Load.EPackage }})
+	// adding an element of the loaded package to this one removes it from the loaded package
+	for classifiers := loaded.GetEClassifiers(); !classifiers.Empty(); {
+		p.GetEClassifiers().Add(classifiers.Get(0).({{ .Load.EClassifier }}))
+	}
+	for annotations := loaded.GetEAnnotations(); !annotations.Empty(); {
+		p.GetEAnnotations().Add(annotations.Get(0).({{ .Load.EAnnotation }}))
+	}
+}
+
+// fixPackageContents gives the loaded classifiers their members, their ids and their Go types.
+func (p *{{ .Name }}) fixPackageContents() {
+{{- range .Load.Classifiers }}
+	p.{{ .Member }} = p.GetEClassifiers().Get({{ .Index }}).({{ .Type }})
+	p.{{ .Member }}.SetClassifierID({{ .ID }})
+	p.{{ .Member }}.SetInstanceTypeName("{{ .InstanceTypeName }}")
+{{- if .Default }}
+	p.{{ .Member }}.({{ $.Load.EDataTypeInternal }}).SetDefaultValue(p.GetEFactoryInstance().CreateFromString(p.{{ .Member }}, "{{ .Default }}"))
+{{- end }}
+{{- $member := .Member }}
+{{- range .Literals }}
+	p.{{ $member }}.GetEEnumLiteralByName("{{ .Name }}").SetInstance({{ .Constant }})
+{{- end }}
+{{- end }}
+}
+{{- end }}

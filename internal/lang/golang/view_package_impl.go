@@ -40,6 +40,12 @@ type packageImplView struct {
 	// EcoreFactoryParam is the ecoreFactory parameter of
 	// initializePackageContents: "_" in the ecore package, which creates no annotation.
 	EcoreFactoryParam string
+	// InitializeEcoreParam is the ecoreFactory parameter of Initialize: "_"
+	// when the package is loaded, which creates nothing.
+	InitializeEcoreParam string
+	// Load is the loading of the serialized package (loadInitialization), nil
+	// when the package creates its contents in code.
+	Load *packageLoadView
 	// NameConstant, NsPrefixConstant and NsURIConstant are the NAME, NS_PREFIX and NS_URI constants.
 	NameConstant, NsPrefixConstant, NsURIConstant string
 	// Getters lists the getters of the meta objects.
@@ -252,20 +258,21 @@ func (g *gen) packageImplementationFile(p ecore.EPackage) []engine.File {
 	shared := g.isSharedPackage(p)
 	constant := func(c string) string { return scope.qualify(g.qualifiedInterfaceIdentifier(p, c)) }
 	view := packageImplView{
-		Name:               name,
-		InterfaceName:      g.packageInterfaceName(p),
-		Constructor:        constructorName(name),
-		EPackageExt:        scope.qualify(g.qualifiedImplementationIdentifier(e, "EPackageExt")),
-		MemberGroups:       g.packageMemberGroups(p, scope),
-		PackageFactory:     "GetFactory()",
-		EcoreFactory:       scope.qualify(g.qualifiedImplementationIdentifier(e, "GetFactory")) + "()",
-		PackageFactoryType: scope.qualify(g.qualifiedInterfaceIdentifier(p, g.factoryName(p))),
-		EcoreFactoryType:   scope.qualify(g.qualifiedInterfaceIdentifier(e, "EcoreFactory")),
-		EcoreFactoryParam:  "ecoreFactory",
-		NameConstant:       constant("NAME"),
-		NsPrefixConstant:   constant("NS_PREFIX"),
-		NsURIConstant:      constant("NS_URI"),
-		Getters:            g.packageGetters(p, scope),
+		Name:                 name,
+		InterfaceName:        g.packageInterfaceName(p),
+		Constructor:          constructorName(name),
+		EPackageExt:          scope.qualify(g.qualifiedImplementationIdentifier(e, "EPackageExt")),
+		MemberGroups:         g.packageMemberGroups(p, scope),
+		PackageFactory:       "GetFactory()",
+		EcoreFactory:         scope.qualify(g.qualifiedImplementationIdentifier(e, "GetFactory")) + "()",
+		PackageFactoryType:   scope.qualify(g.qualifiedInterfaceIdentifier(p, g.factoryName(p))),
+		EcoreFactoryType:     scope.qualify(g.qualifiedInterfaceIdentifier(e, "EcoreFactory")),
+		EcoreFactoryParam:    "ecoreFactory",
+		InitializeEcoreParam: "ecoreFactory",
+		NameConstant:         constant("NAME"),
+		NsPrefixConstant:     constant("NS_PREFIX"),
+		NsURIConstant:        constant("NS_URI"),
+		Getters:              g.packageGetters(p, scope),
 	}
 	if g.interfacePackagePath(p) != packagePath || shared {
 		view.Instance = g.packageInstanceView(p, scope)
@@ -283,6 +290,16 @@ func (g *gen) packageImplementationFile(p ecore.EPackage) []engine.File {
 	if g.m.IsEcore(p) {
 		view.EcoreFactoryParam = "_"
 	}
+	file := engine.File{
+		Path:   filePath(g.packageInstanceOutputDirectory(p), g.implementationFileName(p, g.packageName(p))),
+		Header: true,
+	}
+	if g.isLoadInitialization(p) {
+		view.Load = g.packageLoad(p, scope)
+		view.InitializeEcoreParam = "_"
+		file.Body = goSource(scope, "package_impl.go", view)
+		return []engine.File{file, g.serializedPackageFile(p)}
+	}
 	classes := sortedByName(g.m.Package(p).AllClasses)
 	for _, c := range classes {
 		view.Creations = append(view.Creations, g.classCreation(c, scope))
@@ -296,11 +313,8 @@ func (g *gen) packageImplementationFile(p ecore.EPackage) []engine.File {
 	if !g.m.IsEcore(p) {
 		view.AnnotationSources = g.annotationInitializers(p, scope)
 	}
-	return []engine.File{{
-		Path:   filePath(g.packageInstanceOutputDirectory(p), g.implementationFileName(p, g.packageName(p))),
-		Body:   goSource(scope, "package_impl.go", view),
-		Header: true,
-	}}
+	file.Body = goSource(scope, "package_impl.go", view)
+	return []engine.File{file}
 }
 
 // packageMemberGroups lists the members of the package implementation: the
