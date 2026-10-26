@@ -50,4 +50,5 @@ export interface Root extends ecore.EObject {
     // marks
     getMarks(): ecore.EList<Item>
     unSetMarks(): void
+    isSetMarks(): boolean
 }

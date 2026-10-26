@@ -18,10 +18,11 @@ import (
 // productImpl is the implementation of the model object 'Product'
 type productImpl struct {
 	ecore.EObjectImpl
-	category Category
-	label    string
-	name     string
-	price    float64
+	category     Category
+	categoryESet bool
+	label        string
+	name         string
+	price        float64
 }
 
 type productBasics interface {
@@ -80,6 +81,7 @@ func (p *productImpl) GetCategory() Category {
 func (p *productImpl) SetCategory(newCategory Category) {
 	oldCategory := p.category
 	p.category = newCategory
+	p.categoryESet = true
 	if p.ENotificationRequired() {
 		p.ENotify(ecore.NewNotificationByFeatureID(p.AsEObject(), ecore.SET, PRODUCT__CATEGORY, oldCategory, newCategory, ecore.NO_INDEX))
 	}
@@ -89,9 +91,15 @@ func (p *productImpl) SetCategory(newCategory Category) {
 func (p *productImpl) UnsetCategory() {
 	oldCategory := p.category
 	p.category = FOOD
+	p.categoryESet = false
 	if p.ENotificationRequired() {
 		p.ENotify(ecore.NewNotificationByFeatureID(p.AsEObject(), ecore.UNSET, PRODUCT__CATEGORY, oldCategory, nil, ecore.NO_INDEX))
 	}
+}
+
+// IsSetCategory get if the value of category is set
+func (p *productImpl) IsSetCategory() bool {
+	return p.categoryESet
 }
 
 // GetLabel get the value of label
@@ -250,7 +258,7 @@ func (p *productImpl) EUnsetFromID(featureID int) {
 func (p *productImpl) EIsSetFromID(featureID int) bool {
 	switch featureID {
 	case PRODUCT__CATEGORY:
-		return p.category != FOOD
+		return p.categoryESet
 	case PRODUCT__LABEL:
 		return p.label != ""
 	case PRODUCT__NAME:

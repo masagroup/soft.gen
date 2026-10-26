@@ -158,6 +158,42 @@ func (c *MockProduct_UnsetCategory_Call) Return() *MockProduct_UnsetCategory_Cal
 	return c
 }
 
+// IsSetCategory get if the value of category is set
+func (p *MockProduct_Prototype_Methods) IsSetCategory() bool {
+	ret := p.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockProduct_IsSetCategory_Call struct {
+	*mock.Call
+}
+
+func (e *MockProduct_Expecter_Methods) IsSetCategory() *MockProduct_IsSetCategory_Call {
+	return &MockProduct_IsSetCategory_Call{Call: e.mock.On("IsSetCategory")}
+}
+
+func (c *MockProduct_IsSetCategory_Call) Run(run func()) *MockProduct_IsSetCategory_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockProduct_IsSetCategory_Call) Return(category bool) *MockProduct_IsSetCategory_Call {
+	c.Call.Return(category)
+	return c
+}
+
 // GetLabel get the value of label
 func (p *MockProduct_Prototype_Methods) GetLabel() string {
 	ret := p.mock.Called()

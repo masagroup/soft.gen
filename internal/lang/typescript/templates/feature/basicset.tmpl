@@ -10,10 +10,13 @@
 return this.eBasicSetContainer({{ .NewVar }}, {{ .ID }}, msgs)
 {{- end }}
 
-{{/* A plain field. */}}
+{{/* A plain field, set. */}}
 {{ define "feature/basicset.field" -}}
 const {{ .OldVar }} = this.{{ .Var }}
 this.{{ .Var }} = {{ .NewVar }}
+{{- if .ESetVar }}
+this.{{ .ESetVar }} = true
+{{- end }}
 let notifications = msgs
 if (this.eNotificationRequired()) {
     const notification = new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.SET, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }})

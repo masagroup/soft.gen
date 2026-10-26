@@ -22,10 +22,12 @@ type Holder interface {
 	GetLabel() string
 	SetLabel(string)
 	UnsetLabel()
+	IsSetLabel() bool
 
 	GetCode() int
 	SetCode(int)
 	UnsetCode()
+	IsSetCode() bool
 
 	GetLinked() Item
 	SetLinked(Item)
@@ -36,10 +38,12 @@ type Holder interface {
 	GetOwned() Item
 	SetOwned(Item)
 	UnsetOwned()
+	IsSetOwned() bool
 
 	GetKept() Item
 	SetKept(Item)
 	UnsetKept()
+	IsSetKept() bool
 
 	// Start of user code Holder
 	// End of user code

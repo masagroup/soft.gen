@@ -72,6 +72,17 @@ func TestMockOwnerUnsetOptional(t *testing.T) {
 	o.UnsetOptional()
 }
 
+// TestMockOwnerIsSetOptional tests method IsSetOptional
+func TestMockOwnerIsSetOptional(t *testing.T) {
+	o := NewMockOwner(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetOptional().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetOptional().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetOptional())
+	assert.Equal(t, r, o.IsSetOptional())
+}
+
 // TestMockOwnerGetPartner tests method GetPartner
 func TestMockOwnerGetPartner(t *testing.T) {
 	o := NewMockOwner(t)
@@ -98,6 +109,17 @@ func TestMockOwnerUnsetPartner(t *testing.T) {
 	m := ecore.NewMockRun(t)
 	o.EXPECT().UnsetPartner().Return().Run(func() { m.Run() }).Once()
 	o.UnsetPartner()
+}
+
+// TestMockOwnerIsSetPartner tests method IsSetPartner
+func TestMockOwnerIsSetPartner(t *testing.T) {
+	o := NewMockOwner(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetPartner().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetPartner().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetPartner())
+	assert.Equal(t, r, o.IsSetPartner())
 }
 
 // TestMockOwnerGetPoint tests method GetPoint

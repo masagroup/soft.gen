@@ -223,6 +223,42 @@ func (c *MockHolder_UnsetCount_Call) Return() *MockHolder_UnsetCount_Call {
 	return c
 }
 
+// IsSetCount get if the value of count is set
+func (h *MockHolder_Prototype_Methods) IsSetCount() bool {
+	ret := h.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockHolder_IsSetCount_Call struct {
+	*mock.Call
+}
+
+func (e *MockHolder_Expecter_Methods) IsSetCount() *MockHolder_IsSetCount_Call {
+	return &MockHolder_IsSetCount_Call{Call: e.mock.On("IsSetCount")}
+}
+
+func (c *MockHolder_IsSetCount_Call) Run(run func()) *MockHolder_IsSetCount_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockHolder_IsSetCount_Call) Return(count bool) *MockHolder_IsSetCount_Call {
+	c.Call.Return(count)
+	return c
+}
+
 // GetData get the value of data
 func (h *MockHolder_Prototype_Methods) GetData() []byte {
 	ret := h.mock.Called()
@@ -947,6 +983,42 @@ func (c *MockHolder_UnsetTags_Call) Run(run func()) *MockHolder_UnsetTags_Call {
 
 func (c *MockHolder_UnsetTags_Call) Return() *MockHolder_UnsetTags_Call {
 	c.Call.Return()
+	return c
+}
+
+// IsSetTags get if the value of tags is set
+func (h *MockHolder_Prototype_Methods) IsSetTags() bool {
+	ret := h.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockHolder_IsSetTags_Call struct {
+	*mock.Call
+}
+
+func (e *MockHolder_Expecter_Methods) IsSetTags() *MockHolder_IsSetTags_Call {
+	return &MockHolder_IsSetTags_Call{Call: e.mock.On("IsSetTags")}
+}
+
+func (c *MockHolder_IsSetTags_Call) Run(run func()) *MockHolder_IsSetTags_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockHolder_IsSetTags_Call) Return(tags bool) *MockHolder_IsSetTags_Call {
+	c.Call.Return(tags)
 	return c
 }
 

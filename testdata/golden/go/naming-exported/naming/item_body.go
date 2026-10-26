@@ -18,10 +18,11 @@ import (
 // ItemStruct is the implementation of the model object 'Item'
 type ItemStruct struct {
 	ecore.EObjectImpl
-	count    int
-	isActive bool
-	name     string
-	parts    ecore.EList
+	count     int
+	countESet bool
+	isActive  bool
+	name      string
+	parts     ecore.EList
 }
 
 // newItemStruct is the constructor of a ItemStruct
@@ -71,6 +72,7 @@ func (i *ItemStruct) ReadCount() int {
 func (i *ItemStruct) PutCount(newCount int) {
 	oldCount := i.count
 	i.count = newCount
+	i.countESet = true
 	if i.ENotificationRequired() {
 		i.ENotify(ecore.NewNotificationByFeatureID(i.AsEObject(), ecore.SET, ITEM__COUNT, oldCount, newCount, ecore.NO_INDEX))
 	}
@@ -80,9 +82,15 @@ func (i *ItemStruct) PutCount(newCount int) {
 func (i *ItemStruct) ClearCount() {
 	oldCount := i.count
 	i.count = 0
+	i.countESet = false
 	if i.ENotificationRequired() {
 		i.ENotify(ecore.NewNotificationByFeatureID(i.AsEObject(), ecore.UNSET, ITEM__COUNT, oldCount, nil, ecore.NO_INDEX))
 	}
+}
+
+// HasCount get if the value of count is set
+func (i *ItemStruct) HasCount() bool {
+	return i.countESet
 }
 
 // ReadActive get the value of isActive
@@ -173,7 +181,7 @@ func (i *ItemStruct) EIsSetFromID(featureID int) bool {
 	case ITEM__ACTIVE:
 		return i.isActive != false
 	case ITEM__COUNT:
-		return i.count != 0
+		return i.countESet
 	case ITEM__NAME:
 		return i.name != ""
 	case ITEM__PARTS:

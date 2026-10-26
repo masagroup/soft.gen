@@ -15,7 +15,9 @@ import { Owner, Part, Partner, V1bugsConstants, getV1bugsPackage } from "./inter
 export class OwnerImpl extends ecore.EObjectImpl implements Owner {
     protected _label: string
     protected _optional: Part
+    protected _optionalESet: boolean = false
     protected _partner: Partner
+    protected _partnerESet: boolean = false
     protected _point: com.example.Unknown
 
     constructor() {
@@ -73,6 +75,8 @@ export class OwnerImpl extends ecore.EObjectImpl implements Owner {
             if (notifications != null) {
                 notifications.dispatch()
             }
+        } else {
+            this._optionalESet = true
         }
     }
 
@@ -91,16 +95,20 @@ export class OwnerImpl extends ecore.EObjectImpl implements Owner {
             if (notifications != null) {
                 notifications.dispatch()
             }
-        } else if (this.eNotificationRequired()) {
-            this.eNotify(
-                new ecore.Notification(this, ecore.EventType.UNSET, V1bugsConstants.OWNER__OPTIONAL, null, null)
-            )
+        } else {
+            this._optionalESet = false
+            if (this.eNotificationRequired()) {
+                this.eNotify(
+                    new ecore.Notification(this, ecore.EventType.UNSET, V1bugsConstants.OWNER__OPTIONAL, null, null)
+                )
+            }
         }
     }
 
     basicSetOptional(newOptional: Part, msgs: ecore.ENotificationChain): ecore.ENotificationChain {
         const oldOptional = this._optional
         this._optional = newOptional
+        this._optionalESet = true
         let notifications = msgs
         if (this.eNotificationRequired()) {
             const notification = new ecore.Notification(
@@ -123,6 +131,7 @@ export class OwnerImpl extends ecore.EObjectImpl implements Owner {
         const oldOptional = this._optional
         let notifications = msgs
         this._optional = null
+        this._optionalESet = false
         if (this.eNotificationRequired()) {
             const notification = new ecore.Notification(
                 this,
@@ -138,6 +147,11 @@ export class OwnerImpl extends ecore.EObjectImpl implements Owner {
             }
         }
         return notifications
+    }
+
+    // isSetOptional get if the value of optional is set
+    isSetOptional(): boolean {
+        return this._optionalESet
     }
 
     // get the value of partner
@@ -209,6 +223,8 @@ export class OwnerImpl extends ecore.EObjectImpl implements Owner {
             if (notifications != null) {
                 notifications.dispatch()
             }
+        } else {
+            this._partnerESet = true
         }
     }
 
@@ -227,10 +243,13 @@ export class OwnerImpl extends ecore.EObjectImpl implements Owner {
             if (notifications != null) {
                 notifications.dispatch()
             }
-        } else if (this.eNotificationRequired()) {
-            this.eNotify(
-                new ecore.Notification(this, ecore.EventType.UNSET, V1bugsConstants.OWNER__PARTNER, null, null)
-            )
+        } else {
+            this._partnerESet = false
+            if (this.eNotificationRequired()) {
+                this.eNotify(
+                    new ecore.Notification(this, ecore.EventType.UNSET, V1bugsConstants.OWNER__PARTNER, null, null)
+                )
+            }
         }
     }
 
@@ -242,6 +261,7 @@ export class OwnerImpl extends ecore.EObjectImpl implements Owner {
     basicSetPartner(newPartner: Partner, msgs: ecore.ENotificationChain): ecore.ENotificationChain {
         const oldPartner = this._partner
         this._partner = newPartner
+        this._partnerESet = true
         let notifications = msgs
         if (this.eNotificationRequired()) {
             const notification = new ecore.Notification(
@@ -264,6 +284,7 @@ export class OwnerImpl extends ecore.EObjectImpl implements Owner {
         const oldPartner = this._partner
         let notifications = msgs
         this._partner = null
+        this._partnerESet = false
         if (this.eNotificationRequired()) {
             const notification = new ecore.Notification(
                 this,
@@ -279,6 +300,11 @@ export class OwnerImpl extends ecore.EObjectImpl implements Owner {
             }
         }
         return notifications
+    }
+
+    // isSetPartner get if the value of partner is set
+    isSetPartner(): boolean {
+        return this._partnerESet
     }
 
     // get the value of point
@@ -381,10 +407,10 @@ export class OwnerImpl extends ecore.EObjectImpl implements Owner {
                 return this._label != 'say "hi" \\ there'
             }
             case V1bugsConstants.OWNER__OPTIONAL: {
-                return this._optional != null
+                return this._optionalESet
             }
             case V1bugsConstants.OWNER__PARTNER: {
-                return this._partner != null
+                return this._partnerESet
             }
             case V1bugsConstants.OWNER__POINT: {
                 return this._point != 

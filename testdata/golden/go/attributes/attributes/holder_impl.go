@@ -22,6 +22,7 @@ type holderImpl struct {
 	ecore.EObjectImpl
 	anything    any
 	count       int
+	countESet   bool
 	data        []byte
 	func_       int
 	isEnabled   bool
@@ -103,6 +104,7 @@ func (h *holderImpl) GetCount() int {
 func (h *holderImpl) SetCount(newCount int) {
 	oldCount := h.count
 	h.count = newCount
+	h.countESet = true
 	if h.ENotificationRequired() {
 		h.ENotify(ecore.NewNotificationByFeatureID(h.AsEObject(), ecore.SET, HOLDER__COUNT, oldCount, newCount, ecore.NO_INDEX))
 	}
@@ -112,9 +114,15 @@ func (h *holderImpl) SetCount(newCount int) {
 func (h *holderImpl) UnsetCount() {
 	oldCount := h.count
 	h.count = 0
+	h.countESet = false
 	if h.ENotificationRequired() {
 		h.ENotify(ecore.NewNotificationByFeatureID(h.AsEObject(), ecore.UNSET, HOLDER__COUNT, oldCount, nil, ecore.NO_INDEX))
 	}
+}
+
+// IsSetCount get if the value of count is set
+func (h *holderImpl) IsSetCount() bool {
+	return h.countESet
 }
 
 // GetData get the value of data
@@ -275,7 +283,14 @@ func (h *holderImpl) GetTags() ecore.EList {
 
 // UnsetTags unset the value of tags
 func (h *holderImpl) UnsetTags() {
-	h.tags.Clear()
+	if h.tags != nil {
+		h.tags.Clear()
+	}
+}
+
+// IsSetTags get if the value of tags is set
+func (h *holderImpl) IsSetTags() bool {
+	return h.tags != nil && h.tags.Size() != 0
 }
 
 // GetTemperature get the value of temperature
@@ -468,7 +483,7 @@ func (h *holderImpl) EIsSetFromID(featureID int) bool {
 	case HOLDER__ANYTHING:
 		return h.anything != nil
 	case HOLDER__COUNT:
-		return h.count != 0
+		return h.countESet
 	case HOLDER__DATA:
 		return h.data != nil
 	case HOLDER__ENABLED:

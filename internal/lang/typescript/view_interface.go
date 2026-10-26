@@ -94,7 +94,8 @@ func (s *scope) propertyDeclaration(f ecore.EStructuralFeature) []string {
 }
 
 // methodsDeclaration declares the accessor methods of a feature: its getter,
-// the async getter of a single proxy, its setter and its unsetter.
+// the async getter of a single proxy, its setter, its unsetter and its
+// issetter.
 func (s *scope) methodsDeclaration(f ecore.EStructuralFeature) []string {
 	g := s.g
 	info := g.m.Feature(f)
@@ -111,6 +112,9 @@ func (s *scope) methodsDeclaration(f ecore.EStructuralFeature) []string {
 	}
 	if info.Unset {
 		lines = append(lines, g.unsetterName(f)+"(): void")
+	}
+	if info.IsSet {
+		lines = append(lines, g.isSetterName(f)+"(): boolean")
 	}
 	return lines
 }

@@ -29,10 +29,12 @@ type Owner interface {
 	GetOptional() Part
 	SetOptional(Part)
 	UnsetOptional()
+	IsSetOptional() bool
 
 	GetPartner() Partner
 	SetPartner(Partner)
 	UnsetPartner()
+	IsSetPartner() bool
 
 	// Start of user code Owner
 	// End of user code

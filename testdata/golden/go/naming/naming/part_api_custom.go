@@ -22,6 +22,7 @@ type IPart interface {
 	ReadWeight() float64
 	AssignWeight(float64)
 	DropWeight()
+	KnowsWeight() bool
 
 	ReadOwner() ItemItf
 	WriteOwner(ItemItf)

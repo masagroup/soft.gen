@@ -221,6 +221,42 @@ func (c *FakeItem_ClearCount_Call) Return() *FakeItem_ClearCount_Call {
 	return c
 }
 
+// HasCount get if the value of count is set
+func (i *FakeItem_Prototype_Methods) HasCount() bool {
+	ret := i.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type FakeItem_HasCount_Call struct {
+	*mock.Call
+}
+
+func (e *FakeItem_Expecter_Methods) HasCount() *FakeItem_HasCount_Call {
+	return &FakeItem_HasCount_Call{Call: e.mock.On("HasCount")}
+}
+
+func (c *FakeItem_HasCount_Call) Run(run func()) *FakeItem_HasCount_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *FakeItem_HasCount_Call) Return(count bool) *FakeItem_HasCount_Call {
+	c.Call.Return(count)
+	return c
+}
+
 // FetchName get the value of name
 func (i *FakeItem_Prototype_Methods) FetchName() string {
 	ret := i.mock.Called()

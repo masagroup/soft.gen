@@ -86,6 +86,11 @@ export class HolderImpl extends ecore.EObjectImpl implements Holder {
         }
     }
 
+    // isSetCache get if the value of cache is set
+    isSetCache(): boolean {
+        return this._cache && !this._cache.isEmpty()
+    }
+
     // get the value of computed
     getComputed(): Item {
         if (this._computed == null) {

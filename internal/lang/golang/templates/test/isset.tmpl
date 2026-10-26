@@ -1,0 +1,30 @@
+{{/* The test of the issetter of an unsettable feature, by variant. */}}
+{{ define "test/isset.volatile" -}}
+func Test{{ .Class }}{{ .Name }}IsSet(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}Panics(t, func() { o.{{ .IsSetter }}() })
+}
+{{- end }}
+
+{{ define "test/isset.false" -}}
+func Test{{ .Class }}{{ .Name }}IsSet(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}False(t, o.{{ .IsSetter }}())
+}
+{{- end }}
+
+{{ define "test/isset.flag" -}}
+func Test{{ .Class }}{{ .Name }}IsSet(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	{{ .Assert }}False(t, o.{{ .IsSetter }}())
+	{{ .Assert }}False(t, o.EIsSetFromID({{ .ID }}))
+	o.{{ .ESetVar }} = true
+	{{ .Assert }}True(t, o.{{ .IsSetter }}())
+	{{ .Assert }}True(t, o.EIsSetFromID({{ .ID }}))
+{{- if .IsSetUnset }}
+	o.{{ .Unsetter }}()
+	{{ .Assert }}False(t, o.{{ .IsSetter }}())
+	{{ .Assert }}False(t, o.EIsSetFromID({{ .ID }}))
+{{- end }}
+}
+{{- end }}

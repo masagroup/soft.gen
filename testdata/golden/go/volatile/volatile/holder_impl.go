@@ -68,6 +68,11 @@ func (h *holderImpl) UnsetCode() {
 	panic("UnsetCode not implemented")
 }
 
+// IsSetCode get if the value of code is set
+func (h *holderImpl) IsSetCode() bool {
+	panic("IsSetCode not implemented")
+}
+
 // GetKept get the value of kept
 func (h *holderImpl) GetKept() Item {
 	panic("GetKept not implemented")
@@ -91,6 +96,11 @@ func (h *holderImpl) basicUnsetKept(msgs ecore.ENotificationChain) ecore.ENotifi
 	panic("basicUnsetKept not implemented")
 }
 
+// IsSetKept get if the value of kept is set
+func (h *holderImpl) IsSetKept() bool {
+	panic("IsSetKept not implemented")
+}
+
 // GetLabel get the value of label
 func (h *holderImpl) GetLabel() string {
 	return "label"
@@ -104,6 +114,11 @@ func (h *holderImpl) SetLabel(newLabel string) {
 // UnsetLabel unset the value of label
 func (h *holderImpl) UnsetLabel() {
 	panic("unset label")
+}
+
+// IsSetLabel get if the value of label is set
+func (h *holderImpl) IsSetLabel() bool {
+	panic("isset label")
 }
 
 // GetLinked get the value of linked
@@ -141,6 +156,11 @@ func (h *holderImpl) UnsetOwned() {
 
 func (h *holderImpl) basicUnsetOwned(msgs ecore.ENotificationChain) ecore.ENotificationChain {
 	panic("basicUnsetOwned not implemented")
+}
+
+// IsSetOwned get if the value of owned is set
+func (h *holderImpl) IsSetOwned() bool {
+	panic("IsSetOwned not implemented")
 }
 
 // GetTarget get the value of target

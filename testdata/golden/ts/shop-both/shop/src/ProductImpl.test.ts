@@ -49,6 +49,18 @@ describe("ProductImpl", () => {
         expect(notification.getPosition()).toBe(-1)
     })
 
+    test("isSetCategory", () => {
+        const o = new ProductImpl()
+        expect(o.isSetCategory()).toBeFalsy()
+        expect(o.eIsSetFromID(ShopConstants.PRODUCT__CATEGORY)).toBeFalsy()
+        o["_categoryESet"] = true
+        expect(o.isSetCategory()).toBeTruthy()
+        expect(o.eIsSetFromID(ShopConstants.PRODUCT__CATEGORY)).toBeTruthy()
+        o.unSetCategory()
+        expect(o.isSetCategory()).toBeFalsy()
+        expect(o.eIsSetFromID(ShopConstants.PRODUCT__CATEGORY)).toBeFalsy()
+    })
+
     test("getLabel", () => {
         const o = new ProductImpl()
         // get default value

@@ -14,6 +14,7 @@ import { IPart, ItemItf, NamingValues, getINamingMeta } from "./internal.js"
 
 export class ItemStruct extends ecore.EObjectImpl implements ItemItf {
     protected _count: number
+    protected _countESet: boolean = false
     protected _isActive: boolean
     protected _name: string
     protected _parts: ecore.EList<IPart>
@@ -39,6 +40,7 @@ export class ItemStruct extends ecore.EObjectImpl implements ItemItf {
     putCount(newCount: number): void {
         const oldCount = this._count
         this._count = newCount
+        this._countESet = true
         if (this.eNotificationRequired()) {
             this.eNotify(
                 new ecore.Notification(this, ecore.EventType.SET, NamingValues.ITEM__COUNT, oldCount, newCount)
@@ -48,9 +50,17 @@ export class ItemStruct extends ecore.EObjectImpl implements ItemItf {
 
     // clearCount unset the value of _count
     clearCount(): void {
+        const oldCount = this._count
+        this._count = 0
+        this._countESet = false
         if (this.eNotificationRequired()) {
-            this.eNotify(new ecore.Notification(this, ecore.EventType.UNSET, NamingValues.ITEM__COUNT, null, null))
+            this.eNotify(new ecore.Notification(this, ecore.EventType.UNSET, NamingValues.ITEM__COUNT, oldCount, 0))
         }
+    }
+
+    // hasCount get if the value of count is set
+    hasCount(): boolean {
+        return this._countESet
     }
 
     // get the value of active
@@ -197,7 +207,7 @@ export class ItemStruct extends ecore.EObjectImpl implements ItemItf {
                 return this._isActive != false
             }
             case NamingValues.ITEM__COUNT: {
-                return this._count != 0
+                return this._countESet
             }
             case NamingValues.ITEM__NAME: {
                 return this._name != ""

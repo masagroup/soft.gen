@@ -180,6 +180,7 @@ func TestFeatureUnsettable(t *testing.T) {
 	assert.Nil(t, f.Reference)
 	assert.True(t, f.IsUnsettable)
 	assert.True(t, f.IsSet)
+	assert.True(t, f.HasESet)
 	assert.True(t, f.Unset)
 	assert.True(t, f.Set)
 	assert.False(t, f.BasicSet)

@@ -18,14 +18,18 @@ type featureView struct {
 	// Name is the model name; Var the field; Property the property name.
 	Name, Var, Property string
 	// The accessor names.
-	Getter, Setter, Unsetter, BasicGetter, BasicSetter, BasicUnsetter, InitMethod string
+	Getter, Setter, Unsetter, IsSetter, BasicGetter, BasicSetter, BasicUnsetter, InitMethod string
+	// ESetVar is the flag field telling whether an unsettable single field is
+	// set (EMF xxxESet), "" when the feature has none.
+	ESetVar string
 	// NewVar and OldVar are the local variables of the setters.
 	NewVar, OldVar string
 	// HasCheckImplementation is whether the setter checks that the new value
 	// shares the implementation (a reference of a shared package).
 	HasCheckImplementation bool
-	// GetterBody, SetterBody and UnsetterBody are the hand-written bodies.
-	GetterBody, SetterBody, UnsetterBody string
+	// GetterBody, SetterBody, UnsetterBody and IsSetterBody are the
+	// hand-written bodies.
+	GetterBody, SetterBody, UnsetterBody, IsSetterBody string
 	// SimpleSet is whether the feature has a setter of its own, not declared
 	// by the interface (v1 isSimpleSet): readable, not settable, not volatile,
 	// not a container.
@@ -33,7 +37,7 @@ type featureView struct {
 	// IsList is whether the feature is many valued.
 	IsList bool
 	// The strategy of each accessor: the variant of its template.
-	GetterStrategy, GetterAsyncStrategy, SetterStrategy, SimpleSetStrategy, UnsetterStrategy,
+	GetterStrategy, GetterAsyncStrategy, SetterStrategy, SimpleSetStrategy, UnsetterStrategy, IsSetterStrategy,
 	BasicGetterStrategy, BasicSetterStrategy, BasicUnsetterStrategy string
 }
 
@@ -51,6 +55,7 @@ func (g *gen) featureView(c ecore.EClass, f ecore.EStructuralFeature, s *scope) 
 		Getter:        g.getterName(f),
 		Setter:        g.setterName(f),
 		Unsetter:      g.unsetterName(f),
+		IsSetter:      g.isSetterName(f),
 		BasicGetter:   "basic" + naming.UpperFirst(g.getterName(f)),
 		BasicSetter:   "basicSet" + naming.UpperFirst(propertyName(f)),
 		BasicUnsetter: "basic" + naming.UpperFirst(g.unsetterName(f)),
@@ -64,11 +69,16 @@ func (g *gen) featureView(c ecore.EClass, f ecore.EStructuralFeature, s *scope) 
 	v.GetterBody, _ = g.KeyValue(f, "getterBody")
 	v.SetterBody, _ = g.KeyValue(f, "setterBody")
 	v.UnsetterBody, _ = g.KeyValue(f, "unsetterBody")
+	v.IsSetterBody, _ = g.KeyValue(f, "isSetBody")
+	if g.hasESet(f) {
+		v.ESetVar = v.Var + "ESet"
+	}
 	v.GetterStrategy = g.getterStrategy(f)
 	v.GetterAsyncStrategy = g.getterAsyncStrategy(f)
 	v.SetterStrategy = g.setterStrategy(f)
 	v.SimpleSetStrategy = g.simpleSetStrategy(f)
 	v.UnsetterStrategy = g.unsetterStrategy(f)
+	v.IsSetterStrategy = g.isSetterStrategy(f)
 	v.BasicGetterStrategy = g.basicGetterStrategy(f)
 	v.BasicSetterStrategy = g.basicSetterStrategy(f)
 	v.BasicUnsetterStrategy = g.basicUnsetterStrategy(f)
@@ -226,7 +236,8 @@ func (g *gen) simpleSetStrategy(f ecore.EStructuralFeature) string {
 }
 
 // unsetterStrategy is the variant of the unsetter: reflective, lazylist (a
-// list initialized by a lazy function), list, inverse, field, body, panic.
+// list initialized by a lazy function), list (cleared when built), inverse,
+// field (reset to its default, no more set), body, panic.
 func (g *gen) unsetterStrategy(f ecore.EStructuralFeature) string {
 	info := g.m.Feature(f)
 	switch {
@@ -246,6 +257,31 @@ func (g *gen) unsetterStrategy(f ecore.EStructuralFeature) string {
 		return "body"
 	}
 	return "panic"
+}
+
+// isSetterStrategy is the variant of the issetter (EMF isSet<Name>):
+// reflective, field (the ESet flag), list (non-empty: an unsettable list
+// keeps no flag), body (the isSetBody key), panic.
+func (g *gen) isSetterStrategy(f ecore.EStructuralFeature) string {
+	info := g.m.Feature(f)
+	switch {
+	case g.IsReflectiveDelegation():
+		return "reflective"
+	case !info.IsVolatile:
+		if info.IsList {
+			return "list"
+		}
+		return "field"
+	case g.hasKey(f, "isSetBody"):
+		return "body"
+	}
+	return "panic"
+}
+
+// hasESet reports whether the implementation keeps an ESet flag for the
+// feature: an unsettable single field, without reflective delegation.
+func (g *gen) hasESet(f ecore.EStructuralFeature) bool {
+	return g.m.Feature(f).HasESet && !g.IsReflectiveDelegation()
 }
 
 // basicGetterStrategy is the variant of the basic getter: container,
@@ -337,6 +373,17 @@ func (v *featureView) ID() string { return v.s.featureID(v.c, v.f) }
 // Default is the default value of the field: the attribute default, null for
 // a reference, "" for a many attribute.
 func (v *featureView) Default() string { return v.s.defaultValue(v.f) }
+
+// UnsetValue is the value of an unset single field: its default, else null.
+func (v *featureView) UnsetValue() string {
+	if value := v.Default(); value != "" {
+		return value
+	}
+	return "null"
+}
+
+// IsSetValue is the expression of the list issetter: the list is not empty.
+func (v *featureView) IsSetValue() string { return v.s.comparison(v.f) }
 
 // Guard is the value a lazily initialized field is compared with: the
 // attribute default, else null.

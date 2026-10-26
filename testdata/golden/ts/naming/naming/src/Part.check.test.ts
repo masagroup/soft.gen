@@ -175,6 +175,18 @@ describe("PartStruct", () => {
         expect(o.readWeight()).toBe(0.0)
     })
 
+    test("isSetWeight", () => {
+        const o = new PartStruct()
+        expect(o.knowsWeight()).toBeFalsy()
+        expect(o.eIsSetFromID(NamingValues.PART__WEIGHT)).toBeFalsy()
+        o["_weightESet"] = true
+        expect(o.knowsWeight()).toBeTruthy()
+        expect(o.eIsSetFromID(NamingValues.PART__WEIGHT)).toBeTruthy()
+        o.dropWeight()
+        expect(o.knowsWeight()).toBeFalsy()
+        expect(o.eIsSetFromID(NamingValues.PART__WEIGHT)).toBeFalsy()
+    })
+
     test("eGetFromID", () => {
         const o = new PartStruct()
         expect(() => o.eGetFromID(-1, true)).toThrow(Error)

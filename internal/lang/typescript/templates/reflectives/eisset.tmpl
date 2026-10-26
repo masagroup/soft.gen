@@ -1,4 +1,4 @@
-{{/* eIsSetFromID: whether a feature by id differs from its default. */}}
+{{/* eIsSetFromID: whether a feature by id is set: its ESet flag, else whether it differs from its default. */}}
 {{ define "reflectives/eisset" -}}
 eIsSetFromID(featureID: number): boolean {
     switch (featureID) {

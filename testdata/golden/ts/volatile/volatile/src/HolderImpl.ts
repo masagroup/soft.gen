@@ -36,6 +36,11 @@ export class HolderImpl extends ecore.EObjectImpl implements Holder {
         throw new Error("unSetCode not implemented")
     }
 
+    // isSetCode get if the value of code is set
+    isSetCode(): boolean {
+        throw new Error("isSetCode not implemented")
+    }
+
     // get the value of kept
     getKept(): Item {
         throw new Error("getKept not implemented")
@@ -59,6 +64,11 @@ export class HolderImpl extends ecore.EObjectImpl implements Holder {
         throw new Error("basicUnSetKept not implemented")
     }
 
+    // isSetKept get if the value of kept is set
+    isSetKept(): boolean {
+        throw new Error("isSetKept not implemented")
+    }
+
     // get the value of label
     getLabel(): string {
         return "label"
@@ -72,6 +82,11 @@ export class HolderImpl extends ecore.EObjectImpl implements Holder {
     // unSetLabel unset the value of _label
     unSetLabel(): void {
         throw new Error("unset label")
+    }
+
+    // isSetLabel get if the value of label is set
+    isSetLabel(): boolean {
+        throw new Error("isset label")
     }
 
     // get the value of linked
@@ -115,6 +130,11 @@ export class HolderImpl extends ecore.EObjectImpl implements Holder {
 
     basicUnSetOwned(msgs: ecore.ENotificationChain): ecore.ENotificationChain {
         throw new Error("basicUnSetOwned not implemented")
+    }
+
+    // isSetOwned get if the value of owned is set
+    isSetOwned(): boolean {
+        throw new Error("isSetOwned not implemented")
     }
 
     // get the value of target

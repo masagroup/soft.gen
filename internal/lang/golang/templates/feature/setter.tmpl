@@ -33,7 +33,7 @@ func ({{ .Receiver }} *{{ .Impl }}) {{ .Setter }}({{ .NewVar }} {{ .Type }}) {
 	}
 {{- end }}
 
-{{/* A bidirectional or containment reference: the old and new other ends are told. */}}
+{{/* A bidirectional or containment reference: the old and new other ends are told; the same value is still set. */}}
 {{ define "feature/setter.inverse" -}}
 	if {{ .NewVar }} != {{ .Receiver }}.{{ .Var }} {
 		var notifications {{ .ENotificationChain }}
@@ -48,12 +48,19 @@ func ({{ .Receiver }} *{{ .Impl }}) {{ .Setter }}({{ .NewVar }} {{ .Type }}) {
 			notifications.Dispatch()
 		}
 	}
+{{- if .ESetVar }} else {
+		{{ .Receiver }}.{{ .ESetVar }} = true
+	}
+{{- end }}
 {{- end }}
 
-{{/* A plain field, with a SET notification. */}}
+{{/* A plain field, set, with a SET notification. */}}
 {{ define "feature/setter.field" -}}
 	{{ .OldVar }} := {{ .Receiver }}.{{ .Var }}
 	{{ .Receiver }}.{{ .Var }} = {{ .NewVar }}
+{{- if .ESetVar }}
+	{{ .Receiver }}.{{ .ESetVar }} = true
+{{- end }}
 	if {{ .Receiver }}.ENotificationRequired() {
 		{{ .Receiver }}.ENotify({{ .NewNotificationByFeatureID }}({{ .Receiver }}.AsEObject(), {{ .SET }}, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }}, {{ .NO_INDEX }}))
 	}

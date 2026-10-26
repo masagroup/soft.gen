@@ -62,6 +62,17 @@ func TestMockHolderUnsetCache(t *testing.T) {
 	o.UnsetCache()
 }
 
+// TestMockHolderIsSetCache tests method IsSetCache
+func TestMockHolderIsSetCache(t *testing.T) {
+	o := NewMockHolder(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetCache().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetCache().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetCache())
+	assert.Equal(t, r, o.IsSetCache())
+}
+
 // TestMockHolderGetComputed tests method GetComputed
 func TestMockHolderGetComputed(t *testing.T) {
 	o := NewMockHolder(t)

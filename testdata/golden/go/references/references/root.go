@@ -44,6 +44,7 @@ type Root interface {
 
 	GetMarks() ecore.EList
 	UnsetMarks()
+	IsSetMarks() bool
 
 	// Start of user code Root
 	// End of user code

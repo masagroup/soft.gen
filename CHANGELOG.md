@@ -52,6 +52,34 @@ removed from the tree; they remain in the history, up to the `v1.x` tags.
 - The packages of the generator are internal (`internal/...`): the module
   exposes the command only, `cmd/soft.gen`.
 
+### Unsettable features (Go and TypeScript, v1 too)
+
+An unsettable feature follows the EMF Java generator, in v2 and in the v1
+templates alike:
+
+- A single field keeps an ESet flag (`<field>ESet`): the setter and the basic
+  setter set it, even to the current value or the default value; the
+  unsetter and the basic unsetter reset the value and clear it.
+- The issetter `IsSet<Name>() bool` (TypeScript `isSet<Name>(): boolean`) is
+  declared in the interface, implemented, mocked and tested: the ESet flag of
+  a single field, a non-empty list for a list (unsettable lists keep no flag),
+  `EIsSetFromID` with reflective delegation, the new `isSetBody` key or a panic
+  for a volatile feature. The naming rule `isSetName` renames it (default
+  `IsSet$1`, `isSet$1`).
+- `EIsSetFromID` returns the ESet flag of a single field instead of comparing
+  the value with its default.
+- The notifications are unchanged: soft.go and soft.ts notifications do not
+  carry the previous set state of EMF Java.
+
+Fixed with it:
+
+- The basic unsetter is declared in the basics interface with the signature
+  of its definition (Go; the code did not compile).
+- The unsetter of a list clears it only when built: lists are built on first
+  read (Go and TypeScript; it panicked on a new object).
+- The unsetter of a single attribute or reference resets the field to its
+  default and notifies the old value (TypeScript; it only notified).
+
 ### Fixed (Go)
 
 - `Create<Class>FromContainer` qualifies the type of the container parameter;

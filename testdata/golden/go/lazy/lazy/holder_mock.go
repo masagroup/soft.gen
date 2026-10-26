@@ -194,6 +194,42 @@ func (c *MockHolder_UnsetCache_Call) Return() *MockHolder_UnsetCache_Call {
 	return c
 }
 
+// IsSetCache get if the value of cache is set
+func (h *MockHolder_Prototype_Methods) IsSetCache() bool {
+	ret := h.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockHolder_IsSetCache_Call struct {
+	*mock.Call
+}
+
+func (e *MockHolder_Expecter_Methods) IsSetCache() *MockHolder_IsSetCache_Call {
+	return &MockHolder_IsSetCache_Call{Call: e.mock.On("IsSetCache")}
+}
+
+func (c *MockHolder_IsSetCache_Call) Run(run func()) *MockHolder_IsSetCache_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockHolder_IsSetCache_Call) Return(cache bool) *MockHolder_IsSetCache_Call {
+	c.Call.Return(cache)
+	return c
+}
+
 // GetComputed get the value of computed
 func (h *MockHolder_Prototype_Methods) GetComputed() Item {
 	ret := h.mock.Called()

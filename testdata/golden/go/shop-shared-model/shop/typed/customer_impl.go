@@ -19,12 +19,13 @@ import (
 // customerImpl is the implementation of the model object 'Customer'
 type customerImpl struct {
 	ecore.EObjectImpl
-	advisor   shop.Customer
-	favorite  shop.Product
-	name      string
-	orders    ecore.EList
-	referrals ecore.EList
-	referrer  shop.Customer
+	advisor      shop.Customer
+	favorite     shop.Product
+	favoriteESet bool
+	name         string
+	orders       ecore.EList
+	referrals    ecore.EList
+	referrer     shop.Customer
 }
 
 type customerBasics interface {
@@ -108,6 +109,7 @@ func (c *customerImpl) SetFavorite(newFavorite shop.Product) {
 	ecore.CheckSameImplementation(c, newFavorite)
 	oldFavorite := c.favorite
 	c.favorite = newFavorite
+	c.favoriteESet = true
 	if c.ENotificationRequired() {
 		c.ENotify(ecore.NewNotificationByFeatureID(c.AsEObject(), ecore.SET, shop.CUSTOMER__FAVORITE, oldFavorite, newFavorite, ecore.NO_INDEX))
 	}
@@ -117,9 +119,15 @@ func (c *customerImpl) SetFavorite(newFavorite shop.Product) {
 func (c *customerImpl) UnsetFavorite() {
 	oldFavorite := c.favorite
 	c.favorite = nil
+	c.favoriteESet = false
 	if c.ENotificationRequired() {
 		c.ENotify(ecore.NewNotificationByFeatureID(c.AsEObject(), ecore.UNSET, shop.CUSTOMER__FAVORITE, oldFavorite, nil, ecore.NO_INDEX))
 	}
+}
+
+// IsSetFavorite get if the value of favorite is set
+func (c *customerImpl) IsSetFavorite() bool {
+	return c.favoriteESet
 }
 
 // GetName get the value of name
@@ -285,7 +293,7 @@ func (c *customerImpl) EIsSetFromID(featureID int) bool {
 	case shop.CUSTOMER__ADVISOR:
 		return c.advisor != nil
 	case shop.CUSTOMER__FAVORITE:
-		return c.favorite != nil
+		return c.favoriteESet
 	case shop.CUSTOMER__NAME:
 		return c.name != ""
 	case shop.CUSTOMER__ORDERS:

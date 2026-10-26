@@ -77,6 +77,11 @@ func TestProductCategoryUnSet(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, mockAdapter)
 }
 
+func TestProductCategoryIsSet(t *testing.T) {
+	o := newProductImpl()
+	assert.False(t, o.IsSetCategory())
+}
+
 func TestProductLabelGet(t *testing.T) {
 	o := newProductImpl()
 	// get default value

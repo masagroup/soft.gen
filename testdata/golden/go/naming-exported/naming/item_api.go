@@ -31,6 +31,7 @@ type ItemItf interface {
 	ReadCount() int
 	PutCount(int)
 	ClearCount()
+	HasCount() bool
 
 	ReadParts() ecore.EList
 

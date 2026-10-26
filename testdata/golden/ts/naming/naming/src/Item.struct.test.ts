@@ -70,6 +70,18 @@ describe("ItemStruct", () => {
         expect(o.readCount()).toBe(0)
     })
 
+    test("isSetCount", () => {
+        const o = new ItemStruct()
+        expect(o.hasCount()).toBeFalsy()
+        expect(o.eIsSetFromID(NamingValues.ITEM__COUNT)).toBeFalsy()
+        o["_countESet"] = true
+        expect(o.hasCount()).toBeTruthy()
+        expect(o.eIsSetFromID(NamingValues.ITEM__COUNT)).toBeTruthy()
+        o.clearCount()
+        expect(o.hasCount()).toBeFalsy()
+        expect(o.eIsSetFromID(NamingValues.ITEM__COUNT)).toBeFalsy()
+    })
+
     test("getActive", () => {
         const o = new ItemStruct()
         // get default value

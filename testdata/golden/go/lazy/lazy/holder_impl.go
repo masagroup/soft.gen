@@ -110,6 +110,11 @@ func (h *holderImpl) UnsetCache() {
 	}
 }
 
+// IsSetCache get if the value of cache is set
+func (h *holderImpl) IsSetCache() bool {
+	return h.cache != nil && h.cache.Size() != 0
+}
+
 // GetComputed get the value of computed
 func (h *holderImpl) GetComputed() Item {
 	if h.computed == nil {

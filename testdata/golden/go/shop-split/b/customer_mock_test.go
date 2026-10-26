@@ -72,6 +72,17 @@ func TestMockCustomerUnsetFavorite(t *testing.T) {
 	o.UnsetFavorite()
 }
 
+// TestMockCustomerIsSetFavorite tests method IsSetFavorite
+func TestMockCustomerIsSetFavorite(t *testing.T) {
+	o := NewMockCustomer(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetFavorite().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetFavorite().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetFavorite())
+	assert.Equal(t, r, o.IsSetFavorite())
+}
+
 // TestMockCustomerGetName tests method GetName
 func TestMockCustomerGetName(t *testing.T) {
 	o := NewMockCustomer(t)

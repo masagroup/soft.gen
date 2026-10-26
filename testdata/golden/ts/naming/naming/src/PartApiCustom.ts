@@ -17,6 +17,7 @@ export interface IPart extends ecore.EObject {
     readWeight(): number
     assignWeight(newWeight: number): void
     dropWeight(): void
+    knowsWeight(): boolean
 
     // owner
     readOwner(): ItemItf

@@ -124,6 +124,7 @@ func (p *volatilePackageImpl) initializeGenGoAnnotations(ecoreFactory ecore.Ecor
 		eAnnotation.GetDetails().Put("getterBody", "return \"label\"")
 		eAnnotation.GetDetails().Put("setterBody", "panic(\"set label\")")
 		eAnnotation.GetDetails().Put("unsetterBody", "panic(\"unset label\")")
+		eAnnotation.GetDetails().Put("isSetBody", "panic(\"isset label\")")
 	}
 	{
 		eAnnotation := ecoreFactory.CreateEAnnotationFromContainer(p.GetHolder_Linked())

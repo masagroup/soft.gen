@@ -61,6 +61,11 @@ export class CustomerImpl extends ecore.EStoreEObjectImpl implements Customer {
         this.eUnsetFromID(ShopConstants.CUSTOMER__FAVORITE)
     }
 
+    // isSetFavorite get if the value of favorite is set
+    isSetFavorite(): boolean {
+        return this.eIsSetFromID(ShopConstants.CUSTOMER__FAVORITE)
+    }
+
     // get the value of name
     getName(): string {
         return this.eGetFromID(ShopConstants.CUSTOMER__NAME, true) as string

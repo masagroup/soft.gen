@@ -66,7 +66,9 @@ type featureTestView struct {
 	// Name is the feature name, upper-cased first, in the test names.
 	Name string
 	// The accessors and the field of the feature.
-	Getter, Setter, Unsetter, BasicSetter, Var string
+	Getter, Setter, Unsetter, IsSetter, BasicSetter, Var string
+	// ESetVar is the ESet flag field of an unsettable single field.
+	ESetVar string
 	// ID is the feature id in the class; ReverseID the id of the opposite in
 	// its class; ReverseGetter the meta object getter call of the opposite.
 	ID, ReverseID, ReverseGetter string
@@ -90,7 +92,9 @@ type featureTestView struct {
 	// inversely removed with.
 	RemoveID string
 	// The variants of the accessor tests ("" when the test is not generated).
-	GetKind, SetKind, UnsetKind string
+	GetKind, SetKind, UnsetKind, IsSetKind string
+	// IsSetUnset is whether the issetter test also unsets the feature.
+	IsSetUnset bool
 	// ProxyInit is how the proxy getter test initializes the value: field,
 	// set, or bidirectional (reflective delegation, v1 isProxy variant).
 	ProxyInit string
@@ -205,6 +209,7 @@ func (g *gen) featureTestView(c ecore.EClass, f ecore.EStructuralFeature, names 
 		Getter:        g.getterName(f),
 		Setter:        g.setterName(f),
 		Unsetter:      g.unsetterName(f),
+		IsSetter:      g.isSetterName(f),
 		Var:           g.variableName(f),
 		ID:            g.featureID(c, f, scope),
 		Reflective:    g.IsReflectiveDelegation(),
@@ -323,6 +328,13 @@ func (g *gen) featureTestKinds(v *featureTestView, info *model.FeatureInfo) {
 	v.ProxyInit = proxyInitKind(info, reflective)
 	if info.Unset {
 		v.UnsetKind = unsetTestKind(info)
+	}
+	if info.IsSet {
+		v.IsSetKind = isSetTestKind(info, reflective)
+		if v.IsSetKind == "flag" {
+			v.ESetVar = g.variableName(info.Feature) + "ESet"
+			v.IsSetUnset = info.Unset
+		}
 	}
 	v.EGetKind = egetTestKind(info)
 	v.ESetKind = g.esetTestKind(info)
@@ -452,6 +464,19 @@ func unsetTestKind(info *model.FeatureInfo) string {
 		return "list"
 	}
 	return "default"
+}
+
+// isSetTestKind is the variant of the issetter test: volatile, flag (the ESet
+// flag of a single field drives the issetter and EIsSetFromID, and the
+// unsetter clears it) or false (a new object has it unset).
+func isSetTestKind(info *model.FeatureInfo, reflective bool) string {
+	switch {
+	case info.IsVolatile:
+		return "volatile"
+	case info.HasESet && !reflective:
+		return "flag"
+	}
+	return "false"
 }
 
 // egetTestKind is the variant of an EGetFromID case (v1

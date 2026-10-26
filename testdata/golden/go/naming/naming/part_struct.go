@@ -18,7 +18,8 @@ import (
 // partStruct is the implementation of the model object 'Part'
 type partStruct struct {
 	ecore.EObjectImpl
-	weight float64
+	weight     float64
+	weightESet bool
 }
 
 type iPartBasics interface {
@@ -95,6 +96,7 @@ func (p *partStruct) ReadWeight() float64 {
 func (p *partStruct) AssignWeight(newWeight float64) {
 	oldWeight := p.weight
 	p.weight = newWeight
+	p.weightESet = true
 	if p.ENotificationRequired() {
 		p.ENotify(ecore.NewNotificationByFeatureID(p.AsEObject(), ecore.SET, PART__WEIGHT, oldWeight, newWeight, ecore.NO_INDEX))
 	}
@@ -104,9 +106,15 @@ func (p *partStruct) AssignWeight(newWeight float64) {
 func (p *partStruct) DropWeight() {
 	oldWeight := p.weight
 	p.weight = 0.0
+	p.weightESet = false
 	if p.ENotificationRequired() {
 		p.ENotify(ecore.NewNotificationByFeatureID(p.AsEObject(), ecore.UNSET, PART__WEIGHT, oldWeight, nil, ecore.NO_INDEX))
 	}
+}
+
+// KnowsWeight get if the value of weight is set
+func (p *partStruct) KnowsWeight() bool {
+	return p.weightESet
 }
 
 func (p *partStruct) EGetFromID(featureID int, resolve bool) any {
@@ -148,7 +156,7 @@ func (p *partStruct) EIsSetFromID(featureID int) bool {
 	case PART__OWNER:
 		return p.asIPart().ReadOwner() != nil
 	case PART__WEIGHT:
-		return p.weight != 0.0
+		return p.weightESet
 	default:
 		return p.EObjectImpl.EIsSetFromID(featureID)
 	}

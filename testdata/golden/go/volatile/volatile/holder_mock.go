@@ -158,6 +158,42 @@ func (c *MockHolder_UnsetCode_Call) Return() *MockHolder_UnsetCode_Call {
 	return c
 }
 
+// IsSetCode get if the value of code is set
+func (h *MockHolder_Prototype_Methods) IsSetCode() bool {
+	ret := h.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockHolder_IsSetCode_Call struct {
+	*mock.Call
+}
+
+func (e *MockHolder_Expecter_Methods) IsSetCode() *MockHolder_IsSetCode_Call {
+	return &MockHolder_IsSetCode_Call{Call: e.mock.On("IsSetCode")}
+}
+
+func (c *MockHolder_IsSetCode_Call) Run(run func()) *MockHolder_IsSetCode_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockHolder_IsSetCode_Call) Return(code bool) *MockHolder_IsSetCode_Call {
+	c.Call.Return(code)
+	return c
+}
+
 // GetKept get the value of kept
 func (h *MockHolder_Prototype_Methods) GetKept() Item {
 	ret := h.mock.Called()
@@ -246,6 +282,42 @@ func (c *MockHolder_UnsetKept_Call) Return() *MockHolder_UnsetKept_Call {
 	return c
 }
 
+// IsSetKept get if the value of kept is set
+func (h *MockHolder_Prototype_Methods) IsSetKept() bool {
+	ret := h.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockHolder_IsSetKept_Call struct {
+	*mock.Call
+}
+
+func (e *MockHolder_Expecter_Methods) IsSetKept() *MockHolder_IsSetKept_Call {
+	return &MockHolder_IsSetKept_Call{Call: e.mock.On("IsSetKept")}
+}
+
+func (c *MockHolder_IsSetKept_Call) Run(run func()) *MockHolder_IsSetKept_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockHolder_IsSetKept_Call) Return(kept bool) *MockHolder_IsSetKept_Call {
+	c.Call.Return(kept)
+	return c
+}
+
 // GetLabel get the value of label
 func (h *MockHolder_Prototype_Methods) GetLabel() string {
 	ret := h.mock.Called()
@@ -331,6 +403,42 @@ func (c *MockHolder_UnsetLabel_Call) Run(run func()) *MockHolder_UnsetLabel_Call
 
 func (c *MockHolder_UnsetLabel_Call) Return() *MockHolder_UnsetLabel_Call {
 	c.Call.Return()
+	return c
+}
+
+// IsSetLabel get if the value of label is set
+func (h *MockHolder_Prototype_Methods) IsSetLabel() bool {
+	ret := h.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockHolder_IsSetLabel_Call struct {
+	*mock.Call
+}
+
+func (e *MockHolder_Expecter_Methods) IsSetLabel() *MockHolder_IsSetLabel_Call {
+	return &MockHolder_IsSetLabel_Call{Call: e.mock.On("IsSetLabel")}
+}
+
+func (c *MockHolder_IsSetLabel_Call) Run(run func()) *MockHolder_IsSetLabel_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockHolder_IsSetLabel_Call) Return(label bool) *MockHolder_IsSetLabel_Call {
+	c.Call.Return(label)
 	return c
 }
 
@@ -482,6 +590,42 @@ func (c *MockHolder_UnsetOwned_Call) Run(run func()) *MockHolder_UnsetOwned_Call
 
 func (c *MockHolder_UnsetOwned_Call) Return() *MockHolder_UnsetOwned_Call {
 	c.Call.Return()
+	return c
+}
+
+// IsSetOwned get if the value of owned is set
+func (h *MockHolder_Prototype_Methods) IsSetOwned() bool {
+	ret := h.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockHolder_IsSetOwned_Call struct {
+	*mock.Call
+}
+
+func (e *MockHolder_Expecter_Methods) IsSetOwned() *MockHolder_IsSetOwned_Call {
+	return &MockHolder_IsSetOwned_Call{Call: e.mock.On("IsSetOwned")}
+}
+
+func (c *MockHolder_IsSetOwned_Call) Run(run func()) *MockHolder_IsSetOwned_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockHolder_IsSetOwned_Call) Return(owned bool) *MockHolder_IsSetOwned_Call {
+	c.Call.Return(owned)
 	return c
 }
 

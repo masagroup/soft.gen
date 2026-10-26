@@ -73,6 +73,11 @@ func (p *productImpl) UnsetCategory() {
 	p.EUnsetFromID(shop.PRODUCT__CATEGORY)
 }
 
+// IsSetCategory get if the value of category is set
+func (p *productImpl) IsSetCategory() bool {
+	return p.EIsSetFromID(shop.PRODUCT__CATEGORY)
+}
+
 // GetLabel get the value of label
 func (p *productImpl) GetLabel() string {
 	result, _ := p.EGetFromID(shop.PRODUCT__LABEL, true).(string)

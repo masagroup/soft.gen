@@ -17,11 +17,13 @@ export interface Holder extends ecore.EObject {
     getLabel(): string
     setLabel(newLabel: string): void
     unSetLabel(): void
+    isSetLabel(): boolean
 
     // code
     getCode(): number
     setCode(newCode: number): void
     unSetCode(): void
+    isSetCode(): boolean
 
     // linked
     getLinked(): Item
@@ -37,9 +39,11 @@ export interface Holder extends ecore.EObject {
     getOwned(): Item
     setOwned(newOwned: Item): void
     unSetOwned(): void
+    isSetOwned(): boolean
 
     // kept
     getKept(): Item
     setKept(newKept: Item): void
     unSetKept(): void
+    isSetKept(): boolean
 }

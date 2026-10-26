@@ -222,6 +222,42 @@ func (c *MockOwner_UnsetOptional_Call) Return() *MockOwner_UnsetOptional_Call {
 	return c
 }
 
+// IsSetOptional get if the value of optional is set
+func (o *MockOwner_Prototype_Methods) IsSetOptional() bool {
+	ret := o.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockOwner_IsSetOptional_Call struct {
+	*mock.Call
+}
+
+func (e *MockOwner_Expecter_Methods) IsSetOptional() *MockOwner_IsSetOptional_Call {
+	return &MockOwner_IsSetOptional_Call{Call: e.mock.On("IsSetOptional")}
+}
+
+func (c *MockOwner_IsSetOptional_Call) Run(run func()) *MockOwner_IsSetOptional_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockOwner_IsSetOptional_Call) Return(optional bool) *MockOwner_IsSetOptional_Call {
+	c.Call.Return(optional)
+	return c
+}
+
 // GetPartner get the value of partner
 func (o *MockOwner_Prototype_Methods) GetPartner() Partner {
 	ret := o.mock.Called()
@@ -307,6 +343,42 @@ func (c *MockOwner_UnsetPartner_Call) Run(run func()) *MockOwner_UnsetPartner_Ca
 
 func (c *MockOwner_UnsetPartner_Call) Return() *MockOwner_UnsetPartner_Call {
 	c.Call.Return()
+	return c
+}
+
+// IsSetPartner get if the value of partner is set
+func (o *MockOwner_Prototype_Methods) IsSetPartner() bool {
+	ret := o.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockOwner_IsSetPartner_Call struct {
+	*mock.Call
+}
+
+func (e *MockOwner_Expecter_Methods) IsSetPartner() *MockOwner_IsSetPartner_Call {
+	return &MockOwner_IsSetPartner_Call{Call: e.mock.On("IsSetPartner")}
+}
+
+func (c *MockOwner_IsSetPartner_Call) Run(run func()) *MockOwner_IsSetPartner_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockOwner_IsSetPartner_Call) Return(partner bool) *MockOwner_IsSetPartner_Call {
+	c.Call.Return(partner)
 	return c
 }
 

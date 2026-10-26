@@ -131,6 +131,18 @@ func TestOwnerOptionalUnSet(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, mockAdapter)
 }
 
+func TestOwnerOptionalIsSet(t *testing.T) {
+	o := newOwnerImpl()
+	assert.False(t, o.IsSetOptional())
+	assert.False(t, o.EIsSetFromID(OWNER__OPTIONAL))
+	o.optionalESet = true
+	assert.True(t, o.IsSetOptional())
+	assert.True(t, o.EIsSetFromID(OWNER__OPTIONAL))
+	o.UnsetOptional()
+	assert.False(t, o.IsSetOptional())
+	assert.False(t, o.EIsSetFromID(OWNER__OPTIONAL))
+}
+
 func TestOwnerPartnerGet(t *testing.T) {
 	o := newOwnerImpl()
 
@@ -227,6 +239,18 @@ func TestOwnerPartnerUnSet(t *testing.T) {
 	o.UnsetPartner()
 	assert.Nil(t, o.GetPartner())
 	mock.AssertExpectationsForObjects(t, mockAdapter)
+}
+
+func TestOwnerPartnerIsSet(t *testing.T) {
+	o := newOwnerImpl()
+	assert.False(t, o.IsSetPartner())
+	assert.False(t, o.EIsSetFromID(OWNER__PARTNER))
+	o.partnerESet = true
+	assert.True(t, o.IsSetPartner())
+	assert.True(t, o.EIsSetFromID(OWNER__PARTNER))
+	o.UnsetPartner()
+	assert.False(t, o.IsSetPartner())
+	assert.False(t, o.EIsSetFromID(OWNER__PARTNER))
 }
 
 func TestOwnerPointGet(t *testing.T) {

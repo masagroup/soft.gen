@@ -51,6 +51,17 @@ func TestMockProductUnsetCategory(t *testing.T) {
 	o.UnsetCategory()
 }
 
+// TestMockProductIsSetCategory tests method IsSetCategory
+func TestMockProductIsSetCategory(t *testing.T) {
+	o := NewMockProduct(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetCategory().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetCategory().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetCategory())
+	assert.Equal(t, r, o.IsSetCategory())
+}
+
 // TestMockProductGetLabel tests method GetLabel
 func TestMockProductGetLabel(t *testing.T) {
 	o := NewMockProduct(t)

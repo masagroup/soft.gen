@@ -5,11 +5,12 @@
 }
 {{- end }}
 
-{{/* A plain field. */}}
+{{/* A plain field, no more set. */}}
 {{ define "feature/basicunset.field" -}}
 const {{ .OldVar }} = this.{{ .Var }}
 let notifications = msgs
 this.{{ .Var }} = null
+this.{{ .ESetVar }} = false
 if (this.eNotificationRequired()) {
     const notification = new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.UNSET, {{ .ID }}, {{ .OldVar }}, null)
     if (notifications != null) {

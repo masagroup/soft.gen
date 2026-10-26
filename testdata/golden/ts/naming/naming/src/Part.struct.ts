@@ -14,6 +14,7 @@ import { IPart, ItemItf, NamingValues, getINamingMeta } from "./internal.js"
 
 export class PartStruct extends ecore.EObjectImpl implements IPart {
     protected _weight: number
+    protected _weightESet: boolean = false
 
     constructor() {
         super()
@@ -73,6 +74,7 @@ export class PartStruct extends ecore.EObjectImpl implements IPart {
     assignWeight(newWeight: number): void {
         const oldWeight = this._weight
         this._weight = newWeight
+        this._weightESet = true
         if (this.eNotificationRequired()) {
             this.eNotify(
                 new ecore.Notification(this, ecore.EventType.SET, NamingValues.PART__WEIGHT, oldWeight, newWeight)
@@ -82,9 +84,17 @@ export class PartStruct extends ecore.EObjectImpl implements IPart {
 
     // dropWeight unset the value of _weight
     dropWeight(): void {
+        const oldWeight = this._weight
+        this._weight = 0.0
+        this._weightESet = false
         if (this.eNotificationRequired()) {
-            this.eNotify(new ecore.Notification(this, ecore.EventType.UNSET, NamingValues.PART__WEIGHT, null, null))
+            this.eNotify(new ecore.Notification(this, ecore.EventType.UNSET, NamingValues.PART__WEIGHT, oldWeight, 0.0))
         }
+    }
+
+    // knowsWeight get if the value of weight is set
+    knowsWeight(): boolean {
+        return this._weightESet
     }
 
     eGetFromID(featureID: number, resolve: boolean): any {
@@ -143,7 +153,7 @@ export class PartStruct extends ecore.EObjectImpl implements IPart {
                 return this.readOwner() != null
             }
             case NamingValues.PART__WEIGHT: {
-                return this._weight != 0.0
+                return this._weightESet
             }
             default: {
                 return super.eIsSetFromID(featureID)

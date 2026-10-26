@@ -34,6 +34,7 @@ type Product interface {
 	GetCategory() Category
 	SetCategory(Category)
 	UnsetCategory()
+	IsSetCategory() bool
 
 	GetShop() Shop
 	SetShop(Shop)

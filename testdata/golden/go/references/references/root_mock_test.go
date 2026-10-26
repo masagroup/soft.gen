@@ -146,6 +146,17 @@ func TestMockRootUnsetMarks(t *testing.T) {
 	o.UnsetMarks()
 }
 
+// TestMockRootIsSetMarks tests method IsSetMarks
+func TestMockRootIsSetMarks(t *testing.T) {
+	o := NewMockRoot(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetMarks().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetMarks().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetMarks())
+	assert.Equal(t, r, o.IsSetMarks())
+}
+
 // TestMockRootGetOptional tests method GetOptional
 func TestMockRootGetOptional(t *testing.T) {
 	o := NewMockRoot(t)

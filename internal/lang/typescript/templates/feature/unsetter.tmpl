@@ -18,12 +18,14 @@ if (this.{{ .Var }} != {{ .Guard }}) {
 }
 {{- end }}
 
-{{/* A list: cleared. */}}
+{{/* A list, built on first read: cleared when built. */}}
 {{ define "feature/unsetter.list" -}}
-this.{{ .Var }}.clear()
+if (this.{{ .Var }} != null) {
+    this.{{ .Var }}.clear()
+}
 {{- end }}
 
-{{/* A bidirectional or containment reference: the inverse of the value is updated. */}}
+{{/* A bidirectional or containment reference: the inverse of the value is updated; the basic unsetter clears the ESet flag. */}}
 {{ define "feature/unsetter.inverse" -}}
 if (this.{{ .Var }} != null) {
     let notifications: {{ .Ecore "ENotificationChain" }} = null
@@ -34,15 +36,21 @@ if (this.{{ .Var }} != null) {
     if (notifications != null) {
         notifications.dispatch()
     }
-} else if (this.eNotificationRequired()) {
-    this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.UNSET, {{ .ID }}, null, null))
+} else {
+    this.{{ .ESetVar }} = false
+    if (this.eNotificationRequired()) {
+        this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.UNSET, {{ .ID }}, null, null))
+    }
 }
 {{- end }}
 
-{{/* A plain field: an UNSET notification. */}}
+{{/* A plain field: reset to its default and no more set, with an UNSET notification. */}}
 {{ define "feature/unsetter.field" -}}
+const {{ .OldVar }} = this.{{ .Var }}
+this.{{ .Var }} = {{ .UnsetValue }}
+this.{{ .ESetVar }} = false
 if (this.eNotificationRequired()) {
-    this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.UNSET, {{ .ID }}, null, null))
+    this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.UNSET, {{ .ID }}, {{ .OldVar }}, {{ .UnsetValue }}))
 }
 {{- end }}
 
