@@ -143,7 +143,7 @@ func (g *gen) addReflectives(view *classView, c ecore.EClass, s *scope) {
 			switch {
 			case fi.IsList && !fi.IsUnsettable:
 				rc.Strategy = "clear"
-			case fi.Unset && !g.isPropertyAccessors(f):
+			case fi.Unset && (!g.isPropertyAccessors(f) || g.hasESet(f)):
 				rc.Strategy = "unset"
 			case fi.Reference != nil:
 				rc.Strategy, rc.Value = "set", "null"
@@ -158,6 +158,9 @@ func (g *gen) addReflectives(view *classView, c ecore.EClass, s *scope) {
 	if len(info.EIsSetFeatures) > 0 {
 		view.add("reflectives/eisset", cases(info.EIsSetFeatures, func(f ecore.EStructuralFeature, rc *reflectiveCase) {
 			rc.Strategy, rc.Value = "isset", s.comparison(f)
+			if g.hasESet(f) {
+				rc.Value = "this." + variableName(f) + "ESet"
+			}
 		}))
 	}
 	if len(info.EInvokeOperations) > 0 {

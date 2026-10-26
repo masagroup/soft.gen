@@ -25,6 +25,7 @@ export interface Holder extends ecore.EObject {
     // cache
     getCache(): ecore.EList<Item>
     unSetCache(): void
+    isSetCache(): boolean
 
     // favorite
     getFavorite(): Item

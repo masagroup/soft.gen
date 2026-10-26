@@ -30,7 +30,7 @@ if ({{ .NewVar }} != this.eInternalContainer() || ({{ .NewVar }} != null && this
 }
 {{- end }}
 
-{{/* A bidirectional or containment reference: the inverse of the old and new values is updated. */}}
+{{/* A bidirectional or containment reference: the inverse of the old and new values is updated; the same value is still set. */}}
 {{ define "feature/setter.inverse" -}}
 {{ .CheckImplementation }}const {{ .OldVar }} = this.{{ .Var }}
 if ({{ .NewVar }} != {{ .OldVar }}) {
@@ -46,12 +46,19 @@ if ({{ .NewVar }} != {{ .OldVar }}) {
         notifications.dispatch()
     }
 }
+{{- if .ESetVar }} else {
+    this.{{ .ESetVar }} = true
+}
+{{- end }}
 {{- end }}
 
-{{/* A plain field, with a SET notification. */}}
+{{/* A plain field, set, with a SET notification. */}}
 {{ define "feature/setter.field" -}}
 {{ .CheckImplementation }}const {{ .OldVar }} = this.{{ .Var }}
 this.{{ .Var }} = {{ .NewVar }}
+{{- if .ESetVar }}
+this.{{ .ESetVar }} = true
+{{- end }}
 if (this.eNotificationRequired()) {
     this.eNotify(new {{ .Ecore "Notification" }}(this, {{ .Ecore "EventType" }}.SET, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }}))
 }

@@ -136,6 +136,10 @@ func (g *gen) unsetterName(f ecore.EStructuralFeature) string {
 	return g.ElementName(f, naming.UpperFirst(f.GetName()), "unSetterName", "unSet$1")
 }
 
+func (g *gen) isSetterName(f ecore.EStructuralFeature) string {
+	return g.ElementName(f, naming.UpperFirst(f.GetName()), "isSetName", "isSet$1")
+}
+
 func (g *gen) operationName(op ecore.EOperation) string {
 	return g.ElementName(op, op.GetName(), "operationName", "")
 }

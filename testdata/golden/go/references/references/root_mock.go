@@ -464,6 +464,42 @@ func (c *MockRoot_UnsetMarks_Call) Return() *MockRoot_UnsetMarks_Call {
 	return c
 }
 
+// IsSetMarks get if the value of marks is set
+func (r *MockRoot_Prototype_Methods) IsSetMarks() bool {
+	ret := r.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockRoot_IsSetMarks_Call struct {
+	*mock.Call
+}
+
+func (e *MockRoot_Expecter_Methods) IsSetMarks() *MockRoot_IsSetMarks_Call {
+	return &MockRoot_IsSetMarks_Call{Call: e.mock.On("IsSetMarks")}
+}
+
+func (c *MockRoot_IsSetMarks_Call) Run(run func()) *MockRoot_IsSetMarks_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockRoot_IsSetMarks_Call) Return(marks bool) *MockRoot_IsSetMarks_Call {
+	c.Call.Return(marks)
+	return c
+}
+
 // GetOptional get the value of optional
 func (r *MockRoot_Prototype_Methods) GetOptional() Item {
 	ret := r.mock.Called()

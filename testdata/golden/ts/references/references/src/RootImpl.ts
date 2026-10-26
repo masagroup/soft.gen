@@ -306,7 +306,14 @@ export class RootImpl extends ecore.EObjectImpl implements Root {
 
     // unSetMarks unset the value of _marks
     unSetMarks(): void {
-        this._marks.clear()
+        if (this._marks != null) {
+            this._marks.clear()
+        }
+    }
+
+    // isSetMarks get if the value of marks is set
+    isSetMarks(): boolean {
+        return this._marks && !this._marks.isEmpty()
     }
 
     // get the value of optional

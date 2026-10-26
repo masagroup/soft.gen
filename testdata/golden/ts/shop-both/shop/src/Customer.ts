@@ -29,6 +29,7 @@ export interface Customer extends Named {
     getFavoriteAsync(): Promise<Product>
     setFavorite(newFavorite: Product): void
     unSetFavorite(): void
+    isSetFavorite(): boolean
 
     // advisor
     getAdvisor(): Customer

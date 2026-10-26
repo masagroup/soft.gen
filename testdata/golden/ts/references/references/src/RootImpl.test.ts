@@ -228,6 +228,11 @@ describe("RootImpl", () => {
         expect(o.getMarks().isEmpty()).toBeTruthy()
     })
 
+    test("isSetMarks", () => {
+        const o = new RootImpl()
+        expect(o.isSetMarks()).toBeFalsy()
+    })
+
     test("getOptional", () => {
         const o = new RootImpl()
 

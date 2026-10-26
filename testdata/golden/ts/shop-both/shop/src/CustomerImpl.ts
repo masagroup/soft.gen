@@ -15,6 +15,7 @@ import { Customer, Order, Product, ShopConstants, getShopPackage } from "./inter
 export class CustomerImpl extends ecore.EObjectImpl implements Customer {
     protected _advisor: Customer
     protected _favorite: Product
+    protected _favoriteESet: boolean = false
     protected _name: string
     protected _orders: ecore.EList<Order>
     protected _referrals: ecore.EList<Customer>
@@ -170,6 +171,7 @@ export class CustomerImpl extends ecore.EObjectImpl implements Customer {
     setFavorite(newFavorite: Product): void {
         const oldFavorite = this._favorite
         this._favorite = newFavorite
+        this._favoriteESet = true
         if (this.eNotificationRequired()) {
             this.eNotify(
                 new ecore.Notification(
@@ -185,9 +187,12 @@ export class CustomerImpl extends ecore.EObjectImpl implements Customer {
 
     // unSetFavorite unset the value of _favorite
     unSetFavorite(): void {
+        const oldFavorite = this._favorite
+        this._favorite = null
+        this._favoriteESet = false
         if (this.eNotificationRequired()) {
             this.eNotify(
-                new ecore.Notification(this, ecore.EventType.UNSET, ShopConstants.CUSTOMER__FAVORITE, null, null)
+                new ecore.Notification(this, ecore.EventType.UNSET, ShopConstants.CUSTOMER__FAVORITE, oldFavorite, null)
             )
         }
     }
@@ -195,6 +200,11 @@ export class CustomerImpl extends ecore.EObjectImpl implements Customer {
     // get the basic value of favorite with no proxy resolution
     basicGetFavorite(): Product {
         return this._favorite
+    }
+
+    // isSetFavorite get if the value of favorite is set
+    isSetFavorite(): boolean {
+        return this._favoriteESet
     }
 
     // get the value of name
@@ -441,7 +451,7 @@ export class CustomerImpl extends ecore.EObjectImpl implements Customer {
                 break
             }
             case ShopConstants.CUSTOMER__FAVORITE: {
-                this.setFavorite(null)
+                this.unSetFavorite()
                 break
             }
             case ShopConstants.CUSTOMER__NAME: {
@@ -472,7 +482,7 @@ export class CustomerImpl extends ecore.EObjectImpl implements Customer {
                 return this._advisor != null
             }
             case ShopConstants.CUSTOMER__FAVORITE: {
-                return this._favorite != null
+                return this._favoriteESet
             }
             case ShopConstants.CUSTOMER__NAME: {
                 return this._name != ""

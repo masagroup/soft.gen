@@ -70,6 +70,11 @@ func TestHolderCacheUnSet(t *testing.T) {
 	assert.True(t, l.Empty())
 }
 
+func TestHolderCacheIsSet(t *testing.T) {
+	o := newHolderImpl()
+	assert.False(t, o.IsSetCache())
+}
+
 func TestHolderComputedGet(t *testing.T) {
 	o := newHolderImpl()
 	assert.Panics(t, func() { o.GetComputed() })

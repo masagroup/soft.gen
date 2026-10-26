@@ -94,6 +94,18 @@ describe("HolderImpl", () => {
         expect(o.getCount()).toBe(0)
     })
 
+    test("isSetCount", () => {
+        const o = new HolderImpl()
+        expect(o.isSetCount()).toBeFalsy()
+        expect(o.eIsSetFromID(AttributesConstants.HOLDER__COUNT)).toBeFalsy()
+        o["_countESet"] = true
+        expect(o.isSetCount()).toBeTruthy()
+        expect(o.eIsSetFromID(AttributesConstants.HOLDER__COUNT)).toBeTruthy()
+        o.unSetCount()
+        expect(o.isSetCount()).toBeFalsy()
+        expect(o.eIsSetFromID(AttributesConstants.HOLDER__COUNT)).toBeFalsy()
+    })
+
     test("getData", () => {
         const o = new HolderImpl()
         // get default value
@@ -378,6 +390,11 @@ describe("HolderImpl", () => {
         const o = new HolderImpl()
         o.unSetTags()
         expect(o.getTags().isEmpty()).toBeTruthy()
+    })
+
+    test("isSetTags", () => {
+        const o = new HolderImpl()
+        expect(o.isSetTags()).toBeFalsy()
     })
 
     test("getTemperature", () => {

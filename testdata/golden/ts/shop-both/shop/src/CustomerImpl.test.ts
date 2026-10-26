@@ -116,6 +116,18 @@ describe("CustomerImpl", () => {
         expect(notification.getPosition()).toBe(-1)
     })
 
+    test("isSetFavorite", () => {
+        const o = new CustomerImpl()
+        expect(o.isSetFavorite()).toBeFalsy()
+        expect(o.eIsSetFromID(ShopConstants.CUSTOMER__FAVORITE)).toBeFalsy()
+        o["_favoriteESet"] = true
+        expect(o.isSetFavorite()).toBeTruthy()
+        expect(o.eIsSetFromID(ShopConstants.CUSTOMER__FAVORITE)).toBeTruthy()
+        o.unSetFavorite()
+        expect(o.isSetFavorite()).toBeFalsy()
+        expect(o.eIsSetFromID(ShopConstants.CUSTOMER__FAVORITE)).toBeFalsy()
+    })
+
     test("getName", () => {
         const o = new CustomerImpl()
         // get default value

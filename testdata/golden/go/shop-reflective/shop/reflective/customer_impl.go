@@ -74,6 +74,11 @@ func (c *customerImpl) UnsetFavorite() {
 	c.EUnsetFromID(shop.CUSTOMER__FAVORITE)
 }
 
+// IsSetFavorite get if the value of favorite is set
+func (c *customerImpl) IsSetFavorite() bool {
+	return c.EIsSetFromID(shop.CUSTOMER__FAVORITE)
+}
+
 // GetName get the value of name
 func (c *customerImpl) GetName() string {
 	result, _ := c.EGetFromID(shop.CUSTOMER__NAME, true).(string)

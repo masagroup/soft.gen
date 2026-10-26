@@ -15,6 +15,7 @@ import { Customer, Order, Product, ShopConstants, getShopPackage } from "./inter
 export class CustomerImpl extends core.EObjectImpl implements Customer {
     protected _advisor: Customer
     protected _favorite: Product
+    protected _favoriteESet: boolean = false
     protected _name: string
     protected _orders: core.EList<Order>
     protected _referrals: core.EList<Customer>
@@ -100,6 +101,7 @@ export class CustomerImpl extends core.EObjectImpl implements Customer {
     setFavorite(newFavorite: Product): void {
         const oldFavorite = this._favorite
         this._favorite = newFavorite
+        this._favoriteESet = true
         if (this.eNotificationRequired()) {
             this.eNotify(
                 new core.Notification(
@@ -115,9 +117,12 @@ export class CustomerImpl extends core.EObjectImpl implements Customer {
 
     // unSetFavorite unset the value of _favorite
     unSetFavorite(): void {
+        const oldFavorite = this._favorite
+        this._favorite = null
+        this._favoriteESet = false
         if (this.eNotificationRequired()) {
             this.eNotify(
-                new core.Notification(this, core.EventType.UNSET, ShopConstants.CUSTOMER__FAVORITE, null, null)
+                new core.Notification(this, core.EventType.UNSET, ShopConstants.CUSTOMER__FAVORITE, oldFavorite, null)
             )
         }
     }
@@ -125,6 +130,11 @@ export class CustomerImpl extends core.EObjectImpl implements Customer {
     // get the basic value of favorite with no proxy resolution
     basicGetFavorite(): Product {
         return this._favorite
+    }
+
+    // isSetFavorite get if the value of favorite is set
+    isSetFavorite(): boolean {
+        return this._favoriteESet
     }
 
     // get the value of name
@@ -402,7 +412,7 @@ export class CustomerImpl extends core.EObjectImpl implements Customer {
                 return this._advisor != null
             }
             case ShopConstants.CUSTOMER__FAVORITE: {
-                return this._favorite != null
+                return this._favoriteESet
             }
             case ShopConstants.CUSTOMER__NAME: {
                 return this._name != ""

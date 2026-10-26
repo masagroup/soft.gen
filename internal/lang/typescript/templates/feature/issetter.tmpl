@@ -1,0 +1,32 @@
+{{/* The issetter of an unsettable feature (EMF isSet<Name>). */}}
+{{ define "feature/issetter" -}}
+// {{ .IsSetter }} get if the value of {{ .Name }} is set
+{{ .IsSetter }}(): boolean {
+{{ indent 1 (include (printf "feature/issetter.%s" .IsSetterStrategy) .) }}
+}
+{{- end }}
+
+{{/* Reflective delegation. */}}
+{{ define "feature/issetter.reflective" -}}
+return this.eIsSetFromID({{ .ID }})
+{{- end }}
+
+{{/* A single field: its ESet flag. */}}
+{{ define "feature/issetter.field" -}}
+return this.{{ .ESetVar }}
+{{- end }}
+
+{{/* A list: set when not empty. */}}
+{{ define "feature/issetter.list" -}}
+return {{ .IsSetValue }}
+{{- end }}
+
+{{/* A volatile feature with the isSetBody annotation key. */}}
+{{ define "feature/issetter.body" -}}
+{{ .IsSetterBody }}
+{{- end }}
+
+{{/* A volatile feature without body. */}}
+{{ define "feature/issetter.panic" -}}
+throw new Error("{{ .IsSetter }} not implemented")
+{{- end }}

@@ -206,6 +206,11 @@ func TestRootMarksUnSet(t *testing.T) {
 	assert.True(t, l.Empty())
 }
 
+func TestRootMarksIsSet(t *testing.T) {
+	o := newRootImpl()
+	assert.False(t, o.IsSetMarks())
+}
+
 func TestRootOptionalGet(t *testing.T) {
 	o := newRootImpl()
 	// get default value

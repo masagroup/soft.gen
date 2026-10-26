@@ -46,6 +46,11 @@ export class ProductImpl extends ecore.EStoreEObjectImpl implements Product {
         this.eUnsetFromID(ShopConstants.PRODUCT__CATEGORY)
     }
 
+    // isSetCategory get if the value of category is set
+    isSetCategory(): boolean {
+        return this.eIsSetFromID(ShopConstants.PRODUCT__CATEGORY)
+    }
+
     // get the value of label
     getLabel(): string {
         return this.eGetFromID(ShopConstants.PRODUCT__LABEL, true) as string

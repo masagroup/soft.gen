@@ -71,6 +71,17 @@ func TestFakeItemClearCount(t *testing.T) {
 	o.ClearCount()
 }
 
+// TestFakeItemHasCount tests method HasCount
+func TestFakeItemHasCount(t *testing.T) {
+	o := NewFakeItem(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().HasCount().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().HasCount().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.HasCount())
+	assert.Equal(t, r, o.HasCount())
+}
+
 // TestFakeItemFetchName tests method FetchName
 func TestFakeItemFetchName(t *testing.T) {
 	o := NewFakeItem(t)

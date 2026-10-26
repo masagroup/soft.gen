@@ -187,7 +187,14 @@ func (r *rootImpl) GetMarks() ecore.EList {
 
 // UnsetMarks unset the value of marks
 func (r *rootImpl) UnsetMarks() {
-	r.marks.Clear()
+	if r.marks != nil {
+		r.marks.Clear()
+	}
+}
+
+// IsSetMarks get if the value of marks is set
+func (r *rootImpl) IsSetMarks() bool {
+	return r.marks != nil && r.marks.Size() != 0
 }
 
 // GetOptional get the value of optional

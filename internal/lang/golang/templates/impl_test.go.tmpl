@@ -53,6 +53,10 @@ func Test{{ .Class }}GetValue(t *{{ .T }}) {
 
 {{ include (printf "test/unset.%s" .UnsetKind) . }}
 {{- end }}
+{{- if .IsSetKind }}
+
+{{ include (printf "test/isset.%s" .IsSetKind) . }}
+{{- end }}
 {{- end }}
 {{- if .Operations }}
 {{ blank }}

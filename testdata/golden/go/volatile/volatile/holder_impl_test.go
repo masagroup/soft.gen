@@ -57,6 +57,11 @@ func TestHolderCodeUnSet(t *testing.T) {
 	assert.Panics(t, func() { o.UnsetCode() })
 }
 
+func TestHolderCodeIsSet(t *testing.T) {
+	o := newHolderImpl()
+	assert.Panics(t, func() { o.IsSetCode() })
+}
+
 func TestHolderKeptGet(t *testing.T) {
 	o := newHolderImpl()
 	assert.Panics(t, func() { o.GetKept() })
@@ -80,6 +85,11 @@ func TestHolderKeptUnSet(t *testing.T) {
 	assert.Panics(t, func() { o.UnsetKept() })
 }
 
+func TestHolderKeptIsSet(t *testing.T) {
+	o := newHolderImpl()
+	assert.Panics(t, func() { o.IsSetKept() })
+}
+
 func TestHolderLabelGet(t *testing.T) {
 	o := newHolderImpl()
 	assert.NotPanics(t, func() { o.GetLabel() })
@@ -94,6 +104,11 @@ func TestHolderLabelSet(t *testing.T) {
 func TestHolderLabelUnSet(t *testing.T) {
 	o := newHolderImpl()
 	assert.Panics(t, func() { o.UnsetLabel() })
+}
+
+func TestHolderLabelIsSet(t *testing.T) {
+	o := newHolderImpl()
+	assert.Panics(t, func() { o.IsSetLabel() })
 }
 
 func TestHolderLinkedGet(t *testing.T) {
@@ -128,6 +143,11 @@ func TestHolderOwnedBasicSet(t *testing.T) {
 func TestHolderOwnedUnSet(t *testing.T) {
 	o := newHolderImpl()
 	assert.Panics(t, func() { o.UnsetOwned() })
+}
+
+func TestHolderOwnedIsSet(t *testing.T) {
+	o := newHolderImpl()
+	assert.Panics(t, func() { o.IsSetOwned() })
 }
 
 func TestHolderTargetGet(t *testing.T) {

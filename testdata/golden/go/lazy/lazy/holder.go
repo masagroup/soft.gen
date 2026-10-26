@@ -33,6 +33,7 @@ type Holder interface {
 
 	GetCache() ecore.EList
 	UnsetCache()
+	IsSetCache() bool
 
 	GetFavorite() Item
 	SetFavorite(Item)

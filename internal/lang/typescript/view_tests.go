@@ -151,7 +151,20 @@ func (g *gen) implementationTestFile(c ecore.EClass) engine.File {
 			}
 			t := newTest(f, "unset"+name, strategy)
 			t.Expected = s.defaultValue(f)
+			if strategy == "field" {
+				t.Expected = t.UnsetValue()
+			}
 			add("tests/feature.unset", t)
+		}
+		if info.IsSet {
+			strategy := "falsy"
+			switch {
+			case info.IsVolatile:
+				strategy = "volatile"
+			case g.hasESet(f) && info.Unset:
+				strategy = "flag"
+			}
+			add("tests/feature.isset", newTest(f, "isSet"+name, strategy))
 		}
 	}
 	operations := g.implementedOperations(c)

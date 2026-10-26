@@ -130,6 +130,11 @@ func TestCustomerFavoriteUnSet(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, mockAdapter)
 }
 
+func TestCustomerFavoriteIsSet(t *testing.T) {
+	o := newCustomerImpl()
+	assert.False(t, o.IsSetFavorite())
+}
+
 func TestCustomerNameGet(t *testing.T) {
 	o := newCustomerImpl()
 	// get default value

@@ -149,6 +149,18 @@ func TestPartWeightUnSet(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, mockAdapter)
 }
 
+func TestPartWeightIsSet(t *testing.T) {
+	o := newPartStruct()
+	assert.False(t, o.KnowsWeight())
+	assert.False(t, o.EIsSetFromID(PART__WEIGHT))
+	o.weightESet = true
+	assert.True(t, o.KnowsWeight())
+	assert.True(t, o.EIsSetFromID(PART__WEIGHT))
+	o.DropWeight()
+	assert.False(t, o.KnowsWeight())
+	assert.False(t, o.EIsSetFromID(PART__WEIGHT))
+}
+
 func TestPartEGetFromID(t *testing.T) {
 	o := newPartStruct()
 	assert.Panics(t, func() { o.EGetFromID(-1, true) })

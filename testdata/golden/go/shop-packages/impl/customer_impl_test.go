@@ -131,6 +131,18 @@ func TestCustomerFavoriteUnSet(t *testing.T) {
 	github_com_stretchr_testify_mock.AssertExpectationsForObjects(t, mockAdapter)
 }
 
+func TestCustomerFavoriteIsSet(t *testing.T) {
+	o := newCustomerImpl()
+	assert.False(t, o.IsSetFavorite())
+	assert.False(t, o.EIsSetFromID(shop.CUSTOMER__FAVORITE))
+	o.favoriteESet = true
+	assert.True(t, o.IsSetFavorite())
+	assert.True(t, o.EIsSetFromID(shop.CUSTOMER__FAVORITE))
+	o.UnsetFavorite()
+	assert.False(t, o.IsSetFavorite())
+	assert.False(t, o.EIsSetFromID(shop.CUSTOMER__FAVORITE))
+}
+
 func TestCustomerNameGet(t *testing.T) {
 	o := newCustomerImpl()
 	// get default value

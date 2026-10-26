@@ -5,10 +5,11 @@ func ({{ .Receiver }} *{{ .Impl }}) {{ .BasicUnsetter }}(msgs {{ .ENotificationC
 }
 {{- end }}
 
-{{/* A plain field: the UNSET notification joins the chain. */}}
+{{/* A plain field, no more set: the UNSET notification joins the chain. */}}
 {{ define "feature/basicunset.field" -}}
 	{{ .OldVar }} := {{ .Receiver }}.{{ .Var }}
 	{{ .Receiver }}.{{ .Var }} = nil
+	{{ .Receiver }}.{{ .ESetVar }} = false
 	notifications := msgs
 	if {{ .Receiver }}.ENotificationRequired() {
 		notification := {{ .NewNotificationByFeatureID }}({{ .Receiver }}.AsEObject(), {{ .UNSET }}, {{ .ID }}, {{ .OldVar }}, nil, {{ .NO_INDEX }})

@@ -61,6 +61,11 @@ describe("HolderImpl", () => {
         expect(o.getCache().isEmpty()).toBeTruthy()
     })
 
+    test("isSetCache", () => {
+        const o = new HolderImpl()
+        expect(o.isSetCache()).toBeFalsy()
+    })
+
     test("getComputed", () => {
         const o = new HolderImpl()
         expect(() => o.getComputed()).toThrow(Error)

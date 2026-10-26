@@ -78,6 +78,18 @@ func TestProductCategoryUnSet(t *testing.T) {
 	github_com_stretchr_testify_mock.AssertExpectationsForObjects(t, mockAdapter)
 }
 
+func TestProductCategoryIsSet(t *testing.T) {
+	o := newProductImpl()
+	assert.False(t, o.IsSetCategory())
+	assert.False(t, o.EIsSetFromID(shop.PRODUCT__CATEGORY))
+	o.categoryESet = true
+	assert.True(t, o.IsSetCategory())
+	assert.True(t, o.EIsSetFromID(shop.PRODUCT__CATEGORY))
+	o.UnsetCategory()
+	assert.False(t, o.IsSetCategory())
+	assert.False(t, o.EIsSetFromID(shop.PRODUCT__CATEGORY))
+}
+
 func TestProductLabelGet(t *testing.T) {
 	o := newProductImpl()
 	// get default value

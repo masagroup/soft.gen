@@ -22,6 +22,7 @@ type FeatureInfo struct {
 	IsProxy         bool // a resolving reference, neither container nor containment (v1 isProxy)
 	IsField         bool // neither container nor volatile (v1 isField)
 	IsBackReference bool // a container, or a reference annotated aggregation=shared (v1 isBackReference, go generateType.mtl)
+	HasESet         bool // an unsettable single field: a flag tells whether it is set (v1 hasESetFlag, EMF xxxESet)
 
 	// Kind is the kind of the feature: "attribute", "reference", "containment
 	// reference", "container reference", "map", with " list" appended to a
@@ -64,6 +65,7 @@ func (m *Model) Feature(f ecore.EStructuralFeature) *FeatureInfo {
 	info.IsProxy = info.Reference != nil && !info.IsContainer && !info.IsContainment && info.Reference.IsResolveProxies()
 	info.IsField = !info.IsContainer && !info.IsVolatile
 	info.IsBackReference = info.Reference != nil && (info.IsContainer || m.Annotation(f).Value("aggregation") == "shared")
+	info.HasESet = info.IsUnsettable && info.IsField && !info.IsList
 	info.Kind = m.FeatureKind(f)
 
 	info.Get = true

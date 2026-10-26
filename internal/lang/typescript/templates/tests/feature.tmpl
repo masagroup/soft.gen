@@ -319,6 +319,34 @@ expect(o.{{ .GetCall }}).toBe({{ .Expected }})
 {{- end }}
 {{- end }}
 
+{{/* The test of an issetter; the variant depends on the feature. */}}
+{{ define "tests/feature.isset" -}}
+test("{{ .Test }}", () => {
+    const o = new {{ .Class }}()
+{{ indent 1 (include (printf "tests/feature.isset.%s" .Strategy) .) }}
+})
+{{- end }}
+
+{{ define "tests/feature.isset.volatile" -}}
+expect(() => o.{{ .IsSetter }}()).toThrow(Error)
+{{- end }}
+
+{{ define "tests/feature.isset.falsy" -}}
+expect(o.{{ .IsSetter }}()).toBeFalsy()
+{{- end }}
+
+{{/* The ESet flag drives the issetter and eIsSetFromID; the unsetter clears it. */}}
+{{ define "tests/feature.isset.flag" -}}
+expect(o.{{ .IsSetter }}()).toBeFalsy()
+expect(o.eIsSetFromID({{ .ID }})).toBeFalsy()
+o["{{ .ESetVar }}"] = true
+expect(o.{{ .IsSetter }}()).toBeTruthy()
+expect(o.eIsSetFromID({{ .ID }})).toBeTruthy()
+o.{{ .Unsetter }}()
+expect(o.{{ .IsSetter }}()).toBeFalsy()
+expect(o.eIsSetFromID({{ .ID }})).toBeFalsy()
+{{- end }}
+
 {{/* The test of the default implementation of an operation: it throws. */}}
 {{ define "tests/feature.operation" -}}
 test("{{ .Test }}", () => {

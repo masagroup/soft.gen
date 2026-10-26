@@ -25,6 +25,7 @@ export interface ItemItf extends ecore.EObject {
     readCount(): number
     putCount(newCount: number): void
     clearCount(): void
+    hasCount(): boolean
 
     // parts
     readParts(): ecore.EList<IPart>

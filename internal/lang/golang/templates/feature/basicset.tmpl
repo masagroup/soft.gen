@@ -10,10 +10,13 @@ func ({{ .Receiver }} *{{ .Impl }}) {{ .BasicSetter }}({{ .NewVar }} {{ .Type }}
 	return {{ .Receiver }}.EBasicSetContainer({{ .NewVar }}, {{ .ID }}, msgs)
 {{- end }}
 
-{{/* A plain field: the SET notification joins the chain. */}}
+{{/* A plain field, set: the SET notification joins the chain. */}}
 {{ define "feature/basicset.field" -}}
 	{{ .OldVar }} := {{ .Receiver }}.{{ .Var }}
 	{{ .Receiver }}.{{ .Var }} = {{ .NewVar }}
+{{- if .ESetVar }}
+	{{ .Receiver }}.{{ .ESetVar }} = true
+{{- end }}
 	notifications := msgs
 	if {{ .Receiver }}.ENotificationRequired() {
 		notification := {{ .NewNotificationByFeatureID }}({{ .Receiver }}.AsEObject(), {{ .SET }}, {{ .ID }}, {{ .OldVar }}, {{ .NewVar }}, {{ .NO_INDEX }})

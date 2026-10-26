@@ -39,9 +39,11 @@ type Holder interface {
 	GetCount() int
 	SetCount(int)
 	UnsetCount()
+	IsSetCount() bool
 
 	GetTags() ecore.EList
 	UnsetTags()
+	IsSetTags() bool
 
 	GetValues() ecore.EList
 

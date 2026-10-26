@@ -1,6 +1,17 @@
 {{/* The mock of a getter: the prototype method returning the expected value, the call and its expecter. */}}
 {{ define "mock/feature.get" -}}
 // {{ .Method }} get the value of {{ .Var }}
+{{ include "mock/feature.value" . }}
+{{- end }}
+
+{{/* The mock of an issetter: a getter of Type bool. */}}
+{{ define "mock/feature.isset" -}}
+// {{ .Method }} get if the value of {{ .Var }} is set
+{{ include "mock/feature.value" . }}
+{{- end }}
+
+{{/* The mocked method returning a value of Type. */}}
+{{ define "mock/feature.value" -}}
 func ({{ .Receiver }} *{{ .Mock }}_Prototype_Methods) {{ .Method }}() {{ .Type }} {
 	ret := {{ .Receiver }}.mock.Called()
 

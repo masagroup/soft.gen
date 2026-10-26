@@ -64,6 +64,9 @@ func (g *gen) implementationFile(c ecore.EClass) engine.File {
 	var declarations, initializations []string
 	for _, fv := range fields {
 		declarations = append(declarations, "protected "+fv.Var+": "+fv.Type())
+		if fv.ESetVar != "" {
+			declarations = append(declarations, "protected "+fv.ESetVar+": boolean = false")
+		}
 		if value := fv.Default(); value != "" {
 			initializations = append(initializations, "this."+fv.Var+" = "+value)
 		}
@@ -129,6 +132,9 @@ func (g *gen) implementationFile(c ecore.EClass) engine.File {
 		}
 		if info.BasicUnset && !reflective {
 			view.add("feature/basicunset", fv)
+		}
+		if info.IsSet {
+			view.add("feature/issetter", fv)
 		}
 	}
 	// v1 writes no blank line after the async variant of an operation

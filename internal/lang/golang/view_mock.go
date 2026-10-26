@@ -61,7 +61,7 @@ type mockMethodView struct {
 // mock/feature.<Kind>, v1 generateGetMock, generateSetMock, generateUnSetMock).
 type mockAccessorView struct {
 	mockMethodView
-	// Kind is get, set or unset.
+	// Kind is get, set, unset or isset.
 	Kind string
 	// Var is the variable of the feature (v1 getVariableName); Type its Go type.
 	Var, Type string
@@ -164,7 +164,7 @@ func (g *gen) mockMethod(c ecore.EClass, method string, scope *fileScope) mockMe
 }
 
 // mockAccessors lists the mocked accessors of a feature (v1
-// generateMock(EStructuralFeature)): getter, setter, unsetter.
+// generateMock(EStructuralFeature)): getter, setter, unsetter, issetter.
 func (g *gen) mockAccessors(c ecore.EClass, f ecore.EStructuralFeature, scope *fileScope) []*mockAccessorView {
 	info := g.m.Feature(f)
 	t := scope.qualify(g.typeOf(f))
@@ -184,6 +184,11 @@ func (g *gen) mockAccessors(c ecore.EClass, f ecore.EStructuralFeature, scope *f
 	}
 	if info.Unset {
 		accessors = append(accessors, accessor("unset", g.unsetterName(f)))
+	}
+	if info.IsSet {
+		isSet := accessor("isset", g.isSetterName(f))
+		isSet.Type = "bool"
+		accessors = append(accessors, isSet)
 	}
 	return accessors
 }
@@ -360,6 +365,11 @@ func (g *gen) mockAccessorTests(c ecore.EClass, f ecore.EStructuralFeature, scop
 		unset := g.mockTestCase(c, "feature.unset", g.unsetterName(f), scope)
 		unset.Run = g.mockRun("", scope)
 		tests = append(tests, unset)
+	}
+	if info.IsSet {
+		isSet := g.mockTestCase(c, "feature.get", g.isSetterName(f), scope)
+		isSet.Type, isSet.Run, isSet.Var, isSet.Value = "bool", g.mockRun("", scope), "r", "true"
+		tests = append(tests, isSet)
 	}
 	return tests
 }

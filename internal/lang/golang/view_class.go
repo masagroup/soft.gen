@@ -199,13 +199,16 @@ func (g *gen) implementationFile(c ecore.EClass) []engine.File {
 }
 
 // addFeature records what the implementation declares for a feature: its
-// field and initialization (v1 isField, generateVariableDeclaration,
+// field, its ESet flag, and initialization (v1 isField, generateVariableDeclaration,
 // generateVariableInitialization), its lazy initialization method (v1
 // hasInitializationMethod) and its basic accessors (v1 basicFeatures).
 func (g *gen) addFeature(view *implementationView, fv *featureView, info *model.FeatureInfo, reflective bool) {
 	if info.IsField && !reflective {
 		view.HasInitialize = true
 		view.Fields = append(view.Fields, fieldView{Name: fv.Var, Type: fv.Type})
+		if fv.ESetVar != "" {
+			view.Fields = append(view.Fields, fieldView{Name: fv.ESetVar, Type: "bool"})
+		}
 		if info.Attribute != nil && fv.Default != "" {
 			view.Initializations = append(view.Initializations, fv.Receiver+"."+fv.Var+" = "+fv.Default)
 		}

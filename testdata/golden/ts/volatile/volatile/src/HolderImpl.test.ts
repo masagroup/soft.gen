@@ -38,6 +38,11 @@ describe("HolderImpl", () => {
         expect(() => o.unSetCode()).toThrow(Error)
     })
 
+    test("isSetCode", () => {
+        const o = new HolderImpl()
+        expect(() => o.isSetCode()).toThrow(Error)
+    })
+
     test("getKept", () => {
         const o = new HolderImpl()
         expect(() => o.getKept()).toThrow(Error)
@@ -84,6 +89,11 @@ describe("HolderImpl", () => {
         expect(() => o.unSetKept()).toThrow(Error)
     })
 
+    test("isSetKept", () => {
+        const o = new HolderImpl()
+        expect(() => o.isSetKept()).toThrow(Error)
+    })
+
     test("getLabel", () => {
         const o = new HolderImpl()
         expect(() => o.getLabel()).toThrow(Error)
@@ -98,6 +108,11 @@ describe("HolderImpl", () => {
     test("unsetLabel", () => {
         const o = new HolderImpl()
         expect(() => o.unSetLabel()).toThrow(Error)
+    })
+
+    test("isSetLabel", () => {
+        const o = new HolderImpl()
+        expect(() => o.isSetLabel()).toThrow(Error)
     })
 
     test("getLinked", () => {
@@ -156,6 +171,11 @@ describe("HolderImpl", () => {
     test("unsetOwned", () => {
         const o = new HolderImpl()
         expect(() => o.unSetOwned()).toThrow(Error)
+    })
+
+    test("isSetOwned", () => {
+        const o = new HolderImpl()
+        expect(() => o.isSetOwned()).toThrow(Error)
     })
 
     test("getTarget", () => {

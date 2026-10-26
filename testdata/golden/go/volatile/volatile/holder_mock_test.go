@@ -51,6 +51,17 @@ func TestMockHolderUnsetCode(t *testing.T) {
 	o.UnsetCode()
 }
 
+// TestMockHolderIsSetCode tests method IsSetCode
+func TestMockHolderIsSetCode(t *testing.T) {
+	o := NewMockHolder(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetCode().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetCode().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetCode())
+	assert.Equal(t, r, o.IsSetCode())
+}
+
 // TestMockHolderGetKept tests method GetKept
 func TestMockHolderGetKept(t *testing.T) {
 	o := NewMockHolder(t)
@@ -79,6 +90,17 @@ func TestMockHolderUnsetKept(t *testing.T) {
 	o.UnsetKept()
 }
 
+// TestMockHolderIsSetKept tests method IsSetKept
+func TestMockHolderIsSetKept(t *testing.T) {
+	o := NewMockHolder(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetKept().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetKept().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetKept())
+	assert.Equal(t, r, o.IsSetKept())
+}
+
 // TestMockHolderGetLabel tests method GetLabel
 func TestMockHolderGetLabel(t *testing.T) {
 	o := NewMockHolder(t)
@@ -105,6 +127,17 @@ func TestMockHolderUnsetLabel(t *testing.T) {
 	m := ecore.NewMockRun(t)
 	o.EXPECT().UnsetLabel().Return().Run(func() { m.Run() }).Once()
 	o.UnsetLabel()
+}
+
+// TestMockHolderIsSetLabel tests method IsSetLabel
+func TestMockHolderIsSetLabel(t *testing.T) {
+	o := NewMockHolder(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetLabel().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetLabel().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetLabel())
+	assert.Equal(t, r, o.IsSetLabel())
 }
 
 // TestMockHolderGetLinked tests method GetLinked
@@ -153,6 +186,17 @@ func TestMockHolderUnsetOwned(t *testing.T) {
 	m := ecore.NewMockRun(t)
 	o.EXPECT().UnsetOwned().Return().Run(func() { m.Run() }).Once()
 	o.UnsetOwned()
+}
+
+// TestMockHolderIsSetOwned tests method IsSetOwned
+func TestMockHolderIsSetOwned(t *testing.T) {
+	o := NewMockHolder(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetOwned().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetOwned().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetOwned())
+	assert.Equal(t, r, o.IsSetOwned())
 }
 
 // TestMockHolderGetTarget tests method GetTarget

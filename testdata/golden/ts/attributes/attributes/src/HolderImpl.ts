@@ -15,6 +15,7 @@ import { AttributesConstants, Holder, getAttributesPackage } from "./internal.js
 export class HolderImpl extends ecore.EObjectImpl implements Holder {
     protected _anything: any
     protected _count: number
+    protected _countESet: boolean = false
     protected _data: Uint8Array
     protected _func: number
     protected _isEnabled: boolean
@@ -86,6 +87,7 @@ export class HolderImpl extends ecore.EObjectImpl implements Holder {
     setCount(newCount: number): void {
         const oldCount = this._count
         this._count = newCount
+        this._countESet = true
         if (this.eNotificationRequired()) {
             this.eNotify(
                 new ecore.Notification(this, ecore.EventType.SET, AttributesConstants.HOLDER__COUNT, oldCount, newCount)
@@ -95,11 +97,19 @@ export class HolderImpl extends ecore.EObjectImpl implements Holder {
 
     // unSetCount unset the value of _count
     unSetCount(): void {
+        const oldCount = this._count
+        this._count = 0
+        this._countESet = false
         if (this.eNotificationRequired()) {
             this.eNotify(
-                new ecore.Notification(this, ecore.EventType.UNSET, AttributesConstants.HOLDER__COUNT, null, null)
+                new ecore.Notification(this, ecore.EventType.UNSET, AttributesConstants.HOLDER__COUNT, oldCount, 0)
             )
         }
+    }
+
+    // isSetCount get if the value of count is set
+    isSetCount(): boolean {
+        return this._countESet
     }
 
     // get the value of data
@@ -306,7 +316,14 @@ export class HolderImpl extends ecore.EObjectImpl implements Holder {
 
     // unSetTags unset the value of _tags
     unSetTags(): void {
-        this._tags.clear()
+        if (this._tags != null) {
+            this._tags.clear()
+        }
+    }
+
+    // isSetTags get if the value of tags is set
+    isSetTags(): boolean {
+        return this._tags && !this._tags.isEmpty()
     }
 
     // get the value of temperature
@@ -616,7 +633,7 @@ export class HolderImpl extends ecore.EObjectImpl implements Holder {
                 return this._anything != null
             }
             case AttributesConstants.HOLDER__COUNT: {
-                return this._count != 0
+                return this._countESet
             }
             case AttributesConstants.HOLDER__DATA: {
                 return this._data != null

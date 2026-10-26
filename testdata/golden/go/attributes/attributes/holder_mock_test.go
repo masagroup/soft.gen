@@ -73,6 +73,17 @@ func TestMockHolderUnsetCount(t *testing.T) {
 	o.UnsetCount()
 }
 
+// TestMockHolderIsSetCount tests method IsSetCount
+func TestMockHolderIsSetCount(t *testing.T) {
+	o := NewMockHolder(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetCount().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetCount().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetCount())
+	assert.Equal(t, r, o.IsSetCount())
+}
+
 // TestMockHolderGetData tests method GetData
 func TestMockHolderGetData(t *testing.T) {
 	o := NewMockHolder(t)
@@ -301,6 +312,17 @@ func TestMockHolderUnsetTags(t *testing.T) {
 	m := ecore.NewMockRun(t)
 	o.EXPECT().UnsetTags().Return().Run(func() { m.Run() }).Once()
 	o.UnsetTags()
+}
+
+// TestMockHolderIsSetTags tests method IsSetTags
+func TestMockHolderIsSetTags(t *testing.T) {
+	o := NewMockHolder(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().IsSetTags().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().IsSetTags().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.IsSetTags())
+	assert.Equal(t, r, o.IsSetTags())
 }
 
 // TestMockHolderGetTemperature tests method GetTemperature

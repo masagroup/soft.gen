@@ -210,8 +210,13 @@ func zeroValue(v *featureView) string {
 	return zeroValueOf(v.Type)
 }
 
-// eissetCase gives an EIsSetFromID case its comparison (v1 generateComparison).
+// eissetCase gives an EIsSetFromID case its value: the ESet flag of an
+// unsettable single field, else the comparison (v1 generateComparison).
 func (g *gen) eissetCase(v reflectiveCaseView, info *model.FeatureInfo) reflectiveCaseView {
+	if v.ESetVar != "" {
+		v.Value = v.Receiver + "." + v.ESetVar
+		return v
+	}
 	v.Value = g.comparison(v.featureView, info)
 	return v
 }

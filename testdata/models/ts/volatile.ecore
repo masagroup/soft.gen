@@ -8,6 +8,7 @@
         <details key="getterBody" value="return &quot;label&quot;"/>
         <details key="setterBody" value="throw new Error(&quot;set label&quot;)"/>
         <details key="unsetterBody" value="throw new Error(&quot;unset label&quot;)"/>
+        <details key="isSetBody" value="throw new Error(&quot;isset label&quot;)"/>
       </eAnnotations>
     </eStructuralFeatures>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="code" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"

@@ -36,10 +36,12 @@ export interface Holder extends ecore.EObject {
     getCount(): number
     setCount(newCount: number): void
     unSetCount(): void
+    isSetCount(): boolean
 
     // tags
     getTags(): ecore.EList<string>
     unSetTags(): void
+    isSetTags(): boolean
 
     // values
     getValues(): ecore.EList<number>

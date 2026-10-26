@@ -1,4 +1,4 @@
-{{/* EIsSetFromID: whether a feature differs from its default, by id. */}}
+{{/* EIsSetFromID: whether a feature is set, by id: its ESet flag, else whether it differs from its default. */}}
 {{ define "reflectives/eisset" -}}
 func ({{ .Receiver }} *{{ .Impl }}) EIsSetFromID(featureID int) bool {
 	switch featureID {

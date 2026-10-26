@@ -128,6 +128,18 @@ describe("OwnerImpl", () => {
         expect(o.getOptional()).toBeNull()
     })
 
+    test("isSetOptional", () => {
+        const o = new OwnerImpl()
+        expect(o.isSetOptional()).toBeFalsy()
+        expect(o.eIsSetFromID(V1bugsConstants.OWNER__OPTIONAL)).toBeFalsy()
+        o["_optionalESet"] = true
+        expect(o.isSetOptional()).toBeTruthy()
+        expect(o.eIsSetFromID(V1bugsConstants.OWNER__OPTIONAL)).toBeTruthy()
+        o.unSetOptional()
+        expect(o.isSetOptional()).toBeFalsy()
+        expect(o.eIsSetFromID(V1bugsConstants.OWNER__OPTIONAL)).toBeFalsy()
+    })
+
     test("getPartner", () => {
         const o = new OwnerImpl()
 
@@ -260,6 +272,18 @@ describe("OwnerImpl", () => {
         expect(notification.getEventType()).toBe(ecore.EventType.UNSET)
         expect(notification.getFeatureID()).toBe(V1bugsConstants.OWNER__PARTNER)
         expect(o.getPartner()).toBeNull()
+    })
+
+    test("isSetPartner", () => {
+        const o = new OwnerImpl()
+        expect(o.isSetPartner()).toBeFalsy()
+        expect(o.eIsSetFromID(V1bugsConstants.OWNER__PARTNER)).toBeFalsy()
+        o["_partnerESet"] = true
+        expect(o.isSetPartner()).toBeTruthy()
+        expect(o.eIsSetFromID(V1bugsConstants.OWNER__PARTNER)).toBeTruthy()
+        o.unSetPartner()
+        expect(o.isSetPartner()).toBeFalsy()
+        expect(o.eIsSetFromID(V1bugsConstants.OWNER__PARTNER)).toBeFalsy()
     })
 
     test("getPoint", () => {

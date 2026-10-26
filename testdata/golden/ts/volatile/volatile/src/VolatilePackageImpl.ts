@@ -216,6 +216,7 @@ export class VolatilePackageImpl extends ecore.EPackageExt implements VolatilePa
             eAnnotation.getDetails().put("getterBody", 'return "label"')
             eAnnotation.getDetails().put("setterBody", 'throw new Error("set label")')
             eAnnotation.getDetails().put("unsetterBody", 'throw new Error("unset label")')
+            eAnnotation.getDetails().put("isSetBody", 'throw new Error("isset label")')
         }
         {
             const eAnnotation = ecoreFactory.createEAnnotationFromContainer(this.getHolder_Linked())

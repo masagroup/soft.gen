@@ -22,6 +22,7 @@ type Customer interface {
 	GetFavorite() Product
 	SetFavorite(Product)
 	UnsetFavorite()
+	IsSetFavorite() bool
 
 	GetAdvisor() Customer
 	SetAdvisor(Customer)

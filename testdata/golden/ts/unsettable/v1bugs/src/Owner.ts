@@ -17,12 +17,14 @@ export interface Owner extends ecore.EObject {
     getOptional(): Part
     setOptional(newOptional: Part): void
     unSetOptional(): void
+    isSetOptional(): boolean
 
     // partner
     getPartner(): Partner
     getPartnerAsync(): Promise<Partner>
     setPartner(newPartner: Partner): void
     unSetPartner(): void
+    isSetPartner(): boolean
 
     // point
     getPoint(): com.example.Unknown

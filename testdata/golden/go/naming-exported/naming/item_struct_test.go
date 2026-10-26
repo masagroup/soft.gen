@@ -76,6 +76,18 @@ func TestItemCountUnSet(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, mockAdapter)
 }
 
+func TestItemCountIsSet(t *testing.T) {
+	o := newItemStruct()
+	assert.False(t, o.HasCount())
+	assert.False(t, o.EIsSetFromID(ITEM__COUNT))
+	o.countESet = true
+	assert.True(t, o.HasCount())
+	assert.True(t, o.EIsSetFromID(ITEM__COUNT))
+	o.ClearCount()
+	assert.False(t, o.HasCount())
+	assert.False(t, o.EIsSetFromID(ITEM__COUNT))
+}
+
 func TestItemActiveGet(t *testing.T) {
 	o := newItemStruct()
 	// get default value

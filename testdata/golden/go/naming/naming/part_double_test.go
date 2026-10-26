@@ -70,3 +70,14 @@ func TestStubPartDropWeight(t *testing.T) {
 	o.EXPECT().DropWeight().Return().Run(func() { m.Run() }).Once()
 	o.DropWeight()
 }
+
+// TestStubPartKnowsWeight tests method KnowsWeight
+func TestStubPartKnowsWeight(t *testing.T) {
+	o := NewStubPart(t)
+	r := true
+	m := ecore.NewMockRun(t)
+	o.EXPECT().KnowsWeight().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().KnowsWeight().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t, r, o.KnowsWeight())
+	assert.Equal(t, r, o.KnowsWeight())
+}

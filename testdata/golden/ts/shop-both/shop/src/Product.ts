@@ -27,6 +27,7 @@ export interface Product extends Named, Tagged {
     getCategory(): Category
     setCategory(newCategory: Category): void
     unSetCategory(): void
+    isSetCategory(): boolean
 
     // shop
     getShop(): Shop

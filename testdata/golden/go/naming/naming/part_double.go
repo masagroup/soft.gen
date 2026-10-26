@@ -221,6 +221,42 @@ func (c *StubPart_DropWeight_Call) Return() *StubPart_DropWeight_Call {
 	return c
 }
 
+// KnowsWeight get if the value of weight is set
+func (p *StubPart_Prototype_Methods) KnowsWeight() bool {
+	ret := p.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type StubPart_KnowsWeight_Call struct {
+	*mock.Call
+}
+
+func (e *StubPart_Expecter_Methods) KnowsWeight() *StubPart_KnowsWeight_Call {
+	return &StubPart_KnowsWeight_Call{Call: e.mock.On("KnowsWeight")}
+}
+
+func (c *StubPart_KnowsWeight_Call) Run(run func()) *StubPart_KnowsWeight_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *StubPart_KnowsWeight_Call) Return(weight bool) *StubPart_KnowsWeight_Call {
+	c.Call.Return(weight)
+	return c
+}
+
 type mockConstructorTestingTNewStubPart interface {
 	mock.TestingT
 	Cleanup(func())

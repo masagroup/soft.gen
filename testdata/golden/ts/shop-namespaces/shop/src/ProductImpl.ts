@@ -14,6 +14,7 @@ import { Category, Product, Shop, ShopConstants, getShopPackage } from "./intern
 
 export class ProductImpl extends core.EObjectImpl implements Product {
     protected _category: Category
+    protected _categoryESet: boolean = false
     protected _label: string
     protected _name: string
     protected _price: number
@@ -39,6 +40,7 @@ export class ProductImpl extends core.EObjectImpl implements Product {
     setCategory(newCategory: Category): void {
         const oldCategory = this._category
         this._category = newCategory
+        this._categoryESet = true
         if (this.eNotificationRequired()) {
             this.eNotify(
                 new core.Notification(
@@ -54,9 +56,25 @@ export class ProductImpl extends core.EObjectImpl implements Product {
 
     // unSetCategory unset the value of _category
     unSetCategory(): void {
+        const oldCategory = this._category
+        this._category = Category.FOOD
+        this._categoryESet = false
         if (this.eNotificationRequired()) {
-            this.eNotify(new core.Notification(this, core.EventType.UNSET, ShopConstants.PRODUCT__CATEGORY, null, null))
+            this.eNotify(
+                new core.Notification(
+                    this,
+                    core.EventType.UNSET,
+                    ShopConstants.PRODUCT__CATEGORY,
+                    oldCategory,
+                    Category.FOOD
+                )
+            )
         }
+    }
+
+    // isSetCategory get if the value of category is set
+    isSetCategory(): boolean {
+        return this._categoryESet
     }
 
     // get the value of label
@@ -272,7 +290,7 @@ export class ProductImpl extends core.EObjectImpl implements Product {
     eIsSetFromID(featureID: number): boolean {
         switch (featureID) {
             case ShopConstants.PRODUCT__CATEGORY: {
-                return this._category != Category.FOOD
+                return this._categoryESet
             }
             case ShopConstants.PRODUCT__LABEL: {
                 return this._label != ""

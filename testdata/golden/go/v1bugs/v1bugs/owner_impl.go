@@ -19,10 +19,12 @@ import (
 // ownerImpl is the implementation of the model object 'Owner'
 type ownerImpl struct {
 	ecore.EObjectImpl
-	label    string
-	optional Part
-	partner  Partner
-	point    image.Point
+	label        string
+	optional     Part
+	optionalESet bool
+	partner      Partner
+	partnerESet  bool
+	point        image.Point
 }
 
 type ownerBasics interface {
@@ -96,12 +98,15 @@ func (o *ownerImpl) SetOptional(newOptional Part) {
 		if notifications != nil {
 			notifications.Dispatch()
 		}
+	} else {
+		o.optionalESet = true
 	}
 }
 
 func (o *ownerImpl) basicSetOptional(newOptional Part, msgs ecore.ENotificationChain) ecore.ENotificationChain {
 	oldOptional := o.optional
 	o.optional = newOptional
+	o.optionalESet = true
 	notifications := msgs
 	if o.ENotificationRequired() {
 		notification := ecore.NewNotificationByFeatureID(o.AsEObject(), ecore.SET, OWNER__OPTIONAL, oldOptional, newOptional, ecore.NO_INDEX)
@@ -123,14 +128,18 @@ func (o *ownerImpl) UnsetOptional() {
 		if notifications != nil {
 			notifications.Dispatch()
 		}
-	} else if o.ENotificationRequired() {
-		o.ENotify(ecore.NewNotificationByFeatureID(o.AsEObject(), ecore.UNSET, OWNER__OPTIONAL, nil, nil, ecore.NO_INDEX))
+	} else {
+		o.optionalESet = false
+		if o.ENotificationRequired() {
+			o.ENotify(ecore.NewNotificationByFeatureID(o.AsEObject(), ecore.UNSET, OWNER__OPTIONAL, nil, nil, ecore.NO_INDEX))
+		}
 	}
 }
 
 func (o *ownerImpl) basicUnsetOptional(msgs ecore.ENotificationChain) ecore.ENotificationChain {
 	oldOptional := o.optional
 	o.optional = nil
+	o.optionalESet = false
 	notifications := msgs
 	if o.ENotificationRequired() {
 		notification := ecore.NewNotificationByFeatureID(o.AsEObject(), ecore.UNSET, OWNER__OPTIONAL, oldOptional, nil, ecore.NO_INDEX)
@@ -141,6 +150,11 @@ func (o *ownerImpl) basicUnsetOptional(msgs ecore.ENotificationChain) ecore.ENot
 		}
 	}
 	return notifications
+}
+
+// IsSetOptional get if the value of optional is set
+func (o *ownerImpl) IsSetOptional() bool {
+	return o.optionalESet
 }
 
 // GetPartner get the value of partner
@@ -176,12 +190,15 @@ func (o *ownerImpl) SetPartner(newPartner Partner) {
 		if notifications != nil {
 			notifications.Dispatch()
 		}
+	} else {
+		o.partnerESet = true
 	}
 }
 
 func (o *ownerImpl) basicSetPartner(newPartner Partner, msgs ecore.ENotificationChain) ecore.ENotificationChain {
 	oldPartner := o.partner
 	o.partner = newPartner
+	o.partnerESet = true
 	notifications := msgs
 	if o.ENotificationRequired() {
 		notification := ecore.NewNotificationByFeatureID(o.AsEObject(), ecore.SET, OWNER__PARTNER, oldPartner, newPartner, ecore.NO_INDEX)
@@ -203,14 +220,18 @@ func (o *ownerImpl) UnsetPartner() {
 		if notifications != nil {
 			notifications.Dispatch()
 		}
-	} else if o.ENotificationRequired() {
-		o.ENotify(ecore.NewNotificationByFeatureID(o.AsEObject(), ecore.UNSET, OWNER__PARTNER, nil, nil, ecore.NO_INDEX))
+	} else {
+		o.partnerESet = false
+		if o.ENotificationRequired() {
+			o.ENotify(ecore.NewNotificationByFeatureID(o.AsEObject(), ecore.UNSET, OWNER__PARTNER, nil, nil, ecore.NO_INDEX))
+		}
 	}
 }
 
 func (o *ownerImpl) basicUnsetPartner(msgs ecore.ENotificationChain) ecore.ENotificationChain {
 	oldPartner := o.partner
 	o.partner = nil
+	o.partnerESet = false
 	notifications := msgs
 	if o.ENotificationRequired() {
 		notification := ecore.NewNotificationByFeatureID(o.AsEObject(), ecore.UNSET, OWNER__PARTNER, oldPartner, nil, ecore.NO_INDEX)
@@ -221,6 +242,11 @@ func (o *ownerImpl) basicUnsetPartner(msgs ecore.ENotificationChain) ecore.ENoti
 		}
 	}
 	return notifications
+}
+
+// IsSetPartner get if the value of partner is set
+func (o *ownerImpl) IsSetPartner() bool {
+	return o.partnerESet
 }
 
 // GetPoint get the value of point
@@ -292,9 +318,9 @@ func (o *ownerImpl) EIsSetFromID(featureID int) bool {
 	case OWNER__LABEL:
 		return o.label != "say \"hi\" \\ there"
 	case OWNER__OPTIONAL:
-		return o.optional != nil
+		return o.optionalESet
 	case OWNER__PARTNER:
-		return o.partner != nil
+		return o.partnerESet
 	case OWNER__POINT:
 		return o.point != *new(image.Point)
 	default:

@@ -99,6 +99,18 @@ func TestHolderCountUnSet(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, mockAdapter)
 }
 
+func TestHolderCountIsSet(t *testing.T) {
+	o := newHolderImpl()
+	assert.False(t, o.IsSetCount())
+	assert.False(t, o.EIsSetFromID(HOLDER__COUNT))
+	o.countESet = true
+	assert.True(t, o.IsSetCount())
+	assert.True(t, o.EIsSetFromID(HOLDER__COUNT))
+	o.UnsetCount()
+	assert.False(t, o.IsSetCount())
+	assert.False(t, o.EIsSetFromID(HOLDER__COUNT))
+}
+
 func TestHolderDataGet(t *testing.T) {
 	o := newHolderImpl()
 	// get default value
@@ -325,6 +337,11 @@ func TestHolderTagsUnSet(t *testing.T) {
 	o.UnsetTags()
 	l := o.GetTags()
 	assert.True(t, l.Empty())
+}
+
+func TestHolderTagsIsSet(t *testing.T) {
+	o := newHolderImpl()
+	assert.False(t, o.IsSetTags())
 }
 
 func TestHolderTemperatureGet(t *testing.T) {

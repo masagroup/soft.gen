@@ -221,6 +221,42 @@ func (c *MockCustomer_UnsetFavorite_Call) Return() *MockCustomer_UnsetFavorite_C
 	return c
 }
 
+// IsSetFavorite get if the value of favorite is set
+func (c *MockCustomer_Prototype_Methods) IsSetFavorite() bool {
+	ret := c.mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type MockCustomer_IsSetFavorite_Call struct {
+	*mock.Call
+}
+
+func (e *MockCustomer_Expecter_Methods) IsSetFavorite() *MockCustomer_IsSetFavorite_Call {
+	return &MockCustomer_IsSetFavorite_Call{Call: e.mock.On("IsSetFavorite")}
+}
+
+func (c *MockCustomer_IsSetFavorite_Call) Run(run func()) *MockCustomer_IsSetFavorite_Call {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *MockCustomer_IsSetFavorite_Call) Return(favorite bool) *MockCustomer_IsSetFavorite_Call {
+	c.Call.Return(favorite)
+	return c
+}
+
 // GetName get the value of name
 func (c *MockCustomer_Prototype_Methods) GetName() string {
 	ret := c.mock.Called()
