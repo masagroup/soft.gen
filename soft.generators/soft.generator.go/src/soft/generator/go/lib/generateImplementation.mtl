@@ -65,7 +65,12 @@ type [implementationName/] struct {
 	[getImportedIdentifier( classExtend ,packagePath, imports)/]
 [if not aClass.isReflectiveDelegation()]
 [let dataDeclarationFeatures : OrderedSet(EStructuralFeature) = features->select( isField() )]
-    [ dataDeclarationFeatures.generateVariableDeclaration(packagePath,imports)/]
+[for (aFeature : EStructuralFeature | dataDeclarationFeatures)]
+    [aFeature.getVariableName()/] [aFeature.generateType(packagePath,imports)/]
+[if aFeature.hasESetFlag()]
+    [aFeature.getESetVariableName()/] bool
+[/if]
+[/for]
 [/let]
 [/if]
 }

@@ -75,9 +75,6 @@
 
 [template public generateVariableDeclaration(aStructuralFeature : EStructuralFeature,modules : OclAny)]
 protected [aStructuralFeature.getVariableName()/]: [aStructuralFeature.generateType(modules)/]
-[if hasESetFlag()]
-protected [aStructuralFeature.getESetVariableName()/]: boolean = false
-[/if]
 
 [/template]
 

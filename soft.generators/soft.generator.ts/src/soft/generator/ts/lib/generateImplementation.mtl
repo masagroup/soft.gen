@@ -94,7 +94,12 @@
 export class [className/] extends [getImportedIdentifier(classExtend, modules)/] implements [getImportedIdentifier(classImplement,modules)/] {
 [if not reflectiveDelegation]
 [let dataDeclarationFeatures : OrderedSet(EStructuralFeature) = features->select(isField())->asOrderedSet()->sortedBy(getVariableName())]
-    [dataDeclarationFeatures.generateVariableDeclaration(modules)/]
+[for (aFeature : EStructuralFeature | dataDeclarationFeatures)]
+    protected [aFeature.getVariableName()/]: [aFeature.generateType(modules)/]
+[if aFeature.hasESetFlag()]
+    protected [aFeature.getESetVariableName()/]: boolean = false
+[/if]
+[/for]
 [/let]
 [/if]
 

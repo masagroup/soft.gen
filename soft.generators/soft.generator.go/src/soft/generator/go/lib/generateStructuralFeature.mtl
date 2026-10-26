@@ -136,9 +136,6 @@ nil
 
 [template public generateVariableDeclaration(aStructuralFeature : EStructuralFeature, packagePath : String, imports : OclAny)]
 [aStructuralFeature.getVariableName()/] [aStructuralFeature.generateType(packagePath,imports)/]
-[if hasESetFlag()]
-[aStructuralFeature.getESetVariableName()/] bool
-[/if]
 
 [/template]
 
