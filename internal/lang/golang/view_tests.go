@@ -94,10 +94,14 @@ type featureTestView struct {
 	// ProxyInit is how the proxy getter test initializes the value: field,
 	// set, or bidirectional (reflective delegation, v1 isProxy variant).
 	ProxyInit string
-	// BasicSet is whether the basic setter is tested.
-	BasicSet bool
+	// BasicSetKind is the variant of the basic setter test (basicSetTestKind;
+	// "" when it is not tested).
+	BasicSetKind string
 	// The variants of the feature in the reflective tests.
 	EGetKind, ESetKind, EIsSetKind, EUnsetKind, EInverseAddKind, EInverseRemoveKind string
+	// ReadBack is how the ESetFromID and EUnsetFromID tests read a single
+	// value back (readBack).
+	ReadBack string
 }
 
 // reflectiveTestView is the test of a reflective method (template
@@ -313,7 +317,9 @@ func (g *gen) featureTestKinds(v *featureTestView, info *model.FeatureInfo) {
 	if info.Set {
 		v.SetKind = setTestKind(info, reflective)
 	}
-	v.BasicSet = info.BasicSet && !reflective
+	if info.BasicSet && !reflective {
+		v.BasicSetKind = basicSetTestKind(info)
+	}
 	v.ProxyInit = proxyInitKind(info, reflective)
 	if info.Unset {
 		v.UnsetKind = unsetTestKind(info)
@@ -324,9 +330,31 @@ func (g *gen) featureTestKinds(v *featureTestView, info *model.FeatureInfo) {
 	if info.IsVolatile {
 		v.EIsSetKind = "volatile"
 	}
+	if info.IsVolatile && g.m.Annotation(info.Feature).Value("getterBody") != "" {
+		// the getter is the getterBody, which v1 expected to panic: the
+		// tests reading the feature only call it
+		if v.GetKind == "volatile" {
+			v.GetKind = "volatilebody"
+		}
+		v.EGetKind, v.EIsSetKind = "body", "body"
+	}
 	v.EUnsetKind = g.eunsetTestKind(info)
 	v.EInverseAddKind = einverseAddTestKind(info)
 	v.EInverseRemoveKind = einverseRemoveTestKind(info)
+	v.ReadBack = readBack(v, info, reflective)
+}
+
+// readBack is how the reflective tests read a single value back: through
+// EGetFromID, as v1 did, but the field when the read calls an initializer
+// that would not return what was set (not in reflective delegation, which
+// has no field): the generated initializer of a single reference panics (an
+// unresolved proxy read too), the action one of an attribute resets its
+// default value.
+func readBack(v *featureTestView, info *model.FeatureInfo, reflective bool) string {
+	if !reflective && info.Lazy.HasInitMethod && !info.IsList && !info.IsContainer {
+		return "o." + v.Var
+	}
+	return "o.EGetFromID(" + v.ID + ", false)"
 }
 
 // isFeatureMapTest reports whether a feature is a feature map in the tests:
@@ -337,7 +365,13 @@ func isFeatureMapTest(info *model.FeatureInfo) bool {
 
 // getTestKind is the variant of the getter test (v1
 // generateGetTestImplementation, guards in declaration order): volatile,
-// container, map, featuremap, list, lazy, proxy, reference or attribute.
+// container, map, featuremap, list, lazy, proxy, reference, lazyattribute or
+// attribute. Unlike v1, lazy is a single non-proxy reference with an
+// initialization method only, whose generated initializer panics: the getter
+// of a proxy resolves it without initializing it, and a lambda reference has
+// no initializer. lazyattribute is an attribute of the action mode, whose
+// getter calls the initializer, which resets the field to its default value;
+// volatilebody a volatile feature with a getterBody, which is called.
 func getTestKind(info *model.FeatureInfo) string {
 	switch {
 	case info.IsVolatile:
@@ -350,12 +384,14 @@ func getTestKind(info *model.FeatureInfo) string {
 		return "featuremap"
 	case info.IsList:
 		return "list"
-	case info.Reference != nil && info.Lazy.IsLazy():
+	case info.Reference != nil && info.Lazy.HasInitMethod && !info.IsProxy:
 		return "lazy"
 	case info.Reference != nil && info.IsProxy:
 		return "proxy"
 	case info.Reference != nil:
 		return "reference"
+	case info.Lazy.HasInitMethod && info.Lazy.Mode == "action":
+		return "lazyattribute"
 	}
 	return "attribute"
 }
@@ -377,6 +413,17 @@ func setTestKind(info *model.FeatureInfo, reflective bool) string {
 		return "bidirectional"
 	case info.IsContainment:
 		return "containment"
+	}
+	return "default"
+}
+
+// basicSetTestKind is the variant of the basic setter test: volatile (the
+// basic setter of a volatile feature but a container is its setterBody or
+// panics, as for the setter and unsetter tests; v1 expected a SET
+// notification) or default.
+func basicSetTestKind(info *model.FeatureInfo) string {
+	if info.IsVolatile && !info.IsContainer {
+		return "volatile"
 	}
 	return "default"
 }
@@ -487,13 +534,17 @@ func einverseAddTestKind(info *model.FeatureInfo) string {
 }
 
 // einverseRemoveTestKind is the variant of an EBasicInverseRemove case (v1
-// generateFeatureEInverseRemoveTestImplementation): map, list or single.
+// generateFeatureEInverseRemoveTestImplementation): map, list, volatile (the
+// basic unsetter or setter of a volatile feature panics; v1 called it as a
+// single) or single.
 func einverseRemoveTestKind(info *model.FeatureInfo) string {
 	switch {
 	case info.IsMap:
 		return "map"
 	case info.IsList:
 		return "list"
+	case info.IsVolatile:
+		return "volatile"
 	}
 	return "single"
 }

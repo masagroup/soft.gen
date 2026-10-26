@@ -25,11 +25,12 @@ type factoryTestView struct {
 // factoryTestNames is the identifiers every part of the factory tests uses.
 type factoryTestNames struct {
 	testNames
-	// Constructor is the constructor of the factory implementation:
-	// new<Package>FactoryImpl, from the package name as v1 did.
+	// Constructor is the constructor of the factory implementation (v1
+	// built new<Package>FactoryImpl from the package name, without the
+	// factoryName and implementationName rules).
 	Constructor string
-	// MockEClass, MockEDataType and MockEList are the constructors of the ecore mocks.
-	MockEClass, MockEDataType, MockEList string
+	// MockEClass and MockEDataType are the constructors of the ecore mocks.
+	MockEClass, MockEDataType string
 }
 
 // factoryTestClassView is the creation tests of a concrete class.
@@ -48,10 +49,14 @@ type factoryTestContainerView struct {
 	Reference string
 	// MockContainer is the mock of the container class.
 	MockContainer string
-	// Opposite is the opposite name, upper-cased first; OppositeMany whether
-	// it is many-valued (the element is added to its list, else set).
+	// Opposite is the accessor of the opposite (oppositeAccessor);
+	// OppositeMany whether it is many-valued (the element is added to its
+	// list, else set).
 	Opposite     string
 	OppositeMany bool
+	// MockList is the constructor of the ecore mock of a many-valued
+	// opposite: NewMockEMap for a map, else NewMockEList.
+	MockList string
 	// WithClassID is whether the class has an element id: the
 	// FromContainerAndClassID creation is tested too.
 	WithClassID bool
@@ -72,14 +77,19 @@ type factoryTestConversionView struct {
 	Times string
 	// Literals lists the literals of an enum sorted by name.
 	Literals []factoryTestLiteralView
+	// Invalid is a quoted string that is no literal of an enum: "" as in v1,
+	// unless a literal is the empty string.
+	Invalid string
 	// Reflect is the reflect package prefix of the reflect variant, Time
 	// the time package prefix of the time variant.
 	Reflect, Time string
 }
 
-// factoryTestLiteralView is one literal of an enum: its constant and its name.
+// factoryTestLiteralView is one literal of an enum: its constant and its
+// literal string, quoted (v1 used the name: wrong for a literal string that
+// differs from it).
 type factoryTestLiteralView struct {
-	Const, Name string
+	Const, Literal string
 }
 
 // factoryTestFile is the tests of the factory: <implementation
@@ -89,10 +99,9 @@ func (g *gen) factoryTestFile(p ecore.EPackage) []engine.File {
 	ecoreMock := func(name string) string { return scope.qualify(g.qualifiedMockIdentifier(g.m.Ecore(), name)) }
 	names := factoryTestNames{
 		testNames:     testNamesOf(scope, true),
-		Constructor:   "new" + naming.UpperFirst(p.GetName()) + "FactoryImpl",
+		Constructor:   constructorName(g.factoryImplementationName(p)),
 		MockEClass:    ecoreMock("NewMockEClass"),
 		MockEDataType: ecoreMock("NewMockEDataType"),
-		MockEList:     ecoreMock("NewMockEList"),
 	}
 	view := factoryTestView{factoryTestNames: names, AsInternal: !g.isSharedPackage(p)}
 	for _, c := range g.concreteClassesByName(p) {
@@ -120,12 +129,22 @@ func (g *gen) factoryTestClass(c ecore.EClass, names factoryTestNames, scope *fi
 	withID := g.m.ElementIDAccessorName(c) != ""
 	for _, ref := range sortedByName(g.m.Class(c).AllContainers) {
 		opposite := ref.GetEOpposite()
+		many := opposite.GetUpperBound() != 1
+		var mockList string
+		if many {
+			mockList = "NewMockEList"
+			if g.m.Feature(opposite).IsMap {
+				mockList = "NewMockEMap"
+			}
+			mockList = scope.qualify(g.qualifiedMockIdentifier(g.m.Ecore(), mockList))
+		}
 		view.Containers = append(view.Containers, factoryTestContainerView{
 			factoryTestNames: names,
 			Reference:        naming.UpperFirst(ref.GetName()),
 			MockContainer:    g.mockTestValue(ref.GetEType(), scope),
-			Opposite:         naming.UpperFirst(opposite.GetName()),
-			OppositeMany:     opposite.GetUpperBound() != 1,
+			Opposite:         g.oppositeAccessor(opposite),
+			OppositeMany:     many,
+			MockList:         mockList,
 			WithClassID:      withID,
 		})
 	}
@@ -143,12 +162,19 @@ func (g *gen) factoryTestConversion(dt ecore.EDataType, names factoryTestNames, 
 		view.CreateKind, view.ConvertKind = "enum", "enum"
 		literals := elementsOf[ecore.EEnumLiteral](enum.GetELiterals())
 		view.Times = strconv.Itoa(len(literals) + 1)
+		isLiteral := map[string]bool{}
 		for _, l := range sortedByName(literals) {
+			isLiteral[l.GetLiteral()] = true
 			view.Literals = append(view.Literals, factoryTestLiteralView{
-				Const: scope.qualify(g.qualifiedInterfaceIdentifier(enum.GetEPackage(), g.constantsName(l))),
-				Name:  l.GetName(),
+				Const:   scope.qualify(g.qualifiedInterfaceIdentifier(enum.GetEPackage(), g.constantsName(l))),
+				Literal: strconv.Quote(l.GetLiteral()),
 			})
 		}
+		invalid := ""
+		for isLiteral[invalid] {
+			invalid += "?"
+		}
+		view.Invalid = strconv.Quote(invalid)
 		return view
 	}
 	view.Type = g.instanceTypeName(dt)

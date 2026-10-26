@@ -88,7 +88,43 @@ func TestHolderComputedSet(t *testing.T) {
 
 func TestHolderFavoriteGet(t *testing.T) {
 	o := newHolderImpl()
-	assert.Panics(t, func() { o.GetFavorite() })
+
+	// get default value
+	assert.Nil(t, o.GetFavorite())
+
+	// initialize object with a mock value
+	mockValue := NewMockItem(t)
+	o.favorite = mockValue
+
+	// events
+	mockAdapter := ecore.NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	o.EAdapters().Add(mockAdapter)
+	mock.AssertExpectationsForObjects(t, mockAdapter)
+
+	// set object resource
+	mockResourceSet := ecore.NewMockEResourceSet(t)
+	mockResource := ecore.NewMockEResource(t)
+	o.ESetInternalResource(mockResource)
+
+	// get non resolved value
+	mockValue.EXPECT().EIsProxy().Return(false).Once()
+	assert.Equal(t, mockValue, o.GetFavorite())
+	mock.AssertExpectationsForObjects(t, mockValue, mockAdapter, mockResource, mockResourceSet)
+
+	// get a resolved value
+	mockURI := ecore.NewURI("test:///file.t")
+	mockResolved := NewMockItem(t)
+	mockResolved.EXPECT().EProxyURI().Return(nil).Once()
+	mockResource.EXPECT().GetResourceSet().Return(mockResourceSet).Once()
+	mockResourceSet.EXPECT().GetEObject(mockURI, true).Return(mockResolved).Once()
+	mockValue.EXPECT().EIsProxy().Return(true).Once()
+	mockValue.EXPECT().EProxyURI().Return(mockURI).Twice()
+	mockAdapter.EXPECT().NotifyChanged(mock.MatchedBy(func(notification ecore.ENotification) bool {
+		return notification.GetEventType() == ecore.RESOLVE && notification.GetFeatureID() == HOLDER__FAVORITE && notification.GetOldValue() == mockValue && notification.GetNewValue() == mockResolved
+	})).Once()
+	assert.Equal(t, mockResolved, o.GetFavorite())
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResolved, mockAdapter, mockResource, mockResourceSet)
 }
 
 func TestHolderFavoriteSet(t *testing.T) {
@@ -137,7 +173,43 @@ func TestHolderNoteSet(t *testing.T) {
 
 func TestHolderPreferredGet(t *testing.T) {
 	o := newHolderImpl()
-	assert.Panics(t, func() { o.GetPreferred() })
+
+	// get default value
+	assert.Nil(t, o.GetPreferred())
+
+	// initialize object with a mock value
+	mockValue := NewMockItem(t)
+	o.preferred = mockValue
+
+	// events
+	mockAdapter := ecore.NewMockEAdapter(t)
+	mockAdapter.EXPECT().SetTarget(o).Once()
+	o.EAdapters().Add(mockAdapter)
+	mock.AssertExpectationsForObjects(t, mockAdapter)
+
+	// set object resource
+	mockResourceSet := ecore.NewMockEResourceSet(t)
+	mockResource := ecore.NewMockEResource(t)
+	o.ESetInternalResource(mockResource)
+
+	// get non resolved value
+	mockValue.EXPECT().EIsProxy().Return(false).Once()
+	assert.Equal(t, mockValue, o.GetPreferred())
+	mock.AssertExpectationsForObjects(t, mockValue, mockAdapter, mockResource, mockResourceSet)
+
+	// get a resolved value
+	mockURI := ecore.NewURI("test:///file.t")
+	mockResolved := NewMockItem(t)
+	mockResolved.EXPECT().EProxyURI().Return(nil).Once()
+	mockResource.EXPECT().GetResourceSet().Return(mockResourceSet).Once()
+	mockResourceSet.EXPECT().GetEObject(mockURI, true).Return(mockResolved).Once()
+	mockValue.EXPECT().EIsProxy().Return(true).Once()
+	mockValue.EXPECT().EProxyURI().Return(mockURI).Twice()
+	mockAdapter.EXPECT().NotifyChanged(mock.MatchedBy(func(notification ecore.ENotification) bool {
+		return notification.GetEventType() == ecore.RESOLVE && notification.GetFeatureID() == HOLDER__PREFERRED && notification.GetOldValue() == mockValue && notification.GetNewValue() == mockResolved
+	})).Once()
+	assert.Equal(t, mockResolved, o.GetPreferred())
+	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockResolved, mockAdapter, mockResource, mockResourceSet)
 }
 
 func TestHolderPreferredSet(t *testing.T) {
@@ -161,10 +233,6 @@ func TestHolderTitleGet(t *testing.T) {
 	o := newHolderImpl()
 	// get default value
 	assert.Equal(t, string(""), o.GetTitle())
-	// get initialized value
-	v := string("Test String")
-	o.title = v
-	assert.Equal(t, v, o.GetTitle())
 }
 
 func TestHolderTitleSet(t *testing.T) {
@@ -204,7 +272,7 @@ func TestHolderESetFromID(t *testing.T) {
 	{
 		v := NewMockItem(t)
 		o.ESetFromID(HOLDER__ASSIGNED, v)
-		assert.Equal(t, v, o.EGetFromID(HOLDER__ASSIGNED, false))
+		assert.Equal(t, v, o.assigned)
 
 		o.ESetFromID(HOLDER__ASSIGNED, nil)
 	}
@@ -224,14 +292,14 @@ func TestHolderESetFromID(t *testing.T) {
 	{
 		v := NewMockItem(t)
 		o.ESetFromID(HOLDER__COMPUTED, v)
-		assert.Equal(t, v, o.EGetFromID(HOLDER__COMPUTED, false))
+		assert.Equal(t, v, o.computed)
 
 		o.ESetFromID(HOLDER__COMPUTED, nil)
 	}
 	{
 		v := NewMockItem(t)
 		o.ESetFromID(HOLDER__FAVORITE, v)
-		assert.Equal(t, v, o.EGetFromID(HOLDER__FAVORITE, false))
+		assert.Equal(t, v, o.favorite)
 
 		o.ESetFromID(HOLDER__FAVORITE, nil)
 	}
@@ -269,7 +337,7 @@ func TestHolderESetFromID(t *testing.T) {
 	{
 		v := NewMockItem(t)
 		o.ESetFromID(HOLDER__PREFERRED, v)
-		assert.Equal(t, v, o.EGetFromID(HOLDER__PREFERRED, false))
+		assert.Equal(t, v, o.preferred)
 
 		o.ESetFromID(HOLDER__PREFERRED, nil)
 	}
@@ -281,7 +349,7 @@ func TestHolderESetFromID(t *testing.T) {
 	{
 		v := string("Test String")
 		o.ESetFromID(HOLDER__TITLE, v)
-		assert.Equal(t, v, o.EGetFromID(HOLDER__TITLE, false))
+		assert.Equal(t, v, o.title)
 	}
 
 }
@@ -306,7 +374,7 @@ func TestHolderEUnsetFromID(t *testing.T) {
 	assert.Panics(t, func() { o.EUnsetFromID(-1) })
 	{
 		o.EUnsetFromID(HOLDER__ASSIGNED)
-		assert.Nil(t, o.EGetFromID(HOLDER__ASSIGNED, false))
+		assert.Nil(t, o.assigned)
 	}
 	{
 		o.EUnsetFromID(HOLDER__CACHE)
@@ -317,11 +385,11 @@ func TestHolderEUnsetFromID(t *testing.T) {
 	}
 	{
 		o.EUnsetFromID(HOLDER__COMPUTED)
-		assert.Nil(t, o.EGetFromID(HOLDER__COMPUTED, false))
+		assert.Nil(t, o.computed)
 	}
 	{
 		o.EUnsetFromID(HOLDER__FAVORITE)
-		assert.Nil(t, o.EGetFromID(HOLDER__FAVORITE, false))
+		assert.Nil(t, o.favorite)
 	}
 	{
 		o.EUnsetFromID(HOLDER__ITEMS)
@@ -344,7 +412,7 @@ func TestHolderEUnsetFromID(t *testing.T) {
 	}
 	{
 		o.EUnsetFromID(HOLDER__PREFERRED)
-		assert.Nil(t, o.EGetFromID(HOLDER__PREFERRED, false))
+		assert.Nil(t, o.preferred)
 	}
 	{
 		o.EUnsetFromID(HOLDER__TAGS)
@@ -355,7 +423,7 @@ func TestHolderEUnsetFromID(t *testing.T) {
 	}
 	{
 		o.EUnsetFromID(HOLDER__TITLE)
-		v := o.EGetFromID(HOLDER__TITLE, false)
+		v := o.title
 		assert.Equal(t, string(""), v)
 	}
 }

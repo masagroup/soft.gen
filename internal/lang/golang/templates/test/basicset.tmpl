@@ -1,5 +1,15 @@
-{{/* The test of the basic setter of a feature (v1 generateBasicSetTestImplementation): a container value is asked for its resource. */}}
-{{ define "test/basicset" -}}
+{{/* The test of the basic setter of a feature, by variant (v1 generateBasicSetTestImplementation). */}}
+{{ define "test/basicset.volatile" -}}
+func Test{{ .Class }}{{ .Name }}BasicSet(t *{{ .T }}) {
+	o := {{ .Constructor }}()
+	mockValue := {{ .TestValue }}
+	mockNotifications := {{ .Ecore }}NewMockENotificationChain(t)
+	{{ .Assert }}Panics(t, func() { o.{{ .BasicSetter }}(mockValue, mockNotifications) })
+}
+{{- end }}
+
+{{/* A field: the SET notification joins the chain; a container value is asked for its resource. */}}
+{{ define "test/basicset.default" -}}
 func Test{{ .Class }}{{ .Name }}BasicSet(t *{{ .T }}) {
 	o := {{ .Constructor }}()
 

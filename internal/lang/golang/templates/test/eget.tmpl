@@ -14,6 +14,12 @@ func Test{{ .Class }}EGetFromID(t *{{ .T }}) {
 	{{ .Assert }}Panics(t, func() { o.EGetFromID({{ .ID }}, false) })
 {{- end }}
 
+{{/* A volatile feature with a getterBody: the body is called. */}}
+{{ define "test/eget.body" -}}
+	{{ .Assert }}NotPanics(t, func() { o.EGetFromID({{ .ID }}, true) })
+	{{ .Assert }}NotPanics(t, func() { o.EGetFromID({{ .ID }}, false) })
+{{- end }}
+
 {{ define "test/eget.get" -}}
 	{{ .Assert }}Equal(t, o.{{ .Getter }}(), o.EGetFromID({{ .ID }}, true))
 {{- end }}

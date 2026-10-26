@@ -45,9 +45,9 @@ func Test{{ .Class }}GetValue(t *{{ .T }}) {
 
 {{ include (printf "test/set.%s" .SetKind) . }}
 {{- end }}
-{{- if .BasicSet }}
+{{- if .BasicSetKind }}
 
-{{ include "test/basicset" . }}
+{{ include (printf "test/basicset.%s" .BasicSetKind) . }}
 {{- end }}
 {{- if .UnsetKind }}
 

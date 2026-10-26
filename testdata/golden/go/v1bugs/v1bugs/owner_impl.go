@@ -27,10 +27,10 @@ type ownerImpl struct {
 
 type ownerBasics interface {
 	basicSetOptional(Part, ecore.ENotificationChain) ecore.ENotificationChain
-	basicUnsetOptional(Part, ecore.ENotificationChain) ecore.ENotificationChain
+	basicUnsetOptional(ecore.ENotificationChain) ecore.ENotificationChain
 	basicGetPartner() Partner
 	basicSetPartner(Partner, ecore.ENotificationChain) ecore.ENotificationChain
-	basicUnsetPartner(Partner, ecore.ENotificationChain) ecore.ENotificationChain
+	basicUnsetPartner(ecore.ENotificationChain) ecore.ENotificationChain
 }
 
 // newOwnerImpl is the constructor of a ownerImpl

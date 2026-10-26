@@ -12,9 +12,9 @@ element.{{ .SetID }}(classID)
 {{- if .Opposite }}
 if eContainer != nil {
 {{- if .OppositeMany }}
-	eContainer.Get{{ .Opposite }}().Add(element)
+	eContainer.{{ .Opposite }}().Add(element)
 {{- else }}
-	eContainer.Set{{ .Opposite }}(element)
+	eContainer.{{ .Opposite }}(element)
 {{- end }}
 }
 {{- end }}

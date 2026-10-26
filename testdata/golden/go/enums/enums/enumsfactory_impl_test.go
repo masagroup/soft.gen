@@ -63,10 +63,10 @@ func TestFactoryConvert(t *testing.T) {
 	{
 		mockEDataType := ecore.NewMockEDataType(t)
 		mockEDataType.EXPECT().GetClassifierID().Return(COLOR).Times(5)
-		assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "") })
-		assert.Equal(t, COLOR__DARK_BLUE, factory.CreateFromString(mockEDataType, "DarkBlue"))
+		assert.Panics(t, func() { factory.CreateFromString(mockEDataType, "?") })
+		assert.Equal(t, COLOR__DARK_BLUE, factory.CreateFromString(mockEDataType, "dark-blue"))
 		assert.Equal(t, COLOR__GREEN, factory.CreateFromString(mockEDataType, "Green"))
-		assert.Equal(t, COLOR__NONE, factory.CreateFromString(mockEDataType, "None"))
+		assert.Equal(t, COLOR__NONE, factory.CreateFromString(mockEDataType, ""))
 		assert.Equal(t, COLOR__RED, factory.CreateFromString(mockEDataType, "Red"))
 		mockEDataType.AssertExpectations(t)
 	}
@@ -74,9 +74,9 @@ func TestFactoryConvert(t *testing.T) {
 		mockEDataType := ecore.NewMockEDataType(t)
 		mockEDataType.EXPECT().GetClassifierID().Return(COLOR).Times(5)
 		assert.Equal(t, "", factory.ConvertToString(mockEDataType, nil))
-		assert.Equal(t, "DarkBlue", factory.ConvertToString(mockEDataType, COLOR__DARK_BLUE))
+		assert.Equal(t, "dark-blue", factory.ConvertToString(mockEDataType, COLOR__DARK_BLUE))
 		assert.Equal(t, "Green", factory.ConvertToString(mockEDataType, COLOR__GREEN))
-		assert.Equal(t, "None", factory.ConvertToString(mockEDataType, COLOR__NONE))
+		assert.Equal(t, "", factory.ConvertToString(mockEDataType, COLOR__NONE))
 		assert.Equal(t, "Red", factory.ConvertToString(mockEDataType, COLOR__RED))
 		mockEDataType.AssertExpectations(t)
 	}

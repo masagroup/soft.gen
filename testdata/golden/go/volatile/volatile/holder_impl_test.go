@@ -70,20 +70,9 @@ func TestHolderKeptSet(t *testing.T) {
 
 func TestHolderKeptBasicSet(t *testing.T) {
 	o := newHolderImpl()
-
-	// add listener
-	mockAdapter := ecore.NewMockEAdapter(t)
-	mockAdapter.EXPECT().SetTarget(o).Once()
-	o.EAdapters().Add(mockAdapter)
-	mock.AssertExpectationsForObjects(t, mockAdapter)
-
 	mockValue := NewMockItem(t)
 	mockNotifications := ecore.NewMockENotificationChain(t)
-	mockNotifications.EXPECT().Add(mock.MatchedBy(func(notification ecore.ENotification) bool {
-		return notification.GetEventType() == ecore.SET && notification.GetFeatureID() == HOLDER__KEPT
-	})).Return(true).Once()
-	o.basicSetKept(mockValue, mockNotifications)
-	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockNotifications)
+	assert.Panics(t, func() { o.basicSetKept(mockValue, mockNotifications) })
 }
 
 func TestHolderKeptUnSet(t *testing.T) {
@@ -93,7 +82,7 @@ func TestHolderKeptUnSet(t *testing.T) {
 
 func TestHolderLabelGet(t *testing.T) {
 	o := newHolderImpl()
-	assert.Panics(t, func() { o.GetLabel() })
+	assert.NotPanics(t, func() { o.GetLabel() })
 }
 
 func TestHolderLabelSet(t *testing.T) {
@@ -109,7 +98,7 @@ func TestHolderLabelUnSet(t *testing.T) {
 
 func TestHolderLinkedGet(t *testing.T) {
 	o := newHolderImpl()
-	assert.Panics(t, func() { o.GetLinked() })
+	assert.NotPanics(t, func() { o.GetLinked() })
 }
 
 func TestHolderLinkedSet(t *testing.T) {
@@ -120,7 +109,7 @@ func TestHolderLinkedSet(t *testing.T) {
 
 func TestHolderOwnedGet(t *testing.T) {
 	o := newHolderImpl()
-	assert.Panics(t, func() { o.GetOwned() })
+	assert.NotPanics(t, func() { o.GetOwned() })
 }
 
 func TestHolderOwnedSet(t *testing.T) {
@@ -131,20 +120,9 @@ func TestHolderOwnedSet(t *testing.T) {
 
 func TestHolderOwnedBasicSet(t *testing.T) {
 	o := newHolderImpl()
-
-	// add listener
-	mockAdapter := ecore.NewMockEAdapter(t)
-	mockAdapter.EXPECT().SetTarget(o).Once()
-	o.EAdapters().Add(mockAdapter)
-	mock.AssertExpectationsForObjects(t, mockAdapter)
-
 	mockValue := NewMockItem(t)
 	mockNotifications := ecore.NewMockENotificationChain(t)
-	mockNotifications.EXPECT().Add(mock.MatchedBy(func(notification ecore.ENotification) bool {
-		return notification.GetEventType() == ecore.SET && notification.GetFeatureID() == HOLDER__OWNED
-	})).Return(true).Once()
-	o.basicSetOwned(mockValue, mockNotifications)
-	mock.AssertExpectationsForObjects(t, mockAdapter, mockValue, mockNotifications)
+	assert.Panics(t, func() { o.basicSetOwned(mockValue, mockNotifications) })
 }
 
 func TestHolderOwnedUnSet(t *testing.T) {
@@ -170,12 +148,12 @@ func TestHolderEGetFromID(t *testing.T) {
 	assert.Panics(t, func() { o.EGetFromID(HOLDER__CODE, false) })
 	assert.Panics(t, func() { o.EGetFromID(HOLDER__KEPT, true) })
 	assert.Panics(t, func() { o.EGetFromID(HOLDER__KEPT, false) })
-	assert.Panics(t, func() { o.EGetFromID(HOLDER__LABEL, true) })
-	assert.Panics(t, func() { o.EGetFromID(HOLDER__LABEL, false) })
-	assert.Panics(t, func() { o.EGetFromID(HOLDER__LINKED, true) })
-	assert.Panics(t, func() { o.EGetFromID(HOLDER__LINKED, false) })
-	assert.Panics(t, func() { o.EGetFromID(HOLDER__OWNED, true) })
-	assert.Panics(t, func() { o.EGetFromID(HOLDER__OWNED, false) })
+	assert.NotPanics(t, func() { o.EGetFromID(HOLDER__LABEL, true) })
+	assert.NotPanics(t, func() { o.EGetFromID(HOLDER__LABEL, false) })
+	assert.NotPanics(t, func() { o.EGetFromID(HOLDER__LINKED, true) })
+	assert.NotPanics(t, func() { o.EGetFromID(HOLDER__LINKED, false) })
+	assert.NotPanics(t, func() { o.EGetFromID(HOLDER__OWNED, true) })
+	assert.NotPanics(t, func() { o.EGetFromID(HOLDER__OWNED, false) })
 	assert.Panics(t, func() { o.EGetFromID(HOLDER__TARGET, true) })
 	assert.Panics(t, func() { o.EGetFromID(HOLDER__TARGET, false) })
 }
@@ -197,9 +175,9 @@ func TestHolderEIsSetFromID(t *testing.T) {
 	assert.Panics(t, func() { o.EIsSetFromID(-1) })
 	assert.Panics(t, func() { o.EIsSetFromID(HOLDER__CODE) })
 	assert.Panics(t, func() { o.EIsSetFromID(HOLDER__KEPT) })
-	assert.Panics(t, func() { o.EIsSetFromID(HOLDER__LABEL) })
-	assert.Panics(t, func() { o.EIsSetFromID(HOLDER__LINKED) })
-	assert.Panics(t, func() { o.EIsSetFromID(HOLDER__OWNED) })
+	assert.NotPanics(t, func() { o.EIsSetFromID(HOLDER__LABEL) })
+	assert.NotPanics(t, func() { o.EIsSetFromID(HOLDER__LINKED) })
+	assert.NotPanics(t, func() { o.EIsSetFromID(HOLDER__OWNED) })
 	assert.Panics(t, func() { o.EIsSetFromID(HOLDER__TARGET) })
 }
 
@@ -235,13 +213,11 @@ func TestHolderEBasicInverseRemove(t *testing.T) {
 	}
 	{
 		mockObject := NewMockItem(t)
-		o.EBasicInverseRemove(mockObject, HOLDER__KEPT, nil)
-		mock.AssertExpectationsForObjects(t, mockObject)
+		assert.Panics(t, func() { o.EBasicInverseRemove(mockObject, HOLDER__KEPT, nil) })
 	}
 	{
 		mockObject := NewMockItem(t)
-		o.EBasicInverseRemove(mockObject, HOLDER__OWNED, nil)
-		mock.AssertExpectationsForObjects(t, mockObject)
+		assert.Panics(t, func() { o.EBasicInverseRemove(mockObject, HOLDER__OWNED, nil) })
 	}
 
 }

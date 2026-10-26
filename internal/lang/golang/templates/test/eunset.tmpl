@@ -25,18 +25,18 @@ func Test{{ .Class }}EUnsetFromID(t *{{ .T }}) {
 
 {{ define "test/eunset.reference" -}}
 		o.EUnsetFromID({{ .ID }})
-		{{ .Assert }}Nil(t, o.EGetFromID({{ .ID }}, false))
+		{{ .Assert }}Nil(t, {{ .ReadBack }})
 {{- end }}
 
 {{ define "test/eunset.nil" -}}
 		o.EUnsetFromID({{ .ID }})
-		v := o.EGetFromID({{ .ID }}, false)
+		v := {{ .ReadBack }}
 		{{ .Assert }}Nil(t, v)
 {{- end }}
 
 {{ define "test/eunset.value" -}}
 		o.EUnsetFromID({{ .ID }})
-		v := o.EGetFromID({{ .ID }}, false)
+		v := {{ .ReadBack }}
 		{{ .Assert }}Equal(t, {{ .Default }}, v)
 {{- end }}
 

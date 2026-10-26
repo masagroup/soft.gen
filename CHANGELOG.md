@@ -86,6 +86,32 @@ every other construct the output is the v1 output:
 - The features of a mixin extending a class keep their declaration order in
   `EDerivedFeatureID` (v1 used the order of a set difference).
 - `rootExtendsMock` works (v1 failed generating the mocks).
+- `Create<Class>FromContainer` adds the element through the getter or setter
+  of the opposite named by the `getterName` and `setterName` rules, and the
+  factory tests build the factory with its constructor named by the
+  `factoryName` and `implementationName` rules (v1 used `Get/Set<Opposite>`
+  and `new<Package>FactoryImpl`, which did not compile with those rules).
+- The factory test of a class created in a map opposite mocks it with
+  `NewMockEMap` (v1 used `NewMockEList`, which did not compile).
+- The basic unsetter is declared without the value parameter its
+  implementation does not have (v1's declaration did not compile).
+- A list of the `lambda` lazy mode (a C++ mode, without initializer in Go) is
+  built on first read, and the default initializer of an `action` list builds
+  it once; v1 left the first nil and rebuilt the second on every read, losing
+  its elements.
+- The enum conversion tests use the literal strings, not the literal names,
+  and an invalid string that is no literal (v1 failed for a literal string that
+  differs from the name, or empty).
+- The generated tests pass on lazy features: the getter of a lazy proxy is
+  tested as a proxy (it resolves without initializing), the getter of an
+  `action` attribute is tested against its default value, and the reflective
+  tests read a single lazy feature back from its field, not through accessors
+  that rerun its initializer (v1 expected panics that did not happen, or values
+  the initializer reset).
+- The generated tests pass on volatile features: the basic setter of a volatile
+  feature and its `EBasicInverseRemove` are expected to panic, and the
+  `getterBody` of a volatile feature is called without expecting a panic (v1
+  expected a notification, a return, and a panic).
 
 ### TypeScript
 

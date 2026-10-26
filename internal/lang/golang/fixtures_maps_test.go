@@ -5,5 +5,6 @@ package golang
 // reference opposite to the map), and a list of a Map$Entry class that is
 // not a map entry class (it has no key and value features).
 func init() {
-	register(fixture{Name: "maps", Model: "maps.ecore"})
+	register(fixture{Name: "maps", Model: "maps.ecore",
+		V1Differences: map[string]string{"maps/mapsfactory_impl_test.go": v1MapContainerMock}})
 }

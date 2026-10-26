@@ -6,5 +6,9 @@ package golang
 // unsettable single containments with and without bodies (basic setter body
 // and panic, basic unsetter panic, inverse remove through the unsetter).
 func init() {
-	register(fixture{Name: "volatile", Model: "volatile.ecore"})
+	register(fixture{Name: "volatile", Model: "volatile.ecore",
+		V1Differences: map[string]string{
+			"volatile/holder_impl.go":      v1BasicUnsetDecl,
+			"volatile/holder_impl_test.go": v1VolatileTests,
+		}})
 }

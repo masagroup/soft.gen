@@ -59,9 +59,9 @@ type factoryCreateView struct {
 	// SetID is the id setter called on the element (Set<Kind>ID) in the
 	// FromContainerAndClassID form; "" otherwise.
 	SetID string
-	// Opposite is the name, upper-cased first, of the opposite of the
-	// container reference: the element is added to it; "" when the reference
-	// has no opposite.
+	// Opposite is the accessor of the opposite of the container reference
+	// the element is added to (its getter) or set as (its setter); "" when
+	// the reference has no opposite.
 	Opposite string
 	// OppositeMany is whether the opposite is many-valued (Add instead of Set).
 	OppositeMany bool
@@ -348,10 +348,10 @@ func (g *gen) factoryCreates(p ecore.EPackage, scope *fileScope, implementation 
 				Create: create,
 			}
 			if opposite := ref.GetEOpposite(); opposite != nil {
-				// v1 names the accessor Get/Set<Name> from the raw name, without
+				// v1 named the accessor Get/Set<Name> from the raw name, without
 				// the getter or setter naming rules.
-				fromContainer.Opposite = naming.UpperFirst(opposite.GetName())
 				fromContainer.OppositeMany = opposite.GetUpperBound() != 1
+				fromContainer.Opposite = g.oppositeAccessor(opposite)
 			}
 			creates = append(creates, fromContainer)
 			if accessor := g.m.ElementIDAccessorName(c); accessor != "" {
@@ -364,6 +364,16 @@ func (g *gen) factoryCreates(p ecore.EPackage, scope *fileScope, implementation 
 		}
 	}
 	return creates
+}
+
+// oppositeAccessor is the accessor of the opposite of a container reference
+// a created element goes in: the getter of a many-valued opposite (the element
+// is added to its list), else the setter.
+func (g *gen) oppositeAccessor(opposite ecore.EReference) string {
+	if opposite.GetUpperBound() != 1 {
+		return g.getterName(opposite)
+	}
+	return g.setterName(opposite)
 }
 
 // conversions lists the conversions of the serializable data types of a

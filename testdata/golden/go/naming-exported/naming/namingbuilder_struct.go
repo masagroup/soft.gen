@@ -71,7 +71,7 @@ func (namingBuilderStruct *NamingBuilderStruct) CreatePart() IPart {
 func (namingBuilderStruct *NamingBuilderStruct) CreatePartFromContainer(eContainer ItemItf) IPart {
 	element := namingBuilderStruct.AsEFactory().CreatePart()
 	if eContainer != nil {
-		eContainer.GetParts().Add(element)
+		eContainer.ReadParts().Add(element)
 	}
 	return element
 }

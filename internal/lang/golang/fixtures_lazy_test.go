@@ -8,5 +8,9 @@ package golang
 // single proxy, a single non-proxy reference and an attribute renamed by an
 // initializationName key.
 func init() {
-	register(fixture{Name: "lazy", Model: "lazy.ecore"})
+	register(fixture{Name: "lazy", Model: "lazy.ecore",
+		V1Differences: map[string]string{
+			"lazy/holder_impl.go":      v1LazyGetter,
+			"lazy/holder_impl_test.go": v1LazyTests,
+		}})
 }
