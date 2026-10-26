@@ -120,6 +120,10 @@ every other construct the output is the v1 output:
 - The features of a mixin extending a class keep their declaration order in
   `EDerivedFeatureID` (v1 used the order of a set difference).
 - `rootExtendsMock` works (v1 failed generating the mocks).
+- The package constants of a class extending a class of another model (a
+  model split in one file per package) qualify the constants of the base
+  class, `base.NAMED_ELEMENT_FEATURE_COUNT + 1` (v1 left them bare, which did
+  not compile).
 - `Create<Class>FromContainer` adds the element through the getter or setter
   of the opposite named by the `getterName` and `setterName` rules, and the
   factory tests build the factory with its constructor named by the

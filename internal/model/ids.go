@@ -10,13 +10,16 @@ import (
 // Expr is the value of a package constant: a literal (3), a base constant
 // alone (EMODEL_ELEMENT__EANNOTATIONS) or an offset from a base constant
 // (EMODEL_ELEMENT_FEATURE_COUNT + 1). Value is its numeric value in every
-// form.
+// form. Package is the package of the base class, which declares the base
+// constant: another package than the one of the constant when a class extends
+// a class of another model, and the constant must then be qualified.
 type Expr struct {
-	Value     int    // the numeric value (v1 getFeatureIDInteger...)
-	Base      string // the base constant, when HasBase
-	Offset    int    // the offset from the base constant, when HasOffset
-	HasBase   bool   // the value is expressed from a base constant
-	HasOffset bool   // the value is the base constant plus Offset (printed even when 0)
+	Value     int            // the numeric value (v1 getFeatureIDInteger...)
+	Base      string         // the base constant, when HasBase
+	Package   ecore.EPackage // the package declaring the base constant, when HasBase
+	Offset    int            // the offset from the base constant, when HasOffset
+	HasBase   bool           // the value is expressed from a base constant
+	HasOffset bool           // the value is the base constant plus Offset (printed even when 0)
 }
 
 // String returns the constant value as v1 printed it: "3",
@@ -45,14 +48,14 @@ func literalExpr(value int) Expr {
 	return Expr{Value: value}
 }
 
-// baseExpr returns the base constant alone form.
-func baseExpr(base string, value int) Expr {
-	return Expr{Value: value, Base: base, HasBase: true}
+// baseExpr returns the base constant alone form, base being a constant of the package pkg.
+func baseExpr(pkg ecore.EPackage, base string, value int) Expr {
+	return Expr{Value: value, Base: base, Package: pkg, HasBase: true}
 }
 
-// offsetExpr returns the base constant plus offset form.
-func offsetExpr(base string, baseValue int, offset int) Expr {
-	return Expr{Value: baseValue + offset, Base: base, Offset: offset, HasBase: true, HasOffset: true}
+// offsetExpr returns the base constant plus offset form, base being a constant of the package pkg.
+func offsetExpr(pkg ecore.EPackage, base string, baseValue int, offset int) Expr {
+	return Expr{Value: baseValue + offset, Base: base, Package: pkg, Offset: offset, HasBase: true, HasOffset: true}
 }
 
 // ClassIDs is the identifiers and values of the package constants of a class.
@@ -132,9 +135,9 @@ func (m *Model) FeatureIDValue(c ecore.EClass, f ecore.EStructuralFeature) Expr 
 	}
 	baseCount := base.GetFeatureCount()
 	if index < baseCount {
-		return baseExpr(m.FeatureIDName(base, f), m.FeatureIDValue(base, f).Int())
+		return baseExpr(base.GetEPackage(), m.FeatureIDName(base, f), m.FeatureIDValue(base, f).Int())
 	}
-	return offsetExpr(m.FeatureCountIDName(base), m.FeatureCountIDValue(base).Int(), index-baseCount)
+	return offsetExpr(base.GetEPackage(), m.FeatureCountIDName(base), m.FeatureCountIDValue(base).Int(), index-baseCount)
 }
 
 // FeatureCountIDName returns the identifier of the feature count constant of
@@ -153,7 +156,7 @@ func (m *Model) FeatureCountIDValue(c ecore.EClass) Expr {
 	if base == nil {
 		return literalExpr(count)
 	}
-	return offsetExpr(m.FeatureCountIDName(base), m.FeatureCountIDValue(base).Int(), count-base.GetFeatureCount())
+	return offsetExpr(base.GetEPackage(), m.FeatureCountIDName(base), m.FeatureCountIDValue(base).Int(), count-base.GetFeatureCount())
 }
 
 // OperationIDName returns the identifier of the constant of op in c:
@@ -176,9 +179,9 @@ func (m *Model) OperationIDValue(c ecore.EClass, op ecore.EOperation) Expr {
 	}
 	baseCount := base.GetOperationCount()
 	if index < baseCount {
-		return baseExpr(m.OperationIDName(base, op), m.OperationIDValue(base, op).Int())
+		return baseExpr(base.GetEPackage(), m.OperationIDName(base, op), m.OperationIDValue(base, op).Int())
 	}
-	return offsetExpr(m.OperationCountIDName(base), m.OperationCountIDValue(base).Int(), index-baseCount)
+	return offsetExpr(base.GetEPackage(), m.OperationCountIDName(base), m.OperationCountIDValue(base).Int(), index-baseCount)
 }
 
 // OperationCountIDName returns the identifier of the operation count constant
@@ -197,7 +200,7 @@ func (m *Model) OperationCountIDValue(c ecore.EClass) Expr {
 	if base == nil {
 		return literalExpr(count)
 	}
-	return offsetExpr(m.OperationCountIDName(base), m.OperationCountIDValue(base).Int(), count-base.GetOperationCount())
+	return offsetExpr(base.GetEPackage(), m.OperationCountIDName(base), m.OperationCountIDValue(base).Int(), count-base.GetOperationCount())
 }
 
 // MemberName returns the name of the member holding el in the package (v1

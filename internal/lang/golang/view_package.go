@@ -7,6 +7,7 @@ import (
 	"github.com/masagroup/soft.go/ecore"
 
 	"github.com/masagroup/soft.gen/v2/internal/engine"
+	"github.com/masagroup/soft.gen/v2/internal/model"
 	"github.com/masagroup/soft.gen/v2/internal/naming"
 )
 
@@ -67,7 +68,7 @@ func (g *gen) packageInterfaceFile(p ecore.EPackage) engine.File {
 		NsPrefix:       p.GetNsPrefix(),
 		InterfaceName:  g.packageInterfaceName(p),
 		EPackage:       scope.qualify(g.qualifiedInterfaceIdentifier(g.m.Ecore(), "EPackage")),
-		ConstantGroups: g.packageConstantGroups(p),
+		ConstantGroups: g.packageConstantGroups(p, scope),
 		GetterGroups:   g.packageGetterGroups(p, scope),
 	}
 	if g.implementationPackagePath(p) == packagePath {
@@ -95,8 +96,9 @@ func (g *gen) packageInstanceView(p ecore.EPackage, scope *fileScope) *packageIn
 // feature count, the ids of all its operations, its operation count; then the
 // ids of the data types (enums included) sorted by name. Each id of a class or
 // a feature, each count, the operation ids together and the data type ids
-// together form a group.
-func (g *gen) packageConstantGroups(p ecore.EPackage) [][]constantView {
+// together form a group. A constant expressed from the constant of a base class
+// of another package qualifies it.
+func (g *gen) packageConstantGroups(p ecore.EPackage, scope *fileScope) [][]constantView {
 	var groups [][]constantView
 	one := func(c constantView) { groups = append(groups, []constantView{c}) }
 	for _, c := range g.m.Package(p).OrderedClasses {
@@ -110,13 +112,13 @@ func (g *gen) packageConstantGroups(p ecore.EPackage) [][]constantView {
 			one(constantView{
 				Comment: g.m.FeatureIDName(c, f) + " is the feature id for the " + c.GetName() + " '" + naming.UpperFirst(f.GetName()) + "' " + g.m.FeatureKind(f) + ".",
 				Name:    g.m.FeatureIDName(c, f),
-				Value:   g.m.FeatureIDValue(c, f).String(),
+				Value:   g.constantValue(p, scope, g.m.FeatureIDValue(c, f)),
 			})
 		}
 		one(constantView{
 			Comment: g.m.FeatureCountIDName(c) + " is the number of structural features of the class " + c.GetName() + ".",
 			Name:    g.m.FeatureCountIDName(c),
-			Value:   g.m.FeatureCountIDValue(c).String(),
+			Value:   g.constantValue(p, scope, g.m.FeatureCountIDValue(c)),
 		})
 		var operations []constantView
 		for it := c.GetEAllOperations().Iterator(); it.HasNext(); {
@@ -124,7 +126,7 @@ func (g *gen) packageConstantGroups(p ecore.EPackage) [][]constantView {
 			operations = append(operations, constantView{
 				Comment: g.m.OperationIDName(c, op) + " is the operation id for the '" + op.GetName() + "' operation.",
 				Name:    g.m.OperationIDName(c, op),
-				Value:   g.m.OperationIDValue(c, op).String(),
+				Value:   g.constantValue(p, scope, g.m.OperationIDValue(c, op)),
 			})
 		}
 		if len(operations) > 0 {
@@ -133,7 +135,7 @@ func (g *gen) packageConstantGroups(p ecore.EPackage) [][]constantView {
 		one(constantView{
 			Comment: g.m.OperationCountIDName(c) + " is the number of " + g.m.OperationCountIDName(c),
 			Name:    g.m.OperationCountIDName(c),
-			Value:   g.m.OperationCountIDValue(c).String(),
+			Value:   g.constantValue(p, scope, g.m.OperationCountIDValue(c)),
 		})
 	}
 	var dataTypes []constantView
@@ -152,6 +154,18 @@ func (g *gen) packageConstantGroups(p ecore.EPackage) [][]constantView {
 		groups = append(groups, dataTypes)
 	}
 	return groups
+}
+
+// constantValue is the value of a constant of the package p: its base
+// constant, declared by the package interface of the base class, is
+// qualified when that is another package (a class extending a class of
+// another model).
+func (g *gen) constantValue(p ecore.EPackage, scope *fileScope, e model.Expr) string {
+	if !e.HasBase || e.Package == nil || e.Package == p {
+		return e.String()
+	}
+	base := model.Expr{Value: e.Value, Base: scope.qualify(g.qualifiedInterfaceIdentifier(e.Package, e.Base)), Offset: e.Offset, HasBase: true, HasOffset: e.HasOffset}
+	return base.String()
 }
 
 // allDataTypesByName lists the data types of a package, enums included, sorted by name.

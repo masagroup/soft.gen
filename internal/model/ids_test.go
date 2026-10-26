@@ -202,12 +202,33 @@ func TestIDsOperations(t *testing.T) {
 func TestExpr(t *testing.T) {
 	assert.Equal(t, "3", literalExpr(3).String())
 	assert.Equal(t, 3, literalExpr(3).Int())
-	assert.Equal(t, "A__B", baseExpr("A__B", 2).String())
-	assert.Equal(t, 2, baseExpr("A__B", 2).Int())
-	assert.Equal(t, "A_FEATURE_COUNT + 0", offsetExpr("A_FEATURE_COUNT", 4, 0).String())
-	assert.Equal(t, 4, offsetExpr("A_FEATURE_COUNT", 4, 0).Int())
-	assert.Equal(t, "A_FEATURE_COUNT + 2", offsetExpr("A_FEATURE_COUNT", 4, 2).String())
-	assert.Equal(t, 6, offsetExpr("A_FEATURE_COUNT", 4, 2).Int())
+	assert.Equal(t, "A__B", baseExpr(nil, "A__B", 2).String())
+	assert.Equal(t, 2, baseExpr(nil, "A__B", 2).Int())
+	assert.Equal(t, "A_FEATURE_COUNT + 0", offsetExpr(nil, "A_FEATURE_COUNT", 4, 0).String())
+	assert.Equal(t, 4, offsetExpr(nil, "A_FEATURE_COUNT", 4, 0).Int())
+	assert.Equal(t, "A_FEATURE_COUNT + 2", offsetExpr(nil, "A_FEATURE_COUNT", 4, 2).String())
+	assert.Equal(t, 6, offsetExpr(nil, "A_FEATURE_COUNT", 4, 2).Int())
+}
+
+// TestIDsCrossPackage checks that a value expressed from the constant of a
+// base class of another model carries the package of that class, and a value
+// expressed from a base class of the same package carries the package itself.
+func TestIDsCrossPackage(t *testing.T) {
+	m := loadModel(t, "crossmodel")
+	root := m.Root()
+	component := root.GetEClassifier("Component").(ecore.EClass)
+	form := root.GetEClassifier("Form").(ecore.EClass)
+	named := component.GetESuperTypes().Get(0).(ecore.EClass)
+	require.Equal(t, "base", named.GetEPackage().GetName())
+
+	name := component.GetEStructuralFeatureFromName("name")
+	assert.Equal(t, "NAMED_ELEMENT__NAME", m.FeatureIDValue(component, name).String())
+	assert.Equal(t, named.GetEPackage(), m.FeatureIDValue(component, name).Package)
+	assert.Equal(t, named.GetEPackage(), m.FeatureCountIDValue(component).Package)
+	assert.Equal(t, named.GetEPackage(), m.OperationCountIDValue(component).Package)
+	assert.Equal(t, root, m.FeatureIDValue(form, name).Package)
+	assert.Equal(t, root, m.FeatureCountIDValue(form).Package)
+	assert.Nil(t, m.FeatureIDValue(named, name).Package)
 }
 
 // TestClassifierIDValueQuirk checks that the first classifier, of id 0, has
