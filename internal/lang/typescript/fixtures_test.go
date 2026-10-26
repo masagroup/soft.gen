@@ -42,7 +42,7 @@ type fixture = goldentest.Fixture
 // v1Fix is the reason of the V1Differences where v2 creates an annotation in
 // its element: v1 created the annotation of a parameter in the getter named
 // after it, and a nested annotation in null.
-const v1AnnotationContainer = "v1 creates the annotation of a parameter in this.get<Parameter>() (no such getter, or another element) and a nested annotation in null (lost)"
+const v1AnnotationContainer = "v1 creates the annotation of a parameter in this.get<Parameter>() (no such getter, or another element) and an annotation nested in an annotation in null, and drops the annotations of the contents of an annotation"
 
 // The reasons of the other V1Differences, each a v1 bug v2 fixes.
 const (

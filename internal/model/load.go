@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -47,7 +48,9 @@ type Model struct {
 // resolve to the embedded ecore.ecore, as in v1 where they resolved to
 // EcorePackage.eINSTANCE. The generic elements of the file, which soft.go
 // does not model, give the elements their eType and are dropped (see
-// stripGenerics). It fails with the diagnostics of the resource when the file
+// stripGenerics). The packages of its xsi:schemaLocation load on demand, as
+// in EMF, when its objects need them (see strippingURIConverter). It fails
+// with the diagnostics of the resource when the file
 // can not be loaded or has no EPackage root.
 func Load(path, annotationSource string) (*Model, error) {
 	data, err := os.ReadFile(path)
@@ -55,6 +58,7 @@ func Load(path, annotationSource string) (*Model, error) {
 		return nil, fmt.Errorf("model: loading %s: %w", path, err)
 	}
 	resourceSet := ecore.NewEResourceSetImpl()
+	resourceSet.SetURIConverter(strippingURIConverter{resourceSet.GetURIConverter()})
 	processor := xmi.NewProcessor(xml.ProcessorResourceSet(resourceSet))
 	ecorePackage, err := loadEcoreModel(resourceSet, processor)
 	if err != nil {
@@ -97,6 +101,31 @@ func loadEcoreModel(resourceSet ecore.EResourceSet, processor *xmi.Processor) (e
 		return nil, fmt.Errorf("model: loading the embedded ecore.ecore: %w", err)
 	}
 	return root, nil
+}
+
+// strippingURIConverter reads the .ecore documents the resource set loads by
+// itself without their generics (see stripGenerics): the packages the decoder
+// loads from the xsi:schemaLocation of a model, such as the package of the
+// contents of its annotations, and the documents of its cross references. The
+// model itself is decoded by loadPackage, which keeps its type arguments.
+type strippingURIConverter struct {
+	ecore.EURIConverter
+}
+
+func (c strippingURIConverter) CreateReader(uri *ecore.URI) (io.ReadCloser, error) {
+	reader, err := c.EURIConverter.CreateReader(uri)
+	if err != nil || !strings.HasSuffix(uri.Path(), ".ecore") {
+		return reader, err
+	}
+	defer reader.Close()
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+	if data, err = stripGenerics(data); err != nil {
+		return nil, err
+	}
+	return io.NopCloser(bytes.NewReader(data)), nil
 }
 
 // loadPackage decodes the .ecore document data as the resource uri of

@@ -7,6 +7,7 @@ import (
 	"github.com/masagroup/soft.go/ecore"
 
 	"github.com/masagroup/soft.gen/v2/internal/engine"
+	"github.com/masagroup/soft.gen/v2/internal/model"
 )
 
 // packageImplView is the view model of the package implementation file
@@ -211,6 +212,27 @@ type annotationView struct {
 	Container string
 	// Details lists the details, in model order.
 	Details []detailView
+	// Nested lists the annotations nested in the annotation (template
+	// package/annotation).
+	Nested []nestedAnnotationView
+}
+
+// nestedAnnotationView is the creation of an annotation nested in another one,
+// in its eAnnotations or its contents (EMF addAnnotation with a depth or a
+// path).
+type nestedAnnotationView struct {
+	// Var is the variable of the annotation, eAnnotation<depth>; Parent the
+	// one of its parent.
+	Var, Parent string
+	// List is the getter of the list of its parent it is added to:
+	// GetEAnnotations or GetContents.
+	List string
+	// Source is the source, escaped.
+	Source string
+	// Details lists the details, in model order.
+	Details []detailView
+	// Nested lists the annotations nested in the annotation.
+	Nested []nestedAnnotationView
 }
 
 // detailView is one detail of an annotation.
@@ -539,30 +561,57 @@ func (g *gen) annotationInitializers(p ecore.EPackage, scope *fileScope) []annot
 			if a.GetSource() != source.URI {
 				continue
 			}
-			annotation := annotationView{Container: g.annotatedElementGetter(a.GetEModelElement(), scope)}
-			for _, entry := range a.GetDetails().ToArray() {
-				entry := entry.(ecore.EMapEntry)
-				key, _ := entry.GetKey().(string)
-				value, _ := entry.GetValue().(string)
-				annotation.Details = append(annotation.Details, detailView{Key: key, Value: escapeLiteral(value)})
-			}
-			view.Annotations = append(view.Annotations, annotation)
+			view.Annotations = append(view.Annotations, annotationView{
+				Container: g.annotatedElementGetter(a.GetEModelElement(), scope),
+				Details:   annotationDetails(a),
+				Nested:    nestedAnnotations(model.NestedAnnotations(a), "eAnnotation", 1),
+			})
 		}
 		sources = append(sources, view)
 	}
 	return sources
 }
 
+// annotationDetails lists the details of an annotation, in model order.
+func annotationDetails(a ecore.EAnnotation) []detailView {
+	var details []detailView
+	for _, entry := range a.GetDetails().ToArray() {
+		entry := entry.(ecore.EMapEntry)
+		key, _ := entry.GetKey().(string)
+		value, _ := entry.GetValue().(string)
+		details = append(details, detailView{Key: key, Value: escapeLiteral(value)})
+	}
+	return details
+}
+
+// nestedAnnotations lists the creations of the annotations nested in the
+// annotation of the variable parent, at depth (v1 dropped them: it created an
+// annotation nested in eAnnotations in nil, and none of the contents).
+func nestedAnnotations(nested []model.NestedAnnotation, parent string, depth int) []nestedAnnotationView {
+	var views []nestedAnnotationView
+	for _, n := range nested {
+		v := nestedAnnotationView{
+			Var:     "eAnnotation" + strconv.Itoa(depth),
+			Parent:  parent,
+			List:    "GetEAnnotations",
+			Source:  escapeLiteral(n.Annotation.GetSource()),
+			Details: annotationDetails(n.Annotation),
+		}
+		if n.Content {
+			v.List = "GetContents"
+		}
+		v.Nested = nestedAnnotations(n.Nested, v.Var, depth+1)
+		views = append(views, v)
+	}
+	return views
+}
+
 // annotatedElementGetter is the expression of the element an annotation is
 // created in (v1 getPackageGetter(EModelElement)): p for a package, the
 // literal found by name in its enum, the getter of a named element, nil otherwise.
-// Two cases differ from v1, which got them wrong:
-//   - a parameter is reached through its operation (v1 called a getter named
-//     after the parameter, which does not exist or is another element's);
-//   - a nested annotation is reached through its parent annotation, found by
-//     source in its container (v1 created it in nil, so it was lost); the
-//     parent must exist, which holds when its source sorts before the nested
-//     one's, the initializations running in source order.
+// A parameter is reached through its operation, where v1 called a getter named
+// after the parameter, which does not exist or is another element's. A nested
+// annotation is created in its parent (see nestedAnnotations).
 func (g *gen) annotatedElementGetter(el ecore.EModelElement, scope *fileScope) string {
 	switch el := el.(type) {
 	case ecore.EPackage:
@@ -574,12 +623,6 @@ func (g *gen) annotatedElementGetter(el ecore.EModelElement, scope *fileScope) s
 		index := op.GetEParameters().IndexOf(el)
 		parameter := scope.qualify(g.qualifiedInterfaceIdentifier(g.m.Ecore(), "EParameter"))
 		return g.elementGetter(op) + ".GetEParameters().Get(" + strconv.Itoa(index) + ").(" + parameter + ")"
-	case ecore.EAnnotation:
-		parent := g.annotatedElementGetter(el.GetEModelElement(), scope)
-		if parent == "nil" {
-			return parent
-		}
-		return parent + `.GetEAnnotation("` + escapeLiteral(el.GetSource()) + `")`
 	case ecore.ENamedElement:
 		return g.elementGetter(el)
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/masagroup/soft.go/ecore"
 
 	"github.com/masagroup/soft.gen/v2/internal/engine"
+	"github.com/masagroup/soft.gen/v2/internal/model"
 )
 
 // packageImplView is the data of the members of the package implementation.
@@ -33,6 +34,17 @@ type packageImplView struct {
 type packageAnnotation struct {
 	Container string
 	Details   [][2]string
+	Nested    []nestedAnnotation
+}
+
+// nestedAnnotation is an annotation nested in the annotation of the variable
+// Parent, added to its eAnnotations or its contents (List), with its own
+// nested annotations (template package/impl.annotation, EMF addAnnotation
+// with a depth or a path).
+type nestedAnnotation struct {
+	Var, Parent, List, Source string
+	Details                   [][2]string
+	Nested                    []nestedAnnotation
 }
 
 // packageImplementationFile is the implementation of a package (v1
@@ -347,16 +359,47 @@ func (g *gen) annotationInitializers(p ecore.EPackage, s *scope) []packageImplVi
 			if a.GetSource() != source.URI {
 				continue
 			}
-			annotation := packageAnnotation{Container: g.annotatedElementGetter(a.GetEModelElement(), s)}
-			for _, entry := range a.GetDetails().ToArray() {
-				entry := entry.(ecore.EMapEntry)
-				key, _ := entry.GetKey().(string)
-				value, _ := entry.GetValue().(string)
-				annotation.Details = append(annotation.Details, [2]string{quote(key), quote(value)})
-			}
-			view.Annotations = append(view.Annotations, annotation)
+			view.Annotations = append(view.Annotations, packageAnnotation{
+				Container: g.annotatedElementGetter(a.GetEModelElement(), s),
+				Details:   annotationDetails(a),
+				Nested:    nestedAnnotations(model.NestedAnnotations(a), "eAnnotation", 1),
+			})
 		}
 		views = append(views, view)
+	}
+	return views
+}
+
+// annotationDetails lists the quoted keys and values of the details of an
+// annotation, in model order.
+func annotationDetails(a ecore.EAnnotation) [][2]string {
+	var details [][2]string
+	for _, entry := range a.GetDetails().ToArray() {
+		entry := entry.(ecore.EMapEntry)
+		key, _ := entry.GetKey().(string)
+		value, _ := entry.GetValue().(string)
+		details = append(details, [2]string{quote(key), quote(value)})
+	}
+	return details
+}
+
+// nestedAnnotations lists the creations of the annotations nested in the
+// annotation of the variable parent, at depth, as in the Go language.
+func nestedAnnotations(nested []model.NestedAnnotation, parent string, depth int) []nestedAnnotation {
+	var views []nestedAnnotation
+	for _, n := range nested {
+		v := nestedAnnotation{
+			Var:     "eAnnotation" + strconv.Itoa(depth),
+			Parent:  parent,
+			List:    "getEAnnotations",
+			Source:  quote(n.Annotation.GetSource()),
+			Details: annotationDetails(n.Annotation),
+		}
+		if n.Content {
+			v.List = "getContents"
+		}
+		v.Nested = nestedAnnotations(n.Nested, v.Var, depth+1)
+		views = append(views, v)
 	}
 	return views
 }
@@ -364,9 +407,9 @@ func (g *gen) annotationInitializers(p ecore.EPackage, s *scope) []packageImplVi
 // annotatedElementGetter is the expression of the element an annotation is
 // created in (v1 getPackageGetter(EModelElement)): this for the package, the
 // literal found by name in its enum, the getter of a named element, null
-// otherwise. As in the Go language, two cases differ from v1, which got them
-// wrong: a parameter is reached through its operation, a nested annotation
-// through its parent annotation.
+// otherwise. As in the Go language, a parameter is reached through its
+// operation, where v1 got it wrong, and a nested annotation is created in its
+// parent.
 func (g *gen) annotatedElementGetter(el ecore.EModelElement, s *scope) string {
 	switch el := el.(type) {
 	case ecore.EPackage:
@@ -377,12 +420,6 @@ func (g *gen) annotatedElementGetter(el ecore.EModelElement, s *scope) string {
 		op := el.GetEOperation()
 		return g.elementGetter(op) + ".getEParameters().get(" + strconv.Itoa(op.GetEParameters().IndexOf(el)) + ") as " +
 			s.qualify(g.ecoreIdentifier("EParameter"))
-	case ecore.EAnnotation:
-		parent := g.annotatedElementGetter(el.GetEModelElement(), s)
-		if parent == "null" {
-			return parent
-		}
-		return parent + ".getEAnnotation(" + quote(el.GetSource()) + ")"
 	case ecore.ENamedElement:
 		return g.elementGetter(el)
 	}

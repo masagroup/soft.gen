@@ -109,8 +109,14 @@ every other construct the output is the v1 output:
   named `mock` get distinct aliases (all three did not compile).
 - The annotation of a parameter is created in the parameter (v1 called a
   getter named after the parameter, which did not exist or was another
-  element's), and a nested annotation in its parent annotation (v1 created it
-  in nil: it was lost).
+  element's). As in the EMF Java generator, the annotations nested in an
+  annotation, in its `eAnnotations` or its `contents`, are created with it,
+  in its initializer (v1 created one of its `eAnnotations` in nil, so it was
+  lost, and dropped its `contents`); their sources get no initializer of their
+  own. The other objects of the `contents` are left out, as in EMF.
+- A model loads the packages its `xsi:schemaLocation` names when its objects
+  need them, as EMF does, such as the package of the objects of the contents
+  of an annotation (the loading failed).
 - The features of a mixin extending a class keep their declaration order in
   `EDerivedFeatureID` (v1 used the order of a set difference).
 - `rootExtendsMock` works (v1 failed generating the mocks).
@@ -167,8 +173,8 @@ every other construct the output is the v1 output:
 - A string default value literal is quoted and escaped, and an attribute of
   a type the type table does not know has the test value `null` (v1's output
   did not parse).
-- The annotation of a parameter and a nested annotation are created in their
-  element, as for Go.
+- The annotation of a parameter is created in its element, and the annotations
+  nested in an annotation with it, as for Go.
 
 ### Not ported yet
 
