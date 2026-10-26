@@ -360,7 +360,7 @@ func (g *gen) listConstructor(c ecore.EClass, f ecore.EStructuralFeature, scope 
 	case info.Attribute != nil && info.IsFeatureMap:
 		return "nil"
 	case info.Attribute != nil:
-		return ecore("NewBasicEDataTypeList") + "(" + receiver + ", " + id + ", " + strconv.FormatBool(f.IsUnique()) + ")"
+		return ecore("NewBasicEDataTypeList") + "(" + receiver + ", " + id + ", " + strconv.FormatBool(f.IsUnique()) + ", " + strconv.FormatBool(info.IsUnsettable) + ")"
 	case info.Reference == nil:
 		return ""
 	}

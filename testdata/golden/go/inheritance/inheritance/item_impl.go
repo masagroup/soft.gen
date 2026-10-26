@@ -67,7 +67,7 @@ func (i *itemImpl) SetId(newId string) {
 // GetTags get the value of tags
 func (i *itemImpl) GetTags() ecore.EList {
 	if i.tags == nil {
-		i.tags = ecore.NewBasicEDataTypeList(i.AsEObjectInternal(), ITEM__TAGS, true)
+		i.tags = ecore.NewBasicEDataTypeList(i.AsEObjectInternal(), ITEM__TAGS, true, false)
 	}
 	return i.tags
 }

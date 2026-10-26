@@ -276,7 +276,7 @@ func (h *holderImpl) SetSmall(newSmall int8) {
 // GetTags get the value of tags
 func (h *holderImpl) GetTags() ecore.EList {
 	if h.tags == nil {
-		h.tags = ecore.NewBasicEDataTypeList(h.AsEObjectInternal(), HOLDER__TAGS, true)
+		h.tags = ecore.NewBasicEDataTypeList(h.AsEObjectInternal(), HOLDER__TAGS, true, true)
 	}
 	return h.tags
 }
@@ -324,7 +324,7 @@ func (h *holderImpl) SetType(newType_ string) {
 // GetValues get the value of values
 func (h *holderImpl) GetValues() ecore.EList {
 	if h.values == nil {
-		h.values = ecore.NewBasicEDataTypeList(h.AsEObjectInternal(), HOLDER__VALUES, true)
+		h.values = ecore.NewBasicEDataTypeList(h.AsEObjectInternal(), HOLDER__VALUES, true, false)
 	}
 	return h.values
 }

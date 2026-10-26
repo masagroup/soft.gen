@@ -268,7 +268,7 @@ func (h *holderImpl) initPreferred() {
 
 func (h *holderImpl) initTags() {
 	if h.tags == nil {
-		h.tags = ecore.NewBasicEDataTypeList(h.AsEObjectInternal(), HOLDER__TAGS, true)
+		h.tags = ecore.NewBasicEDataTypeList(h.AsEObjectInternal(), HOLDER__TAGS, true, false)
 	}
 }
 

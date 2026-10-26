@@ -70,6 +70,12 @@ templates alike:
   the value with its default.
 - The notifications are unchanged: soft.go and soft.ts notifications do not
   carry the previous set state of EMF Java.
+- The list of a many-valued attribute is created with its unsettable flag, as
+  the list of a reference: `NewBasicEDataTypeList(owner, id, unique,
+  unsettable)` (Go, soft.go after v1.14.0); TypeScript gives the uniqueness and
+  the flag only when the attribute is not unique or unsettable,
+  `new BasicEDataTypeList(this, id, unique, unsettable)` (soft.ts after v1.8.0),
+  so the code of the other attributes is unchanged.
 
 Fixed with it:
 
