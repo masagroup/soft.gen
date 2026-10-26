@@ -143,6 +143,10 @@ func Test[aClass.name.toUpperFirst()/]GetValue(t *testing.T) {
 
 [aStructuralFeature.generateUnSetTestImplementation(aClass,packagePath,imports)/]
 [/if]
+[if isIsSet()]
+
+[aStructuralFeature.generateIsSetTestImplementation(aClass,packagePath,imports)/]
+[/if]
 [/template]
 
 [template private generateTestOperation(anEOperation : EOperation, aClass : EClass, packagePath : String, imports : OclAny )]
@@ -621,6 +625,36 @@ func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]U
 [/if]
 [/let]
 	mock.AssertExpectationsForObjects(t, mockAdapter)
+}
+[/template]
+
+[template private generateIsSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass, packagePath : String, imports : OclAny) ? (isVolatile())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]IsSet(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	assert.Panics(t, func() { o.[aStructuralFeature.getIsSetName()/]() })
+}
+[/template]
+
+[template private generateIsSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass, packagePath : String, imports : OclAny) ? (not isVolatile() and hasESetFlag())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]IsSet(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	assert.False(t, o.[aStructuralFeature.getIsSetName()/]())
+	assert.False(t, o.EIsSetFromID([aClass.getImportedIDName(aStructuralFeature, packagePath, imports)/]))
+	o.[aStructuralFeature.getESetVariableName()/] = true
+	assert.True(t, o.[aStructuralFeature.getIsSetName()/]())
+	assert.True(t, o.EIsSetFromID([aClass.getImportedIDName(aStructuralFeature, packagePath, imports)/]))
+[if isUnSet()]
+	o.[aStructuralFeature.getUnSetterName()/]()
+	assert.False(t, o.[aStructuralFeature.getIsSetName()/]())
+	assert.False(t, o.EIsSetFromID([aClass.getImportedIDName(aStructuralFeature, packagePath, imports)/]))
+[/if]
+}
+[/template]
+
+[template private generateIsSetTestImplementation(aStructuralFeature : EStructuralFeature,aClass : EClass, packagePath : String, imports : OclAny) ? (not isVolatile() and not hasESetFlag())]
+func Test[aClass.name.toUpperFirst()/][aStructuralFeature.name.toUpperFirst()/]IsSet(t *testing.T) {
+	o := [aClass.getConstructorName()/]()
+	assert.False(t, o.[aStructuralFeature.getIsSetName()/]())
 }
 [/template]
 

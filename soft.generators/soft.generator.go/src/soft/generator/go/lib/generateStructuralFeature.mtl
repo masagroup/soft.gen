@@ -18,6 +18,7 @@
 [import soft::generator::go::generatePath/]
 [import soft::generator::go::generateType/]
 [import soft::generator::go::lib::generateCommon/]
+[import soft::generator::go::lib::generateReflectives/]
 
 
 [query public isInitializationDefered( aStructuralFeature : EStructuralFeature ) : Boolean = isListType() or isProxy()/]
@@ -40,7 +41,14 @@
 [if isUnSet()]
 [aStructuralFeature.generateUnSetDeclaration(packagePath,imports)/]
 [/if]
+[if isIsSet()]
+[aStructuralFeature.generateIsSetDeclaration(packagePath,imports)/]
+[/if]
 
+[/template]
+
+[template private generateIsSetDeclaration(aStructuralFeature : EStructuralFeature, packagePath : String, imports : OclAny)]
+[aStructuralFeature.getIsSetName()/]() bool
 [/template]
 
 [template private generateGetDeclaration(aStructuralFeature : EStructuralFeature, packagePath : String, imports : OclAny)]
@@ -214,6 +222,9 @@ nil
 [if isBasicUnSet() and not isReflectiveDelegation()]
 [aStructuralFeature.generateBasicUnSetImplementation(aClass,packagePath,imports)/]
 [/if]
+[if isIsSet()]
+[aStructuralFeature.generateIsSetImplementation(aClass,packagePath,imports)/]
+[/if]
 [/template]
 
 [template public generateMock(aStructuralFeature : EStructuralFeature , aClass : EClass, packagePath : String, imports : OclAny)]
@@ -226,6 +237,9 @@ nil
 [if isUnSet()]
 [aStructuralFeature.generateUnSetMock(aClass,packagePath,imports)/]
 [/if]
+[if isIsSet()]
+[aStructuralFeature.generateIsSetMock(aClass,packagePath,imports)/]
+[/if]
 [/template]
 
 [template public generateMockTests(aStructuralFeature : EStructuralFeature , aClass : EClass, packagePath : String, imports : OclAny)]
@@ -237,6 +251,9 @@ nil
 [/if]
 [if isUnSet()]
 [aStructuralFeature.generateUnSetMockTest(aClass,packagePath,imports)/]
+[/if]
+[if isIsSet()]
+[aStructuralFeature.generateIsSetMockTest(aClass,packagePath,imports)/]
 [/if]
 [/template]
 
@@ -575,12 +592,15 @@ func [testMethodName/](t *testing.T) {
         if (notifications != nil) {
             notifications.Dispatch()
         }
-    }
-        [if isUnSettable()]
-        [/if]
+    }[if hasESetFlag()] else {
+        [receiverName/].[getESetVariableName()/] = true
+    }[/if]
     [else]
     [oldVarName/] := [aClass.getReceiverName()/].[varName/]
     [aClass.getReceiverName()/].[varName/] = [newVarName/]
+    [if hasESetFlag()]
+    [receiverName/].[getESetVariableName()/] = true
+    [/if]
     if [aClass.getReceiverName()/].ENotificationRequired() {
         [aClass.getReceiverName()/].ENotify([if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]SET, [aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/], [oldVarName/], [newVarName/], [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
     }
@@ -614,6 +634,9 @@ basic[aStructuralFeature.getSetterName().toUpperFirst()/]( [aStructuralFeature.g
     [let oldVarName : String = 'old' + varName.toUpperFirst()]
     [oldVarName/] := [receiverName/].[varName/]
     [receiverName/].[varName/] = [newVarName/]
+    [if hasESetFlag()]
+    [receiverName/].[getESetVariableName()/] = true
+    [/if]
     notifications := msgs
     if ( [receiverName/].ENotificationRequired() ) {
         notification := [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]SET, [aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/], [oldVarName/], [newVarName/], [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX)
@@ -694,22 +717,12 @@ func [testMethodName/](t *testing.T) {
 	[receiverName/].EUnsetFromID([aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/])
 [elseif not isVolatile()]
     [if isListType()]
-		[let lazy : String = aStructuralFeature.getLazy()]
-	    [if lazy = 'function']
-	        [if aStructuralFeature.oclIsKindOf(EAttribute)]
-	if [receiverName/].[varName/] == [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(packagePath,imports)/] {
-		[else]
 	if [receiverName/].[varName/] != nil {
-		[/if]
 		[receiverName/].[varName/].Clear()
 	}
-		[else]
-        [receiverName/].[varName/].Clear()
-		[/if]
-	    [/let]
     [elseif isBidirectional() or isContains()]
     if [receiverName/].[varName/] != nil {
-        notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain
+        var notifications [if not aPackage.isEcorePackage()]ecore.[/if]ENotificationChain
         [if not isBidirectional()]
         notifications = [receiverName/].[varName/].([if not aPackage.isEcorePackage()]ecore.[/if]EObjectInternal).EInverseRemove( [receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]EOPPOSITE_FEATURE_BASE - [aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/] , notifications )
         [else]
@@ -721,8 +734,11 @@ func [testMethodName/](t *testing.T) {
         if notifications != nil {
             notifications.Dispatch()
         }
-    } else if [receiverName/].ENotificationRequired() {
-        [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/],nil,nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
+    } else {
+        [receiverName/].[getESetVariableName()/] = false
+        if [receiverName/].ENotificationRequired() {
+            [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/],nil,nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
+        }
     }
     [else]
 		[oldVarName/] := [receiverName/].[varName/]
@@ -731,6 +747,7 @@ func [testMethodName/](t *testing.T) {
 		[else]
 		[receiverName/].[varName/] = [aStructuralFeature.oclAsType(EAttribute).getDefaultValue(packagePath,imports)/]
 		[/if]
+		[receiverName/].[getESetVariableName()/] = false
 		if [receiverName/].ENotificationRequired() {
             [receiverName/].ENotify( [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/],[oldVarName/],nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX))
         }
@@ -748,7 +765,7 @@ func [testMethodName/](t *testing.T) {
 	aPackage : EPackage = aClass.ePackage;
 	ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif;
 }]
-basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( [aStructuralFeature.generateType(packagePath,imports)/] ,[ecorePrefix/]ENotificationChain ) [ecorePrefix/]ENotificationChain
+basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( [ecorePrefix/]ENotificationChain ) [ecorePrefix/]ENotificationChain
 [/template]
 
 [template private generateBasicUnSetImplementation(aStructuralFeature : EStructuralFeature, aClass : EClass, packagePath : String, imports : OclAny){
@@ -761,6 +778,7 @@ basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( [aStructuralFeature
 [if not isVolatile()]
     [oldVarName/] := [receiverName/].[varName/]
     [receiverName/].[varName/] = nil
+    [receiverName/].[getESetVariableName()/] = false
     notifications := msgs;
     if [receiverName/].ENotificationRequired() {
         notification := [if not aPackage.isEcorePackage()]ecore.[/if]NewNotificationByFeatureID([receiverName/].AsEObject(), [if not aPackage.isEcorePackage()]ecore.[/if]UNSET, [aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/], [oldVarName/], nil, [if not aPackage.isEcorePackage()]ecore.[/if]NO_INDEX)
@@ -773,8 +791,94 @@ basic[aStructuralFeature.getUnSetterName().toUpperFirst()/]( [aStructuralFeature
     return notifications
 [else]
     panic("basic[aStructuralFeature.getUnSetterName().toUpperFirst()/] not implemented")
-[/if] 
+[/if]
 }
+[/template]
+
+[template private generateIsSetImplementation(aStructuralFeature : EStructuralFeature , aClass : EClass, packagePath : String, imports : OclAny){
+	receiverName : String = aClass.getReceiverName();
+	varName : String = aStructuralFeature.getVariableName();
+}]
+// [aStructuralFeature.getIsSetName()/] get if the value of [varName/] is set
+[aClass.generateFunctionImplementationReceiver()/] [aStructuralFeature.getIsSetName()/]() bool {
+[if isReflectiveDelegation()]
+	return [receiverName/].EIsSetFromID([aClass.getImportedIDName(aStructuralFeature, packagePath,imports)/])
+[elseif not isVolatile()]
+    [if isListType()]
+	return [aStructuralFeature.generateComparison(aClass,packagePath,imports)/]
+    [else]
+	return [receiverName/].[getESetVariableName()/]
+    [/if]
+[elseif hasKey('isSetBody')]
+    [valueKey('isSetBody')/]
+[else]
+    panic("[aStructuralFeature.getIsSetName()/] not implemented")
+[/if]
+}
+
+[/template]
+
+[template private generateIsSetMock(aStructuralFeature : EStructuralFeature, aClass : EClass, packagePath : String, imports : OclAny){
+	methodName : String = aStructuralFeature.getIsSetName();
+	mockName : String = aClass.getMockName();
+	mockExpecterName : String =mockName +'_Expecter_Methods';
+	mockCallName : String = mockName+'_' +methodName+'_Call';
+}]
+// [methodName/] get if the value of [aStructuralFeature.getVariableName()/] is set
+func ([aClass.getReceiverName()/] *[aClass.getMockName()/]_Prototype_Methods) [methodName/]() bool {
+	ret := [aClass.getReceiverName()/].mock.Called()
+
+	var res bool
+	if rf, ok := ret.Get(0).(func() bool); ok {
+		res = rf()
+	} else {
+		if ret.Get(0) != nil {
+			res = ret.Get(0).(bool)
+		}
+	}
+
+	return res
+}
+
+type [mockCallName/] struct {
+	*mock.Call
+}
+
+func (e *[mockExpecterName/]) [methodName/]() *[mockCallName/] {
+	return &[mockCallName/]{Call: e.mock.On("[methodName/]")}
+}
+
+func (c *[mockCallName/]) Run(run func()) *[mockCallName/] {
+	c.Call.Run(func(mock.Arguments) {
+		run()
+	})
+	return c
+}
+
+func (c *[mockCallName/]) Return([aStructuralFeature.getVariableName()/] bool) *[mockCallName/] {
+	c.Call.Return([aStructuralFeature.getVariableName()/])
+	return c
+}
+[/template]
+
+[template private generateIsSetMockTest(aStructuralFeature : EStructuralFeature, aClass : EClass, packagePath : String, imports : OclAny) {
+	mockName : String = aClass.getMockName();
+	isSetMethodName : String = aStructuralFeature.getIsSetName();
+	testMethodName : String = 'Test' + mockName + isSetMethodName.toUpperFirst();
+	aPackage : EPackage = aClass.ePackage;
+	ecorePrefix : String = if not aPackage.isEcorePackage() then 'ecore.'else '' endif
+}]
+// [testMethodName/] tests method [isSetMethodName/]
+func [testMethodName/](t *testing.T) {
+	o := New[mockName/](t)
+	r := true
+	m := [ecorePrefix/]NewMockRun(t)
+	o.EXPECT().[isSetMethodName/]().Return(r).Run(func() { m.Run() }).Once()
+	o.EXPECT().[isSetMethodName/]().Call.Return(func() bool { return r }).Once()
+	assert.Equal(t,r,o.[isSetMethodName/]())
+	assert.Equal(t,r,o.[isSetMethodName/]())
+}
+
 [/template]
 
 

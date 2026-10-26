@@ -177,7 +177,11 @@ eIsSetFromID(featureID: number): boolean {
     switch (featureID) {
 [for (anStructFeature : EStructuralFeature | aClass.getEIsSetFeatures()->sortedBy(name))]
         case [aClass.getImportedIDName(anStructFeature,modules)/]: {
+    [if anStructFeature.hasESetFlag()]
+            return this.[anStructFeature.getESetVariableName()/]
+    [else]
             return [anStructFeature.generateComparison(modules)/]
+    [/if]
         }
 [/for]
         default: {
@@ -224,7 +228,7 @@ eUnsetFromID(featureID: number) {
         case [aClass.getImportedIDName(aStructFeature,modules)/]: {
     [if aStructFeature.isListType() and not aStructFeature.isUnSettable()]
             this.[aStructFeature.getGetterName()/]().clear()
-    [elseif aStructFeature.isUnSet() and not aStructFeature.isPropertyAccessors()]
+    [elseif aStructFeature.isUnSet() and (not aStructFeature.isPropertyAccessors() or aStructFeature.hasESetFlag())]
             this.[aStructFeature.getUnSetterName()/]()
     [elseif aStructFeature.oclIsKindOf(EReference)]
 			this.[aStructFeature.getSetterName()/](null)

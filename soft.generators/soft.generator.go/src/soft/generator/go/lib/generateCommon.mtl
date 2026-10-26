@@ -24,6 +24,10 @@
 
 [query public isReflectiveDelegation(anFeature : EStructuralFeature ) : Boolean = anFeature.eContainingClass.isReflectiveDelegation()/]
 
+[query public hasESetFlag(aStructuralFeature : EStructuralFeature) : Boolean = aStructuralFeature.hasESet() and not aStructuralFeature.isReflectiveDelegation()/]
+
+[query public getESetVariableName(aStructuralFeature : EStructuralFeature) : String = aStructuralFeature.getVariableName() + 'ESet'/]
+
 [query public getReceiverName(aClass : EClass) : String = aClass.name.first(1).toLower()/]
 
 [template public generateFunctionImplementationReceiver(aClass : EClass)]
