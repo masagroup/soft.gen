@@ -141,7 +141,14 @@ func (s *scope) constructor(c ecore.EClass, f ecore.EStructuralFeature) string {
 		if info.IsFeatureMap {
 			return "null"
 		}
-		return "new " + s.qualify(g.ecoreIdentifier("BasicEDataTypeList")) + "<" + elementType + ">(this, " + s.featureID(c, f) + ")"
+		// the uniqueness and the unsettable flag are given when they are not the defaults of the
+		// constructor (unique, not unsettable): the code of the other attributes runs with the soft.ts
+		// versions whose constructor has no such parameters
+		args := "this, " + s.featureID(c, f)
+		if !f.IsUnique() || info.IsUnsettable {
+			args += ", " + strconv.FormatBool(f.IsUnique()) + ", " + strconv.FormatBool(info.IsUnsettable)
+		}
+		return "new " + s.qualify(g.ecoreIdentifier("BasicEDataTypeList")) + "<" + elementType + ">(" + args + ")"
 	}
 	list := "new " + s.qualify(g.ecoreIdentifier("BasicEObjectList")) + "<" + elementType + ">(this, "
 	proxyUnsettable := strconv.FormatBool(info.IsProxy) + ", " + strconv.FormatBool(info.IsUnsettable) + ")"

@@ -3,9 +3,9 @@ module github.com/masagroup/soft.gen/v2
 go 1.27.0
 
 require (
-	github.com/masagroup/soft.go v1.13.4-0.20261026142136-27dfaa85d282
-	github.com/masagroup/soft.go/codec/xmi v1.0.1-0.20261026142136-27dfaa85d282
-	github.com/masagroup/soft.go/codec/xml v1.0.1-0.20261026142136-27dfaa85d282
+	github.com/masagroup/soft.go v1.13.4-0.20261026202944-7ddd40fc350e
+	github.com/masagroup/soft.go/codec/xmi v1.0.1-0.20261026202944-7ddd40fc350e
+	github.com/masagroup/soft.go/codec/xml v1.0.1-0.20261026202944-7ddd40fc350e
 	github.com/stretchr/testify v1.12.1
 	github.com/urfave/cli-altsrc/v3 v3.1.0
 	github.com/urfave/cli/v3 v3.14.0

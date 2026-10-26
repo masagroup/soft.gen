@@ -66,7 +66,7 @@ func (n *namesToAnyEntryImpl) SetValue(value any) {
 // GetTypedKey get the value of key
 func (n *namesToAnyEntryImpl) GetTypedKey() ecore.EList {
 	if n.key == nil {
-		n.key = ecore.NewBasicEDataTypeList(n.AsEObjectInternal(), NAMES_TO_ANY_ENTRY__KEY, true)
+		n.key = ecore.NewBasicEDataTypeList(n.AsEObjectInternal(), NAMES_TO_ANY_ENTRY__KEY, true, false)
 	}
 	return n.key
 }

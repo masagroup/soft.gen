@@ -302,7 +302,7 @@ export class HolderImpl extends ecore.EObjectImpl implements Holder {
     // get the value of tags
     getTags(): ecore.EList<string> {
         if (this._tags == null) {
-            this._tags = new ecore.BasicEDataTypeList<string>(this, AttributesConstants.HOLDER__TAGS)
+            this._tags = new ecore.BasicEDataTypeList<string>(this, AttributesConstants.HOLDER__TAGS, true, true)
         }
         return this._tags
     }
