@@ -56,6 +56,7 @@ func (*Language) Properties() []props.Decl {
 		{Name: "featureDelegation", Doc: "Reflective: the implementations delegate their features to the reflective store", Scope: pkg},
 		{Name: "packageInstance", Doc: "interfaces: the package instance (GetPackage) is generated with the interfaces and shared by the implementations", Scope: pkg},
 		{Name: "checkImplementation", Default: "true", Doc: "false: the setters of a shared package do not check that the objects share the implementation", Scope: pkg},
+		{Name: "annotationContents", Default: "false", Doc: "true: the objects of the contents of the annotations are created with them, by the factories of their packages; left out by default, as in EMF", Scope: pkg},
 		{Name: "exported", Default: "false", Doc: "true: the implementation names are exported", Scope: pkg},
 		{Name: "goVersion", Default: "1.19", Doc: "the Go version of the generated code: any from 1.18, else interface{}", Scope: pkg},
 		{Name: "rootExtendsInterface", Default: "ecore.EObject", Doc: "the interface the root interfaces embed", Scope: pkg},
@@ -120,7 +121,11 @@ func (*Language) modelFiles(ctx *engine.Context, pkg ecore.EPackage) ([]engine.F
 			files = append(files, g.implementationFile(class)...)
 		}
 	}
-	files = append(files, g.packageImplementationFile(pkg)...)
+	packageFiles, err := g.packageImplementationFile(pkg)
+	if err != nil {
+		return nil, err
+	}
+	files = append(files, packageFiles...)
 	if g.isSharedPackage(pkg) {
 		files = append(files, g.dataTypeFactoryFile(pkg)...)
 	}
@@ -144,7 +149,11 @@ func (*Language) interfaceFiles(ctx *engine.Context, pkg ecore.EPackage) ([]engi
 	files = append(files, g.packageInterfaceFile(pkg))
 	files = append(files, g.factoryInterfaceFile(pkg)...)
 	if g.isSharedPackage(pkg) {
-		files = append(files, g.packageImplementationFile(pkg)...)
+		packageFiles, err := g.packageImplementationFile(pkg)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, packageFiles...)
 		files = append(files, g.dataTypeFactoryFile(pkg)...)
 	}
 	return files, nil
@@ -162,7 +171,11 @@ func (*Language) implementationFiles(ctx *engine.Context, pkg ecore.EPackage) ([
 		}
 	}
 	if !g.isSharedPackage(pkg) {
-		files = append(files, g.packageImplementationFile(pkg)...)
+		packageFiles, err := g.packageImplementationFile(pkg)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, packageFiles...)
 	}
 	files = append(files, g.factoryImplementationFile(pkg)...)
 	return files, nil

@@ -180,6 +180,7 @@ annotation of the root package):
 | `featureDelegation` | | `Reflective`: the implementations delegate their features to the reflective store |
 | `packageInstance` | | `interfaces`: the package instance (`GetPackage`) is generated with the interfaces and shared by the implementations |
 | `checkImplementation` | `true` | `false`: the setters of a shared package do not check that the objects share the implementation |
+| `annotationContents` | `false` | `true`: the objects of the contents of the annotations are created with them, by the factories of their packages (`<package>.GetFactory().Create<Class>()`, then the setters); left out by default, as in EMF. The references other than containments, the maps and the objects of the package itself are not supported: the generation fails on them |
 | `exported` | `false` | `true`: the implementation names are exported |
 | `goVersion` | `1.19` | the Go version of the generated code: `any` from 1.18, else `interface{}` |
 | `rootExtendsInterface` | `ecore.EObject` | the interface the root interfaces embed |

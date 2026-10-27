@@ -100,7 +100,7 @@ func (p *{{ $.Name }}) initialize{{ .Identifier }}Annotations(ecoreFactory {{ $.
 		eAnnotation.GetDetails().Put("{{ .Key }}", "{{ .Value }}")
 {{- end }}
 {{- range .Nested }}
-{{ indent 2 (include "package/annotation" .) }}
+{{ indent 2 (include .Template .) }}
 {{- end }}
 	}
 {{- end }}

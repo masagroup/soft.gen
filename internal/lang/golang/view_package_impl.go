@@ -1,6 +1,9 @@
 package golang
 
 import (
+	"fmt"
+	"math"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -212,9 +215,17 @@ type annotationView struct {
 	Container string
 	// Details lists the details, in model order.
 	Details []detailView
-	// Nested lists the annotations nested in the annotation (template
-	// package/annotation).
-	Nested []nestedAnnotationView
+	// Nested lists the annotations nested in the annotation and, with the
+	// property annotationContents, the objects of its contents.
+	Nested []nestedView
+}
+
+// nestedView is the creation of an element held by an annotation: a nested
+// annotation (template package/annotation) or an object of its contents
+// (template package/object).
+type nestedView interface {
+	// Template is the template of the creation.
+	Template() string
 }
 
 // nestedAnnotationView is the creation of an annotation nested in another one,
@@ -231,9 +242,31 @@ type nestedAnnotationView struct {
 	Source string
 	// Details lists the details, in model order.
 	Details []detailView
-	// Nested lists the annotations nested in the annotation.
-	Nested []nestedAnnotationView
+	// Nested lists the annotations nested in the annotation and the objects
+	// of its contents.
+	Nested []nestedView
 }
+
+// Template is package/annotation.
+func (nestedAnnotationView) Template() string { return "package/annotation" }
+
+// contentObjectView is the creation of an object of the contents of an
+// annotation, or of an object it contains, by the factory of its package.
+type contentObjectView struct {
+	// Var is the variable of the object, eObject<depth>.
+	Var string
+	// Create is the creation of the object: <factory>.Create<Class>().
+	Create string
+	// Values lists the statements setting its attributes, in feature order.
+	Values []string
+	// Children lists the creation of the objects it contains, in feature order.
+	Children []contentObjectView
+	// Add is the statement adding it to its parent.
+	Add string
+}
+
+// Template is package/object.
+func (contentObjectView) Template() string { return "package/object" }
 
 // detailView is one detail of an annotation.
 type detailView struct {
@@ -244,7 +277,7 @@ type detailView struct {
 // packageImplementationFile is the package implementation:
 // <package instance dir>/<package>package_impl.go, with the GetPackage
 // singleton when the interface file does not hold it (v1 generatePackageImplementation).
-func (g *gen) packageImplementationFile(p ecore.EPackage) []engine.File {
+func (g *gen) packageImplementationFile(p ecore.EPackage) ([]engine.File, error) {
 	packagePath := g.packageInstancePath(p)
 	scope := newFileScope(packagePath)
 	e := g.m.Ecore()
@@ -294,13 +327,17 @@ func (g *gen) packageImplementationFile(p ecore.EPackage) []engine.File {
 		view.DataTypeInitializations = append(view.DataTypeInitializations, g.dataTypeInitialization(dt, scope))
 	}
 	if !g.m.IsEcore(p) {
-		view.AnnotationSources = g.annotationInitializers(p, scope)
+		sources, err := g.annotationInitializers(p, scope)
+		if err != nil {
+			return nil, err
+		}
+		view.AnnotationSources = sources
 	}
 	return []engine.File{{
 		Path:   filePath(g.packageInstanceOutputDirectory(p), g.implementationFileName(p, g.packageName(p))),
 		Body:   goSource(scope, "package_impl.go", view),
 		Header: true,
-	}}
+	}}, nil
 }
 
 // packageMemberGroups lists the members of the package implementation: the
@@ -552,7 +589,7 @@ func (g *gen) dataTypeInitialization(dt ecore.EDataType, scope *fileScope) dataT
 
 // annotationInitializers lists, per annotation source of the package, the
 // annotations of the source in model order (v1 initialize<Source>Annotations).
-func (g *gen) annotationInitializers(p ecore.EPackage, scope *fileScope) []annotationSourceView {
+func (g *gen) annotationInitializers(p ecore.EPackage, scope *fileScope) ([]annotationSourceView, error) {
 	info := g.m.Package(p)
 	var sources []annotationSourceView
 	for _, source := range info.AnnotationSources {
@@ -561,15 +598,19 @@ func (g *gen) annotationInitializers(p ecore.EPackage, scope *fileScope) []annot
 			if a.GetSource() != source.URI {
 				continue
 			}
+			nested, err := g.nestedViews(a, model.NestedAnnotations(a), "eAnnotation", 1, p, scope)
+			if err != nil {
+				return nil, err
+			}
 			view.Annotations = append(view.Annotations, annotationView{
 				Container: g.annotatedElementGetter(a.GetEModelElement(), scope),
 				Details:   annotationDetails(a),
-				Nested:    nestedAnnotations(model.NestedAnnotations(a), "eAnnotation", 1),
+				Nested:    nested,
 			})
 		}
 		sources = append(sources, view)
 	}
-	return sources
+	return sources, nil
 }
 
 // annotationDetails lists the details of an annotation, in model order.
@@ -584,12 +625,15 @@ func annotationDetails(a ecore.EAnnotation) []detailView {
 	return details
 }
 
-// nestedAnnotations lists the creations of the annotations nested in the
-// annotation of the variable parent, at depth (v1 dropped them: it created an
-// annotation nested in eAnnotations in nil, and none of the contents).
-func nestedAnnotations(nested []model.NestedAnnotation, parent string, depth int) []nestedAnnotationView {
-	var views []nestedAnnotationView
-	for _, n := range nested {
+// nestedViews lists the creations of the elements held by the annotation a of
+// the variable parent, at depth: the annotations of its eAnnotations, then its
+// contents in model order, the annotations and, with the property
+// annotationContents, the other objects (v1 dropped them: it created an
+// annotation nested in eAnnotations in nil, and none of the contents). nested
+// is model.NestedAnnotations(a).
+func (g *gen) nestedViews(a ecore.EAnnotation, nested []model.NestedAnnotation, parent string, depth int, p ecore.EPackage, scope *fileScope) ([]nestedView, error) {
+	var views []nestedView
+	annotation := func(n model.NestedAnnotation) error {
 		v := nestedAnnotationView{
 			Var:     "eAnnotation" + strconv.Itoa(depth),
 			Parent:  parent,
@@ -600,10 +644,193 @@ func nestedAnnotations(nested []model.NestedAnnotation, parent string, depth int
 		if n.Content {
 			v.List = "GetContents"
 		}
-		v.Nested = nestedAnnotations(n.Nested, v.Var, depth+1)
+		children, err := g.nestedViews(n.Annotation, n.Nested, v.Var, depth+1, p, scope)
+		if err != nil {
+			return err
+		}
+		v.Nested = children
+		views = append(views, v)
+		return nil
+	}
+	var contents []model.NestedAnnotation
+	for _, n := range nested {
+		if n.Content {
+			contents = append(contents, n)
+		} else if err := annotation(n); err != nil {
+			return nil, err
+		}
+	}
+	// nested lists the annotations of the contents in the order of the contents
+	objects := g.PackagePropertyIs("annotationContents", "true")
+	for _, content := range a.GetContents().ToArray() {
+		if _, ok := content.(ecore.EAnnotation); ok {
+			if err := annotation(contents[0]); err != nil {
+				return nil, err
+			}
+			contents = contents[1:]
+			continue
+		}
+		if !objects {
+			continue
+		}
+		v, err := g.contentObject(content.(ecore.EObject), parent+".GetContents().Add(%s)", depth, p, scope)
+		if err != nil {
+			return nil, fmt.Errorf("golang: the contents of the annotation %s of %s: %w", a.GetSource(), elementLabel(a.GetEModelElement()), err)
+		}
 		views = append(views, v)
 	}
-	return views
+	return views, nil
+}
+
+// contentObject is the creation of the object o of the contents of an
+// annotation of the package p, or of an object it contains, at depth: created
+// by the factory of its package, its attributes set and its contained objects
+// created in feature order, then added to its parent by add, a format of its
+// variable. The references other than containments are not written: the
+// generation fails on one that is set.
+func (g *gen) contentObject(o ecore.EObject, add string, depth int, p ecore.EPackage, scope *fileScope) (contentObjectView, error) {
+	c := o.EClass()
+	v := contentObjectView{Var: "eObject" + strconv.Itoa(depth)}
+	v.Add = fmt.Sprintf(add, v.Var)
+	factory, err := g.contentFactory(c, p, scope)
+	if err != nil {
+		return v, err
+	}
+	v.Create = factory + ".Create" + c.GetName() + "()"
+	for _, el := range c.GetEAllStructuralFeatures().ToArray() {
+		f := el.(ecore.EStructuralFeature)
+		if !o.EIsSet(f) {
+			continue
+		}
+		if r, ok := f.(ecore.EReference); ok && r.IsContainer() {
+			// set by the containment of its opposite
+			continue
+		}
+		if !f.IsChangeable() || g.isMapType(f) || g.m.IsFeatureMapEntryName(f.GetEType().GetInstanceTypeName()) {
+			return v, fmt.Errorf("the feature %s of %s can not be written", f.GetName(), c.GetName())
+		}
+		var values []any
+		if isListType(f) {
+			values = o.EGet(f).(ecore.EList).ToArray()
+		} else {
+			values = []any{o.EGet(f)}
+		}
+		for _, value := range values {
+			if r, ok := f.(ecore.EReference); ok {
+				if !r.IsContainment() {
+					return v, fmt.Errorf("the reference %s of %s is not a containment", f.GetName(), c.GetName())
+				}
+				child, err := g.contentObject(value.(ecore.EObject), g.contentAccessor(v.Var, f), depth+1, p, scope)
+				if err != nil {
+					return v, err
+				}
+				v.Children = append(v.Children, child)
+				continue
+			}
+			literal, err := g.contentValue(f.GetEType().(ecore.EDataType), value, isListType(f), p, scope)
+			if err != nil {
+				return v, fmt.Errorf("the attribute %s of %s: %w", f.GetName(), c.GetName(), err)
+			}
+			v.Values = append(v.Values, fmt.Sprintf(g.contentAccessor(v.Var, f), literal))
+		}
+	}
+	return v, nil
+}
+
+// contentAccessor is the format of the statement giving a value to the
+// feature f of the object of the variable owner: <owner>.Get<F>().Add(%s) for
+// a many-valued feature, <owner>.Set<F>(%s) otherwise.
+func (g *gen) contentAccessor(owner string, f ecore.EStructuralFeature) string {
+	if isListType(f) {
+		return owner + "." + g.getterName(f) + "().Add(%s)"
+	}
+	return owner + "." + g.setterName(f) + "(%s)"
+}
+
+// contentFactory is the factory creating the objects of the class c in the
+// annotations of the package p: GetFactory() of the package of c. A class of
+// p itself is refused: p is not ready while it initializes.
+func (g *gen) contentFactory(c ecore.EClass, p ecore.EPackage, scope *fileScope) (string, error) {
+	if c.GetEPackage().GetNsURI() == p.GetNsURI() {
+		return "", fmt.Errorf("the class %s is of the package %s itself", c.GetName(), p.GetName())
+	}
+	return scope.qualify(g.qualifiedImplementationIdentifier(c.GetEPackage(), "GetFactory()")), nil
+}
+
+// contentValue is the Go expression of the value of an attribute of type dt
+// of an object of the contents of an annotation of the package p: the
+// constant of an enum literal, a literal of a string, a boolean or a number
+// (converted to its Go type when typed, for a list), else the value created
+// from its string by the factory of dt.
+func (g *gen) contentValue(dt ecore.EDataType, value any, typed bool, p ecore.EPackage, scope *fileScope) (string, error) {
+	if enum, ok := dt.(ecore.EEnum); ok {
+		var literal ecore.EEnumLiteral
+		switch value := value.(type) {
+		case ecore.EEnumLiteral:
+			literal = value
+		case int:
+			literal = enum.GetEEnumLiteralByValue(value)
+		}
+		if literal == nil {
+			return "", fmt.Errorf("the value %v is no literal of %s", value, enum.GetName())
+		}
+		return scope.qualify(g.qualifiedInterfaceIdentifier(enum.GetEPackage(), g.constantsName(literal))), nil
+	}
+	goType := scope.qualify(g.typeOfClassifier(dt))
+	var literal string
+	switch value := value.(type) {
+	case string:
+		if goType == "string" {
+			return strconv.Quote(value), nil
+		}
+		return g.contentValueFromString(dt, value, goType, p, scope)
+	case bool:
+		literal = strconv.FormatBool(value)
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		literal = fmt.Sprint(value)
+	case float32, float64:
+		f := reflect.ValueOf(value).Float()
+		if math.IsNaN(f) || math.IsInf(f, 0) {
+			return "", fmt.Errorf("the value %v has no Go literal", value)
+		}
+		literal = strconv.FormatFloat(f, 'g', -1, 64)
+	default:
+		return "", fmt.Errorf("the value %v of type %T has no Go literal", value, value)
+	}
+	switch goType {
+	case "bool", "int", "float64":
+		return literal, nil
+	}
+	if typed {
+		return goType + "(" + literal + ")", nil
+	}
+	return literal, nil
+}
+
+// contentValueFromString is the value of the data type dt created from its
+// string s by the factory of its package, asserted to its Go type.
+func (g *gen) contentValueFromString(dt ecore.EDataType, s, goType string, p ecore.EPackage, scope *fileScope) (string, error) {
+	if g.m.IsEcoreClassifier(dt) {
+		return "", fmt.Errorf("the value %q of %s has no Go literal", s, dt.GetName())
+	}
+	instance := "p"
+	if dt.GetEPackage().GetNsURI() != p.GetNsURI() {
+		instance = scope.qualify(g.packageInstance(dt.GetEPackage()))
+	}
+	value := instance + ".GetEFactoryInstance().CreateFromString(" + instance + "." + g.reflectiveGetterName(dt) + "(), " + strconv.Quote(s) + ")"
+	if g.isAnyType(goType) {
+		return value, nil
+	}
+	return value + ".(" + goType + ")", nil
+}
+
+// elementLabel names a model element in a message: its name, or the name of
+// its type.
+func elementLabel(el ecore.EModelElement) string {
+	if named, ok := el.(ecore.ENamedElement); ok {
+		return named.GetName()
+	}
+	return el.EClass().GetName()
 }
 
 // annotatedElementGetter is the expression of the element an annotation is

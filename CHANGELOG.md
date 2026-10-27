@@ -119,7 +119,15 @@ every other construct the output is the v1 output:
   annotation, in its `eAnnotations` or its `contents`, are created with it,
   in its initializer (v1 created one of its `eAnnotations` in nil, so it was
   lost, and dropped its `contents`); their sources get no initializer of their
-  own. The other objects of the `contents` are left out, as in EMF.
+  own. The other objects of the `contents` are left out, as in EMF, unless
+  the new property `annotationContents=true`: then they are created with the
+  annotation, in model order, by the factory of their package
+  (`meta.GetFactory().CreateMeta()`), with their attributes set by their
+  setters and the objects they contain created the same way, so that a
+  program reads them from the generated package, without loading the model.
+  The generation fails on what it can not write: a reference other than a
+  containment, a map, a feature map, an unchangeable feature, an object of
+  the package itself.
 - A model loads the packages its `xsi:schemaLocation` names when its objects
   need them, as EMF does, such as the package of the objects of the contents
   of an annotation (the loading failed).
