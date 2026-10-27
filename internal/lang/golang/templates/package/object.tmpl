@@ -1,0 +1,15 @@
+{{/* An object of the contents of an annotation, or an object it contains, in a block of its own
+     indented by the caller (property annotationContents): created by the factory of its package,
+     its attributes set, the objects it contains created, then added to its parent. */}}
+{{ define "package/object" -}}
+{
+	{{ .Var }} := {{ .Create }}
+{{- range .Values }}
+	{{ . }}
+{{- end }}
+{{- range .Children }}
+{{ indent 1 (include .Template .) }}
+{{- end }}
+	{{ .Add }}
+}
+{{- end }}
