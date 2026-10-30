@@ -65,7 +65,7 @@ The v1 tree (Maven modules, Acceleo `.mtl` templates, `Dockerfile-<lang>`, `sett
 
 ## Architecture
 
-The packages are listed in Repository layout; their roles and the template conventions are detailed in [TEMPLATES.md](https://github.com/masagroup/soft.gen/blob/master/TEMPLATES.md).
+The packages are listed in Repository layout; their roles and the template conventions are detailed in [TEMPLATES.md](TEMPLATES.md).
 
 Processing pipeline (`internal/engine`, `Run`):
 

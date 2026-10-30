@@ -32,7 +32,7 @@ For the previous documentation of the project (v1), see [README.LEGACY.md](READM
 | **Languages** | Go 1.27 (`go.mod`: `go 1.27.0`; image `golang:1.27.3-alpine`), Go `text/template` templates (92 `.tmpl`: go 61, ts 31), Makefile, Bash (`version.sh`) |
 | **Build systems** | Go toolchain driven by a Makefile · Docker (one multi-stage `Dockerfile`, no compose profiles). No Ant, no Maven, no CMake build, no `package.json` |
 
-**[Architecture](ARCHITECTURE.md)** · [Contributing](CONTRIBUTING.md) · [previous README (v1)](README.LEGACY.md) · [known issues and open questions](https://claude.ai/artifact/UfvKmky7e8LwEXf192hQjQ#soft.gen) · [repository on GitHub](https://github.com/masagroup/soft.gen)
+**[Architecture](ARCHITECTURE.md)** · [Contributing](CONTRIBUTING.md) · [previous README (v1)](README.LEGACY.md) · [known issues and open questions](https://github.com/masagroup/wiki/wiki/known-issues#soft.gen) · [repository on GitHub](https://github.com/masagroup/soft.gen)
 
 ## Overview
 
@@ -64,6 +64,17 @@ The Makefiles of soft.go and soft.ts run the generator at a fixed version, `SOFT
 </details>
 
 The diagram of this overview is in [Architecture](ARCHITECTURE.md#overview).
+
+## Where to start
+
+Build and run it from this page, then read the guides kept in the repository.
+
+| You want to... | Read |
+|---|---|
+| run the generator | [Build](#build) and [Quickstart](#quickstart) below |
+| change a generator or add a language | [How the generators are written](TEMPLATES.md) |
+| see what changed since v1 | [Changelog](CHANGELOG.md) |
+| understand how it is made: layout, internal structure, diagrams, dependencies | [Architecture](ARCHITECTURE.md) |
 
 ## Build
 
@@ -141,10 +152,10 @@ The fixtures are small models in `testdata/models`, each about one topic,
 whose expected output is committed in `testdata/golden`; together they render
 every template of the generator. After an intended change of the output:
 
-See [TEMPLATES.md](https://github.com/masagroup/soft.gen/blob/master/TEMPLATES.md#golden-tests) for the v1 cross-check. The TypeScript formatting tests (`TestPrettier`, `TestV1`) are skipped unless `SOFT_GEN_TS_TOOLS` names a directory resolving prettier and oxlint (with `node` on the `PATH`).
+See [TEMPLATES.md](TEMPLATES.md#golden-tests) for the v1 cross-check. The TypeScript formatting tests (`TestPrettier`, `TestV1`) are skipped unless `SOFT_GEN_TS_TOOLS` names a directory resolving prettier and oxlint (with `node` on the `PATH`).
 
 How the generators are organized, the template conventions and how to add a
-language: [TEMPLATES.md](https://github.com/masagroup/soft.gen/blob/master/TEMPLATES.md). Changes from v1: [CHANGELOG.md](https://github.com/masagroup/soft.gen/blob/master/CHANGELOG.md).
+language: [TEMPLATES.md](TEMPLATES.md). Changes from v1: [CHANGELOG.md](CHANGELOG.md).
 
 </details>
 
@@ -338,7 +349,7 @@ Command lines:
 - [Architecture](ARCHITECTURE.md): position in the ecosystem, repository layout, internal structure, how it works (diagrams), dependencies.
 - [Contributing](CONTRIBUTING.md): development environment, Git and Jira workflow, conventions, CI/CD.
 - [Previous README (v1)](README.LEGACY.md): the documentation of the repository before the wiki rewrite.
-- [Known issues and open questions](https://claude.ai/artifact/UfvKmky7e8LwEXf192hQjQ#soft.gen): the private artifact that holds them (every page of the wiki).
+- [Known issues and open questions](https://github.com/masagroup/wiki/wiki/known-issues#soft.gen): the known defects and open points of the repository, kept in the SWORD wiki.
 - Related repositories: [soft](https://github.com/masagroup/soft), [soft.go](https://github.com/masagroup/soft.go).
 - Transverse pages: [Build on Windows](https://github.com/masagroup/wiki/wiki/build-windows), [Build on Linux](https://github.com/masagroup/wiki/wiki/build-linux), [CI/CD pipelines](https://github.com/masagroup/wiki/wiki/cicd-pipelines), [Ecosystem today](https://github.com/masagroup/wiki/wiki/ecosystem-current), [Ecosystem next gen](https://github.com/masagroup/wiki/wiki/ecosystem-nextgen), [Glossary](https://github.com/masagroup/wiki/wiki/glossary).
 - Repository on GitHub: [masagroup/soft.gen](https://github.com/masagroup/soft.gen).
