@@ -38,7 +38,3 @@ The build of the repository is described in the [README](README.md#build); the t
 - Artifacts: none produced by CI (the image is built then discarded). Locally: `bin/soft.gen` and the image `masagroup/soft.gen[:<VERSION>]`; the `org/repo:component-version` convention is not used.
 - Not run by CI: `make lint`, and the TypeScript formatting tests (`SOFT_GEN_TS_TOOLS` is not set, so they are skipped).
 - CI impact: a Go build and test plus one `docker build` of a static binary; no credentials needed (v1 needed GitHub Packages credentials for Maven).
-
-## Known issues and open questions
-
-They are not kept in the repository: see the [private artifact](https://claude.ai/artifact/UfvKmky7e8LwEXf192hQjQ#soft.gen) that holds them for every page of the wiki.
