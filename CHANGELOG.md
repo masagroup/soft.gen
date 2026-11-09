@@ -95,6 +95,10 @@ Fixed with it:
 - Generic types (`eGenericType`, `eTypeParameters`) are read as their classifier
   type; v1 read them through EMF generics. The output is unchanged for the
   models of the project.
+- `ESetFromID` sets nil to an attribute of a type nil is a value of (a pointer,
+  a slice, a map, a channel or a function, such as `*time.Time` or `[]byte`),
+  and still panics on a value of another type; v1 asserted nil to the type and
+  panicked.
 
 The fixtures (see TEMPLATES.md) revealed these v1 bugs, which v2 fixes; on
 every other construct the output is the v1 output:

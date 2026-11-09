@@ -142,7 +142,11 @@ func (o *orderImpl) ESetFromID(featureID int, newValue any) {
 		newValueOrNil, _ := newValue.(shop.Customer)
 		o.asOrder().SetCustomer(newValueOrNil)
 	case shop.ORDER__DATE:
-		o.asOrder().SetDate(newValue.(*time.Time))
+		if newValue == nil {
+			o.asOrder().SetDate(nil)
+		} else {
+			o.asOrder().SetDate(newValue.(*time.Time))
+		}
 	case shop.ORDER__PRODUCTS:
 		list := o.asOrder().GetProducts()
 		list.Clear()
