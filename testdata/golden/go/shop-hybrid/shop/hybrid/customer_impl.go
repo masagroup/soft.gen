@@ -128,7 +128,7 @@ func (c *customerImpl) EIsSetFromID(featureID int) bool {
 
 // GetAdvisor get the value of advisor
 func (c *customerImpl) GetAdvisor() shop.Customer {
-	if block := c.fields.Published(1 << 0); block != nil {
+	if block := c.fields.Published(1 << 0); block != nil && (block.advisor == nil || !block.advisor.EIsProxy()) {
 		return block.advisor
 	}
 	return customerAdvisorField.Load(&c.HybridEObjectImpl, c.fields.Ref())
@@ -141,7 +141,7 @@ func (c *customerImpl) SetAdvisor(newAdvisor shop.Customer) {
 
 // GetFavorite get the value of favorite
 func (c *customerImpl) GetFavorite() shop.Product {
-	if block := c.fields.Published(1 << 1); block != nil {
+	if block := c.fields.Published(1 << 1); block != nil && (block.favorite == nil || !block.favorite.EIsProxy()) {
 		return block.favorite
 	}
 	return customerFavoriteField.Load(&c.HybridEObjectImpl, c.fields.Ref())
@@ -193,7 +193,7 @@ func (c *customerImpl) GetReferrals() ecore.EList {
 
 // GetReferrer get the value of referrer
 func (c *customerImpl) GetReferrer() shop.Customer {
-	if block := c.fields.Published(1 << 5); block != nil {
+	if block := c.fields.Published(1 << 5); block != nil && (block.referrer == nil || !block.referrer.EIsProxy()) {
 		return block.referrer
 	}
 	return customerReferrerField.Load(&c.HybridEObjectImpl, c.fields.Ref())

@@ -74,7 +74,8 @@ func ({{ .Receiver }} *{{ .Impl }}) {{ .Getter }}() {{ .Type }} {
 
 {{/* Hybrid: the typed field of the block of the class once published, else loaded by its descriptor. */}}
 {{ define "feature/getter.hybrid" -}}
-	if block := {{ .Receiver }}.fields.Published({{ .HybridBit }}); block != nil {
+	if block := {{ .Receiver }}.fields.Published({{ .HybridBit }}); block != nil
+	{{- if .HybridReference }} && (block.{{ .Var }} == nil || !block.{{ .Var }}.EIsProxy()){{ end }} {
 		return block.{{ .Var }}
 	}
 	return {{ .HybridField }}.Load(&{{ .Receiver }}.{{ .HybridRoot }}, {{ .Receiver }}.fields.Ref())

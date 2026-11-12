@@ -270,6 +270,7 @@ func (g *gen) addHybridFeature(view *implementationView, c ecore.EClass, fv *fea
 		var flags []string
 		if info.Reference != nil {
 			flags = append(flags, ecoreID("Reference"))
+			fv.HybridReference = true
 		}
 		if info.Set && !info.IsContainment && !info.IsBidirectional && !info.IsContainer {
 			flags = append(flags, ecoreID("Plain"))
