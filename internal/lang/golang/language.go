@@ -54,6 +54,7 @@ func (*Language) Properties() []props.Decl {
 		{Name: "packages", Doc: "the paths of the packages: <nsURI>=<interface path>[#<implementation path>[#<mock path>]], or a path keyed by its last segment; several separated by , ; or spaces; merged with the package annotation", Scope: pkg},
 		{Name: "module", Doc: "the Go module path: the output directories are the package paths minus the module", Scope: pkg},
 		{Name: "featureDelegation", Doc: "Reflective: the implementations delegate their features to the reflective store", Scope: pkg},
+		{Name: "hybridFields", Default: "false", Doc: "true, with featureDelegation=Reflective: the getters read typed fields, a cache of the values of the store (ecore.Fields); the root classes embed rootExtendsClass, an ecore.HybridRoot, else ecore.HybridEObjectImpl", Scope: pkg},
 		{Name: "packageInstance", Doc: "interfaces: the package instance (GetPackage) is generated with the interfaces and shared by the implementations", Scope: pkg},
 		{Name: "checkImplementation", Default: "true", Doc: "false: the setters of a shared package do not check that the objects share the implementation", Scope: pkg},
 		{Name: "annotationContents", Default: "false", Doc: "true: the objects of the contents of the annotations are created with them, by the factories of their packages; left out by default, as in EMF", Scope: pkg},

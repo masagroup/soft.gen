@@ -2,6 +2,8 @@ package golang
 
 import (
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/masagroup/soft.go/ecore"
 
@@ -123,6 +125,166 @@ type implementationView struct {
 	InitMethods []initMethodView
 	// Reflectives lists the reflective methods, in v1 order.
 	Reflectives []*reflectiveMethodView
+	// Hybrid is the typed fields of a hybrid class, nil without any.
+	Hybrid *hybridView
+}
+
+// hybridView is the typed fields of a hybrid class (property hybridFields): the
+// block holding them, a cache of the values of the store read by the getters,
+// declared to the hybrid root (its package: NewLevel, Value, List, NewLayout),
+// which implements the reflective methods with them.
+type hybridView struct {
+	// Type is the struct of the block; Header the header it embeds;
+	// FieldsType the Fields of the root holding it; Any the any type.
+	Type, Header, FieldsType, Any string
+	// Offsetof qualifies unsafe.Offsetof: the descriptors find the fields
+	// and the blocks by offset.
+	Offsetof string
+	// Level and Layout are the variables of the fields of the class and of
+	// its layout; ParentLayout the layout of the closest class it extends
+	// that has fields, nil for none.
+	Level, Layout, ParentLayout string
+	// NewLevel, NewLayout and LayoutType qualify the identifiers of the root
+	// package; Root is the struct of the hybrid root, embedded by the class.
+	NewLevel, NewLayout, LayoutType, Root string
+	// Fields lists the fields of the block, one per hybrid feature.
+	Fields []fieldView
+	// Values lists the descriptors of the fields, in bit order.
+	Values []hybridFieldView
+}
+
+// hybridFieldView is the descriptor of a typed field.
+type hybridFieldView struct {
+	// Name is the variable of the descriptor; Ctor the constructor, with
+	// its type argument (Value[T] or List); ID the feature id; Index the bit;
+	// Var and Type the field.
+	Name, Ctor, ID, Index, Var, Type string
+	// Flags is the FieldFlags expression of a Value, "" for a List.
+	Flags string
+	// Getter is the typed getter of the feature; Reference and Nillable
+	// tell how EGetFromID returns it: a reference only when resolving, a
+	// nil pointer as an untyped nil.
+	Getter              string
+	Reference, Nillable bool
+}
+
+// goComparableTypes are the Go types of the attributes held in typed fields:
+// comparable with ==.
+var goComparableTypes = map[string]bool{
+	"bool": true, "string": true, "byte": true, "rune": true,
+	"int": true, "int8": true, "int16": true, "int32": true, "int64": true,
+	"uint": true, "uint8": true, "uint16": true, "uint32": true, "uint64": true,
+	"float32": true, "float64": true,
+}
+
+// isHybridFeature reports whether a feature of a reflective class is held
+// by a typed field: stored (neither a container, volatile nor transient), not
+// a map, of a type other than the any type, and a list, a reference, an
+// enum, a basic type or a pointer, whose values compare with ==.
+func (g *gen) isHybridFeature(f ecore.EStructuralFeature) bool {
+	info := g.m.Feature(f)
+	if !info.IsField || f.IsTransient() || info.IsMap || info.IsFeatureMap || g.isAnyType(g.typeOf(f)) {
+		return false
+	}
+	if info.IsList || info.Reference != nil {
+		return true
+	}
+	if _, isEnum := f.GetEType().(ecore.EEnum); isEnum {
+		return true
+	}
+	t := g.typeOf(f)
+	return goComparableTypes[t] || strings.HasPrefix(t, "*")
+}
+
+// hasHybridFields reports whether the implementation of c has typed fields.
+func (g *gen) hasHybridFields(c ecore.EClass) bool {
+	for _, f := range g.m.Class(c).ImplementedFeatures {
+		if g.isHybridFeature(f) {
+			return true
+		}
+	}
+	return false
+}
+
+// hybridRoot is the struct the root hybrid classes embed: the rootExtendsClass property, else
+// ecore.HybridEObjectImpl.
+func (g *gen) hybridRoot() string {
+	if root, ok := g.ExplicitPackageProperty("rootExtendsClass"); ok {
+		return root
+	}
+	return g.qualifiedImplementationIdentifier(g.m.Ecore(), "HybridEObjectImpl")
+}
+
+// hybridPrefix is the prefix of the identifiers of the typed fields of c.
+func (g *gen) hybridPrefix(c ecore.EClass) string {
+	return naming.LowerFirst(g.interfaceName(c))
+}
+
+// addHybridFeature makes the getter of a feature read a typed field of the
+// block of the class (isHybridFeature), among the first 64.
+func (g *gen) addHybridFeature(view *implementationView, c ecore.EClass, fv *featureView, f ecore.EStructuralFeature, info *model.FeatureInfo, scope *fileScope) {
+	if fv.GetterStrategy != "reflective" || !g.isHybridFeature(f) {
+		return
+	}
+	ecoreID := func(name string) string { return scope.qualify(g.qualifiedInterfaceIdentifier(g.m.Ecore(), name)) }
+	if view.Hybrid == nil {
+		prefix := g.hybridPrefix(c)
+		name := prefix + "Fields"
+		parent := "nil"
+		for e := g.m.Class(c).ExtendsClass; e != nil; e = g.m.Class(e).ExtendsClass {
+			if g.hasHybridFields(e) {
+				parent = g.hybridPrefix(e) + "Layout"
+				break
+			}
+		}
+		view.Hybrid = &hybridView{
+			Type:         name,
+			Header:       ecoreID("FieldsHeader"),
+			FieldsType:   ecoreID("Fields") + "[" + name + "]",
+			Any:          g.anyType(),
+			Offsetof:     scope.qualify("unsafe/unsafe.Offsetof"),
+			Level:        prefix + "Level",
+			Layout:       prefix + "Layout",
+			ParentLayout: parent,
+			NewLevel:     ecoreID("NewLevel"),
+			NewLayout:    ecoreID("NewLayout"),
+			LayoutType:   ecoreID("Layout"),
+			Root:         simpleIdentifier(g.hybridRoot()),
+		}
+	}
+	h := view.Hybrid
+	if len(h.Fields) >= 64 {
+		return
+	}
+	index := strconv.Itoa(len(h.Fields))
+	fv.HybridBit = "1 << " + index
+	fv.HybridField = g.hybridPrefix(c) + naming.UpperFirst(fv.Var) + "Field"
+	fv.HybridRoot = h.Root
+	fv.GetterStrategy = "hybrid"
+	d := hybridFieldView{Name: fv.HybridField, ID: fv.ID, Index: index, Var: fv.Var, Type: fv.Type,
+		Getter: fv.Getter, Reference: info.Reference != nil, Nillable: strings.HasPrefix(fv.Type, "*")}
+	if info.IsList {
+		d.Ctor = ecoreID("List")
+	} else {
+		d.Ctor = ecoreID("Value") + "[" + fv.Type + "]"
+		var flags []string
+		if info.Reference != nil {
+			flags = append(flags, ecoreID("Reference"))
+		}
+		if info.Set && !info.IsContainment && !info.IsBidirectional && !info.IsContainer {
+			flags = append(flags, ecoreID("Plain"))
+			fv.SetterStrategy = "hybrid"
+		}
+		if strings.HasPrefix(fv.Type, "*") {
+			flags = append(flags, ecoreID("Nillable"))
+		}
+		d.Flags = "0"
+		if len(flags) > 0 {
+			d.Flags = strings.Join(flags, "|")
+		}
+	}
+	h.Values = append(h.Values, d)
+	h.Fields = append(h.Fields, fieldView{Name: fv.Var, Type: fv.Type})
 }
 
 // fieldView is one field of the implementation struct.
@@ -181,6 +343,9 @@ func (g *gen) implementationFile(c ecore.EClass) []engine.File {
 		views[f] = fv
 		view.Features = append(view.Features, fv)
 		g.addFeature(view, fv, g.m.Feature(f), reflective)
+		if reflective && g.PackagePropertyIs("hybridFields", "true") {
+			g.addHybridFeature(view, c, fv, f, g.m.Feature(f), scope)
+		}
 	}
 	for _, op := range g.sortedByOperationName(info.ImplementedOperations) {
 		if g.m.Operation(op).IsDefault {

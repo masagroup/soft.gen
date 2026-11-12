@@ -48,6 +48,10 @@ type featureView struct {
 	// hand-written bodies of the annotation keys getterBody, setterBody,
 	// unsetterBody and isSetBody.
 	GetterBody, SetterBody, UnsetterBody, IsSetterBody string
+	// HybridBit is the bit of the typed field of a hybrid feature in the block
+	// of its class, HybridField the variable of its descriptor and HybridRoot
+	// the hybrid root the descriptor is given.
+	HybridBit, HybridField, HybridRoot string
 	// IsSetValue is the expression of the list issetter.
 	IsSetValue string
 	// Accessors lists the accessors to generate, in v1 order: getter,
