@@ -3,7 +3,11 @@ package typescript
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/masagroup/soft.gen/v2/internal/engine"
+	"github.com/masagroup/soft.gen/v2/internal/props"
 )
 
 // TestValidate checks the TypeScript language: names, entry points,
@@ -11,5 +15,18 @@ import (
 func TestValidate(t *testing.T) {
 	if err := engine.Validate(New()); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// TestEntryPoints_HybridStorage checks that every entry point fails with
+// storage=hybrid, a Go storage, instead of generating typed classes.
+func TestEntryPoints_HybridStorage(t *testing.T) {
+	l := New()
+	p, err := props.New(l.Properties(), map[string]string{"storage": "hybrid"}, nil, nil)
+	require.NoError(t, err)
+	ctx := &engine.Context{Props: p, Lang: l}
+	for _, ep := range l.EntryPoints() {
+		_, err := ep.Files(ctx, nil)
+		assert.ErrorContains(t, err, "storage=hybrid is not supported", ep.Name)
 	}
 }

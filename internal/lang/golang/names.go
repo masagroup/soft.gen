@@ -263,6 +263,9 @@ func (g *gen) classExtends(c ecore.EClass) string {
 		if root, ok := g.ExplicitPackageProperty("rootExtendsClass"); ok {
 			return root
 		}
+		if g.IsHybridStorage() {
+			return g.qualifiedImplementationIdentifier(e, "HybridEObjectImpl")
+		}
 		if g.IsReflectiveDelegation() {
 			return g.qualifiedImplementationIdentifier(e, "ReflectiveEObjectImpl")
 		}

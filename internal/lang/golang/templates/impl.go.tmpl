@@ -6,7 +6,33 @@ type {{ .Name }} struct {
 {{- range .Fields }}
 	{{ .Name }} {{ .Type }}
 {{- end }}
+{{- if .Hybrid }}
+	fields {{ .Hybrid.FieldsType }}
+{{- end }}
 }
+{{- if .Hybrid }}
+
+// {{ .Hybrid.Type }} is the typed fields of a {{ .Name }}: the values of its features read from
+// the store, each written once, then published.
+type {{ .Hybrid.Type }} struct {
+	{{ .Hybrid.Header }}
+{{- range .Hybrid.Fields }}
+	{{ .Name }} {{ .Type }}
+{{- end }}
+}
+
+// {{ .Hybrid.Level }} is the typed fields of a {{ .Name }}, {{ .Hybrid.Layout }} with those of the classes it
+// extends: the descriptors its accessors and the reflective methods of the root use, which find
+// the fields by their offsets.
+var (
+	{{ .Hybrid.Level }} = {{ .Hybrid.NewLevel }}[{{ .Hybrid.Type }}](func() {{ .EClass }} { return {{ .StaticClass }} },
+		{{ .Hybrid.Offsetof }}({{ .Name }}{}.fields)-{{ .Hybrid.Offsetof }}({{ .Name }}{}.{{ .Hybrid.Root }}))
+{{- range .Hybrid.Values }}
+	{{ .Name }} = {{ .Ctor }}({{ $.Hybrid.Level }}, {{ .ID }}, {{ .Index }}, {{ $.Hybrid.Offsetof }}({{ $.Hybrid.Type }}{}.{{ .Var }}){{ if .Flags }}, {{ .Flags }}{{ end }})
+{{- end }}
+	{{ .Hybrid.Layout }} = {{ .Hybrid.NewLayout }}({{ .Hybrid.ParentLayout }}, {{ .Hybrid.Level }})
+)
+{{- end }}
 {{- if .Initializers }}
 type {{ .Initializers.Name }} interface {
 {{- range .Initializers.Methods }}
@@ -70,6 +96,47 @@ func ({{ .Receiver }} *{{ .Name }}) EStaticFeatureCount() int {
 // the implementations of the model, and objects of different implementations do not mix.
 func ({{ .Receiver }} *{{ .Name }}) EFactory() {{ .EFactory }} {
 	return GetFactory()
+}
+{{- end }}
+{{- if .Hybrid }}
+
+// ELayout returns the typed fields of the class and of the classes it extends.
+func ({{ .Receiver }} *{{ .Name }}) ELayout() *{{ .Hybrid.LayoutType }} {
+	return {{ .Hybrid.Layout }}
+}
+
+// EGetFromID returns the value of the feature featureID: the one of its typed field, read by its
+// getter, for a feature of the class held by one (a reference only when resolving).
+func ({{ .Receiver }} *{{ .Name }}) EGetFromID(featureID int, resolve bool) {{ .Hybrid.Any }} {
+	switch featureID {
+{{- range .Hybrid.Values }}
+	case {{ .ID }}:
+{{- if .Reference }}
+		if !resolve {
+			break
+		}
+{{- end }}
+{{- if .Nillable }}
+		if value := {{ $.Receiver }}.{{ .Getter }}(); value != nil {
+			return value
+		}
+		return nil
+{{- else }}
+		return {{ $.Receiver }}.{{ .Getter }}()
+{{- end }}
+{{- end }}
+	}
+	return {{ .Receiver }}.{{ .ExtendsSimple }}.EGetFromID(featureID, resolve)
+}
+
+// ESetFromID sets the feature featureID, with its typed setter if it has one.
+func ({{ .Receiver }} *{{ .Name }}) ESetFromID(featureID int, newValue {{ .Hybrid.Any }}) {
+	{{ .Hybrid.Layout }}.ESetFromID(&{{ .Receiver }}.{{ .Hybrid.Root }}, featureID, newValue)
+}
+
+// EIsSetFromID reports whether the feature featureID is set, from its typed list if it has one.
+func ({{ .Receiver }} *{{ .Name }}) EIsSetFromID(featureID int) bool {
+	return {{ .Hybrid.Layout }}.EIsSetFromID(&{{ .Receiver }}.{{ .Hybrid.Root }}, featureID)
 }
 {{- end }}
 {{- if .MapEntry }}

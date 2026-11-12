@@ -75,3 +75,8 @@ func ({{ .Receiver }} *{{ .Impl }}) {{ .Setter }}({{ .NewVar }} {{ .Type }}) {
 {{ define "feature/setter.panic" -}}
 	panic("{{ .Setter }} not implemented")
 {{- end }}
+
+{{/* Hybrid plain feature: set by its descriptor, nothing when the published value is the new one. */}}
+{{ define "feature/setter.hybrid" -}}
+	{{ .HybridField }}.Set(&{{ .Receiver }}.{{ .HybridRoot }}, {{ .Receiver }}.fields.Ref(), {{ .NewVar }})
+{{- end }}

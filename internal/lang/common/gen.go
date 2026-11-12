@@ -78,12 +78,6 @@ func (g Gen) ElementName(el ecore.EModelElement, name, key, defaultRule string) 
 	return resolved
 }
 
-// IsReflectiveDelegation reports whether the implementations delegate their
-// features to the reflective store (property featureDelegation=Reflective).
-func (g Gen) IsReflectiveDelegation() bool {
-	return g.PackagePropertyIs("featureDelegation", "Reflective")
-}
-
 // HasExtension reports whether the element is extended by a hand-written type
 // (annotation extension=true).
 func (g Gen) HasExtension(el ecore.EModelElement) bool {
