@@ -70,13 +70,13 @@ func init() {
 			EntryPoints:   []string{"generateImplementations", "generateTests"},
 			Props:         shopShared("reflective", map[string]string{"featureDelegation": "Reflective"}),
 			V1Differences: map[string]string{"shop/reflective/shopfactory_impl.go": v1FromContainer}},
-		// shared package with featureDelegation=Reflective and hybridFields:
-		// hybrid classes over ecore.HybridEObjectImpl, typed fields behind the
-		// getters, an EGetFromID switch, the layout of the fields
+		// shared package with storage=hybrid: hybrid classes over
+		// ecore.HybridEObjectImpl, typed fields behind the getters, an
+		// EGetFromID switch, the layout of the fields
 		fixture{Name: "shop-hybrid", Model: "shop.ecore",
 			EntryPoints: []string{"generateImplementations"},
-			Props:       shopShared("hybrid", map[string]string{"featureDelegation": "Reflective", "hybridFields": "true"}),
-			V1Skip:      "v1 has no hybridFields property"},
+			Props:       shopShared("hybrid", map[string]string{"storage": "hybrid"}),
+			V1Skip:      "v1 has no storage property"},
 		// unshared split paths: the interfaces in a/shop, the implementations
 		// (and mocks, the missing mock path being the last one) in b/impl
 		fixture{Name: "shop-split", Model: "shop.ecore",

@@ -129,7 +129,7 @@ type implementationView struct {
 	Hybrid *hybridView
 }
 
-// hybridView is the typed fields of a hybrid class (property hybridFields): the
+// hybridView is the typed fields of a hybrid class (property storage=hybrid): the
 // block holding them, a cache of the values of the store read by the getters,
 // declared to the hybrid root (its package: NewLevel, Value, List, NewLayout),
 // which implements the reflective methods with them.
@@ -343,7 +343,7 @@ func (g *gen) implementationFile(c ecore.EClass) []engine.File {
 		views[f] = fv
 		view.Features = append(view.Features, fv)
 		g.addFeature(view, fv, g.m.Feature(f), reflective)
-		if reflective && g.PackagePropertyIs("hybridFields", "true") {
+		if g.IsHybridStorage() {
 			g.addHybridFeature(view, c, fv, f, g.m.Feature(f), scope)
 		}
 	}
