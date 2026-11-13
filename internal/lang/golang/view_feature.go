@@ -2,6 +2,7 @@ package golang
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/masagroup/soft.go/ecore"
 
@@ -22,6 +23,9 @@ type featureView struct {
 	// Type is the Go type of the feature; Cast the type assertion from the any
 	// type (".(Type)", "" when Type is the any type).
 	Type, Cast string
+	// Nillable tells that a value of Type may be nil: a pointer, a slice, a map,
+	// a channel or a function.
+	Nillable bool
 	// The accessor names.
 	Getter, Setter, Unsetter, IsSetter, BasicGetter, BasicSetter, BasicUnsetter, InitMethod string
 	// ESetVar is the flag field telling whether an unsettable single field is
@@ -113,6 +117,7 @@ func (g *gen) featureView(c ecore.EClass, f ecore.EStructuralFeature, scope *fil
 	v.BasicUnsetter = "basic" + naming.UpperFirst(v.Unsetter)
 	v.NewVar = "new" + naming.UpperFirst(v.Var)
 	v.OldVar = "old" + naming.UpperFirst(v.Var)
+	v.Nillable = isNillableType(v.Type)
 	// v1 tests isAnyType(eType.getType()): the type of the classifier, even
 	// for a list; the generated type is tested instead, so that a list of the
 	// any type is still asserted to EList (v1 did not compile there).
@@ -470,4 +475,15 @@ func (g *gen) featureDeclarations(f ecore.EStructuralFeature, scope *fileScope) 
 		decls = append(decls, g.isSetterName(f)+"() bool")
 	}
 	return decls
+}
+
+// isNillableType tells whether nil is a value of the Go type t: a pointer, a slice, a map, a
+// channel or a function.
+func isNillableType(t string) bool {
+	for _, prefix := range []string{"*", "[]", "map[", "chan ", "<-chan ", "func("} {
+		if strings.HasPrefix(t, prefix) {
+			return true
+		}
+	}
+	return false
 }

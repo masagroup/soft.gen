@@ -32,6 +32,15 @@ func ({{ .Receiver }} *{{ .Impl }}) ESetFromID(featureID int, newValue {{ .Any }
 		{{ .Receiver }}.{{ .AsInterface }}().{{ .Setter }}(newValueOrNil)
 {{- end }}
 
+{{/* An attribute of a type nil is a value of: nil is set as such, a value of another type panics. */}}
+{{ define "reflectives/eset.nillable" -}}
+		if newValue == nil {
+			{{ .Receiver }}.{{ .AsInterface }}().{{ .Setter }}(nil)
+		} else {
+			{{ .Receiver }}.{{ .AsInterface }}().{{ .Setter }}(newValue{{ .Cast }})
+		}
+{{- end }}
+
 {{/* An attribute: the value asserted to its type. */}}
 {{ define "reflectives/eset.attribute" -}}
 		{{ .Receiver }}.{{ .AsInterface }}().{{ .Setter }}(newValue{{ .Cast }})

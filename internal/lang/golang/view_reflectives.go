@@ -167,7 +167,8 @@ func egetCase(v reflectiveCaseView, info *model.FeatureInfo) reflectiveCaseView 
 }
 
 // esetCase is the variant of an ESetFromID case (v1 generateESetDefinition):
-// map, list, reference (a nil value is allowed) or attribute.
+// map, list, reference (a nil value is allowed), nillable (an attribute of a
+// type nil is a value of: nil is allowed, another type is not) or attribute.
 func esetCase(v reflectiveCaseView, info *model.FeatureInfo) reflectiveCaseView {
 	switch {
 	case info.IsMap:
@@ -176,6 +177,8 @@ func esetCase(v reflectiveCaseView, info *model.FeatureInfo) reflectiveCaseView 
 		v.Strategy = "list"
 	case info.Reference != nil:
 		v.Strategy = "reference"
+	case v.Nillable && v.Cast != "":
+		v.Strategy = "nillable"
 	default:
 		v.Strategy = "attribute"
 	}

@@ -393,7 +393,11 @@ func (h *holderImpl) ESetFromID(featureID int, newValue any) {
 	case HOLDER__COUNT:
 		h.asHolder().SetCount(newValue.(int))
 	case HOLDER__DATA:
-		h.asHolder().SetData(newValue.([]byte))
+		if newValue == nil {
+			h.asHolder().SetData(nil)
+		} else {
+			h.asHolder().SetData(newValue.([]byte))
+		}
 	case HOLDER__ENABLED:
 		h.asHolder().SetEnabled(newValue.(bool))
 	case HOLDER__FUNC:
@@ -429,7 +433,11 @@ func (h *holderImpl) ESetFromID(featureID int, newValue any) {
 		list.Clear()
 		list.AddAll(newValue.(ecore.EList))
 	case HOLDER__WHEN:
-		h.asHolder().SetWhen(newValue.(*time.Time))
+		if newValue == nil {
+			h.asHolder().SetWhen(nil)
+		} else {
+			h.asHolder().SetWhen(newValue.(*time.Time))
+		}
 	default:
 		h.EObjectImpl.ESetFromID(featureID, newValue)
 	}
