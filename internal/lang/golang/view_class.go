@@ -286,7 +286,15 @@ func (g *gen) addHybridFeature(view *implementationView, c ecore.EClass, fv *fea
 	}
 	h.Values = append(h.Values, d)
 	h.Fields = append(h.Fields, fieldView{Name: fv.Var, Type: fv.Type})
+	if len(h.Fields) > compactHybridFields {
+		// more fields than an ecore.FieldsHeader holds: the 16-byte header of up to 64
+		h.Header = ecoreID("WideFieldsHeader")
+	}
 }
+
+// compactHybridFields is the number of typed fields of a block with an ecore.FieldsHeader, of 8
+// bytes; a block of more, up to 64, has an ecore.WideFieldsHeader, of 16.
+const compactHybridFields = 32
 
 // fieldView is one field of the implementation struct.
 type fieldView struct {
