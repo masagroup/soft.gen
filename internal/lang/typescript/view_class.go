@@ -1,6 +1,7 @@
 package typescript
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/masagroup/soft.go/ecore"
@@ -71,6 +72,17 @@ func (g *gen) implementationFile(c ecore.EClass) engine.File {
 			initializations = append(initializations, "this."+fv.Var+" = "+value)
 		}
 	}
+	hybrid := g.hybridFeatures(c)
+	masks := map[string]bool{}
+	for _, f := range hybrid {
+		fv := g.featureView(c, f, s)
+		if !masks[fv.HybridMask] {
+			masks[fv.HybridMask] = true
+			declarations = append(declarations, "protected "+fv.HybridMask+": number")
+			initializations = append(initializations, "this."+fv.HybridMask+" = 0")
+		}
+		declarations = append(declarations, "protected "+fv.HybridVar+": "+fv.Type())
+	}
 	if len(declarations) > 0 {
 		view.add("impl/members.fields", declarations)
 	}
@@ -81,6 +93,23 @@ func (g *gen) implementationFile(c ecore.EClass) engine.File {
 	}{n, s.qualify(g.packageGetterIdentifier(p)), g.ReflectiveGetterName(c)})
 	if reflective {
 		view.add("impl/members.staticfeaturecount", nil)
+	}
+	if len(hybrid) > 0 {
+		var fvs []*featureView
+		for _, f := range hybrid {
+			fvs = append(fvs, g.featureView(c, f, s))
+		}
+		var maskList []string
+		for _, fv := range fvs {
+			if len(maskList) == 0 || maskList[len(maskList)-1] != fv.HybridMask {
+				maskList = append(maskList, fv.HybridMask)
+			}
+		}
+		view.add("impl/members.hybrid", struct {
+			names
+			Fields []*featureView
+			Masks  []string
+		}{n, fvs, maskList})
 	}
 	if g.isSharedPackage(p) {
 		view.add("impl/members.efactory", struct {
@@ -167,8 +196,9 @@ func (g *gen) implementationFile(c ecore.EClass) engine.File {
 // classExtends is the class the implementation of a class extends (v1
 // getClassExtends): the implementation, or the extension, of its first
 // concrete super class; for a root class BasicEObject (the class EObject),
-// the rootExtendsClass property, EStoreEObjectImpl with a reflective
-// delegation, else EObjectImpl.
+// the rootExtendsClass property, HybridEObjectImpl for a hybrid class
+// (storage=hybrid), EStoreEObjectImpl with a reflective delegation, else
+// EObjectImpl.
 func (g *gen) classExtends(c ecore.EClass) string {
 	extends := g.m.Class(c).ExtendsClass
 	if extends == nil {
@@ -178,6 +208,9 @@ func (g *gen) classExtends(c ecore.EClass) string {
 		}
 		if root, ok := g.ExplicitPackageProperty("rootExtendsClass"); ok {
 			return root
+		}
+		if g.IsHybridStorage() {
+			return g.implementationIdentifier(g.m.Ecore(), "HybridEObjectImpl")
 		}
 		if g.IsReflectiveDelegation() {
 			return g.implementationIdentifier(g.m.Ecore(), "EStoreEObjectImpl")
@@ -244,4 +277,44 @@ func (g *gen) addMapEntryAdapters(view *classView, c ecore.EClass, s *scope) {
 			view.add("impl/members.mapentryset", adapter)
 		}
 	}
+}
+
+// isHybridFeature reports whether a feature of a hybrid class (storage=hybrid) is
+// held by a typed field: stored (neither a container, volatile nor transient), and
+// not a map.
+func (g *gen) isHybridFeature(f ecore.EStructuralFeature) bool {
+	info := g.m.Feature(f)
+	return info.IsField && !f.IsTransient() && !info.IsMap && !info.IsFeatureMap
+}
+
+// hybridFeatures are the features the implementation of a hybrid class holds in
+// typed fields, in the order of their fields; none for another class.
+func (g *gen) hybridFeatures(c ecore.EClass) []ecore.EStructuralFeature {
+	if !g.IsHybridStorage() {
+		return nil
+	}
+	var features []ecore.EStructuralFeature
+	for _, f := range g.implementedFeatures(c) {
+		if g.isHybridFeature(f) {
+			features = append(features, f)
+		}
+	}
+	return features
+}
+
+// hybridIndex is the index of the typed field of f in the implementation of c, -1
+// when f has none.
+func (g *gen) hybridIndex(c ecore.EClass, f ecore.EStructuralFeature) int {
+	for i, h := range g.hybridFeatures(c) {
+		if h == f {
+			return i
+		}
+	}
+	return -1
+}
+
+// hybridMask returns the mask field of the typed field of index i of the
+// implementation of c, one per 32 fields and per class level, and its bit there.
+func (g *gen) hybridMask(c ecore.EClass, i int) (string, string) {
+	return fmt.Sprintf("_hm%s%d", c.GetName(), i/32), fmt.Sprintf("0x%x", uint32(1)<<(i%32))
 }

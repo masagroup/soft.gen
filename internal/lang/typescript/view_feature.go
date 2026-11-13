@@ -39,6 +39,13 @@ type featureView struct {
 	// The strategy of each accessor: the variant of its template.
 	GetterStrategy, GetterAsyncStrategy, SetterStrategy, SimpleSetStrategy, UnsetterStrategy, IsSetterStrategy,
 	BasicGetterStrategy, BasicSetterStrategy, BasicUnsetterStrategy string
+	// HybridVar is the typed field of a feature of a hybrid class (storage=hybrid),
+	// HybridMask the mask of the fields published of its class level and HybridBit its
+	// bit there; "" when the feature has no typed field.
+	HybridVar, HybridMask, HybridBit string
+	// HybridReference is whether the typed field holds a single reference: its getter
+	// publishes an object only when it is not a proxy, and reads it again when it became one.
+	HybridReference bool
 }
 
 // featureView builds the view of a feature implemented by the class.
@@ -82,6 +89,15 @@ func (g *gen) featureView(c ecore.EClass, f ecore.EStructuralFeature, s *scope) 
 	v.BasicGetterStrategy = g.basicGetterStrategy(f)
 	v.BasicSetterStrategy = g.basicSetterStrategy(f)
 	v.BasicUnsetterStrategy = g.basicUnsetterStrategy(f)
+	if i := g.hybridIndex(c, f); i >= 0 {
+		v.HybridVar = "_hv" + naming.UpperFirst(v.Var)
+		v.HybridMask, v.HybridBit = g.hybridMask(c, i)
+		v.HybridReference = info.Reference != nil && !info.IsList
+		v.GetterStrategy = "hybrid"
+		if v.HybridReference {
+			v.GetterStrategy = "hybridref"
+		}
+	}
 	return v
 }
 

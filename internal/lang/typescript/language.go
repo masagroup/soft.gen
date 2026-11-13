@@ -62,7 +62,7 @@ func (*Language) Properties() []props.Decl {
 		{Name: "testFramework", Default: "jest", Doc: "jest or vitest: the tests import vitest", Scope: pkg},
 		{Name: "accessors", Default: "method", Doc: "method, property or both (comma separated): the accessors of the features; also a feature key", Scope: pkg},
 		{Name: "async", Default: "false", Doc: "true: the proxies and operations get an Async variant returning a Promise; also an element key", Scope: pkg},
-		{Name: "storage", Default: "memory", Doc: "where the implementations keep the values of their features: memory, in their fields; store, delegated to the reflective store (hybrid is Go only)", Scope: pkg},
+		{Name: "storage", Default: "memory", Doc: "where the implementations keep the values of their features: memory, in their fields; store, delegated to the reflective store; hybrid, delegated to the store with typed fields behind the getters, a cache of its values, the root classes extending rootExtendsClass, else HybridEObjectImpl of @masagroup/ecore", Scope: pkg},
 		{Name: "featureDelegation", Doc: "the v1 and EMF name of storage: Reflective is storage=store", Scope: pkg},
 		{Name: "packageInstance", Doc: "interfaces: the package instance is generated with the interfaces and shared by the implementations", Scope: pkg},
 		{Name: "checkImplementation", Default: "true", Doc: "false: the setters of a shared package do not check that the objects share the implementation", Scope: pkg},
@@ -76,11 +76,11 @@ func (*Language) Properties() []props.Decl {
 // as in v1.
 func (l *Language) EntryPoints() []engine.EntryPoint {
 	return []engine.EntryPoint{
-		{Name: "generateModel", Default: true, Doc: "the interfaces, enums, constants, package and factory, and the implementations of the classes", Files: common.CheckStorage(l.modelFiles, common.StorageMemory, common.StorageStore)},
-		{Name: "generateModule", Default: true, Doc: "the module files: internal.ts (every export, in dependency order) and index.ts (the public names)", Files: common.CheckStorage(l.moduleFiles, common.StorageMemory, common.StorageStore)},
-		{Name: "generateTests", Default: true, Doc: "the tests of the implementations and of the factory", Files: common.CheckStorage(l.testFiles, common.StorageMemory, common.StorageStore)},
-		{Name: "generateInterfaces", Doc: "the interfaces, enums, constants, package and factory interfaces; with packageInstance=interfaces, also the shared package, a factory of the data types and the module files", Files: common.CheckStorage(l.interfaceFiles, common.StorageMemory, common.StorageStore)},
-		{Name: "generateImplementations", Doc: "the implementations of the classes and the factory; with packageInstance=interfaces, the module files of the implementation, else the package implementation", Files: common.CheckStorage(l.implementationFiles, common.StorageMemory, common.StorageStore)},
+		{Name: "generateModel", Default: true, Doc: "the interfaces, enums, constants, package and factory, and the implementations of the classes", Files: common.CheckStorage(l.modelFiles, common.StorageMemory, common.StorageStore, common.StorageHybrid)},
+		{Name: "generateModule", Default: true, Doc: "the module files: internal.ts (every export, in dependency order) and index.ts (the public names)", Files: common.CheckStorage(l.moduleFiles, common.StorageMemory, common.StorageStore, common.StorageHybrid)},
+		{Name: "generateTests", Default: true, Doc: "the tests of the implementations and of the factory", Files: common.CheckStorage(l.testFiles, common.StorageMemory, common.StorageStore, common.StorageHybrid)},
+		{Name: "generateInterfaces", Doc: "the interfaces, enums, constants, package and factory interfaces; with packageInstance=interfaces, also the shared package, a factory of the data types and the module files", Files: common.CheckStorage(l.interfaceFiles, common.StorageMemory, common.StorageStore, common.StorageHybrid)},
+		{Name: "generateImplementations", Doc: "the implementations of the classes and the factory; with packageInstance=interfaces, the module files of the implementation, else the package implementation", Files: common.CheckStorage(l.implementationFiles, common.StorageMemory, common.StorageStore, common.StorageHybrid)},
 	}
 }
 
