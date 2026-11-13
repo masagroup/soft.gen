@@ -84,6 +84,10 @@ func init() {
 		fixture{Name: "shop-both", Model: "shop.ecore", V1Differences: shopV1Differences("shop/src", nil), Props: map[string]string{"accessors": "method,property"}},
 		fixture{Name: "shop-async", Model: "shop.ecore", V1Differences: shopV1Differences("shop/src", nil), Props: map[string]string{"async": "true"}},
 		fixture{Name: "shop-reflective", Model: "shop.ecore", V1Differences: shopV1Differences("shop/src", nil), Props: map[string]string{"featureDelegation": "Reflective"}},
+		// storage=hybrid: classes over HybridEObjectImpl, typed fields behind the getters, with
+		// the property accessors too, as sw.api.ng.ts generates its store classes
+		fixture{Name: "shop-hybrid", Model: "shop.ecore", V1Skip: "v1 has no storage property",
+			Props: map[string]string{"storage": "hybrid", "accessors": "method,property"}},
 		fixture{Name: "shop-jest", Model: "shop.ecore", EntryPoints: []string{"generateTests"}, Props: map[string]string{"testFramework": "jest"}},
 		fixture{Name: "shop-node", Model: "shop.ecore", V1Differences: shopV1Differences("shop/src", nil), Props: map[string]string{"moduleResolution": "node"}},
 		fixture{Name: "shop-synthetic", Model: "shop.ecore", V1Differences: shopV1Differences("shop/src", nil), EntryPoints: []string{"generateModel"},

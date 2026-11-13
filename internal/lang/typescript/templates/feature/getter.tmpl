@@ -70,3 +70,29 @@ return this.{{ .Var }}
 {{ define "feature/getter.panic" -}}
 throw new Error("{{ .Getter }} not implemented")
 {{- end }}
+
+{{/* A hybrid class (storage=hybrid): the typed field when published, else the value
+     of the store, published. */}}
+{{ define "feature/getter.hybrid" -}}
+if (this.{{ .HybridMask }} & {{ .HybridBit }}) {
+    return this.{{ .HybridVar }}
+}
+const value = this.eBaseGetFromID({{ .ID }}, true) as {{ .Type }}
+this.{{ .HybridVar }} = value
+this.{{ .HybridMask }} |= {{ .HybridBit }}
+return value
+{{- end }}
+
+{{/* A single reference of a hybrid class: published only when it is not a proxy, and
+     read again when its object became one. */}}
+{{ define "feature/getter.hybridref" -}}
+if (this.{{ .HybridMask }} & {{ .HybridBit }} && !this.{{ .HybridVar }}?.eIsProxy()) {
+    return this.{{ .HybridVar }}
+}
+const value = this.eBaseGetFromID({{ .ID }}, true) as {{ .Type }}
+if (!value?.eIsProxy()) {
+    this.{{ .HybridVar }} = value
+    this.{{ .HybridMask }} |= {{ .HybridBit }}
+}
+return value
+{{- end }}

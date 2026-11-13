@@ -18,15 +18,15 @@ func TestValidate(t *testing.T) {
 	}
 }
 
-// TestEntryPoints_HybridStorage checks that every entry point fails with
-// storage=hybrid, a Go storage, instead of generating typed classes.
-func TestEntryPoints_HybridStorage(t *testing.T) {
+// TestEntryPoints_InvalidStorage checks that every entry point fails with a
+// storage the generator does not know, instead of generating typed classes.
+func TestEntryPoints_InvalidStorage(t *testing.T) {
 	l := New()
-	p, err := props.New(l.Properties(), map[string]string{"storage": "hybrid"}, nil, nil)
+	p, err := props.New(l.Properties(), map[string]string{"storage": "disk"}, nil, nil)
 	require.NoError(t, err)
 	ctx := &engine.Context{Props: p, Lang: l}
 	for _, ep := range l.EntryPoints() {
 		_, err := ep.Files(ctx, nil)
-		assert.ErrorContains(t, err, "storage=hybrid is not supported", ep.Name)
+		assert.ErrorContains(t, err, "memory, store or hybrid", ep.Name)
 	}
 }

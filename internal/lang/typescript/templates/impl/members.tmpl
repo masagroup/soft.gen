@@ -54,3 +54,41 @@ set{{ .Upper }}({{ .Name }}: {{ .Type }}) {
 {{- end }}
 }
 {{- end }}
+
+{{/* The members of a hybrid class (storage=hybrid): eGetFromID reads the typed
+     fields by their getters (a reference only when resolving), eClearFields and
+     eClearField clear the bits of the fields of the class level. */}}
+{{ define "impl/members.hybrid" -}}
+eGetFromID(featureID: number, resolve: boolean): any {
+    switch (featureID) {
+{{- range .Fields }}
+        case {{ .ID }}:
+{{- if .HybridReference }}
+            if (!resolve) {
+                break
+            }
+{{- end }}
+            return this.{{ .Getter }}()
+{{- end }}
+    }
+    return super.eGetFromID(featureID, resolve)
+}
+
+eClearFields(): void {
+{{- range .Masks }}
+    this.{{ . }} = 0
+{{- end }}
+    super.eClearFields()
+}
+
+eClearField(featureID: number): void {
+    switch (featureID) {
+{{- range .Fields }}
+        case {{ .ID }}:
+            this.{{ .HybridMask }} &= ~{{ .HybridBit }}
+            return
+{{- end }}
+    }
+    super.eClearField(featureID)
+}
+{{- end }}
