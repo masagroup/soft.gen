@@ -2,12 +2,12 @@
 #
 #   make build       build ./bin/soft.gen
 #   make test        go vet + go test
-#   make lint        golangci-lint (.golangci.yaml), in docker
+#   make lint        golangci-lint (.golangci.yaml), built by go run
 #   make image       build the docker image (every language included)
 #   make image.test  check the versions of the image
 #   make publish     push the image (tags <VERSION> and latest)
 #
-# build, test and image.test use the go installed (go, else go.exe), else go
+# build, test, lint and image.test use the go installed (go, else go.exe), else go
 # in a golang container (GOLANG_IMAGE).
 #
 # VERSION, the version of soft.gen ("soft.gen -v"), is computed from the Git
@@ -35,9 +35,8 @@ lang.package.go := golang
 lang.package.ts := typescript
 # version.file returns the VERSION file of a language
 version.file = internal/lang/$(lang.package.$(1))/VERSION
-# the golangci-lint image of `make lint`: its Go must support the go directive
-# of go.mod
-GOLANGCI_LINT_IMAGE ?= golangci/golangci-lint:v2.14.0-alpine
+# the version of golangci-lint of `make lint`
+GOLANGCI_LINT_VERSION := v2.14.0
 # the golang image go runs in when it is not installed: its Go must support
 # the go directive of go.mod
 GOLANG_IMAGE ?= golang:1.27.3-alpine
@@ -94,15 +93,10 @@ test:
 	$(GO) test ./...
 
 .PHONY: lint
-# The sources are mounted read-only; the Go modules and the golangci-lint cache
-# are docker volumes, kept between runs. MSYS_NO_PATHCONV keeps Git Bash on
-# Windows from rewriting the container paths.
+# golangci-lint built by go run with the Go of make (the host, else the golang
+# container)
 lint:
-	MSYS_NO_PATHCONV=1 docker run --rm \
-		-v "$(CURDIR)":/src:ro -w /src \
-		-v soft.gen-gomod:/go/pkg/mod \
-		-v soft.gen-golangci:/root/.cache \
-		$(GOLANGCI_LINT_IMAGE) golangci-lint run ./...
+	$(GO) run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION) run ./...
 
 .PHONY: image
 image:
