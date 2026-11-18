@@ -36,10 +36,10 @@ lang.package.ts := typescript
 # version.file returns the VERSION file of a language
 version.file = internal/lang/$(lang.package.$(1))/VERSION
 # the version of golangci-lint of `make lint`
-GOLANGCI_LINT_VERSION := v2.14.0
+GOLANGCI_LINT_VERSION := v2.15.0
 # the golang image go runs in when it is not installed: its Go must support
 # the go directive of go.mod
-GOLANG_IMAGE ?= golang:1.27.3-alpine
+GOLANG_IMAGE ?= golang:1.27.4-alpine
 
 # os detection
 ifeq (${OS},Windows_NT)
