@@ -29,7 +29,7 @@ For the previous documentation of the project (v1), see [README.LEGACY.md](READM
 | | |
 |---|---|
 | **Family** | Ecore / esync |
-| **Languages** | Go 1.27 (`go.mod`: `go 1.27.0`; image `golang:1.27.3-alpine`), Go `text/template` templates (92 `.tmpl`: go 61, ts 31), Makefile, Bash (`version.sh`) |
+| **Languages** | Go 1.27 (`go.mod`: `go 1.27.0`; image `golang:1.27.4-alpine`), Go `text/template` templates (92 `.tmpl`: go 61, ts 31), Makefile, Bash (`version.sh`) |
 | **Build systems** | Go toolchain driven by a Makefile · Docker (one multi-stage `Dockerfile`, no compose profiles). No Ant, no Maven, no CMake build, no `package.json` |
 
 **[Architecture](ARCHITECTURE.md)** · [Contributing](CONTRIBUTING.md) · [previous README (v1)](README.LEGACY.md) · [known issues and open questions](https://github.com/masagroup/wiki/wiki/known-issues#soft.gen) · [repository on GitHub](https://github.com/masagroup/soft.gen)
